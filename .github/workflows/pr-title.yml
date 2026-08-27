@@ -1,0 +1,90 @@
+# PR title validation — extracted from sumo-ayce's ci.yml `pr-title` job.
+# Fixed to require the exact emoji↔type pairing enforced by .husky/commit-msg
+# (the original job only checked "some valid emoji" + "some valid type",
+# so e.g. "🔖 feat(x): ..." would pass CI but fail the local hook).
+
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-title:
+    name: Validate PR title (auto-fix from last commit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate and auto-fix
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          TYPES="feat|fix|chore|docs|refactor|test|ci|build|perf|style|revert|merge|release"
+
+          expected_emoji() {
+            case "$1" in
+              feat)     echo "✨" ;;
+              fix)      echo "🐛" ;;
+              chore)    echo "🔧" ;;
+              docs)     echo "📝" ;;
+              refactor) echo "♻️" ;;
+              test)     echo "✅" ;;
+              ci)       echo "👷" ;;
+              build)    echo "🏗️" ;;
+              perf)     echo "⚡️" ;;
+              style)    echo "💄" ;;
+              revert)   echo "⏪" ;;
+              merge)    echo "🔀" ;;
+              release)  echo "🔖" ;;
+              *)        echo "" ;;
+            esac
+          }
+
+          # Mirrors .husky/commit-msg exactly: gitmoji must match its type,
+          # not just be "any valid emoji" followed by "any valid type".
+          is_valid() {
+            SUBJECT=$(echo "$1" | head -1)
+            FIRST_WORD=$(echo "$SUBJECT" | awk '{print $1}')
+            REST=$(echo "$SUBJECT" | cut -d' ' -f2-)
+
+            if echo "$REST" | grep -qE "^($TYPES)(\(.+\))?: .+"; then
+              TYPE=$(echo "$REST" | grep -oE "^($TYPES)")
+              EXPECTED=$(expected_emoji "$TYPE")
+              [ "$FIRST_WORD" = "$EXPECTED" ]
+              return $?
+            fi
+
+            echo "$SUBJECT" | grep -qE "^($TYPES)(\(.+\))?: .+"
+          }
+
+          if is_valid "$TITLE"; then
+            echo "✅ PR title is valid: $TITLE"
+            exit 0
+          fi
+
+          echo "⚠️  PR title is not valid: '$TITLE'"
+          echo "   Fetching last commit message from $HEAD_SHA ..."
+
+          LAST_COMMIT=$(gh api "repos/$REPO/commits/$HEAD_SHA" --jq '.commit.message' | head -1)
+          echo "   Last commit: $LAST_COMMIT"
+
+          if ! is_valid "$LAST_COMMIT"; then
+            echo "❌ Last commit message is also invalid — fix the PR title manually."
+            echo "   Format: <emoji> <type>(<scope>): <description>"
+            exit 1
+          fi
+
+          gh pr edit "$PR_NUMBER" --title "$LAST_COMMIT"
+          echo "✅ PR title updated to: $LAST_COMMIT"
