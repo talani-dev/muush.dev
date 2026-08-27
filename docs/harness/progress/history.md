@@ -43,3 +43,36 @@ shipped, what's still open.
      future work, not done as part of this sync.
 - Updated `CLAUDE.md`, `AGENTS.md`, `spec_author.md`, `implementer.md` to
   point at `docs/business/` recursively (it's now a tree, not flat files).
+
+## 2026-08-27 — Feature 1: design_tokens_and_logos (done)
+
+- Implemented `specs/001-design-tokens-and-logos/` end to end (spec, plan,
+  research, data-model, quickstart, 19 tasks) via the `implementer` agent,
+  reviewed and **APPROVED** by the `reviewer` agent
+  (`docs/harness/progress/review_design_tokens_and_logos.md`).
+- `src/styles/global.css`: replaced the placeholder 10-step (50-900)
+  `--red-*`/`--wine-*`/`--ink-*`/`--bone-*` ramps with the real 5-step
+  (100-500) branding-book values (`docs/business/branding.md`), and shrunk
+  the matching `@theme inline` `--color-<ramp>-<step>` mappings to 20
+  entries (4 ramps x 5 steps). Verified via grep that no removed step
+  (50/600/700/800/900) was referenced anywhere outside `global.css`.
+  `--font-poppins`/`--font-instrument` tokens and all four `@font-face`
+  blocks confirmed unchanged — they already matched the branding book.
+- `src/assets/logo/`: brought the three official isotipo SVGs into the
+  project, renamed to background-context-first names
+  (`isotipo-on-bone.svg`, `isotipo-on-ink.svg`, `isotipo-on-red.svg`,
+  copied from `muush-dark.svg`/`muush-light.svg`/`muush-triple-white.svg`
+  at the external source path), with a colocated `README.md` mapping
+  background context -> file/source/stroke/dot. Diffed all three: shared
+  `viewBox`/`circle`/`path`/`stroke-width`/`stroke-linecap`, only
+  fill/stroke colors differ.
+- Deliberately out of scope, per spec FR-007/FR-008: no wrapper `.astro`
+  component, page, header, footer, favicon, or logo instance was added; no
+  wordmark or lockup A/B asset — only the three isotipo-only (lockup C)
+  variants.
+- Verification: `pnpm check`, `pnpm typecheck`, `pnpm test` (existing suite,
+  unmodified), `pnpm build` (spot-checked `#cf3147` in compiled CSS) all
+  green; `./init.sh` exit code 0.
+- `feature_list.json`: feature id 1 status `reviewing` -> `done`.
+- Full implementer summary: `docs/harness/progress/impl_design_tokens_and_logos.md`.
+  Full reviewer verdict: `docs/harness/progress/review_design_tokens_and_logos.md`.

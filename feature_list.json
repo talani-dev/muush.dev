@@ -16,5 +16,21 @@
     "reviewing_required_before_done": true,
     "sdd_required_when": "feature has \"sdd\": true"
   },
-  "features": []
+  "features": [
+    {
+      "id": 1,
+      "name": "design_tokens_and_logos",
+      "title": "Design tokens (colors, typography) and logo assets",
+      "description": "Replace the placeholder color and typography tokens in src/styles/global.css with the real values from the muush branding book (documented in docs/business/branding.md), and wire the three official isotipo SVG variants into the project as usable assets, mapped for the three background contexts the branding rules define (light/bone background, dark/ink background, on Red 400).",
+      "acceptance": [
+        "Color custom properties in src/styles/global.css use the exact 5-step hex values from docs/business/branding.md for red, wine, ink and bone (not the placeholder 10-step scale)",
+        "The Tailwind theme (@theme inline) exposes the updated ramps as utility classes",
+        "font-poppins is scoped to logo/wordmark use only; font-instrument is the default for everything else, matching docs/business/branding.md",
+        "The three isotipo SVGs (bone-background, ink-background, red-background variants) are available in the project and selectable/renderable for their documented background context",
+        "pnpm check, pnpm typecheck, pnpm test and pnpm build all pass"
+      ],
+      "sdd": true,
+      "status": "done"
+    }
+  ]
 }
