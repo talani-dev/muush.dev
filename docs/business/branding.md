@@ -63,6 +63,27 @@ mono se resuelve con Instrument Sans en tamaño reducido y tracking
 abierto. Esto ya coincide con las `@font-face` declaradas en
 `src/styles/global.css`.
 
+## Logo — assets fuente (isotipo, lockup C)
+
+> Fuente: sincronizado 2026-08-27. Archivos locales, no vienen de Notion.
+
+Los 3 SVG oficiales del isotipo (lockup C · isotipo solo) viven en:
+
+```
+/Users/betonajera/Library/Mobile Documents/com~apple~CloudDocs/Pictures/Icons/Muush/
+  muush-dark.svg          — para fondo claro (bone): trazo Ink 500, punto Red 400
+  muush-light.svg         — para fondo oscuro (ink 500): trazo Bone 100, punto Red 400
+  muush-triple-white.svg  — para fondo Red 400 o el tercio rojo del degradado B: todo Bone 100, punto incluido
+```
+
+Los tres comparten el mismo `viewBox="14.5 38.5 70.5 39.5"` y la misma
+geometría (`circle cx=21 cy=45 r=6.5` + `path M21 72 a17 17 0 0 1 34 0 a12
+12 0 0 1 24 0`, `stroke-width=12`, `stroke-linecap=round`) — solo cambian
+los colores de relleno/trazo, exactamente como documenta la sección
+"Aplicación sobre fondos" de este archivo. No hay lockup A (horizontal con
+wordmark) ni B (apilado) como archivos — solo el isotipo solo, en sus tres
+variantes de fondo.
+
 ## Isotipo
 
 Trazo continuo de dos crestas decrecientes con un punto suspendido.
