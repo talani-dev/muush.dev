@@ -12,8 +12,12 @@ tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 
 1. Read `.specify/memory/constitution.md` in full — `/speckit-plan` will use
    these principles to generate Phase -1 Gates.
-2. Read **ALL** files in `docs/business/`. List the folder first — don't
-   assume which files exist.
+2. Read **ALL** files in `docs/business/` recursively, including
+   `docs/business/landing/`. List the tree first — don't assume which files
+   exist. If the feature touches the landing or Nosotros pages, pay
+   particular attention to `docs/business/landing/decisions-open.md` —
+   treat anything listed there as `[NEEDS CLARIFICATION]`, never assume an
+   answer.
 3. Read the feature's section in `feature_list.json` (id, name, acceptance
    criteria).
 4. If the feature touches existing pages/components, read relevant prior
