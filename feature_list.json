@@ -1,0 +1,20 @@
+{
+  "project": "muush.dev",
+  "description": "Static marketing site for muush, a technology solution studio. Landing and About pages, in Spanish and English.",
+  "rules": {
+    "one_feature_at_a_time": true,
+    "require_tests_to_close": true,
+    "require_approved_spec_to_implement": true,
+    "valid_status": [
+      "pending",
+      "spec_ready",
+      "in_progress",
+      "reviewing",
+      "done",
+      "blocked"
+    ],
+    "reviewing_required_before_done": true,
+    "sdd_required_when": "feature has \"sdd\": true"
+  },
+  "features": []
+}

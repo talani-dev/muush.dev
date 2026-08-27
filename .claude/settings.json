@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm test 2>&1 | tail -3",
+            "description": "Run tests after each edit."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./init.sh > /tmp/harness_init.log 2>&1 && echo '[harness] OK' || (echo '[harness] FAILED' && cat /tmp/harness_init.log | tail -20)",
+            "description": "Full verification when closing a session."
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(./init.sh)",
+      "Bash(pnpm test*)",
+      "Bash(pnpm check*)",
+      "Bash(pnpm typecheck*)",
+      "Bash(pnpm build*)"
+    ]
+  }
+}
