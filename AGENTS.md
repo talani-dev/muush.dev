@@ -10,8 +10,9 @@
 3. Read `feature_list.json`.
 4. Read `docs/harness/specs.md` before touching any spec or feature with
    `"sdd": true`.
-5. Read **all** files in `docs/business/` before writing a spec or making
-   architecture decisions.
+5. Read **all** files in `docs/business/` recursively (including
+   `docs/business/landing/`) before writing a spec or making architecture
+   decisions.
 6. Read `.specify/memory/constitution.md` — the architectural source of truth.
 
 ## 2. Repository map
@@ -22,7 +23,8 @@
 | `docs/harness/progress/current.md` | Active session state | Always, at start |
 | `docs/harness/progress/history.md` | Past sessions log | If you need history |
 | `specs/<num>-<name>/` | `spec.md` + `plan.md` + `tasks.md` (+ optional `data-model.md`, `research.md`, `contracts/`) | Before implementing |
-| `docs/business/` | Domain context: what muush.dev is, pages, i18n, stack, deploy | Before spec/architecture decisions — read ALL files |
+| `docs/business/` | Company (overview, services, messaging, branding) — read ALL files recursively | Before spec/architecture decisions |
+| `docs/business/landing/` | Landing-specific: approved copy (`content.md`), behavior spec (`ui-map.md`), open decisions and discrepancies (`decisions-open.md`) | Before any spec/feature that touches the landing or Nosotros pages |
 | `.specify/memory/constitution.md` | Static-site purity, component/island discipline, i18n parity, NON-NEGOTIABLE rules | Before spec/implementation |
 | `docs/harness/specs.md` | SDD process: spec-kit flow, approval gate | Before writing a spec |
 | `docs/harness/verification.md` | How to verify work is real | Before declaring done |

@@ -31,7 +31,8 @@ never to implement it yourself.
 ### Project context
 
 Business/domain context (what muush.dev is, its pages, i18n setup, stack,
-deploy target) lives in `docs/business/`. Read **all** files in that folder
+deploy target) lives in `docs/business/` (including its subfolders, e.g.
+`docs/business/landing/`). Read **all** files in that tree recursively
 before writing specs, implementing, or making architecture decisions.
 
 Architectural principles (static-site purity, component/island discipline,

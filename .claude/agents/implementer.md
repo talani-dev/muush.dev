@@ -10,7 +10,8 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 
 1. Read `specs/<num>-<name>/spec.md`, `plan.md` and `tasks.md`.
 2. Read `.specify/memory/constitution.md`.
-3. Read **ALL** files in `docs/business/` (domain context).
+3. Read **ALL** files in `docs/business/` recursively, including
+   `docs/business/landing/` (domain context).
 4. Implement each task in `tasks.md` in order, checking `[x]` as it completes.
 5. For any non-trivial logic in `src/i18n/` or `src/utils/`, write a Vitest
    unit test (Constitution Article VII — no Playwright, no Storybook).
