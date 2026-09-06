@@ -101,3 +101,76 @@ podrían tomar el token `bone-100` y se verían blanco puro, que es exactamente
 el problema que la normalización de `decisions-open.md` § Íconos de redes
 existe para resolver. Mismo criterio que ya se aplicó al isotipo en la
 feature 001.
+
+---
+
+## Feature 003 · Site shell (2026-09-06)
+
+### R9 · El ancla no existe en tiempo de build
+
+`ui-map.md` § 1 pide que el toggle ES/EN conserve el ancla
+(`/es/nosotros#work` → `/en/about#work`). **No se puede resolver en el HTML
+estático:** el fragmento de una URL nunca se envía al servidor y no existe
+cuando Astro genera la página. `Astro.url.pathname` jamás trae `#`.
+
+Consecuencia operativa: el `href` estático del toggle apunta a la ruta
+equivalente **sin ancla**, y conservar el ancla requiere una mejora progresiva
+en el cliente (unas 10 líneas que agregan `location.hash` al destino al hacer
+click). Sin JavaScript el toggle sigue funcionando: cae al inicio de la página
+equivalente.
+
+**Esto aplica a cualquier feature futura** que quiera "recordar dónde iba el
+visitante" al cambiar de idioma, de página o de vista. La regla general: todo
+lo que dependa del fragmento es comportamiento de cliente, nunca de build.
+
+### R10 · Las URLs canónicas llevan diagonal final
+
+El destino de despliegue es S3 + CloudFront sin cómputo (Constitución,
+Artículo I). Con el `build.format: 'directory'` por defecto de Astro,
+`src/pages/es/nosotros.astro` se emite como `/es/nosotros/index.html`. Una
+petición a `/es/nosotros` **sin** diagonal no mapea a ese objeto salvo que
+exista una función de reescritura en el edge, que este proyecto no tiene.
+
+**Regla:** todo `href` interno que genere el sitio termina en `/` antes del
+ancla (`/es/nosotros/`, `/en/#proyectos`). Los helpers de `src/i18n/` aceptan
+la entrada con o sin diagonal y siempre emiten la forma canónica.
+
+### R11 · El filete del bottom bar del footer tiene dos colores en el diseño
+
+`design-extract.md` § 9.bis documenta el mismo filete de 1px como `#c9c9c91f`
+en escritorio y `#FBF8F61F` en móvil. Ambos son un neutro claro al 12%; la
+diferencia es la base (`#c9c9c9` no pertenece a ninguna rampa, `#FBF8F6` es
+`bone-100`).
+
+**Decisión:** se implementa como `bone-100` al 12% en ambos viewports — el
+valor móvil exacto — para no meter un color fuera del sistema de tokens.
+Mismo criterio que R2. **Pendiente:** Clau debería unificarlo en el archivo de
+diseño.
+
+### R12 · Las posiciones absolutas del menú móvil son del frame, no del diseño
+
+El frame `MENÚ móvil abierto` mide 390×844 y coloca sus piezas por posición
+absoluta: items en y176, divisor en y448, redes en y493. **Un teléfono real
+casi nunca mide 844px de alto**, así que replicar las posiciones rompería el
+layout en cualquier otro dispositivo.
+
+Se traducen a flujo: el bloque de items arranca a 176px del borde superior, y
+con `line-height: 1.1` los 4 items de 30px ocupan 222px (176→398), lo que deja
+**50px** hasta el divisor y **44px** del divisor a la fila de redes. Esos dos
+gaps reproducen el frame exactamente a 844px y fluyen bien a cualquier otra
+altura.
+
+El `line-height` es la única variable libre de esa derivación y queda
+registrada aquí por si el diseño la contradice después.
+
+### R13 · El handle de LinkedIn está documentado, la URL no
+
+`branding.md` y `overview.md` registran el handle como `/muush-dev`;
+`design-extract.md` § 9.bis registra el destino solo como "linkedin.com".
+**Nadie documenta si la URL real es una página de empresa
+(`/company/muush-dev`) o un perfil personal (`/in/muush-dev`).**
+
+Instagram y TikTok sí tienen ruta completa, así que el hueco es específico de
+LinkedIn. Se asume página de empresa (muush es una empresa) y el valor vive en
+un solo lugar de los datos del shell, para que corregirlo sea una línea.
+**Pendiente de confirmación de Clau.**

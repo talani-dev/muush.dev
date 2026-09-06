@@ -252,6 +252,118 @@ Todos `$font-display` (Instrument Sans) salvo el Wordmark.
 
 ---
 
+## 9.bis · Shell del sitio — Nav, Footer y menú móvil
+
+> Extraído 2026-09-06. **Verificado: Nav y Footer son byte-idénticos entre
+> Landing y Nosotros en ambos viewports** — misma anchura, padding, gap y
+> alineación. Son un componente cada uno, no cuatro.
+
+### Nav — contenedor
+
+| | Desktop | Móvil |
+|---|---|---|
+| Ancho | 1440 | 390 |
+| Padding | `[30, 80]` | `[22, 24]` |
+| alignItems | center | center |
+
+**Desktop** = `Lockup` (fill_container, gap 12) + `Nav right` (gap 30):
+- `Proyectos` · `Nosotros` → `$bone-300` · 15px/500
+- `CTA nav` → BotonPrimario variante `nav` (padding `[13,24]`, fs 14)
+- `Idioma` → gap 6: `ES` `$bone-100` 13/600 ls 0.8 · `/` `$ink-300` 13 · `EN` `$ink-200` 13/500 ls 0.8
+
+**Móvil** = `Lockup` (fill_container, gap 9) + `Nav right` (gap 14):
+- `Idioma` → gap 5, fs 12 (mismos colores/pesos)
+- `Menú` (hamburguesa) → fill `#1c1416a6`, radio 10, borde `#FBF8F62E` 1px,
+  padding `[12,11]`, vertical, gap 5, 2 rectángulos de 16×1.6 `$bone-100`
+  con `cornerRadius: 1`
+
+> **El CTA del nav no existe en móvil.** No colapsa al menú: en móvil el
+> único CTA son las redes del menú abierto (decisión 2026-09-06).
+
+### Footer — contenedor
+
+| | Desktop | Móvil |
+|---|---|---|
+| Tamaño | 1440×400 | 390×577 |
+| Fill | `$ink-500` | `$ink-500` |
+| Padding | `[80, 80, 44, 80]` | `[52, 24, 32, 24]` |
+| Gap | 56 | 40 |
+| Layout | vertical | vertical |
+
+**Desktop** — `Top` (gap 80, `space_between`) + `Bottom`:
+- `Top` → `Marca` (w 340, vertical, gap 20) + `Columnas` (gap 64)
+- `Marca` → Lockup + `Tagline` (`$ink-100` 18/500 ls −0.54) + `Categoría`
+  (`$ink-300` 12/500 ls 0.9)
+- `Columnas` → 4× `FooterColumn` de w 180, vertical, gap 16
+- `Bottom` → borde superior `#c9c9c91f` 1px, padding `[26,0,0,0]`,
+  `space_between`, 2 textos `$ink-300` 13px
+
+**Móvil** — `Marca` + `Columnas 1` + `Columnas 2` + `Bottom`:
+- `Marca` → fill_container, vertical, gap 10. Tagline 16/500 ls −0.54,
+  Categoría 11/500 ls 0.9 (más chicos que desktop)
+- `Columnas 1` y `Columnas 2` → fill_container, gap 20, 2 columnas c/u
+- Columnas → vertical, gap 12; título 11/600 ls 1.1; items gap 9, 14px
+- `Bottom` → borde `#FBF8F61F` 1px, padding `[22,0,0,0]`, **vertical**
+  (no `space_between` como desktop), gap 6, textos 12px
+
+### Menú móvil abierto (`390×844`)
+
+Capas, de abajo hacia arriba:
+1. `BG · base` 390×844
+2. `Dotted paper` 390×844
+3. `Panel vidrio` → fill `#1c1416a6`, blur 20, cubre todo
+4. `Nav` → mismo contenedor que el nav normal (`padding [22,24]`), pero
+   `Nav right` lleva `Idioma` + botón **Cerrar** (fill `#1c1416a6`, radio
+   10, borde `#FBF8F62E`, padding 10, ícono `x` de lucide 18×18 `$bone-100`)
+5. `Items` → x 24, y 176, w 342, vertical, **gap 30**, textos `$bone-100`
+   30px/600 ls −0.9
+6. `Divisor` → x 24, y 448, 342×1, `#FBF8F614`
+7. 3 botones de red 48×48 en y 493, x 109 / 171 / 233 (gap efectivo 14,
+   centrados en los 390px)
+
+### Copy del shell — ES / EN
+
+| Elemento | ES | EN |
+|---|---|---|
+| Nav link 1 | Proyectos | Projects |
+| Nav link 2 | Nosotros | About us |
+| CTA nav | Cuéntanos tu proyecto | Tell us about your project |
+| Tagline footer | Hablamos negocio y código. | We speak business and code. |
+| Categoría | Technology solution studio | Technology solution studio |
+| Col. 1 título | Navegación | Navigation |
+| Col. 1 items | Propósito · Servicios · Proyectos · Nosotros | Purpose · Services · Projects · About us |
+| Col. 2 título | Contacto | Contact |
+| Col. 2 items | Agenda una llamada · support@muush.dev · WhatsApp | Book a call · support@muush.dev · WhatsApp |
+| Col. 3 título | muush | muush |
+| Col. 3 items | Work with muush · FAQ · Blog · próximamente | Work with muush · FAQ · Blog · coming soon |
+| Col. 4 título | Redes | Social |
+| Col. 4 items | LinkedIn · Instagram · TikTok | LinkedIn · Instagram · TikTok |
+| Copyright | © 2026 muush · Todos los derechos reservados | © 2026 muush · All rights reserved |
+| Ubicación | CDMX · MX | CDMX · MX |
+| Menú items | Propósito · Servicios · Proyectos · Nosotros | Purpose · Services · Projects · About us |
+
+> `Work with muush` y `FAQ` **no se traducen** — son nombres propios.
+> Ojo: el ítem `Blog · próximamente` lleva el separador `·` dentro del
+> propio string, no es una lista de dos.
+
+### Destinos (de `ui-map.md` §2 y §8)
+
+| Elemento | Destino |
+|---|---|
+| Lockup | Home del idioma activo |
+| Proyectos | `#proyectos` (desde Nosotros: `/#proyectos`) |
+| Nosotros | `/nosotros` — item activo en esa página |
+| CTA nav | `#contacto` + foco en primer campo |
+| ES/EN | Ruta equivalente del otro idioma, conservando el ancla |
+| Footer · Agenda una llamada | 🔴 Google Calendar — link pendiente (decisión #2) |
+| Footer · support@muush.dev | `mailto:support@muush.dev` |
+| Footer · WhatsApp | `https://wa.me/525639060739` con mensaje precargado, pestaña nueva |
+| Footer · FAQ | 🔴 la página no existe (decisión #3) |
+| Footer · Blog | **Sin link.** Texto `$ink-300`, sin cursor ni hover |
+| Redes | `linkedin.com` · `instagram.com/muush.dev` · `tiktok.com/@muush.dev`, pestaña nueva |
+
+---
+
 ## 10 · Componentes de contenido (para features posteriores)
 
 ### PurposeCard

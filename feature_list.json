@@ -51,6 +51,25 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 3,
+      "name": "site_shell",
+      "title": "Site shell: Nav, Footer and mobile menu, wired into BaseLayout for both locales",
+      "description": "Build the shell that wraps every page: Nav (desktop links + mobile hamburger), the full-screen mobile menu, and Footer with its 4 columns. All measurements come from docs/business/landing/design-extract.md § 9.bis — read that file, the Pencil MCP is not available to subagents. Verified in the design: Nav and Footer are byte-identical between Landing and Nosotros in both viewports, so each is ONE responsive component, not four. This is the first feature that produces visible output: it modifies BaseLayout and adds the /es/nosotros and /en/about routes so the nav links resolve instead of 404ing. Route strategy was decided 2026-09-06: both locales are prefixed (/es/, /en/), but the Nosotros segment stays translated (nosotros vs about), so the ES/EN toggle needs a route map that lives in src/i18n/, never hardcoded in Nav.",
+      "acceptance": [
+        "Nav renders per design-extract.md § 9.bis: desktop shows Lockup + Proyectos + Nosotros + CTA nav + ES/EN toggle; mobile shows Lockup + ES/EN + hamburger, with NO CTA button (that is the documented decision, not an omission)",
+        "The mobile menu is a Svelte island in src/islands/ (it needs open/close state, background scroll lock, and Escape to close — genuine interactivity per Constitution Article II) and matches the MENÚ móvil abierto frame: full-screen glass panel, close X, 4 items at 30px, divider, 3 social buttons",
+        "Footer renders per design-extract.md § 9.bis with its 4 columns, brand block (Lockup + tagline + category) and bottom bar, reflowing from 4 columns on desktop to 2×2 on mobile",
+        "All shell copy (nav links, footer columns, menu items, copyright) lives in src/i18n/ui.ts with both es and en entries — zero hardcoded strings in components, per Constitution Article III",
+        "A route-mapping helper in src/i18n/ resolves the equivalent path in the other locale, translating the Nosotros segment (/es/nosotros ↔ /en/about) and preserving the anchor; it has Vitest unit tests per Constitution Article VII",
+        "BaseLayout renders Nav and Footer, so every page gets the shell; src/pages/es/nosotros.astro and src/pages/en/about.astro exist so nav links resolve",
+        "Reuses the feature 002 primitives (Lockup, Wordmark, Pill, BotonPrimario, SocialIcon) rather than reimplementing them; their prop contracts in specs/002-primitive-ui-layer/contracts/components.md are honored",
+        "Links with no destination yet (FAQ, Agenda una llamada) are handled per the open decisions in decisions-open.md — they must not render as broken links or 404s",
+        "pnpm check, pnpm typecheck, pnpm test and pnpm build all pass"
+      ],
+      "sdd": true,
+      "status": "pending"
     }
   ]
 }

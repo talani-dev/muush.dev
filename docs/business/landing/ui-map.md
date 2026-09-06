@@ -8,22 +8,22 @@
 > frames vigentes: landing y Nosotros, ES y EN, escritorio 1440px y móvil
 > 390px.
 
-## ⚠️ Conflicto con el scaffold actual de este repo
-
-El scaffold inicial de este repo (`astro.config.mjs`) configuró
-`i18n.routing.prefixDefaultLocale: true`, lo que pone ES en `/es/`. **El
-diseño real asume otra cosa** (tabla abajo): ES sin prefijo (`/`), EN con
-prefijo `/en/`, y la ruta de Nosotros **no es simétrica** entre locales
-(`/nosotros` vs `/en/about`, no una traducción literal). Esto requiere
-resolver el enrutamiento i18n como parte de la primera spec de la landing,
-no asumir que el scaffold actual ya está bien.
-
 ## 1 · Rutas e idioma
+
+> ⚠️ **Superseded 2026-09-06.** Las rutas que documentaba el diseño (ES sin
+> prefijo) fueron reemplazadas por decisión de Roberto: **ambos locales
+> llevan prefijo**. La tabla de abajo ya refleja lo vigente. Ver
+> `decisions-open.md` § Estrategia de rutas i18n.
 
 | Página | ES | EN |
 |---|---|---|
-| Landing | `/` | `/en/` |
-| Nosotros / About | `/nosotros` | `/en/about` |
+| Landing | `/es/` | `/en/` |
+| Nosotros / About | `/es/nosotros` | `/en/about` |
+| Raíz | `/` redirige a `/es/` | |
+
+El segmento de Nosotros **sigue traducido** (`nosotros` ↔ `about`), así que
+el toggle necesita un mapa de rutas en `src/i18n/` — no basta con
+intercambiar el prefijo.
 
 Anclas en la landing: `#proposito` · `#servicios` · `#proyectos` ·
 `#contacto`. Nosotros lleva el ancla `#work` (sección Work with muush).

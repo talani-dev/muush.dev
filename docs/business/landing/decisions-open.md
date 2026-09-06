@@ -13,7 +13,7 @@
 | 1 | A dónde llegan los formularios: servicio externo (Formspree/Web3Forms), función serverless a support@muush.dev, o directo a CRM del Company OS | Roberto y Clau | Sin esto no hay formulario funcional |
 | 2 | Link real de Google Calendar para el CTA de llamada | Clau | Aparece en hero, CTA final y footer |
 | 3 | Qué pasa con FAQ: escribirla, quitar el link del footer, o dejarla "próximamente" sin link | Clau | Hoy sería un 404 en el footer de todo el sitio |
-| 4 | Estrategia de URL del idioma: prefijo `/en/` vs. parámetro vs. estado del cliente | Roberto | Afecta SEO y el enrutamiento i18n de todo el sitio (ver conflicto con el scaffold en `ui-map.md`) |
+| ~~4~~ | ~~Estrategia de URL del idioma~~ | ~~Roberto~~ | ✅ **RESUELTA 2026-09-06** — ver abajo |
 
 ## No bloqueantes (afectan diseño/UX, no impiden implementar)
 
@@ -125,20 +125,36 @@ el de Instagram puede romper estilos de otras partes de la página.
 
 | Qué | Detalle |
 |---|---|
+| **Hairline del footer fuera de paleta** (detectado 2026-09-06) | El borde superior de la barra inferior del footer usa `#c9c9c91f` en desktop y `#FBF8F61F` en móvil — dos colores distintos para la misma línea. Además **`#c9c9c9` no corresponde a ningún token de la marca** (lo más cercano es `ink-100` = `#D9D9D9`, pero no es igual). En código se unificó a `bone-100 @12%`, que es exactamente el valor móvil. **Conviene corregir el desktop en Pencil** para que use el token |
+| **Forma de la URL de LinkedIn** | `branding.md` registra el handle `/muush-dev` pero no si la URL es `linkedin.com/company/muush-dev` o `linkedin.com/in/muush-dev`. Se asumió página de empresa (`/company/`). Confirmar con Clau |
 | Opciones de "¿Cómo te identificas?" | El archivo de diseño tiene 6 opciones; `content.md` documenta 5. "Restaurante o bar" está en el diseño sin documentar — conecta con el tema de restaurantes/bares como vertical, guardado para después |
 | Copy de Nosotros | Hero, Network y Work with muush siguen marcados como borrador, falta aprobar |
 | Nombres reales del equipo | Los 6 dicen `"Nombre y apellido"`. Entran con la sesión de fotos B&N |
 
 ---
 
-# Conflicto de arquitectura (no viene de Notion — detectado al comparar con este repo)
+# Estrategia de rutas i18n — RESUELTA 2026-09-06 ✅
 
-El scaffold de este repo configuró rutas simétricas con prefijo en ambos
-locales (`prefixDefaultLocale: true` → `/es/`, `/en/`). El diseño real
-(ver `ui-map.md` § 1) usa ES sin prefijo (`/`) y Nosotros con rutas
-**asimétricas** por locale (`/nosotros` vs `/en/about`, no una traducción
-literal de segmento). Esto requiere either reconfigurar el i18n routing de
-Astro, o resolver el mapeo de rutas manualmente (patrón
-`useTranslatedPath`/`getRouteFromUrl` de la recipe de i18n de Astro) —
-decisión que le toca a la primera spec real de la landing, no algo para
-asumir en `docs/business/`.
+**Decisión de Roberto: se mantiene el scaffold — ambos locales con
+prefijo.** Esto supersede lo que documenta `ui-map.md` § 1, que venía del
+diseño.
+
+| Página | ES | EN |
+|---|---|---|
+| Landing | `/es/` | `/en/` |
+| Nosotros / About | `/es/nosotros` | `/en/about` |
+| Raíz | `/` → redirect a `/es/` (ya existe en `src/pages/index.astro`) |
+
+**Qué cambia frente al diseño:** el diseño asumía ES sin prefijo (`/`).
+Ahora ES también lleva prefijo. `astro.config.mjs` se queda como está
+(`prefixDefaultLocale: true`), no hay que reconfigurar nada.
+
+**Qué NO cambia:** el segmento de Nosotros sigue **traducido**
+(`nosotros` ↔ `about`), no es una copia literal. Por lo tanto **sigue
+haciendo falta un mapa de rutas en `src/i18n/`** — el toggle ES/EN no
+puede limitarse a intercambiar el prefijo, tiene que resolver también el
+segmento y conservar el ancla (`/es/nosotros#work` → `/en/about#work`).
+
+**Regla de implementación:** ese mapeo vive en `src/i18n/`, nunca
+hardcodeado dentro del componente Nav. Si algún día se revierte a ES sin
+prefijo, debe ser un cambio de datos y no de componentes.
