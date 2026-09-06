@@ -76,3 +76,68 @@ shipped, what's still open.
 - `feature_list.json`: feature id 1 status `reviewing` -> `done`.
 - Full implementer summary: `docs/harness/progress/impl_design_tokens_and_logos.md`.
   Full reviewer verdict: `docs/harness/progress/review_design_tokens_and_logos.md`.
+
+## 2026-09-06 — Feature 2: primitive_ui_layer (done)
+
+- Full SDD cycle on `specs/002-primitive-ui-layer/` (spec, plan, research,
+  data-model, quickstart, `contracts/components.md`, checklist, 41 tasks):
+  spec by the `spec_author` agent, implementation by the `implementer`
+  agent, **APPROVED** by the `reviewer` agent
+  (`docs/harness/progress/review_primitive_ui_layer.md`).
+- **Source of measurements**: `docs/business/landing/design-extract.md`,
+  extracted from `muush.pen` by the leader on 2026-09-06 precisely because
+  the Pencil MCP bridge does not reach subagents. No subagent opened the
+  `.pen` file. This supersedes an earlier discarded `002-shared-ui-components`
+  spec that described four components which did not match the design.
+- `src/styles/global.css` (append-only, 231 insertions / 0 deletions — every
+  feature-001 ramp, font token and `@font-face` block byte-identical):
+  `--dark-glass` + `--stroke-led` in `:root`; 13 `--color-glass-*` /
+  `--color-radar-*` tokens as `color-mix()` over the brand ramps; 22 fluid
+  type roles (size + line-height + letter-spacing + font-weight); 19
+  `--spacing-*`, 4 `--radius-*`, 3 `--blur-*`; plus 9 radar-geometry spacing
+  tokens the task list had not enumerated; `@property --led-angle` and
+  `@keyframes led-spin`. **Zero `@media` rules in the file** — the
+  desktop/mobile difference lives entirely in `clamp()`.
+- `src/components/`: eight static `.astro` primitives — `GlassPanel`,
+  `Radar`, `Wordmark`, `Lockup`, `Pill`, `BotonPrimario`, `LinkArrow`,
+  `SocialIcon` — matching `contracts/components.md` exactly. Zero client JS,
+  no island, no `<script>`; the only inter-component imports are Pill→Radar
+  and Lockup→Wordmark, as FR-013 permits.
+- `src/assets/social/`: the three vendor glyphs normalized by hand to a
+  shared `viewBox="0 0 24 24"` with `fill="currentColor"`, no `<style>` /
+  `<defs>` / DOCTYPE / tool metadata, plus a colocated `README.md`.
+  Deleting Instagram's global `.cls-1` class was a correctness fix, not
+  polish.
+- `tsconfig.json`: `"@/assets/*": ["src/assets/*"]` added (Article VI
+  compliance — a relative `../assets/…` import would have been the
+  violation).
+- Verification: 44 fluid tokens evaluated at 390px and 1440px land within
+  0.01px of their design endpoints; all 30 GlassPanel checks (6 variants x
+  fill/border/blur/radius/padding) read back from the built CSS; no page
+  emits a `<script>` or references the Svelte client bundle; Article IV and
+  Article II greps over `src/components/` return nothing. `pnpm check`,
+  `pnpm typecheck`, `pnpm test` (existing suite, unmodified), `pnpm build`
+  and `./init.sh` all green.
+- Five implementer deviations were flagged and **all five accepted on their
+  merits** by the reviewer: the extra radar geometry tokens (following the
+  task literally would have caused an Article IV violation), TikTok's
+  `fill-rule="nonzero"` (confirmed against the vendor source, whose per-path
+  rule overrides the root), GlassPanel's annotated destructuring target (an
+  `as` member makes Astro read `Props` as the polymorphic signature), one
+  explained Biome `useAnchorContent` suppression (the rule cannot see through
+  an Astro `<slot />`), and `black` in the mask gradients (alpha-only, not a
+  colour).
+- **Design-file typo confirmed, not a code bug**: `design-extract.md` § 4
+  records the LED's third stop as `#cf3247` while red-400 is `#cf3147`. The
+  leader verified against the `.pen` — the design file itself contains
+  `#cf3247`, so the extract transcribed it faithfully; it is a one-digit
+  typo by whoever built the gradient in Pencil. The implementation's
+  `var(--red-400)` is correct and stays. Documented in `design-extract.md`.
+- **Still open, unchanged by this feature**: `decisions-open.md` #8 (LED on
+  touch devices) is implemented conservatively as a static ring via
+  `@media (hover: hover)` and remains Clau's call — reversible by deleting
+  one media query. Font binaries for weights 500/600 are still missing from
+  `public/fonts/` (the TODO left by feature 001).
+- `feature_list.json`: feature id 2 status `reviewing` -> `done`.
+- Full implementer summary: `docs/harness/progress/impl_primitive_ui_layer.md`.
+  Full reviewer verdict: `docs/harness/progress/review_primitive_ui_layer.md`.
