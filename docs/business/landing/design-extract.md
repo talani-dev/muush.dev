@@ -1,0 +1,347 @@
+# Extracto del diseño — medidas reales del `.pen`
+
+> **Extraído directamente de `/Users/betonajera/Downloads/muush.pen` el
+> 2026-09-06** vía el MCP de Pencil, leyendo los 4 frames vigentes
+> (`Landing ES · v4`, `Landing ES · móvil`, `Nosotros ES`,
+> `Nosotros ES · móvil`) más los 2 nuevos de `MENÚ móvil abierto`.
+>
+> **Por qué existe este archivo:** el MCP de Pencil es un puente en vivo
+> hacia la app de escritorio y **solo funciona en la sesión interactiva
+> principal** — los subagentes (`spec_author`, `implementer`) no lo
+> heredan aunque lo tengan en su lista de `tools`. Este archivo es la
+> fuente de verdad de medidas para ellos: **léelo en vez de intentar
+> abrir el `.pen`.**
+>
+> Los valores aquí son literales del archivo de diseño. Donde hay un token
+> (`$red-400`, `$bone-100`, `$font-display`) es porque el diseño ya lo usa
+> como variable — mapea a los tokens de `src/styles/global.css`.
+
+---
+
+## 0 · Cómo leer los colores
+
+El diseño usa hex de 8 dígitos (RGBA). Los más repetidos:
+
+| Hex | Equivale a | Uso |
+|---|---|---|
+| `#1c1416a6` | ink oscuro @65% | Vidrio oscuro: Pill, Botón, formularios, panel del menú |
+| `#FBF8F60F` | bone-100 @6% | Vidrio neutro estándar |
+| `#FBF8F61A` | bone-100 @10% | Vidrio neutro destacado |
+| `#FBF8F60A` | bone-100 @4% | Vidrio neutro tenue |
+| `#FBF8F62E` | bone-100 @18% | Borde estándar |
+| `#CF31472B` | red-400 @17% | Vidrio rojo destacado |
+| `#CF31471F` | red-400 @12% | Vidrio rojo estándar |
+| `#CF314778` | red-400 @47% | Borde rojo destacado |
+| `#CF314759` | red-400 @35% | Borde rojo estándar |
+
+---
+
+## 1 · GlassPanel — el patrón que unifica todo
+
+**13 elementos** entre las dos páginas usan la misma receta con distinta
+opacidad. Es el componente de mayor impacto del sistema.
+
+| Variante | Fill | Stroke | Blur | Radio D/M | Padding D/M | Usado en |
+|---|---|---|---|---|---|---|
+| `red-strong` | `#CF31472B` | `#CF314778` | 22/20 | 22/18 | 32/22 | Tarjeta **Why** |
+| `red-soft` | `#CF31471F` | `#CF314759` | 22/20 | 22/18 | 32/22 | Tarjetas **How**, **What** |
+| `bone-strong` | `#FBF8F61A` | `#FBF8F62E` | 16 | 20/18 | 28/22 | **Caso 01** (proyecto destacado) |
+| `bone` | `#FBF8F60F` | `#FBF8F62E` | 16 | 20/18 | 28/22 · 22/18 | **Casos 02–04**, **Foto B&N** ×3 |
+| `bone-faint` | `#FBF8F60A` | `#FBF8F229` | 16 | 20/18 | 32/22 | **Reservado · globo**, **Upload CV** |
+| `dark` | `#1C1416A6` | `#FBF8F63B` | 22 | 20/18 | 34/24 | **Ambos formularios** |
+
+> El `dark` también es el fill de Pill, Botón primario, botones de red y
+> el panel del menú móvil — pero esos tienen su propio borde/radio, así
+> que no reusan la variante completa.
+
+---
+
+## 2 · Radar — 3 tamaños
+
+Siempre 3 elipses concéntricas: `halo2` (externo) + `halo` (medio) +
+`dot` (núcleo, siempre `$red-400`).
+
+| Tamaño | halo2 | halo | dot | Dónde |
+|---|---|---|---|---|
+| **sm** | 20 · `#CF31471F` | 14 @(3,3) · `#CF31474D` | 7 @(6.5,6.5) | Dentro de **Pill sección** |
+| **md** | 30 · `#CF31471F` | 20 @(5,5) · `#CF31474D` | 12 @(9,9) | **Propósito** ×3 y **Servicios** ×5 (desktop) |
+| **sm-alt** | 22 | 16 | 10 | **Servicios móvil** (con opacidades del efecto lyrics) |
+
+Servicios móvil aplica opacidad al conjunto radar+texto según posición:
+`0.18` (lejos) · `0.45` (vecino) · `1` (activo).
+
+---
+
+## 3 · Pill sección
+
+```
+frame  fill #1c1416a6 · cornerRadius 999 · stroke #FBF8F62E 1px
+       gap 11 · padding [9,20,9,10] · alignItems center
+├── Radar sm (20×20, layout none)
+└── Texto  $bone-200 · $font-display · 13px/500 · letterSpacing 0.7
+```
+
+**Móvil:** idéntico salvo `fontSize: 12`.
+
+**11 instancias** — solo cambia el texto:
+
+| Página | Labels |
+|---|---|
+| Landing | `Technology solution studio` (eyebrow del hero) · `Propósito` · `Servicios` · `Delivery` · `Proyectos` · `Contacto` |
+| Nosotros | `Nosotros` · `Equipo` · `Network` · `Work with muush` |
+
+→ Un solo prop real: `label`. Más `size` si se quiere resolver el 13/12 sin
+media query (mejor con token fluido).
+
+---
+
+## 4 · Botón primario
+
+```
+frame  fill #1c1416a6 · cornerRadius 12 · strokeWidth 1.5
+       stroke = GRADIENTE ANGULAR (cónico), 3 paradas:
+              $red-400 @0 · $bone-100 @0.5 · #cf3247 @1  ← ver nota
+       padding [16,28] · alignItems center
+└── Texto  $bone-100 · $font-display · 15px/600
+```
+
+> ⚠️ **Corrección a `branding.md`**: ese archivo describe el borde LED como
+> `Red 400 → Bone 100 → Wine 400`. **El diseño real NO usa Wine** — la
+> tercera parada cierra el loop volviendo a rojo. Ya está corregido abajo
+> en § Correcciones.
+>
+> 🐛 **Typo en el archivo de diseño (verificado 2026-09-06).** La tercera
+> parada en el `.pen` es literalmente `#cf3247`, pero el token `red-400`
+> vale `#CF3147`. Difieren en un dígito (`32` vs `31`) — es un error de
+> dedo de quien construyó el gradiente, no un color deliberado: la
+> diferencia es de 1/255 en el canal verde, imperceptible, y la intención
+> obvia era repetir Red 400 para cerrar el giro sin salto.
+>
+> **En código se usa `var(--red-400)`**, que es lo correcto. Si alguien
+> compara pixel a pixel contra el `.pen` y ve la diferencia, es esto —
+> no un bug de implementación. Vale la pena corregir el `.pen` para que
+> use el token en vez del hex suelto.
+
+**3 variantes de tamaño** (derivadas de las instancias reales):
+
+| Variante | Padding D | Padding M | fontSize D | fontSize M | Dónde |
+|---|---|---|---|---|---|
+| `nav` | `[13,24]` | — | 14 | — | CTA del nav (solo desktop) |
+| `hero` | `[18,32]` | `[16,26]` / `[17,24]` | 16 | 15 | CTA primario del hero |
+| `submit` | `[18,32]` | `[16,28]` | 16 | 15 | Botón Enviar de ambos formularios |
+
+**Contenido por locale:** ES `Cuéntanos tu proyecto` / `Enviar` — EN
+`Tell us about your project` / `Submit`.
+
+**Animación LED:** anillo cónico de 1.5px, un giro cada 2.6s lineal,
+arranca en hover y se detiene al salir. **CSS puro, sin JS.** Uno por
+pantalla. Sin JS o con `prefers-reduced-motion`: borde estático Red 400.
+
+---
+
+## 5 · Wordmark
+
+```
+frame  alignItems center  (sin gap — los 3 textos van pegados)
+├── "muush"  $bone-100 · $font-logo (Poppins) · 24px/600 · ls -0.72
+├── "."      $red-400  · $font-logo · 24px/600 · ls -0.72
+└── "dev"    $bone-100 · $font-logo · 24px/600 · ls -0.72
+```
+
+**Móvil:** 19px/600 · ls −0.57.
+
+`branding.md` documenta dos lockups oficiales: `muush` y `muush.dev`. En el
+diseño **siempre aparece la versión completa**, pero el componente debe
+poder ocultar `.dev` para el caso "muush" solo.
+
+**4 usos:** Nav ×2 (Landing, Nosotros) + Footer ×2. Más el nav del menú
+móvil.
+
+---
+
+## 6 · Lockup (Isotipo + Wordmark)
+
+```
+frame  gap 12 (desktop) / 9 (móvil) · alignItems center
+├── Isotipo (ref)  52×29 desktop, strokeWidth 8.85
+│                  40×22 móvil,   strokeWidth 6.8
+│                  stroke $bone-100 en ambos
+└── Wordmark
+```
+
+> ⚠️ **Corregido 2026-09-06 — no repliques el override en código.**
+>
+> La fórmula `strokeWidth = 12 × (ancho ÷ 70.5)` que documentan
+> `branding.md` y `content.md` es un **workaround específico de Pencil**:
+> Pencil no escala el `strokeWidth` con el `viewBox` (bug documentado en
+> `content.md` § Hallazgo técnico). **El navegador sí lo escala**, porque
+> es comportamiento estándar de SVG.
+>
+> Verificado numéricamente: con `viewBox` de ancho 70.5 y `stroke-width:12`,
+> renderizar a 52px da escala `52/70.5 = 0.73759` → `12 × 0.73759 = 8.851`
+> (Pencil override: 8.85 ✓) y a 40px da `6.809` (override: 6.8 ✓).
+>
+> **En código el `<svg>` solo necesita `width`/`height`** — el trazo escala
+> solo. Meter el override sería duplicar la escala y engrosar el trazo.
+
+---
+
+## 7 · LinkArrow ("Agenda una llamada →")
+
+Texto suelto, **sin caja**, en escritorio y móvil. 4 instancias:
+
+| Dónde | fontSize | weight | letterSpacing |
+|---|---|---|---|
+| Hero desktop | 16 | 500 | 0 |
+| CTA final desktop | 23 | 600 | −0.7 |
+| Hero móvil | 16 | 600 | −0.3 |
+| Ruta alterna móvil | 20 | 600 | −0.6 |
+
+Siempre `$bone-100`. Hover: subrayado o desplazamiento de la flecha —
+**nunca un fondo** que lo vuelva a convertir en botón.
+
+---
+
+## 8 · Botón de red social (menú móvil)
+
+```
+frame  48×48 · fill #1c1416a6 · cornerRadius 10
+       stroke #FBF8F62E 1px · padding 10 · center
+└── glifo  $bone-100 · 18px/600 · ls 0.4
+```
+
+Los glifos `L`/`I`/`T` del `.pen` son **placeholder**. Los SVG reales y su
+normalización pendiente están en `decisions-open.md` § Íconos de redes.
+
+---
+
+## 9 · Escala tipográfica desktop → móvil
+
+Todos `$font-display` (Instrument Sans) salvo el Wordmark.
+
+| Rol | Desktop | Móvil | Notas |
+|---|---|---|---|
+| Display (hero landing) | 98/600 · ls −3.5 · lh 0.98 | 46/600 · ls −1.7 · lh 1 | |
+| H1 (hero Nosotros) | 74/600 · ls −2.6 · lh 1.02 | 38/600 | |
+| H2 (CTA final) | 62/600 · ls −2.1 · lh 1.02 | 38/600 · ls −1.3 · lh 1.03 | |
+| H2 (Proyectos) | 52/600 · ls −1.6 · lh 1.05 | 34/600 · ls −1.05 | |
+| H3 (Work with muush) | 44/600 · ls −1.35 · lh 1.1 | — | |
+| H3 (Network) | 34/600 · ls −1 · lh 1.24 | 22/600 · ls −0.66 · lh 1.28 | |
+| Lead (tarjetas Propósito) | 30/500 · ls −0.6 · lh 1.35 | 22/600 · ls −0.66 · lh 1.3 | ⚠️ el weight cambia 500→600 |
+| Copy (Delivery) | 24/500 · ls −0.72 · lh 1.35 | — | |
+| Body (subhead hero) | 21 · lh 1.5 | 17 · lh 1.5 | weight normal |
+| Body (intro Nosotros) | 20 · lh 1.55 | 16 · lh 1.55 | |
+| Body (copy CTA) | 18 · lh 1.6 | 16 · lh 1.55 | |
+| Nombre de servicio | 19/600 · ls −0.57 · lh 1.18 | 18/600 · ls −0.54 · lh 1.2 | |
+| Brief de servicio | 14 · lh 1.55 | 14 · lh 1.55 | **no cambia** |
+| Label de formulario | 12/500 · ls 0.5 | 12/500 · ls 0.5 | **no cambia** |
+| Valor de input | 15 | 15 | **no cambia** |
+| Texto de Pill | 13/500 · ls 0.7 | 12/500 | |
+| Meta / nota | 12–13 · `$ink-200`/`$ink-300` | 11–12.5 | |
+
+**Escala de espacio y superficie:**
+
+| Token | Desktop | Móvil |
+|---|---|---|
+| Margen de página | 80 | 24 |
+| Radio de panel | 20–22 | 18 |
+| Padding de tarjeta | 28–36 | 22 |
+| Ancho de formulario | 660 | 342 |
+| Gap de formulario | 16 | 14 |
+| Padding de formulario | 34 | 24 |
+
+---
+
+## 10 · Componentes de contenido (para features posteriores)
+
+### PurposeCard
+Desktop: GlassPanel `red-strong`/`red-soft`, 700px ancho, gap 14,
+**solo Copy** (el label vive fuera, en la constelación).
+Móvil: activa 274×316, vecinas 241×278 @opacity 0.5, **Label + Copy**.
+Label: `$red-200` · desktop 17px/600 ls −0.2 · móvil 13px/500 ls 0.9.
+
+→ El componente recibe siempre `label` + `copy`; cada layout decide dónde
+pintar el label. Ver `decisions-open.md` § D6.
+
+### ProjectCard
+GlassPanel `bone-strong` (Caso 01) / `bone` (02–04), `justifyContent: end`.
+Desktop bento: 620×560 · 636×265 · 306×265 · 306×265.
+Móvil carrusel: 4× 252×290.
+Contenido: `Etiqueta` (desktop 22px destacado / 16px resto · móvil 18px,
+600, ls −0.4) + `Meta` ("Próximamente", 12px, `$ink-200`, ls 0.5–0.6).
+
+### TeamMemberCard
+`Foto B&N` = GlassPanel `bone` (desktop h:440 padding 22 · móvil h:260
+padding 18) con nota "Foto B&N" (`$ink-200` 11px/500) + `Datos` (Nombre
+24/600 ls −0.72 desktop, 20/600 ls −0.6 móvil · Rol 13px `$ink-200`
+desktop, 12.5 móvil).
+Contenido actual: los 3 dicen `"Nombre y apellido"` (placeholder). Roles:
+`Ingeniería` · `Operación · Producto · Administración` · `Ventas`.
+
+### ServiceItem
+Frame vertical, gap 12 (desktop) / 10 (móvil), ancho 232 / 310.
+`Nombre` + `Brief` (specs en § 9). Acompañado siempre de un Radar.
+
+### FormField — 4 variantes
+```
+frame vertical gap 8 (desktop) / 7 (móvil)
+├── L (label)   $bone-300 · 12px/500 · ls 0.5
+└── control     fill #FBF8F60F · cornerRadius 12 · stroke #FBF8F62E 1px
+                padding [14,16] · justifyContent space_between
+    └── V (valor) $ink-100 · 15px
+```
+| Variante | Diferencia |
+|---|---|
+| `text` | base |
+| `select` | + ícono `chevron-down` de lucide 16×16 `$bone-300` |
+| `textarea` | `height: 92`, layout vertical, valor en `$ink-200` con lh 1.5 |
+| `upload` | fill `#FBF8F60A`, stroke `#FBF8F229`, padding 16, gap 10, + ícono `paperclip` de lucide |
+
+**13 usos:** Landing 6 campos · Nosotros 7 campos.
+
+### RadioPill
+```
+frame cornerRadius 999 · gap 9 · padding [11,18] · alignItems center
+├── dot  ellipse 8×8
+└── L    $bone-100 · 14px
+```
+Activo: fill `#FBF8F624`, stroke `#FBF8F65C`, dot `$red-400`.
+Inactivo: fill `#FBF8F60A`, stroke `#FBF8F229`, dot `#FBF8F63D`.
+**4 usos** (Correo/WhatsApp en ambos formularios).
+
+### FooterColumn
+Frame vertical, ancho 180 (desktop), gap 16 / 12 (móvil).
+`T` (título): `$red-300` · 12px/600 · ls 1.2 (móvil 11px/600 ls 1.1).
+`Items`: gap 11 / 9, textos `$ink-100` 15px (móvil 14px).
+
+Contenido (idéntico D/M tras la corrección del 2026-09-06):
+- **Navegación** → Propósito · Servicios · Proyectos · Nosotros
+- **Contacto** → Agenda una llamada · support@muush.dev · WhatsApp
+- **muush** → Work with muush · FAQ · Blog · próximamente
+- **Redes** → LinkedIn · Instagram · TikTok
+
+### SectionGlow
+Frames circulares (`cornerRadius: 999`) con fill de gradiente radial
+`color → #26262600`. ~21 instancias entre las dos páginas.
+Desktop 820–1500px · móvil 480–760px.
+Colores base: `#CF3147A6` (foco hero), `#8A455266` / `#591F284D` /
+`#591F2833` / `#8A45522B` (wine intermedios).
+
+### DottedPaper
+⚠️ **NO es un componente.** En Pencil son 90+ tiles × 144 elipses de 2.5px
+(`#D9D9D91F`, grid de 24px). En producción es:
+```css
+background-image: radial-gradient(#D9D9D91F 1.25px, transparent 1.25px);
+background-size: 24px 24px;
+```
+Ver `ui-map.md` § 10.
+
+---
+
+## 11 · Correcciones a la documentación previa
+
+| Documento | Decía | Realidad del `.pen` |
+|---|---|---|
+| `branding.md` § materiales | Borde LED `Red 400 → Bone 100 → Wine 400` | `$red-400 → $bone-100 → rojo otra vez` (**sin Wine**). El `.pen` escribe la 3ª parada como `#cf3247`, un typo de un dígito frente a `red-400` = `#CF3147`; en código va el token. Ver § 4 |
+| `ui-map.md` § 2 (ya corregido) | Menú móvil con CTA + "Agenda una llamada" | Items + divisor + 3 redes. **Sin CTA** — decisión del 2026-09-06 |
+| `content.md` | Propósito: Label dentro de cada tarjeta | Desktop lo tiene fuera (constelación); móvil dentro |

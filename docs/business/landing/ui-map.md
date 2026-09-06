@@ -64,20 +64,31 @@ desde el hero.
 ### Móvil (390px)
 
 Lockup y toggle ES/EN visibles; todo lo demás colapsa en hamburguesa de dos
-líneas.
+líneas (16×1.6, en botón de vidrio `#1c1416a6`, radio 10).
 
-Menú hamburguesa: Propósito (`#proposito`) · Servicios (`#servicios`) ·
-Proyectos (`#proyectos`) · Nosotros (`/nosotros`) · Cuéntanos tu proyecto
-(`#contacto`, botón primario al final) · Agenda una llamada → (Google
-Calendar, pestaña nueva).
+### Menú abierto — ✅ diseñado (frames `MENÚ móvil abierto · ES` / `· EN`, 390×844)
 
-Comportamiento: abre a pantalla completa sobre vidrio oscuro, ícono cambia
-a X, scroll del fondo bloqueado, cierra al elegir un item / tocar X /
-Escape. Al cerrar por un ancla, hace el scroll ya cerrado.
+| Zona | Contenido |
+|---|---|
+| Panel | Vidrio a pantalla completa: `#1c1416a6`, blur 20 |
+| Nav | Lockup + toggle ES/EN + botón **Cerrar** (ícono `x` de lucide, vidrio, radio 10, padding 10) |
+| Items | Propósito (`#proposito`) · Servicios (`#servicios`) · Proyectos (`#proyectos`) · Nosotros (`/nosotros`) — 30px |
+| Divisor | `#FBF8F614`, 342×1 |
+| Redes | 3 botones 48×48 (vidrio `#1c1416a6`, radio 10, borde `#FBF8F62E`): LinkedIn · Instagram · TikTok |
 
-> 🔴 Falta el frame del menú abierto — el contenido y comportamiento ya
-> están definidos aquí, pero conviene dibujarlo antes de implementar.
->
+> **Decisión 2026-09-06 (Clau):** el menú móvil **no lleva** el botón
+> "Cuéntanos tu proyecto" ni "Agenda una llamada →". En desktop el CTA es
+> el botón del nav; **en móvil el único CTA son las redes sociales.**
+> Esta tabla reemplaza la especificación anterior, que sí los listaba.
+
+> Los glifos `L`/`I`/`T` del `.pen` son placeholder. Los íconos reales y su
+> normalización pendiente están en `decisions-open.md` § Íconos de redes.
+
+**Comportamiento:** abre a pantalla completa sobre vidrio oscuro, el ícono
+de hamburguesa cambia a X, el scroll del fondo se bloquea, y cierra al
+elegir un item / tocar X / Escape. Al cerrar por un ancla, hace el scroll
+ya cerrado.
+
 > Nota: el menú móvil sí incluye Propósito y Servicios aunque el nav de
 > escritorio no los tenga — en móvil el scroll es mucho más largo.
 
