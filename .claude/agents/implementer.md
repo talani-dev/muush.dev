@@ -24,6 +24,36 @@ tools: Read, Write, Edit, Glob, Grep, Bash
    current status is `reviewing` — if asked to do this from another status,
    something was skipped; report it instead of proceeding).
 
+## Working from the Pencil (`.pen`) design
+
+**You cannot open the `.pen` file, and you must not try.** The Pencil MCP
+is a live bridge to the desktop app that exists only in the main
+interactive session — a subagent does not inherit it, no matter what its
+`tools` list says. Two agents already burned large amounts of context
+discovering this; one filled the gap with invented measurements and its
+spec had to be thrown away.
+
+**`docs/business/landing/design-extract.md` is the source of truth for
+every measurement.** The leader extracts values from the design file and
+writes them there: geometry, colors, spacing, typography, per-variant
+values, and prop surfaces derived from real design instances.
+
+Rules:
+
+1. Read `design-extract.md` for any geometry/color/spacing/type value.
+   Never guess one, and never claim you inspected the design file.
+2. If a value you need is genuinely missing, **stop and report the gap**
+   to the leader so it can be extracted. Do not interpolate a
+   plausible-looking number.
+3. Colors and typography come from `docs/business/branding.md`, already
+   applied as Tailwind tokens by feature 001 — use the token, don't
+   re-derive a raw hex.
+4. `design-extract.md` § 11 lists known corrections where the design file
+   and the older Notion-derived docs disagree. The extract wins.
+5. Presentational pieces are `.astro` in `src/components/`; real
+   interactivity is `.svelte` in `src/islands/` (Constitution Article II).
+   Never `.tsx` — this project is Astro + Svelte, not React.
+
 ## Rules
 
 - Do NOT touch features other than the one assigned

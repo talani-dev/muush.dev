@@ -18,6 +18,15 @@ tools: Read, Write, Edit, Glob, Grep, Bash, Skill
    particular attention to `docs/business/landing/decisions-open.md` —
    treat anything listed there as `[NEEDS CLARIFICATION]`, never assume an
    answer.
+
+   > **You cannot open the `.pen` design file, and you must not try.** The
+   > Pencil MCP exists only in the main interactive session; a subagent
+   > never inherits it. `docs/business/landing/design-extract.md` holds
+   > every measurement the leader extracted — that is your source of truth
+   > for geometry, colors, spacing and typography. If a value is missing
+   > from it, say so and mark it `[NEEDS CLARIFICATION]`; **never invent a
+   > measurement and never claim you inspected the design file.** A prior
+   > spec was discarded for exactly that.
 3. Read the feature's section in `feature_list.json` (id, name, acceptance
    criteria).
 4. If the feature touches existing pages/components, read relevant prior
