@@ -25,6 +25,17 @@
   --wine-300: #8a4552;
   --wine-400: #591f28;
   --wine-500: #3b141b;
+
+  /*
+   * Negro cálido de las superficies de vidrio oscuro (Pill, botón primario,
+   * botones de red, formularios, panel del menú móvil). No pertenece a
+   * ninguna rampa de marca y deliberadamente NO es --ink-500 (#262626).
+   * docs/business/rules.md § R1.
+   */
+  --dark-glass: #1c1416;
+
+  /* Grosor del anillo LED del botón primario: 1.5px */
+  --stroke-led: 0.09375rem;
 }
 
 @theme inline {
@@ -54,6 +65,207 @@
 
   --font-poppins: "Poppins", sans-serif;
   --font-instrument: "Instrument Sans", sans-serif;
+
+  /*
+   * Vidrio y radar — cada valor es el hex de 8 dígitos del diseño
+   * (docs/business/landing/design-extract.md § 0 y § 1) reexpresado como
+   * mezcla sobre la rampa de marca, para que un cambio de marca toque
+   * solo este archivo.
+   */
+  --color-glass-red-strong: color-mix(in srgb, var(--red-400) 17%, transparent);
+  --color-glass-red-soft: color-mix(in srgb, var(--red-400) 12%, transparent);
+  --color-glass-red-strong-line: color-mix(
+    in srgb,
+    var(--red-400) 47%,
+    transparent
+  );
+  --color-glass-red-soft-line: color-mix(
+    in srgb,
+    var(--red-400) 35%,
+    transparent
+  );
+  --color-glass-bone-strong: color-mix(
+    in srgb,
+    var(--bone-100) 10%,
+    transparent
+  );
+  --color-glass-bone: color-mix(in srgb, var(--bone-100) 6%, transparent);
+  --color-glass-bone-faint: color-mix(in srgb, var(--bone-100) 4%, transparent);
+  --color-glass-line: color-mix(in srgb, var(--bone-100) 18%, transparent);
+  /* El diseño usa #FBF8F2 aquí; se resuelve como bone-100 al 16% (rules.md § R2) */
+  --color-glass-line-faint: color-mix(
+    in srgb,
+    var(--bone-100) 16%,
+    transparent
+  );
+  --color-glass-dark: color-mix(in srgb, var(--dark-glass) 65%, transparent);
+  --color-glass-dark-line: color-mix(in srgb, var(--bone-100) 23%, transparent);
+  --color-radar-halo-outer: color-mix(in srgb, var(--red-400) 12%, transparent);
+  --color-radar-halo-mid: color-mix(in srgb, var(--red-400) 30%, transparent);
+
+  /*
+   * Escala tipográfica fluida — interpola entre los dos únicos frames del
+   * diseño: 390px (móvil) y 1440px (escritorio), y se detiene fuera de ese
+   * rango. Ningún componente necesita media queries de tamaño.
+   * Tracking siempre en em (rules.md § R4).
+   */
+  --text-display: clamp(2.875rem, 1.6679rem + 4.9524vw, 6.125rem);
+  --text-display--line-height: 0.98;
+  --text-display--letter-spacing: -0.036em;
+  --text-display--font-weight: 600;
+
+  --text-h1: clamp(2.375rem, 1.5393rem + 3.4286vw, 4.625rem);
+  --text-h1--line-height: 1.02;
+  --text-h1--letter-spacing: -0.035em;
+  --text-h1--font-weight: 600;
+
+  --text-h2: clamp(2.375rem, 1.8179rem + 2.2857vw, 3.875rem);
+  --text-h2--line-height: 1.02;
+  --text-h2--letter-spacing: -0.034em;
+  --text-h2--font-weight: 600;
+
+  --text-h2-alt: clamp(2.125rem, 1.7071rem + 1.7143vw, 3.25rem);
+  --text-h2-alt--line-height: 1.05;
+  --text-h2-alt--letter-spacing: -0.031em;
+  --text-h2-alt--font-weight: 600;
+
+  --text-h3: clamp(1.75rem, 1.3786rem + 1.5238vw, 2.75rem);
+  --text-h3--line-height: 1.1;
+  --text-h3--letter-spacing: -0.031em;
+  --text-h3--font-weight: 600;
+
+  --text-h3-alt: clamp(1.375rem, 1.0964rem + 1.1429vw, 2.125rem);
+  --text-h3-alt--line-height: 1.26;
+  --text-h3-alt--letter-spacing: -0.03em;
+  --text-h3-alt--font-weight: 600;
+
+  /* El diseño cambia a 600/-0.03em en móvil; se resuelve al valor de
+     escritorio y lo documenta rules.md § R4 para PurposeCard */
+  --text-lead: clamp(1.375rem, 1.1893rem + 0.7619vw, 1.875rem);
+  --text-lead--line-height: 1.35;
+  --text-lead--letter-spacing: -0.02em;
+  --text-lead--font-weight: 500;
+
+  --text-copy: clamp(1.1875rem, 1.0714rem + 0.4762vw, 1.5rem);
+  --text-copy--line-height: 1.35;
+  --text-copy--letter-spacing: -0.03em;
+  --text-copy--font-weight: 500;
+
+  --text-body-lg: clamp(1.0625rem, 0.9696rem + 0.381vw, 1.3125rem);
+  --text-body-lg--line-height: 1.5;
+  --text-body-lg--letter-spacing: 0em;
+  --text-body-lg--font-weight: 400;
+
+  --text-body: clamp(1rem, 0.9071rem + 0.381vw, 1.25rem);
+  --text-body--line-height: 1.55;
+  --text-body--letter-spacing: 0em;
+  --text-body--font-weight: 400;
+
+  --text-body-sm: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
+  --text-body-sm--line-height: 1.6;
+  --text-body-sm--letter-spacing: 0em;
+  --text-body-sm--font-weight: 400;
+
+  --text-service-name: clamp(1.125rem, 1.1018rem + 0.0952vw, 1.1875rem);
+  --text-service-name--line-height: 1.18;
+  --text-service-name--letter-spacing: -0.03em;
+  --text-service-name--font-weight: 600;
+
+  /* Fijos: el diseño documenta el mismo valor en ambos frames */
+  --text-service-brief: 0.875rem;
+  --text-service-brief--line-height: 1.55;
+  --text-service-brief--letter-spacing: 0em;
+  --text-service-brief--font-weight: 400;
+
+  --text-form-label: 0.75rem;
+  --text-form-label--line-height: 1.4;
+  --text-form-label--letter-spacing: 0.042em;
+  --text-form-label--font-weight: 500;
+
+  --text-input-value: 0.9375rem;
+  --text-input-value--line-height: 1.4;
+  --text-input-value--letter-spacing: 0em;
+  --text-input-value--font-weight: 400;
+
+  --text-pill: clamp(0.75rem, 0.7268rem + 0.0952vw, 0.8125rem);
+  --text-pill--line-height: 1.2;
+  --text-pill--letter-spacing: 0.054em;
+  --text-pill--font-weight: 500;
+
+  /* El diseño documenta un rango; se usa el punto medio (rules.md § R6) */
+  --text-meta: clamp(0.7188rem, 0.6955rem + 0.0952vw, 0.7813rem);
+  --text-meta--line-height: 1.4;
+  --text-meta--letter-spacing: 0.04em;
+  --text-meta--font-weight: 500;
+
+  --text-wordmark: clamp(1.1875rem, 1.0714rem + 0.4762vw, 1.5rem);
+  --text-wordmark--line-height: 1;
+  --text-wordmark--letter-spacing: -0.03em;
+  --text-wordmark--font-weight: 600;
+
+  --text-button: clamp(0.9375rem, 0.9143rem + 0.0952vw, 1rem);
+  --text-button--line-height: 1.2;
+  --text-button--letter-spacing: 0em;
+  --text-button--font-weight: 600;
+
+  --text-button-sm: 0.875rem;
+  --text-button-sm--line-height: 1.2;
+  --text-button-sm--letter-spacing: 0em;
+  --text-button-sm--font-weight: 600;
+
+  --text-link: 1rem;
+  --text-link--line-height: 1.4;
+  --text-link--letter-spacing: 0em;
+  --text-link--font-weight: 600;
+
+  --text-link-lg: clamp(1.25rem, 1.1804rem + 0.2857vw, 1.4375rem);
+  --text-link-lg--line-height: 1.3;
+  --text-link-lg--letter-spacing: -0.03em;
+  --text-link-lg--font-weight: 600;
+
+  /* Escala de superficie — misma interpolación 390 → 1440 */
+  --spacing-page: clamp(1.5rem, 0.2rem + 5.3333vw, 5rem);
+  --spacing-glass-red: clamp(1.375rem, 1.1429rem + 0.9524vw, 2rem);
+  --spacing-glass-bone: clamp(1.375rem, 1.2357rem + 0.5714vw, 1.75rem);
+  --spacing-glass-dark: clamp(1.5rem, 1.2679rem + 0.9524vw, 2.125rem);
+  --spacing-glass-tight: clamp(1.125rem, 1.0321rem + 0.381vw, 1.375rem);
+  --spacing-form-gap: clamp(0.875rem, 0.8286rem + 0.1905vw, 1rem);
+  --spacing-lockup-gap: clamp(0.5625rem, 0.4929rem + 0.2857vw, 0.75rem);
+  --spacing-isotipo: clamp(2.5rem, 2.2214rem + 1.1429vw, 3.25rem);
+  --spacing-pill-y: 0.5625rem;
+  --spacing-pill-start: 0.625rem;
+  --spacing-pill-end: 1.25rem;
+  --spacing-pill-gap: 0.6875rem;
+  --spacing-btn-y: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
+  --spacing-btn-hero-x: clamp(1.625rem, 1.4857rem + 0.5714vw, 2rem);
+  --spacing-btn-submit-x: clamp(1.75rem, 1.6571rem + 0.381vw, 2rem);
+  --spacing-btn-nav-y: 0.8125rem;
+  --spacing-btn-nav-x: 1.5rem;
+  --spacing-social: 3rem;
+  --spacing-social-glyph: 1.5rem;
+
+  /* Diámetros del radar (design-extract § 2), fijos en ambos frames.
+     Sin token propio, los 3 anillos serían literales en el componente. */
+  --spacing-radar-sm: 1.25rem;
+  --spacing-radar-sm-halo: 0.875rem;
+  --spacing-radar-sm-core: 0.4375rem;
+  --spacing-radar-md: 1.875rem;
+  --spacing-radar-md-halo: 1.25rem;
+  --spacing-radar-md-core: 0.75rem;
+  --spacing-radar-alt: 1.375rem;
+  --spacing-radar-alt-halo: 1rem;
+  --spacing-radar-alt-core: 0.625rem;
+
+  /* Radios: los paneles son fluidos, los controles fijos.
+     La cápsula del Pill usa rounded-full, no un token propio. */
+  --radius-panel: clamp(1.125rem, 1.0321rem + 0.381vw, 1.375rem);
+  --radius-panel-sm: clamp(1.125rem, 1.0786rem + 0.1905vw, 1.25rem);
+  --radius-control: 0.75rem;
+  --radius-icon: 0.625rem;
+
+  --blur-glass-red: clamp(1.25rem, 1.2036rem + 0.1905vw, 1.375rem);
+  --blur-glass: 1rem;
+  --blur-glass-dark: 1.375rem;
 }
 
 /* TODO: faltan los archivos de fuente en public/fonts — agregar los .woff2 del branding book */
@@ -87,4 +299,23 @@
   font-weight: 700;
   font-display: swap;
   src: url("/fonts/InstrumentSans-Bold.woff2") format("woff2");
+}
+
+/*
+ * Primitivas del borde LED del botón primario. Van fuera de @theme porque
+ * son at-rules de documento: así se declaran una sola vez aunque el botón
+ * se renderice varias veces. El ángulo tiene que estar registrado para que
+ * el navegador pueda interpolarlo; donde @property no exista, el anillo se
+ * pinta igual y simplemente no gira.
+ */
+@property --led-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes led-spin {
+  to {
+    --led-angle: 360deg;
+  }
 }

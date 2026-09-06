@@ -1,0 +1,67 @@
+---
+/**
+ * Radar — three concentric rings, the section marker of the whole site.
+ * Diameters from `docs/business/landing/design-extract.md` § 2. The design
+ * file lists the inner rings with an offset; that offset is exactly
+ * (outer − inner) / 2 in all three sizes, so the rings are centred here
+ * instead of replicating the offsets.
+ *
+ * Decorative by definition: the label next to it always carries the meaning.
+ */
+
+export type RadarSize = 'sm' | 'md' | 'sm-alt'
+
+interface Props {
+  size?: RadarSize
+  class?: string
+}
+
+const { size = 'sm', class: className } = Astro.props
+
+interface RadarRings {
+  frame: string
+  halo: string
+  core: string
+}
+
+const ringsBySize = {
+  sm: {
+    frame: 'size-radar-sm',
+    halo: 'size-radar-sm-halo',
+    core: 'size-radar-sm-core',
+  },
+  md: {
+    frame: 'size-radar-md',
+    halo: 'size-radar-md-halo',
+    core: 'size-radar-md-core',
+  },
+  'sm-alt': {
+    frame: 'size-radar-alt',
+    halo: 'size-radar-alt-halo',
+    core: 'size-radar-alt-core',
+  },
+} satisfies Record<RadarSize, RadarRings>
+
+const rings = ringsBySize[size]
+---
+
+<span
+  aria-hidden="true"
+  class:list={['inline-grid place-items-center', rings.frame, className]}
+>
+  <span
+    class:list={[
+      'col-start-1 row-start-1 rounded-full bg-radar-halo-outer',
+      rings.frame,
+    ]}
+  ></span>
+  <span
+    class:list={[
+      'col-start-1 row-start-1 rounded-full bg-radar-halo-mid',
+      rings.halo,
+    ]}
+  ></span>
+  <span
+    class:list={['col-start-1 row-start-1 rounded-full bg-red-400', rings.core]}
+  ></span>
+</span>

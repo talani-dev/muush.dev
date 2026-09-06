@@ -76,7 +76,25 @@ Los 3 SVG oficiales del isotipo (lockup C · isotipo solo) viven en:
   muush-triple-white.svg  — para fondo Red 400 o el tercio rojo del degradado B: todo Bone 100, punto incluido
 ```
 
-Los tres comparten el mismo `viewBox="14.5 38.5 70.5 39.5"` y la misma
+### Íconos de redes sociales
+
+Los SVG oficiales de marca (no glifos tipográficos) viven en:
+
+```
+/Users/betonajera/Library/Mobile Documents/com~apple~CloudDocs/Pictures/Icons/Redes/
+  Instagram/Instagram_Glyph_White.svg
+  TikTok/tiktok-logo-white.svg
+  Linkedin/linkedin-logo-white.svg
+```
+
+⚠️ **Requieren normalización antes de inlinearse** (viewBox inconsistentes,
+`fill` blanco puro hardcodeado, CSS embebido en el de Instagram, DOCTYPE y
+metadata en el de TikTok). Detalle completo y pasos en
+`landing/decisions-open.md` § Íconos de redes sociales.
+
+### Isotipo — geometría compartida
+
+Los tres SVG del isotipo comparten el mismo `viewBox="14.5 38.5 70.5 39.5"` y la misma
 geometría (`circle cx=21 cy=45 r=6.5` + `path M21 72 a17 17 0 0 1 34 0 a12
 12 0 0 1 24 0`, `stroke-width=12`, `stroke-linecap=round`) — solo cambian
 los colores de relleno/trazo, exactamente como documenta la sección
@@ -139,8 +157,13 @@ marca en sí.
 - **Legibilidad primero:** contraste ≥ 4.5:1; si no llega, se oscurece el
   fondo — nunca se sube la opacidad del vidrio.
 - **Borde LED** (única animación de control, un botón primario por
-  pantalla): anillo cónico Red 400 → Bone 100 → Wine 400, 1.5px con
-  máscara, giro cada 2.6s lineal, arranca en hover y se detiene al salir.
+  pantalla): anillo cónico de 1.5px con máscara, giro cada 2.6s lineal,
+  arranca en hover y se detiene al salir.
+  > ⚠️ **Corregido 2026-09-06 contra el `.pen`:** las paradas reales son
+  > `Red 400 → Bone 100 → #cf3247` (Red 400 otra vez, para cerrar el loop
+  > sin salto visual). **Wine 400 no aparece en el gradiente** — la
+  > redacción anterior de esta línea, heredada de Notion, era incorrecta.
+  > Ver `landing/design-extract.md` § 4.
 - **Metálico/espejo:** ink anodizado (headers, hero, cards grandes) · red
   anodizado (acentos) · espejo bone (superficies claras, iconos). Nunca al
   isotipo. Nada de plateado neutro ni dorado.

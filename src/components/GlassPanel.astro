@@ -1,0 +1,83 @@
+---
+/**
+ * GlassPanel — the translucent surface every card, form and photo frame
+ * sits on. Six intensities, taken verbatim from
+ * `docs/business/landing/design-extract.md` § 1.
+ *
+ * The panel supplies fill, a hairline border, backdrop blur, radius and
+ * padding. It imposes nothing else on the content it wraps.
+ */
+
+export type GlassVariant =
+  | 'red-strong'
+  | 'red-soft'
+  | 'bone-strong'
+  | 'bone'
+  | 'bone-faint'
+  | 'dark'
+
+export type GlassPadding = 'default' | 'tight' | 'none'
+
+interface Props {
+  variant: GlassVariant
+  padding?: GlassPadding
+  as?: 'div' | 'article' | 'section' | 'aside'
+  class?: string
+}
+
+/**
+ * The destructuring target is annotated on purpose: a `Props` interface that
+ * declares an `as` member is read by Astro's TSX transform as the
+ * polymorphic-component signature, so `Astro.props` arrives untyped inside
+ * the component. Callers are still checked against `Props` either way; this
+ * annotation is what keeps `variant` and `padding` typed in here, with no
+ * `any` and no `@ts-expect-error`.
+ */
+const {
+  variant,
+  padding = 'default',
+  as: Tag = 'div',
+  class: className,
+}: Props = Astro.props
+
+/** Fill + border + blur + radius per variant (design-extract § 1). */
+const surfaceByVariant = {
+  'red-strong':
+    'bg-glass-red-strong border-glass-red-strong-line backdrop-blur-glass-red rounded-panel',
+  'red-soft':
+    'bg-glass-red-soft border-glass-red-soft-line backdrop-blur-glass-red rounded-panel',
+  'bone-strong':
+    'bg-glass-bone-strong border-glass-line backdrop-blur-glass rounded-panel-sm',
+  bone: 'bg-glass-bone border-glass-line backdrop-blur-glass rounded-panel-sm',
+  'bone-faint':
+    'bg-glass-bone-faint border-glass-line-faint backdrop-blur-glass rounded-panel-sm',
+  dark: 'bg-glass-dark border-glass-dark-line backdrop-blur-glass-dark rounded-panel-sm',
+} satisfies Record<GlassVariant, string>
+
+/** The padding each variant carries when the caller does not override it. */
+const defaultPaddingByVariant = {
+  'red-strong': 'p-glass-red',
+  'red-soft': 'p-glass-red',
+  'bone-strong': 'p-glass-bone',
+  bone: 'p-glass-bone',
+  'bone-faint': 'p-glass-red',
+  dark: 'p-glass-dark',
+} satisfies Record<GlassVariant, string>
+
+/**
+ * Padding is orthogonal to the variant: `tight` is the photo-frame padding
+ * the `bone` variant also uses in the design, so it does not fork into a
+ * seventh variant, and `none` hands padding back to the caller.
+ */
+const paddingByMode = {
+  default: defaultPaddingByVariant[variant],
+  tight: 'p-glass-tight',
+  none: '',
+} satisfies Record<GlassPadding, string>
+---
+
+<Tag
+  class:list={['border', surfaceByVariant[variant], paddingByMode[padding], className]}
+>
+  <slot />
+</Tag>

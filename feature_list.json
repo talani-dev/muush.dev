@@ -31,6 +31,26 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 2,
+      "name": "primitive_ui_layer",
+      "title": "Primitive UI layer: fluid type scale + GlassPanel, Radar, Wordmark, Lockup, Pill, Botón primario, LinkArrow, SocialIcon",
+      "description": "Implement the dependency-free primitive layer that every landing/Nosotros section composes from. All measurements come from docs/business/landing/design-extract.md, which holds the values extracted directly from the .pen design file — read that file, do NOT attempt to open the .pen (the Pencil MCP bridge is not available to subagents). Scope covers: (a) a fluid typography + spacing scale in src/styles/global.css using clamp(), so the desktop/mobile difference is handled by tokens instead of breakpoints; (b) eight .astro components with zero dependencies on each other except Pill→Radar and Lockup→Isotipo+Wordmark; (c) normalizing the three social SVG icons per decisions-open.md. No page, layout, section, card, or form component is built here.",
+      "acceptance": [
+        "src/styles/global.css exposes a fluid type scale (display, h1, h2, h3, lead, body, label, meta) and spacing/radius tokens using clamp(), covering the desktop→mobile ranges in design-extract.md § 9, so no component needs a media query for sizing",
+        "Eight components exist in src/components/: GlassPanel, Radar, Wordmark, Lockup, Pill, BotonPrimario, LinkArrow, SocialIcon — all .astro, all static, zero client-side JS",
+        "GlassPanel supports the 6 variants in design-extract.md § 1 (red-strong, red-soft, bone-strong, bone, bone-faint, dark) with their exact fill/stroke/blur values",
+        "Radar supports the 3 sizes in design-extract.md § 2 (sm 20/14/7, md 30/20/12, sm-alt 22/16/10)",
+        "BotonPrimario supports the 3 size variants in design-extract.md § 4 (nav, hero, submit) and its LED border is the exact 3-stop conic gradient red-400 → bone-100 → #cf3247 (NOT wine), animated in CSS only, honoring prefers-reduced-motion",
+        "Wordmark can render both official lockups: 'muush' and 'muush.dev'",
+        "The three social SVGs are normalized per decisions-open.md: square viewBox, fill=currentColor (so they inherit bone-100, not pure white), no embedded <style>/<defs>/DOCTYPE",
+        "Every visual value comes from a design token — no hardcoded hex or px literals in component markup (Constitution Article IV)",
+        "No page, layout, section, card, or form component is created or modified — same scoping precedent as feature 001",
+        "pnpm check, pnpm typecheck, pnpm test and pnpm build all pass"
+      ],
+      "sdd": true,
+      "status": "done"
     }
   ]
 }
