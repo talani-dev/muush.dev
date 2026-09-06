@@ -1,0 +1,28 @@
+---
+/**
+ * Pill — the capsule that introduces every section of both pages: a small
+ * radar plus a label. Geometry from
+ * `docs/business/landing/design-extract.md` § 3.
+ *
+ * `label` is the only content prop: the 11 instances in the design differ
+ * in nothing else, and the copy (ES/EN) belongs to the caller.
+ */
+import Radar from './Radar.astro'
+
+interface Props {
+  label: string
+  class?: string
+}
+
+const { label, class: className } = Astro.props
+---
+
+<span
+  class:list={[
+    'inline-flex items-center gap-pill-gap rounded-full border border-glass-line bg-glass-dark py-pill-y ps-pill-start pe-pill-end',
+    className,
+  ]}
+>
+  <Radar size="sm" />
+  <span class="text-pill font-instrument text-bone-200">{label}</span>
+</span>

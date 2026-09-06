@@ -1,0 +1,104 @@
+---
+/**
+ * BotonPrimario — the conversion control of the site: dark glass, the
+ * `--radius-control` corner and a conic LED ring at `--stroke-led`. Sizes
+ * from
+ * `docs/business/landing/design-extract.md` § 4.
+ *
+ * Renders an `<a>` when `href` is given and a real `<button>` otherwise, so
+ * the form submit stays a submit and the hero CTA stays a link.
+ * The label always comes from the caller — no ES/EN copy lives here.
+ */
+
+export type ButtonVariant = 'nav' | 'hero' | 'submit'
+
+interface Props {
+  variant?: ButtonVariant
+  href?: string
+  type?: 'button' | 'submit'
+  class?: string
+}
+
+const { variant = 'hero', href, type, class: className } = Astro.props
+
+/** Padding + label role per variant (design-extract § 4). */
+const sizeByVariant = {
+  nav: 'py-btn-nav-y px-btn-nav-x text-button-sm',
+  hero: 'py-btn-y px-btn-hero-x text-button',
+  submit: 'py-btn-y px-btn-submit-x text-button',
+} satisfies Record<ButtonVariant, string>
+
+const buttonType = type ?? (variant === 'submit' ? 'submit' : 'button')
+
+const classes = [
+  'led relative inline-flex items-center justify-center rounded-control bg-glass-dark font-instrument text-bone-100',
+  sizeByVariant[variant],
+  className,
+]
+---
+
+{href ? (
+    <a href={href} class:list={classes}>
+      <slot />
+    </a>
+  ) : (
+    <button type={buttonType} class:list={classes}>
+      <slot />
+    </button>
+  )}
+
+<style>
+/*
+   * The ring is a masked pseudo-element rather than the usual
+   * `background-clip: padding-box, border-box` two-layer trick: this
+   * button's fill is only 65% opaque, so a conic layer behind it would
+   * show through the middle. `mask-composite: exclude` paints the
+   * `--stroke-led` band and nothing else.
+   *
+   * `--led-angle` is declared here too, so the ring still paints (static)
+   * where `@property` is unsupported — the same fallback documented for
+   * "no JavaScript" in `docs/business/landing/ui-map.md` § 10.
+   */
+.led {
+  --led-angle: 0deg;
+}
+
+.led::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--stroke-led);
+  background: conic-gradient(
+    from var(--led-angle),
+    var(--red-400) 0%,
+    var(--bone-100) 50%,
+    var(--red-400) 100%
+  );
+  /* The mask colour carries no design meaning; only its alpha is read. */
+  mask:
+    linear-gradient(black 0 0) content-box,
+    linear-gradient(black 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/*
+   * Hover-capable pointers only. A touch device never enters :hover, so it
+   * keeps the static ring — `docs/business/rules.md` § R7, pending open
+   * decision #8. Reversing it means deleting this media query.
+   */
+@media (hover: hover) {
+  .led:hover::before {
+    animation: led-spin 2.6s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .led::before,
+  .led:hover::before {
+    animation: none;
+    background: var(--red-400);
+  }
+}
+</style>
