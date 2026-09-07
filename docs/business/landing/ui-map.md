@@ -260,16 +260,66 @@ profile. We'll reach out when there's a project that fits."
 | Carrusel de proyectos | Proyectos, móvil | Igual, `scroll-snap` nativo |
 | Borde LED | Botón primario | Borde estático en Red 400 |
 | Dotted paper | Toda la página | Es CSS (`background-image: radial-gradient`), no depende de JS |
+| Radar (ping) | Pills de sección, Propósito y Servicios | Es CSS puro, no depende de JS. Ver receta abajo |
+
+> **Fila recuperada 2026-09-06.** La tabla original de Notion incluía el
+> radar con la nota *"Punto rojo con doble halo. Si se anima, es CSS puro.
+> Estático también funciona."* Se perdió al condensar la tabla de 4 columnas
+> a 3 al escribir este archivo. **Decisión del 2026-09-06: sí se anima.**
 
 **Spotlight del cursor** (receta): radial Red 400 al 42% en el centro,
 radio ~330px, núcleo interior ~90px al 37%. Los puntos del dotted paper
 dentro del radio suben de brillo.
 
+### Receta del ping del radar (decidida 2026-09-06)
+
+El radar es **un punto rojo que late**: un anillo fantasma sale del punto,
+se expande y se desvanece, en loop.
+
+> **Los dos halos del `.pen` NO se replican.** Eran la forma de dibujar
+> esta animación en un mockup estático — ver `design-extract.md` § 2.
+> Replicarlos junto al ping da un punto con aros que además pulsa: el
+> efecto dibujado más el efecto real, duplicado.
+
+| Parámetro | Valor |
+|---|---|
+| Qué se ve en reposo | **Solo el punto rojo**, centrado en su footprint |
+| Qué se anima | Un pseudo-elemento del tamaño del punto |
+| Transformación | `scale(1)` → `scale(3)` |
+| Opacidad | `0.6` → `0` |
+| Duración | 2.4s, `ease-out`, `infinite` |
+| Color | `red-400` sólido — la atenuación la hace la animación, no el color |
+| Footprint | Se conserva (20/30/22) — las medidas de Pill y secciones dependen de él |
+
+El ping rebasa el footprint al expandirse (7→21, 12→36, 10→30), que es lo
+que le da lectura de barrido de radar en vez de simple halo.
+
+> **Por qué el color va sólido.** La redacción anterior decía "`red-400` a
+> baja opacidad", lo que sumado al `0.6 → 0` de la animación daba una doble
+> atenuación (≈7% de opacidad pico) y un ping prácticamente invisible. La
+> atenuación la hace **solo** la animación. Si al verlo resulta demasiado
+> fuerte, se corrige en una sola declaración.
+
+Aplica a **las 19 instancias** de la landing (11 Pills + 3 Propósito +
+5 Servicios) y a las de Nosotros. Animar unas sí y otras no rompería la
+coherencia del marcador de sección.
+
+> 🟡 **Duración pendiente de visto bueno.** Los 2.4s son una elección de
+> implementación, no un valor del diseño — el `.pen` no especifica timing.
+> Se eligió cercano pero distinto a los 2.6s del borde LED, para que los
+> dos loops no entren en fase y produzcan un pulso conjunto no buscado.
+> Ajustable con un solo token.
+
 ### Movimiento reducido
 
-Con `prefers-reduced-motion: reduce` se apagan spotlight, borde LED y
-transiciones de carruseles. El efecto lyrics se apaga dejando todo al
-**100%**, nunca atenuado. Los carruseles siguen funcionando por swipe.
+Con `prefers-reduced-motion: reduce` se apagan spotlight, borde LED,
+**el ping del radar** y las transiciones de carruseles. El efecto lyrics se
+apaga dejando todo al **100%**, nunca atenuado. Los carruseles siguen
+funcionando por swipe.
+
+Con el ping apagado queda **el punto rojo, visible y completo**. No se
+pierde información: el punto es el marcador, el ping es el adorno. Es justo
+lo que el diseño anticipaba al decir "estático también funciona".
 
 ### Accesibilidad mínima
 
