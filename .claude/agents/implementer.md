@@ -13,8 +13,8 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 3. Read **ALL** files in `docs/business/` recursively, including
    `docs/business/landing/` (domain context).
 4. Implement each task in `tasks.md` in order, checking `[x]` as it completes.
-5. For any non-trivial logic in `src/i18n/` or `src/utils/`, write a Vitest
-   unit test (Constitution Article VII — no Playwright, no Storybook).
+5. For any non-trivial logic in `logic/`, `app/shared/utils/` or `utils/`, write a Vitest
+   unit test (Constitution Article X — no Playwright; Storybook stories are required for `app/shared/ui/`).
 6. Run `./init.sh` when done — must exit code 0.
 7. Write a summary in `docs/harness/progress/impl_<feature>.md`.
 8. Return to leader: "implementation complete → docs/harness/progress/impl_<feature>.md"
@@ -50,15 +50,15 @@ Rules:
    re-derive a raw hex.
 4. `design-extract.md` § 11 lists known corrections where the design file
    and the older Notion-derived docs disagree. The extract wins.
-5. Presentational pieces are `.astro` in `src/components/`; real
-   interactivity is `.svelte` in `src/islands/` (Constitution Article II).
-   Never `.tsx` — this project is Astro + Svelte, not React.
+5. Presentational pieces are `.vue` in `app/features/<feature>/ui/` or `app/shared/ui/`; real
+   interactivity is a composable in `logic/` (Constitution Article II).
+   Never `.tsx` — this project is Nuxt 4 + Vue.
 
 ## Rules
 
 - Do NOT touch features other than the one assigned
 - Do NOT mark `done` in `feature_list.json` without a prior reviewer approval
 - No debug prints, no unexplained TODOs
-- Never hardcode colors/spacing — use the design tokens (Constitution Article IV)
+- Never hardcode colors/spacing — use the design tokens (Constitution Article VII)
 - Never add a server route, API endpoint, or backend dependency (Constitution
   Article I)

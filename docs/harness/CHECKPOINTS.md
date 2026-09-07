@@ -15,22 +15,34 @@
 - [ ] Every `done` feature has passing tests associated with it
 - [ ] `docs/harness/progress/current.md` is empty or describes the active session
 
-## C3 — The code respects the constitution
-- [ ] No hardcoded color/spacing literal in touched components (Article IV)
-- [ ] No relative import crosses a directory boundary (Article VI)
-- [ ] No new server route, API endpoint, or `server/` directory (Article I)
+## C3 — The architecture holds (Articles I–III)
+- [ ] Every feature lives under `app/features/<feature>/{ui,logic,data}` with an `index.ts` barrel
+- [ ] No file imports another feature's internals — only its `index.ts` or `app/shared/`
+- [ ] No `data/` file imports from `logic/` or `ui/`; no `logic/` file imports from `ui/`
+- [ ] Cross-cutting reusables live in `app/shared/`, not duplicated inside a feature
+- [ ] No component exceeds 200 lines; no function exceeds ~30
+
+## C4 — The code respects the constitution
+- [ ] No hardcoded color/spacing literal in touched components (Article VII)
+- [ ] No breakpoint used for something a fluid token already covers (Article VII)
+- [ ] No relative import crosses a directory boundary (Article XII)
+- [ ] Any new alias is mirrored in `.storybook/main.ts` (Article XII)
+- [ ] No `server/api/` route; `nitro.preset` is still `'static'` (Article IV)
+- [ ] All components use `<script setup lang="ts">`, never the Options API (Article V)
 - [ ] No debug prints or unexplained TODOs
 
-## C4 — Verification is real
-- [ ] Every non-trivial function in `src/i18n/` or `src/utils/` has a Vitest test
+## C5 — Verification is real
+- [ ] Every non-trivial function in `logic/`, `app/shared/utils/` or `utils/` has a Vitest test
+- [ ] Every component in `app/shared/ui/` has a Storybook story (Article X)
 - [ ] `pnpm test` shows > 0 tests and all green
-- [ ] `pnpm build` succeeds
+- [ ] `pnpm generate` succeeds and writes `.output/public`
+- [ ] `pnpm storybook:build` succeeds
 
-## C5 — The session closed cleanly
+## C6 — The session closed cleanly
 - [ ] `docs/harness/progress/history.md` has an entry for the last session
 - [ ] The last feature worked is in its correct status
 
-## C6 — Spec Driven Development (spec-kit)
+## C7 — Spec Driven Development (spec-kit)
 - [ ] Every feature with `sdd: true` in `spec_ready`, `in_progress`, `reviewing` or `done`
       has its `specs/<num>-<name>/` folder with `spec.md`, `plan.md` and `tasks.md`
 - [ ] `plan.md` has all Phase -1 Gates checked `[x]`
@@ -38,6 +50,8 @@
 - [ ] `spec.md` has no unresolved `[NEEDS CLARIFICATION]` markers
 - [ ] Every acceptance criterion in `spec.md` is covered by at least one test
 
-## C7 — i18n parity (muush.dev-specific)
-- [ ] Every route under `src/pages/` exists in both `es/` and `en/`
-- [ ] Every key in `src/i18n/ui.ts` has both an `es` and an `en` value
+## C8 — i18n parity (Article VI)
+- [ ] Every route resolves in both `/es/` and `/en/`
+- [ ] Every key in `i18n/locales/es.json` exists in `en.json` — `tests/i18n-parity.test.ts` passes
+- [ ] The locale switcher resolves routes through the i18n route map, never by swapping the URL prefix
+- [ ] No user-facing string is hardcoded in a component

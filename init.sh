@@ -23,6 +23,14 @@ else
   EXIT_CODE=1
 fi
 
+# Nuxt generates its types on first prepare; typecheck fails without them.
+if [ -d .nuxt ]; then
+  ok ".nuxt/ present"
+else
+  warn ".nuxt/ missing — running nuxt prepare"
+  pnpm postinstall >/dev/null 2>&1 || { fail "nuxt prepare failed"; EXIT_CODE=1; }
+fi
+
 echo "── 2. Harness base files ───────────────────────────────"
 for f in AGENTS.md CLAUDE.md feature_list.json docs/harness/progress/current.md \
          docs/harness/verification.md docs/harness/specs.md \
@@ -33,29 +41,25 @@ done
 if [ -d docs/business ] && [ -n "$(ls -A docs/business 2>/dev/null)" ]; then
   ok "docs/business/ has project context"
 else
-  fail "docs/business/ is empty or missing — add at least overview.md"
+  fail "docs/business/ is empty or missing"
   EXIT_CODE=1
 fi
 
 echo "── 3. feature_list.json ────────────────────────────────"
-if command -v node >/dev/null 2>&1; then
-  if node -e '
-    const fs = require("fs");
-    const data = JSON.parse(fs.readFileSync("feature_list.json", "utf8"));
-    const active = data.features.filter(f => f.status === "in_progress" || f.status === "reviewing");
-    if (active.length > 1) {
-      console.error("More than 1 feature in_progress/reviewing combined: " + active.map(f => f.name).join(", "));
-      process.exit(1);
-    }
-  ' 2>/tmp/feature_list_check.log; then
-    ok "feature_list.json valid — at most 1 feature in_progress/reviewing"
-  else
-    fail "feature_list.json check failed"
-    cat /tmp/feature_list_check.log
-    EXIT_CODE=1
-  fi
+if node -e '
+  const fs = require("fs");
+  const data = JSON.parse(fs.readFileSync("feature_list.json", "utf8"));
+  const active = data.features.filter(f => f.status === "in_progress" || f.status === "reviewing");
+  if (active.length > 1) {
+    console.error("More than 1 feature in_progress/reviewing: " + active.map(f => f.name).join(", "));
+    process.exit(1);
+  }
+' 2>/tmp/feature_list_check.log; then
+  ok "feature_list.json valid — at most 1 feature active"
 else
-  warn "node not found — skipping feature_list.json validation"
+  fail "feature_list.json check failed"
+  cat /tmp/feature_list_check.log
+  EXIT_CODE=1
 fi
 
 echo "── 4. Type check ───────────────────────────────────────"
@@ -82,15 +86,23 @@ else
   EXIT_CODE=1
 fi
 
-echo "── 7. Build ─────────────────────────────────────────────"
-if pnpm build 2>&1 | tail -30; then
-  ok "pnpm build"
+echo "── 7. Static build ──────────────────────────────────────"
+if pnpm generate 2>&1 | tail -20; then
+  ok "pnpm generate"
 else
-  fail "pnpm build"
+  fail "pnpm generate"
   EXIT_CODE=1
 fi
 
-echo "── 8. Summary ───────────────────────────────────────────"
+echo "── 8. Storybook build ───────────────────────────────────"
+if pnpm storybook:build 2>&1 | tail -10; then
+  ok "pnpm storybook:build"
+else
+  fail "pnpm storybook:build"
+  EXIT_CODE=1
+fi
+
+echo "── 9. Summary ───────────────────────────────────────────"
 [ $EXIT_CODE -eq 0 ] \
   && ok "Environment ready." \
   || fail "Environment NOT ready — fix the errors above."
