@@ -316,8 +316,25 @@ emite un diagnóstico de nivel **info** por cada componente de una palabra
 práctica: `biome check --error-on-warnings` **sale con código 0**, porque no
 promueve los `info` a error.
 
-**Regla:** los cuatro nombres del contrato se conservan y `biome.json` no se
-toca. Los 4 `info` en la salida de `pnpm check` son esperados y no son un
-defecto pendiente. Si algún día molestan, la solución es un `overrides` para
-`app/shared/ui/**`, no renombrar los primitivos: los nombres vienen del
-vocabulario del diseño.
+**Regla:** los cuatro nombres del contrato se conservan.
+
+**Resuelto 2026-09-06.** Los 4 `info` salían en cada commit y cada push, y
+ruido que siempre se ignora entrena a ignorar salida que sí importa. Se
+aplicó la salida que esta misma regla anticipaba: un `overrides` que apaga
+`useVueMultiWordComponentNames` en `app/shared/ui/**`, junto a `app/pages/`
+y `app/layouts/`. **No se renombró ningún primitivo.**
+
+**Por qué apagarla ahí es legítimo y no una supresión de conveniencia:** la
+regla previene que un componente de una palabra choque con un elemento HTML
+cuando está **registrado globalmente**. Nuxt auto-importa únicamente desde
+`app/components/`; `app/shared/ui/` no está en esa ruta, así que estos
+componentes se importan explícitamente en cada SFC. No hay registro global,
+no hay colisión posible — la premisa de la regla no se cumple aquí.
+
+Renombrar habría sido peor: solo `Pill` tiene nombre de dos palabras en el
+diseño (`Pill sección`). `Radar`, `Lockup` y `Wordmark` habrían exigido
+inventar prefijos que el diseño no usa, y romper los contratos que la
+feature 3 va a consumir.
+
+La regla **sigue activa** en el resto del código, incluido cualquier
+componente futuro dentro de una feature.
