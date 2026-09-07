@@ -1,5 +1,32 @@
-import type { Preview } from '@storybook/vue3-vite'
+import { type Preview, setup } from '@storybook/vue3-vite'
+import { defineComponent, h } from 'vue'
 import '../app/assets/css/global.css'
+
+/*
+ * Storybook runs Vite outside Nuxt, so it has no `NuxtLink` — a component
+ * that uses one does not render in the catalogue at all
+ * (docs/business/rules.md § R23, extending § R19). The stub below is the
+ * whole accommodation: presentational components keep using `<NuxtLink>`
+ * idiomatically and stay free of a `linkComponent` prop.
+ *
+ * The corollary matters more than the stub: this only works because `ui/`
+ * components call no Nuxt composable. Copy and destinations arrive as
+ * already-resolved props, so a component that cheats fails here immediately
+ * instead of in production.
+ */
+const NuxtLinkStub = defineComponent({
+  name: 'NuxtLink',
+  props: {
+    to: { type: String, default: undefined },
+  },
+  setup(props, { slots }) {
+    return () => h('a', { href: props.to }, slots.default?.())
+  },
+})
+
+setup(app => {
+  app.component('NuxtLink', NuxtLinkStub)
+})
 
 /*
  * The site is dark end to end (Ink 500 background, see

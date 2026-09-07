@@ -1,5 +1,64 @@
 {
   "site": {
     "title": "muush · Technology Solution Studio"
+  },
+  "pages": {
+    "about": {
+      "title": "About us · muush",
+      "heading": "About us",
+      "work": "Work with muush"
+    }
+  },
+  "shell": {
+    "nav": {
+      "label": "Main navigation",
+      "projects": "Projects",
+      "about": "About us",
+      "cta": "Tell us about your project"
+    },
+    "menu": {
+      "label": "Menu",
+      "open": "Open menu",
+      "close": "Close menu",
+      "purpose": "Purpose",
+      "services": "Services",
+      "projects": "Projects",
+      "about": "About us"
+    },
+    "social": {
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram",
+      "tiktok": "TikTok"
+    },
+    "footer": {
+      "label": "Footer",
+      "tagline": "We speak business and code.",
+      "category": "Technology solution studio",
+      "copyright": "© 2026 muush · All rights reserved",
+      "location": "CDMX · MX",
+      "whatsappMessage": "Hi muush, I'd like to talk about a project.",
+      "nav": {
+        "title": "Navigation",
+        "purpose": "Purpose",
+        "services": "Services",
+        "projects": "Projects",
+        "about": "About us"
+      },
+      "contact": {
+        "title": "Contact",
+        "call": "Book a call",
+        "email": "support{'@'}muush.dev",
+        "whatsapp": "WhatsApp"
+      },
+      "muush": {
+        "title": "muush",
+        "work": "Work with muush",
+        "faq": "FAQ",
+        "blog": "Blog · coming soon"
+      },
+      "social": {
+        "title": "Social"
+      }
+    }
   }
 }

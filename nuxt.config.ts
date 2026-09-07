@@ -31,10 +31,47 @@ export default defineNuxtConfig({
       { code: 'es', language: 'es-MX', name: 'Español', file: 'es.json' },
       { code: 'en', language: 'en', name: 'English', file: 'en.json' },
     ],
+    /*
+     * The canonical origin, needed for the `hreflang` alternates to be
+     * absolute — a relative alternate is ignored by search engines. It is a
+     * public domain, not configuration that varies by environment.
+     */
+    baseUrl: 'https://muush.dev',
     defaultLocale: 'es',
     strategy: 'prefix',
     langDir: 'locales',
     detectBrowserLanguage: false,
+    /*
+     * `/` has no page of its own. This governs it wherever a Nuxt runtime is
+     * present — `nuxt dev`, and the client router when the host serves
+     * `200.html` as an SPA fallback.
+     *
+     * It does NOT produce a file. Verified by running it: with
+     * `rootRedirect: '/es'` AND `'/'` in `nitro.prerender.routes`, the route
+     * is dropped from the crawl and `.output/public/index.html` still does
+     * not exist — the redirect is runtime-only, and a static host runs
+     * nothing. The prerender entry was removed rather than left as a no-op;
+     * the object at the root is the committed `public/index.html`
+     * (docs/business/rules.md § R25).
+     */
+    rootRedirect: '/es',
+    /*
+     * The translated route segments live here and nowhere else — this is the
+     * single declaration spec FR-018 requires. A component never writes
+     * `/nosotros` or `/about`; it names the route and lets the router resolve
+     * the path, which is also what makes the locale toggle correct by
+     * construction instead of by string surgery (Constitution Article VI).
+     *
+     * Reverting Spanish to an unprefixed root would be an edit to this block,
+     * not to any component (decisions-open.md § Estrategia de rutas i18n).
+     */
+    customRoutes: 'config',
+    pages: {
+      nosotros: {
+        es: '/nosotros',
+        en: '/about',
+      },
+    },
   },
 
   /*
