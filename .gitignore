@@ -1,28 +1,36 @@
-# build output
-dist/
-# generated types
-.astro/
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Storybook
+storybook-static
 
 # dependencies
-node_modules/
+node_modules
 
 # logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-
 # environment variables
 .env
-.env.production
-.env.local
+.env.*
+!.env.example
 
 # coverage
-coverage/
+coverage
 
-# macOS-specific files
+# macOS
 .DS_Store
 
-# jetbrains setting folder
-.idea/
+# editors
+.idea
+.fleet
