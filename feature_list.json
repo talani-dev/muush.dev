@@ -21,23 +21,22 @@
       "id": 1,
       "name": "design_tokens_and_logos",
       "title": "Design tokens (colors, typography, fluid scale) and brand assets",
-      "description": "Port the muush design tokens into the Nuxt app: the 5-step color ramps and the fluid type/space scale in app/assets/css/global.css, plus the isotipo and social SVG assets. Values come from docs/business/branding.md and docs/business/landing/design-extract.md § 9. The Astro implementation of this feature was discarded in the 2026-09-06 migration; the CSS itself carried over, so this is largely verification that it still resolves under Tailwind v4 inside Nuxt.",
+      "description": "Port the muush design tokens into the Nuxt app: the 5-step color ramps and the fluid type/space scale in app/assets/css/global.css, plus the isotipo and social SVG assets. Values come from docs/business/branding.md and docs/business/landing/design-extract.md § 9. The Astro implementation of this feature was discarded in the 2026-09-06 migration; the CSS itself carried over, so this is largely verification that it still resolves under Tailwind v4 inside Nuxt. CLOSED 2026-09-06 without a separate SDD cycle: the 2026-09-06 Astro→Nuxt migration carried global.css and the six SVGs over intact and ./init.sh verifies them on every run, so every acceptance criterion below was already met. The one remaining item — a Storybook story rendering the token set — was absorbed into feature 2, which creates stories for all the shared primitives anyway.",
       "acceptance": [
         "app/assets/css/global.css exposes the exact 5-step hex ramps from docs/business/branding.md for red, wine, ink and bone",
         "The fluid type and spacing scale resolves via clamp() across the desktop→mobile ranges in design-extract.md § 9, with no media query needed for sizing",
         "font-poppins is scoped to logo/wordmark use only; font-instrument is the default for everything else",
         "The 3 isotipo SVGs and 3 normalized social SVGs live under app/assets/ and are importable via the @/assets alias",
-        "A Storybook story renders the token set so the palette and scale can be reviewed visually",
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 2,
       "name": "primitive_ui_layer",
       "title": "Primitive UI layer in app/shared/ui: GlassPanel, Radar, Wordmark, Lockup, Pill, BotonPrimario, LinkArrow, SocialIcon",
-      "description": "Rebuild the eight design-system primitives as Vue SFCs in app/shared/ui/, matching the measurements in docs/business/landing/design-extract.md §§ 1-8. The Astro versions were discarded in the 2026-09-06 migration, but their prop contracts were sound and are recorded in git history on master; the Vue versions should expose equivalent surfaces. Per Constitution Article X every one of them needs a Storybook story.",
+      "description": "Rebuild the eight design-system primitives as Vue SFCs in app/shared/ui/, matching the measurements in docs/business/landing/design-extract.md §§ 1-8. The Astro versions were discarded in the 2026-09-06 migration, but their prop contracts were sound and are recorded in git history on master; the Vue versions should expose equivalent surfaces. Per Constitution Article X every one of them needs a Storybook story. The Astro-era prop contracts were recovered from git and live in docs/business/landing/component-contracts.md — start from those signatures rather than redesigning the interfaces; they were derived from real design instances and passed review.",
       "acceptance": [
         "Eight components exist in app/shared/ui/ as Vue SFCs using <script setup lang=\"ts\">: GlassPanel, Radar, Wordmark, Lockup, Pill, BotonPrimario, LinkArrow, SocialIcon",
         "GlassPanel supports the 6 variants in design-extract.md § 1 with their exact fill/stroke/blur values",
@@ -47,29 +46,72 @@
         "Every component has a Storybook story covering its variants (Constitution Article X)",
         "Zero hardcoded hex or px literals in component markup (Constitution Article VII)",
         "No page, layout or feature module is created — these are shared primitives only",
-        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass",
+        "A Storybook story renders the design token set — the color ramps and the fluid type scale — absorbed from feature 1"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done",
+      "depends_on": [1]
     },
     {
       "id": 3,
       "name": "site_shell",
       "title": "Site shell: Nav, Footer and mobile menu, wired into BaseLayout for both locales",
-      "description": "Build the shell that wraps every page: Nav (desktop links + mobile hamburger), the full-screen mobile menu, and Footer with its 4 columns. All measurements come from docs/business/landing/design-extract.md § 9.bis — read that file, the Pencil MCP is not available to subagents. Verified in the design: Nav and Footer are byte-identical between Landing and Nosotros in both viewports, so each is ONE responsive component, not four. This is the first feature that produces visible output: it modifies BaseLayout and adds the /es/nosotros and /en/about routes so the nav links resolve instead of 404ing. Route strategy was decided 2026-09-06: both locales are prefixed (/es/, /en/), but the Nosotros segment stays translated (nosotros vs about), so the ES/EN toggle needs a route map that lives in src/i18n/, never hardcoded in Nav.",
+      "description": "Build the shell that wraps every page: Nav (desktop links + mobile hamburger), the full-screen mobile menu, and Footer with its 4 columns. All measurements come from docs/business/landing/design-extract.md § 9.bis — read that file, the Pencil MCP is not available to subagents. Verified in the design: Nav and Footer are byte-identical between Landing and About in both viewports, so each is ONE responsive component, not four. This is the first feature that produces visible output. Route strategy decided 2026-09-06: both locales are prefixed (/es/, /en/) via @nuxtjs/i18n strategy \"prefix\", but the About segment stays translated (nosotros vs about), so the locale switcher resolves routes through the i18n route map, never by swapping the prefix. BLOCKED until feature 2 ships: the Nav composes Lockup, Wordmark and BotonPrimario, the mobile menu composes SocialIcon, and the Footer composes Lockup and LinkArrow.",
       "acceptance": [
-        "Nav renders per design-extract.md § 9.bis: desktop shows Lockup + Proyectos + Nosotros + CTA nav + ES/EN toggle; mobile shows Lockup + ES/EN + hamburger, with NO CTA button (that is the documented decision, not an omission)",
-        "The mobile menu is a Svelte island in src/islands/ (it needs open/close state, background scroll lock, and Escape to close — genuine interactivity per Constitution Article II) and matches the MENÚ móvil abierto frame: full-screen glass panel, close X, 4 items at 30px, divider, 3 social buttons",
-        "Footer renders per design-extract.md § 9.bis with its 4 columns, brand block (Lockup + tagline + category) and bottom bar, reflowing from 4 columns on desktop to 2×2 on mobile",
-        "All shell copy (nav links, footer columns, menu items, copyright) lives in src/i18n/ui.ts with both es and en entries — zero hardcoded strings in components, per Constitution Article III",
-        "A route-mapping helper in src/i18n/ resolves the equivalent path in the other locale, translating the Nosotros segment (/es/nosotros ↔ /en/about) and preserving the anchor; it has Vitest unit tests per Constitution Article VII",
-        "BaseLayout renders Nav and Footer, so every page gets the shell; src/pages/es/nosotros.astro and src/pages/en/about.astro exist so nav links resolve",
-        "Reuses the feature 002 primitives (Lockup, Wordmark, Pill, BotonPrimario, SocialIcon) rather than reimplementing them; their prop contracts in specs/002-primitive-ui-layer/contracts/components.md are honored",
-        "Links with no destination yet (FAQ, Agenda una llamada) are handled per the open decisions in decisions-open.md — they must not render as broken links or 404s",
-        "pnpm check, pnpm typecheck, pnpm test and pnpm build all pass"
+        "Nav renders per design-extract.md § 9.bis: desktop shows Lockup + Proyectos + Nosotros + CTA nav + ES/EN toggle; mobile shows Lockup + ES/EN + hamburger, with NO CTA button (documented decision, not an omission)",
+        "The mobile menu lives in app/features/shell/ with its open/close state, background scroll lock and Escape-to-close in a composable under logic/ (Constitution Articles I-II), and matches the MENÚ móvil abierto frame: full-screen glass panel, close X, 4 items at 30px, divider, 3 social buttons",
+        "Footer renders per design-extract.md § 9.bis with its 4 columns, brand block (Lockup + tagline + category) and bottom bar, reflowing from 4 columns on desktop to 2x2 on mobile",
+        "All shell copy lives in i18n/locales/{es,en}.json with both locales present — zero hardcoded strings in components (Constitution Article VI); tests/i18n-parity.test.ts stays green",
+        "A route-mapping helper resolves the equivalent path in the other locale, translating the About segment (/es/nosotros <-> /en/about) and preserving the anchor; it has Vitest unit tests (Constitution Article X)",
+        "A Nuxt layout in app/layouts/ renders Nav and Footer so every page gets the shell; app/pages/nosotros.vue resolves at /es/nosotros and /en/about via i18n custom route paths",
+        "Reuses the feature 2 primitives (Lockup, Wordmark, Pill, BotonPrimario, SocialIcon, LinkArrow) rather than reimplementing them, honoring their prop contracts",
+        "Nav, Footer and the mobile menu each have a Storybook story (Constitution Article X)",
+        "Links with no destination yet (FAQ, Agenda una llamada) render as plain non-interactive ink-300 text per decisions-open.md — never as broken links or 404s",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "pending",
+      "depends_on": [2, 5]
+    },
+    {
+      "id": 4,
+      "name": "radar_pulse",
+      "title": "Animate the Radar as a pulsing radar ping",
+      "description": "Add the radar ping animation to app/shared/ui/Radar.vue: a ghost ring expands out of the centre and fades, in a loop, while the three base circles stay still. Recipe and rationale in docs/business/landing/ui-map.md § Receta del ping del radar. The design already contemplated this ('si se anima, es CSS puro; estático también funciona') and the decision to animate was taken 2026-09-06. Scoped as sdd:false because it is one component, one animation and one media query — a full spec cycle would cost far more than the change itself. CORRECTED 2026-09-06 after Roberto clarified the design: the first implementation rendered the halos AND the ping, which showed the drawn effect and the real effect at once. The acceptance criteria below were rewritten to match; the originals described the superseded recipe.",
+      "acceptance": [
+        "Radar.vue renders ONLY the red dot at rest — the two static halos from the .pen are NOT replicated (they are how a static mockup draws this animation; see design-extract.md § 2) — plus a ghost ring the size of the dot animating scale(1)→scale(3), opacity 0.6→0, 2.4s ease-out infinite, in solid red-400 with the attenuation coming from the animation and not from the colour",
+        "The reserved footprint (20/30/22) is preserved with the dot (7/12/10) centred in it — the Pill's gap and padding and the section layouts are measured against that box",
+        "CSS only, zero JavaScript (the design states this as a hard constraint)",
+        "prefers-reduced-motion: reduce disables the ping and leaves the radar static and complete, per ui-map.md § Movimiento reducido",
+        "The animation duration is a token so it can be retuned without touching component markup (Constitution Article VII)",
+        "Applies to all three sizes (sm, md, sm-alt) and therefore to all 19 instances",
+        "Radar.stories.ts shows the ping, and the existing Radar.test.ts still passes",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": [2]
+    },
+    {
+      "id": 5,
+      "name": "section_glow",
+      "title": "SectionGlow — the radial background layer of the whole site",
+      "description": "Build app/shared/ui/SectionGlow.vue: the radial gradient circles that make up the site's entire background. 22 instances across the design (12 on Landing, 10 on About), which makes it the last genuinely cross-feature primitive — it is used by both the landing and about features, so per Constitution Article I it belongs in app/shared/ and not inside either one. Each glow is a circle with a radial gradient from a base colour to fully transparent ink (#26262600), cornerRadius 999, sized 480-1500px. Measurements in docs/business/landing/design-extract.md § 10 (SectionGlow) and § 9.bis. Scheduled before feature 3 because the shell mounts on top of this background — without it Nav and Footer would be reviewed against flat black in Storybook, which is not how they will ever appear.",
+      "acceptance": [
+        "app/shared/ui/SectionGlow.vue exists as a Vue SFC using <script setup lang=\"ts\">",
+        "It renders a circle with a radial gradient from a base colour to transparent, matching the recipe in design-extract.md",
+        "Colour and size are props; the base colours in use are red-400, wine-300 and wine-400 at the opacities recorded in the design",
+        "Positioning is the caller's responsibility — the component does not hardcode coordinates, since all 22 instances sit at different offsets",
+        "Zero hardcoded hex or px in the component; every value resolves through a design token (Constitution Article VII)",
+        "A Storybook story shows the glow variants against the ink-500 background (Constitution Article X)",
+        "A component test covers the variant-to-token mapping (Constitution Article X)",
+        "No page, layout or feature module is created — this is a shared primitive only",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": [2]
     }
   ]
 }
