@@ -1,6 +1,6 @@
 {
   "project": "muush.dev",
-  "description": "Static marketing site for muush, a technology solution studio. Landing and About pages, in Spanish and English.",
+  "description": "Static marketing site for muush, a technology solution studio. Landing and About pages, in Spanish and English. Nuxt 4 + Vue, static output to S3 + CloudFront.",
   "rules": {
     "one_feature_at_a_time": true,
     "require_tests_to_close": true,
@@ -20,37 +20,37 @@
     {
       "id": 1,
       "name": "design_tokens_and_logos",
-      "title": "Design tokens (colors, typography) and logo assets",
-      "description": "Replace the placeholder color and typography tokens in src/styles/global.css with the real values from the muush branding book (documented in docs/business/branding.md), and wire the three official isotipo SVG variants into the project as usable assets, mapped for the three background contexts the branding rules define (light/bone background, dark/ink background, on Red 400).",
+      "title": "Design tokens (colors, typography, fluid scale) and brand assets",
+      "description": "Port the muush design tokens into the Nuxt app: the 5-step color ramps and the fluid type/space scale in app/assets/css/global.css, plus the isotipo and social SVG assets. Values come from docs/business/branding.md and docs/business/landing/design-extract.md § 9. The Astro implementation of this feature was discarded in the 2026-09-06 migration; the CSS itself carried over, so this is largely verification that it still resolves under Tailwind v4 inside Nuxt.",
       "acceptance": [
-        "Color custom properties in src/styles/global.css use the exact 5-step hex values from docs/business/branding.md for red, wine, ink and bone (not the placeholder 10-step scale)",
-        "The Tailwind theme (@theme inline) exposes the updated ramps as utility classes",
-        "font-poppins is scoped to logo/wordmark use only; font-instrument is the default for everything else, matching docs/business/branding.md",
-        "The three isotipo SVGs (bone-background, ink-background, red-background variants) are available in the project and selectable/renderable for their documented background context",
-        "pnpm check, pnpm typecheck, pnpm test and pnpm build all pass"
+        "app/assets/css/global.css exposes the exact 5-step hex ramps from docs/business/branding.md for red, wine, ink and bone",
+        "The fluid type and spacing scale resolves via clamp() across the desktop→mobile ranges in design-extract.md § 9, with no media query needed for sizing",
+        "font-poppins is scoped to logo/wordmark use only; font-instrument is the default for everything else",
+        "The 3 isotipo SVGs and 3 normalized social SVGs live under app/assets/ and are importable via the @/assets alias",
+        "A Storybook story renders the token set so the palette and scale can be reviewed visually",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
       ],
       "sdd": true,
-      "status": "done"
+      "status": "pending"
     },
     {
       "id": 2,
       "name": "primitive_ui_layer",
-      "title": "Primitive UI layer: fluid type scale + GlassPanel, Radar, Wordmark, Lockup, Pill, Botón primario, LinkArrow, SocialIcon",
-      "description": "Implement the dependency-free primitive layer that every landing/Nosotros section composes from. All measurements come from docs/business/landing/design-extract.md, which holds the values extracted directly from the .pen design file — read that file, do NOT attempt to open the .pen (the Pencil MCP bridge is not available to subagents). Scope covers: (a) a fluid typography + spacing scale in src/styles/global.css using clamp(), so the desktop/mobile difference is handled by tokens instead of breakpoints; (b) eight .astro components with zero dependencies on each other except Pill→Radar and Lockup→Isotipo+Wordmark; (c) normalizing the three social SVG icons per decisions-open.md. No page, layout, section, card, or form component is built here.",
+      "title": "Primitive UI layer in app/shared/ui: GlassPanel, Radar, Wordmark, Lockup, Pill, BotonPrimario, LinkArrow, SocialIcon",
+      "description": "Rebuild the eight design-system primitives as Vue SFCs in app/shared/ui/, matching the measurements in docs/business/landing/design-extract.md §§ 1-8. The Astro versions were discarded in the 2026-09-06 migration, but their prop contracts were sound and are recorded in git history on master; the Vue versions should expose equivalent surfaces. Per Constitution Article X every one of them needs a Storybook story.",
       "acceptance": [
-        "src/styles/global.css exposes a fluid type scale (display, h1, h2, h3, lead, body, label, meta) and spacing/radius tokens using clamp(), covering the desktop→mobile ranges in design-extract.md § 9, so no component needs a media query for sizing",
-        "Eight components exist in src/components/: GlassPanel, Radar, Wordmark, Lockup, Pill, BotonPrimario, LinkArrow, SocialIcon — all .astro, all static, zero client-side JS",
-        "GlassPanel supports the 6 variants in design-extract.md § 1 (red-strong, red-soft, bone-strong, bone, bone-faint, dark) with their exact fill/stroke/blur values",
+        "Eight components exist in app/shared/ui/ as Vue SFCs using <script setup lang=\"ts\">: GlassPanel, Radar, Wordmark, Lockup, Pill, BotonPrimario, LinkArrow, SocialIcon",
+        "GlassPanel supports the 6 variants in design-extract.md § 1 with their exact fill/stroke/blur values",
         "Radar supports the 3 sizes in design-extract.md § 2 (sm 20/14/7, md 30/20/12, sm-alt 22/16/10)",
-        "BotonPrimario supports the 3 size variants in design-extract.md § 4 (nav, hero, submit) and its LED border is the exact 3-stop conic gradient red-400 → bone-100 → #cf3247 (NOT wine), animated in CSS only, honoring prefers-reduced-motion",
-        "Wordmark can render both official lockups: 'muush' and 'muush.dev'",
-        "The three social SVGs are normalized per decisions-open.md: square viewBox, fill=currentColor (so they inherit bone-100, not pure white), no embedded <style>/<defs>/DOCTYPE",
-        "Every visual value comes from a design token — no hardcoded hex or px literals in component markup (Constitution Article IV)",
-        "No page, layout, section, card, or form component is created or modified — same scoping precedent as feature 001",
-        "pnpm check, pnpm typecheck, pnpm test and pnpm build all pass"
+        "BotonPrimario supports the 3 size variants in design-extract.md § 4 and its LED border is the 3-stop conic gradient red-400 → bone-100 → red-400 (NOT wine), CSS-only, honoring prefers-reduced-motion",
+        "Wordmark renders both official lockups: muush and muush.dev",
+        "Every component has a Storybook story covering its variants (Constitution Article X)",
+        "Zero hardcoded hex or px literals in component markup (Constitution Article VII)",
+        "No page, layout or feature module is created — these are shared primitives only",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
       ],
       "sdd": true,
-      "status": "done"
+      "status": "pending"
     },
     {
       "id": 3,

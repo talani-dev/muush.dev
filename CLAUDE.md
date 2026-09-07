@@ -11,7 +11,7 @@ never to implement it yourself.
 
 ### Hard rules
 
-- ❌ Do not edit files in `src/` or `tests/` directly.
+- ❌ Do not edit files in `app/` or `tests/` directly.
 - ❌ Do not mark a feature as `done` in `feature_list.json` yourself.
 - ❌ Never skip the spec phase. Every feature with `"sdd": true` goes through
   `spec_author` before any implementation.
@@ -35,7 +35,7 @@ deploy target) lives in `docs/business/` (including its subfolders, e.g.
 `docs/business/landing/`). Read **all** files in that tree recursively
 before writing specs, implementing, or making architecture decisions.
 
-Architectural principles (static-site purity, component/island discipline,
+Architectural principles (Feature-Based architecture, static-site purity,
 i18n parity, design tokens, testing discipline, credential hygiene) live in
 `.specify/memory/constitution.md` — read it before any spec or
 implementation work. It supersedes any conflicting convention.
@@ -48,5 +48,5 @@ only the file reference. Never ask them to paste full content back into chat.
 ### When this role does NOT apply
 
 - Conceptual questions or repo exploration — answer directly.
-- Changes outside `src/` and `tests/` (docs, config, `docs/harness/progress/`)
+- Changes outside `app/` and `tests/` (docs, config, `docs/harness/progress/`)
   — you may edit these yourself.

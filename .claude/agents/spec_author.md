@@ -43,9 +43,10 @@ b. Check `spec.md`. If it contains `[NEEDS CLARIFICATION]`:
    - Iterate until no unresolved marker remains
 
 c. `/speckit-plan <technical considerations>` — generates `plan.md`. Mention
-   the current stack (Astro static, Svelte islands, Tailwind, Biome, Vitest)
-   and whether the work touches `components/`, `islands/`, `layouts/`,
-   `pages/`, or `i18n/`.
+   the current stack (Nuxt 4 static output, Vue 3 `<script setup>`, Tailwind
+   v4, Biome, Vitest, Storybook) and which layer the work touches:
+   `app/features/<feature>/{ui,logic,data}`, `app/shared/`, `app/layouts/`,
+   `app/pages/`, or `i18n/locales/`.
 
 d. `/speckit-tasks` — generates `tasks.md` with atomic tasks, `[P]` where
    parallelizable.

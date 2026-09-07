@@ -1,8 +1,8 @@
-/// <reference types="vitest/config" />
-import { getViteConfig } from 'astro/config'
+import { defineVitestConfig } from '@nuxt/test-utils/config'
 
-export default getViteConfig({
+export default defineVitestConfig({
   test: {
+    environment: 'node',
     include: ['tests/**/*.test.ts'],
   },
 })
