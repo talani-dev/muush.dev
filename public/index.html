@@ -1,0 +1,35 @@
+<!doctype html>
+<!--
+  The object at the root of the site.
+
+  `/` has no page: both locales are prefixed, so the router has nothing to
+  render there. `i18n.rootRedirect` covers it wherever a Nuxt runtime exists,
+  but a static host runs nothing — verified by running `pnpm generate` with
+  the redirect configured and `'/'` added to `nitro.prerender.routes`: no
+  `index.html` was written (docs/business/rules.md § R25).
+
+  This file is that missing object. It is deliberately static and
+  dependency-free: a meta refresh, a canonical pointing at the Spanish home,
+  the hreflang set, and a real link so the page works with scripting and
+  refreshes both unavailable.
+
+  Spanish is the default and the language is never detected from IP or
+  `Accept-Language` (docs/business/landing/ui-map.md § 1), so `x-default`
+  points at `/es` too.
+-->
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content="0; url=/es" />
+    <meta name="robots" content="noindex" />
+    <title>muush · Technology Solution Studio</title>
+    <link rel="canonical" href="https://muush.dev/es" />
+    <link rel="alternate" hreflang="es-MX" href="https://muush.dev/es" />
+    <link rel="alternate" hreflang="en" href="https://muush.dev/en" />
+    <link rel="alternate" hreflang="x-default" href="https://muush.dev/es" />
+  </head>
+  <body>
+    <a href="/es">muush.dev</a>
+  </body>
+</html>

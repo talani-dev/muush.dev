@@ -61,7 +61,11 @@
   },
   "overrides": [
     {
-      "includes": ["app/pages/**/*.vue", "app/layouts/**/*.vue"],
+      "includes": [
+        "app/pages/**/*.vue",
+        "app/layouts/**/*.vue",
+        "app/shared/ui/**/*.vue"
+      ],
       "linter": {
         "rules": {
           "style": {

@@ -65,13 +65,13 @@
         "All shell copy lives in i18n/locales/{es,en}.json with both locales present — zero hardcoded strings in components (Constitution Article VI); tests/i18n-parity.test.ts stays green",
         "A route-mapping helper resolves the equivalent path in the other locale, translating the About segment (/es/nosotros <-> /en/about) and preserving the anchor; it has Vitest unit tests (Constitution Article X)",
         "A Nuxt layout in app/layouts/ renders Nav and Footer so every page gets the shell; app/pages/nosotros.vue resolves at /es/nosotros and /en/about via i18n custom route paths",
-        "Reuses the feature 2 primitives (Lockup, Wordmark, Pill, BotonPrimario, SocialIcon, LinkArrow) rather than reimplementing them, honoring their prop contracts",
+        "Reuses the feature 2 primitives the shell actually contains — Lockup, Wordmark, BotonPrimario (nav CTA) and SocialIcon (mobile menu) — honoring their prop contracts. NOTE: Pill and LinkArrow are NOT in the shell; verified 2026-09-07 against the design, all 11 Pills are section eyebrows and the footer's 'Agenda una llamada' is a plain 15px column item, not a LinkArrow",
         "Nav, Footer and the mobile menu each have a Storybook story (Constitution Article X)",
         "Links with no destination yet (FAQ, Agenda una llamada) render as plain non-interactive ink-300 text per decisions-open.md — never as broken links or 404s",
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
       ],
       "sdd": true,
-      "status": "pending",
+      "status": "done",
       "depends_on": [2, 5]
     },
     {

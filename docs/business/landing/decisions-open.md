@@ -125,6 +125,8 @@ el de Instagram puede romper estilos de otras partes de la página.
 
 | Qué | Detalle |
 |---|---|
+| **El footer de escritorio se pasa 52px** (detectado 2026-09-07) | Aritmética literal del `.pen`: Marca 340 + gap 80 + Columnas (4×180 + 3×64 = 912) = **1332px**, contra 1440−80−80 = **1280px** disponibles. En código se resuelve dejando que el gap ceda y las columnas flexeen, que es lo que hará el navegador igual — pero **el archivo de diseño está mal** y conviene ajustarlo |
+| **Breakpoint y tope de contenido sin definir** (detectado 2026-09-07) | El diseño solo tiene frames a 390 y 1440. No documenta en qué ancho cambia de layout ni si el contenido topa a 1440 o sigue creciendo. La spec de la feature 3 asumió **1024px** y **tope de 1440**, ambos marcados UNVERIFIED. Decisión de Clau |
 | **Hairline del footer fuera de paleta** (detectado 2026-09-06) | El borde superior de la barra inferior del footer usa `#c9c9c91f` en desktop y `#FBF8F61F` en móvil — dos colores distintos para la misma línea. Además **`#c9c9c9` no corresponde a ningún token de la marca** (lo más cercano es `ink-100` = `#D9D9D9`, pero no es igual). En código se unificó a `bone-100 @12%`, que es exactamente el valor móvil. **Conviene corregir el desktop en Pencil** para que use el token |
 | **Forma de la URL de LinkedIn** | `branding.md` registra el handle `/muush-dev` pero no si la URL es `linkedin.com/company/muush-dev` o `linkedin.com/in/muush-dev`. Se asumió página de empresa (`/company/`). Confirmar con Clau |
 | Opciones de "¿Cómo te identificas?" | El archivo de diseño tiene 6 opciones; `content.md` documenta 5. "Restaurante o bar" está en el diseño sin documentar — conecta con el tema de restaurantes/bares como vertical, guardado para después |

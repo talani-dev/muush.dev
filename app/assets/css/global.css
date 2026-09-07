@@ -114,6 +114,21 @@
   --color-glass-dark-line: color-mix(in srgb, var(--bone-100) 23%, transparent);
 
   /*
+   * Reglas de 1px del shell (design-extract.md § 9.bis).
+   *
+   * El diseño registra el filete superior de la barra inferior del footer con
+   * DOS colores para la misma línea: `#c9c9c91f` en escritorio y `#FBF8F61F`
+   * en móvil. `0x1F ÷ 255 = 12.2%`, así que el valor móvil es exactamente
+   * bone-100 al 12%; la base del de escritorio no pertenece a ninguna rampa.
+   * Se unifica al valor móvil en ambos frames (rules.md § R11). La
+   * discrepancia del archivo de diseño sigue abierta y es de Clau: aquí se
+   * implementa lo coherente con el sistema, no se silencia el conflicto.
+   */
+  --color-hairline-footer: color-mix(in srgb, var(--bone-100) 12%, transparent);
+  /* Divisor del menú móvil: el diseño lo escribe `#FBF8F614`; 0x14÷255 = 7.8% */
+  --color-divider-menu: color-mix(in srgb, var(--bone-100) 8%, transparent);
+
+  /*
    * Glows — la parada central de los 22 degradados radiales que forman el
    * fondo del sitio (design-extract.md § 10 · SectionGlow).
    *
@@ -299,6 +314,64 @@
   --text-link-lg--letter-spacing: -0.03em;
   --text-link-lg--font-weight: 600;
 
+  /*
+   * Roles del shell (design-extract.md § 9.bis y § 10 · FooterColumn).
+   *
+   * Las alturas de línea de los roles de una sola línea no vienen del diseño:
+   * son la misma convención que ya usan --text-pill, --text-button y
+   * --text-form-label. La única excepción está marcada abajo.
+   *
+   * Donde los dos frames implican valores de `em` ligeramente distintos se usa
+   * el de escritorio (deriva máxima < 0.07px). El título de columna es el caso
+   * limpio: 1.2÷12 y 1.1÷11 son ambos exactamente 0.1em.
+   */
+  --text-nav-link: 0.9375rem;
+  --text-nav-link--line-height: 1.2;
+  --text-nav-link--letter-spacing: 0em;
+  --text-nav-link--font-weight: 500;
+
+  --text-lang: clamp(0.75rem, 0.7268rem + 0.0952vw, 0.8125rem);
+  --text-lang--line-height: 1.2;
+  --text-lang--letter-spacing: 0.062em;
+  --text-lang--font-weight: 500;
+
+  --text-footer-tagline: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
+  --text-footer-tagline--line-height: 1.4;
+  --text-footer-tagline--letter-spacing: -0.03em;
+  --text-footer-tagline--font-weight: 500;
+
+  --text-footer-category: clamp(0.6875rem, 0.6643rem + 0.0952vw, 0.75rem);
+  --text-footer-category--line-height: 1.4;
+  --text-footer-category--letter-spacing: 0.075em;
+  --text-footer-category--font-weight: 500;
+
+  --text-footer-col-title: clamp(0.6875rem, 0.6643rem + 0.0952vw, 0.75rem);
+  --text-footer-col-title--line-height: 1.4;
+  --text-footer-col-title--letter-spacing: 0.1em;
+  --text-footer-col-title--font-weight: 600;
+
+  --text-footer-item: clamp(0.875rem, 0.8518rem + 0.0952vw, 0.9375rem);
+  --text-footer-item--line-height: 1.4;
+  --text-footer-item--letter-spacing: 0em;
+  --text-footer-item--font-weight: 400;
+
+  --text-footer-bottom: clamp(0.75rem, 0.7268rem + 0.0952vw, 0.8125rem);
+  --text-footer-bottom--line-height: 1.4;
+  --text-footer-bottom--letter-spacing: 0em;
+  --text-footer-bottom--font-weight: 400;
+
+  /* Fijo: los 30px del menú solo existen en el frame móvil. */
+  --text-menu-item: 1.875rem;
+  /*
+   * ⚠️ 1.1 NO es una elección libre: rules.md § R12 derivó los gaps de flujo
+   * del menú (50 y 44) asumiendo que los 4 items de 30px ocupan 222px, que es
+   * exactamente 4 × 30 × 1.1. Cambiar esta altura de línea invalida
+   * --spacing-menu-divider-gap y --spacing-menu-social-gap.
+   */
+  --text-menu-item--line-height: 1.1;
+  --text-menu-item--letter-spacing: -0.03em;
+  --text-menu-item--font-weight: 600;
+
   /* Escala de superficie — misma interpolación 390 → 1440 */
   --spacing-page: clamp(1.5rem, 0.2rem + 5.3333vw, 5rem);
   --spacing-glass-red: clamp(1.375rem, 1.1429rem + 0.9524vw, 2rem);
@@ -319,6 +392,81 @@
   --spacing-btn-nav-x: 1.5rem;
   --spacing-social: 3rem;
   --spacing-social-glyph: 1.5rem;
+
+  /*
+   * Shell — Nav (design-extract.md § 9.bis · Nav — contenedor).
+   * El padding horizontal del nav y del footer es 24 → 80, que ya es
+   * --spacing-page: se reusa, no se duplica. El gap interno del lockup
+   * (9 → 12) ya es --spacing-lockup-gap, propiedad del primitivo.
+   */
+  --spacing-nav-y: clamp(1.375rem, 1.1893rem + 0.7619vw, 1.875rem);
+  --spacing-nav-gap: clamp(0.875rem, 0.5036rem + 1.5238vw, 1.875rem);
+  --spacing-lang-gap: clamp(0.3125rem, 0.2893rem + 0.0952vw, 0.375rem);
+
+  /*
+   * Hamburguesa y botón Cerrar (§ 9.bis). Fijos: solo existen en móvil.
+   * Su radio es --radius-icon y su vidrio --color-glass-dark /
+   * --color-glass-line, ya existentes.
+   *
+   * Los dos controles NO miden lo mismo — la hamburguesa es 38×32.2 y el
+   * cerrar 38×38. Ambos se implementan tal como los registra el diseño; si
+   * debían coincidir, es una corrección de Clau al archivo, no del código.
+   */
+  --spacing-burger-y: 0.75rem;
+  --spacing-burger-x: 0.6875rem;
+  --spacing-burger-bar-w: 1rem;
+  --spacing-burger-bar-h: 0.1rem;
+  --spacing-burger-gap: 0.3125rem;
+  --spacing-close-pad: 0.625rem;
+  --spacing-close-glyph: 1.125rem;
+
+  /* Footer (§ 9.bis · Footer — contenedor, § 10 · FooterColumn) */
+  --spacing-footer-top: clamp(3.25rem, 2.6rem + 2.6667vw, 5rem);
+  --spacing-footer-bottom: clamp(2rem, 1.7214rem + 1.1429vw, 2.75rem);
+  --spacing-footer-gap: clamp(2.5rem, 2.1286rem + 1.5238vw, 3.5rem);
+  --spacing-footer-brand-gap: clamp(0.625rem, 0.3929rem + 0.9524vw, 1.25rem);
+  --spacing-footer-cols-gap: clamp(1.25rem, 0.2286rem + 4.1905vw, 4rem);
+  --spacing-footer-col-gap: clamp(0.75rem, 0.6571rem + 0.381vw, 1rem);
+  --spacing-footer-item-gap: clamp(0.5625rem, 0.5161rem + 0.1905vw, 0.6875rem);
+  --spacing-footer-bar-gap: clamp(1.375rem, 1.2821rem + 0.381vw, 1.625rem);
+  /* La barra inferior se apila en móvil; este es el gap de esa pila. */
+  --spacing-footer-bar-stack: 0.375rem;
+  --spacing-footer-brand-w: 21.25rem;
+  /*
+   * ⚠️ BASE DE FLEX, no ancho fijo (rules.md § R24). El renglón superior del
+   * footer de escritorio está sobre-restringido en el diseño:
+   * Marca 340 + gap 80 + Columnas (4×180 + 3×64 = 912) = 1332 contra una caja
+   * de 1440 − 80 − 80 = 1280. Marca + Columnas ya suman 1252 y dejan 28. El
+   * renglón es `space_between`, que reparte lo que sobra en vez de honrar el
+   * gap declarado. La Marca conserva sus 340 y las columnas flexionan;
+   * tratar estos 180 como fijos reproduce el desbordamiento de 52px.
+   */
+  --spacing-footer-col-w: 11.25rem;
+
+  /*
+   * Menú móvil (§ 9.bis · Menú móvil abierto). Fijos: un solo frame.
+   * Las coordenadas absolutas del frame (y176, y448, y493) NO se replican —
+   * un teléfono real casi nunca mide 844px de alto. rules.md § R12 las
+   * traduce a flujo: los items arrancan a 176 del borde, ocupan 222
+   * (4 × 30 × 1.1), y de ahí salen los 50 hasta el divisor y los 44 del
+   * divisor a la fila de redes.
+   */
+  --spacing-menu-top: 11rem;
+  --spacing-menu-gap: 1.875rem;
+  --spacing-menu-divider-gap: 3.125rem;
+  --spacing-menu-social-gap: 2.75rem;
+  --spacing-menu-social-row-gap: 0.875rem;
+
+  /*
+   * Tope de ancho del contenido del shell.
+   * ⚠️ UNVERIFIED — ningún documento lo respalda. El diseño solo tiene frames
+   * a 390 y 1440 y no dice qué pasa arriba de 1440. Se asume que el contenido
+   * topa ahí y se centra, porque --spacing-page ya se detiene en 80 y sin tope
+   * una pantalla de 2560 repartiría las 4 columnas del footer sobre 2400px, un
+   * layout que ningún frame dibujó. Pendiente de Clau (spec A-02); revertirlo
+   * es borrar una utilidad.
+   */
+  --spacing-shell-max: 90rem;
 
   /* Medidas del radar (design-extract § 2), fijas en ambos frames. Dos por
      tamaño: el footprint reservado (20/30/22 — contra el que están medidas
@@ -367,10 +515,15 @@
   --radius-panel-sm: clamp(1.125rem, 1.0786rem + 0.1905vw, 1.25rem);
   --radius-control: 0.75rem;
   --radius-icon: 0.625rem;
+  /* Las dos barras de la hamburguesa llevan cornerRadius 1 (§ 9.bis) */
+  --radius-burger-bar: 0.0625rem;
 
   --blur-glass-red: clamp(1.25rem, 1.2036rem + 0.1905vw, 1.375rem);
   --blur-glass: 1rem;
   --blur-glass-dark: 1.375rem;
+  /* Panel del menú móvil: blur 20 (§ 9.bis). Fijo — solo existe en un frame.
+     Ninguno de los tres de arriba sirve: valen 16, 22 y 20→22. */
+  --blur-menu-panel: 1.25rem;
 }
 
 /* TODO: faltan los archivos de fuente en public/fonts — agregar los .woff2 del branding book */

@@ -11,6 +11,14 @@ import { defineVitestConfig } from '@nuxt/test-utils/config'
 export default defineVitestConfig({
   test: {
     environment: 'happy-dom',
-    include: ['tests/**/*.test.ts', 'app/shared/ui/**/*.test.ts'],
+    setupFiles: ['tests/setup.ts'],
+    /* Builds the static site once, so the output assertions read the current
+       artefact rather than whatever was last left in `.output/`. */
+    globalSetup: ['tests/global-setup.ts'],
+    include: [
+      'tests/**/*.test.ts',
+      'app/shared/ui/**/*.test.ts',
+      'app/features/**/*.test.ts',
+    ],
   },
 })

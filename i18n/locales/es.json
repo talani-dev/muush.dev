@@ -1,5 +1,64 @@
 {
   "site": {
     "title": "muush · Technology Solution Studio"
+  },
+  "pages": {
+    "about": {
+      "title": "Nosotros · muush",
+      "heading": "Nosotros",
+      "work": "Work with muush"
+    }
+  },
+  "shell": {
+    "nav": {
+      "label": "Navegación principal",
+      "projects": "Proyectos",
+      "about": "Nosotros",
+      "cta": "Cuéntanos tu proyecto"
+    },
+    "menu": {
+      "label": "Menú",
+      "open": "Abrir menú",
+      "close": "Cerrar menú",
+      "purpose": "Propósito",
+      "services": "Servicios",
+      "projects": "Proyectos",
+      "about": "Nosotros"
+    },
+    "social": {
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram",
+      "tiktok": "TikTok"
+    },
+    "footer": {
+      "label": "Pie de página",
+      "tagline": "Hablamos negocio y código.",
+      "category": "Technology solution studio",
+      "copyright": "© 2026 muush · Todos los derechos reservados",
+      "location": "CDMX · MX",
+      "whatsappMessage": "Hola muush, me interesa platicar sobre un proyecto.",
+      "nav": {
+        "title": "Navegación",
+        "purpose": "Propósito",
+        "services": "Servicios",
+        "projects": "Proyectos",
+        "about": "Nosotros"
+      },
+      "contact": {
+        "title": "Contacto",
+        "call": "Agenda una llamada",
+        "email": "support{'@'}muush.dev",
+        "whatsapp": "WhatsApp"
+      },
+      "muush": {
+        "title": "muush",
+        "work": "Work with muush",
+        "faq": "FAQ",
+        "blog": "Blog · próximamente"
+      },
+      "social": {
+        "title": "Redes"
+      }
+    }
   }
 }
