@@ -338,3 +338,212 @@ feature 3 va a consumir.
 
 La regla **sigue activa** en el resto del código, incluido cualquier
 componente futuro dentro de una feature.
+
+---
+
+## Feature 003 · Site shell — reespecificación sobre Nuxt (2026-09-07)
+
+> Las reglas R9–R13 de arriba salieron del ciclo original de esta misma
+> feature en Astro. **R9, R11, R12 y R13 siguen vigentes**: son reglas de
+> diseño, de marca o de la plataforma web, no del framework. **R10 queda
+> corregida por R21.** Las cuatro de abajo salieron al especificar y planear
+> la feature sobre Nuxt 4, y están verificadas contra un `pnpm generate`
+> real. Se agregan al final para no tocar nada de lo anterior.
+
+### R21 · Corrección a R10 — la forma de la salida estática de Nitro
+
+R10 concluyó que todo `href` interno debe llevar diagonal final. Esa
+conclusión se derivó del `build.format: 'directory'` de Astro y **no
+transfiere a Nitro tal cual**. Lo verificado el 2026-09-07 con
+`pnpm generate`:
+
+```
+.output/public/es/index.html
+.output/public/en/index.html
+.output/public/200.html
+.output/public/404.html
+```
+
+**Lo que sí transfiere:** el objeto vive en `es/index.html`, así que
+`/es/nosotros` se emitirá como `es/nosotros/index.html`
+(`nitro.prerender.autoSubfolderIndex` es `true` por defecto).
+
+**Lo que NO transfiere:** que agregar la diagonal al `href` resuelva algo.
+Depende del origen de CloudFront, no del marcado:
+
+| Origen | `/es/nosotros` | `/es/nosotros/` |
+|---|---|---|
+| Endpoint **website** de S3 | resuelve (301) | resuelve |
+| Origen **REST** de S3, sin reescritura | **404** | **404** |
+| REST + CloudFront Function que agrega `index.html` | resuelve | resuelve |
+
+Con origen REST y sin reescritura, la forma con diagonal **también falla** —
+la llave `es/nosotros/` tampoco existe. Poner diagonales solo *parece*
+arreglarlo.
+
+**Regla:** los `href` se emiten en la forma que produce `useLocalePath()`,
+sin diagonal final, y la reescritura de documento índice es un **requisito
+de despliegue**, no un parche de marcado. Pendiente de confirmar con Roberto
+que existe en la distribución.
+
+**Hallazgo adicional del mismo build:** `/` **no genera ningún archivo**.
+`i18n.rootRedirect` viene vacío por defecto y el redirect es de runtime, así
+que en un sitio prerenderizado solo existe si `/` se prerenderiza. Quien
+toque el enrutamiento tiene que verificarlo corriendo el comando, no
+leyendo la documentación.
+
+### R22 · `switchLocalePath` devuelve cadena vacía, y una cadena vacía miente
+
+`SwitchLocalePathFunction` de `@nuxtjs/i18n@10.6.0` está tipada
+`(locale: Locale) => string` y devuelve la **cadena vacía** cuando la ruta
+actual no tiene equivalente en el idioma destino. Un `href=""` resuelve a la
+página actual: el visitante hace clic en el toggle y no pasa nada, sin error
+en consola y sin nada que revisar.
+
+**Regla:** todo consumo de `switchLocalePath` pasa por una función pura que
+garantiza un destino real — si viene vacío, cae al home del otro idioma. Esa
+función es además lo único que tiene sentido cubrir con pruebas unitarias:
+una prueba que afirma `switchLocalePath('en') === '/en/about'` prueba la
+librería, no el repositorio.
+
+**Generaliza:** cualquier helper de una librería tipado `=> string` que pueda
+devolver `''` para "no hay resultado" necesita esta guarda. El tipo no
+distingue el caso vacío del caso resuelto.
+
+### R23 · Storybook necesita el stub de `NuxtLink` declarado a mano
+
+Extensión directa de R19. Storybook corre Vite fuera de Nuxt, así que además
+del compilador de SFC y los alias, **tampoco tiene `NuxtLink`**. Un
+componente que lo use no renderiza en el catálogo.
+
+La salida adoptada, sin tocar la API de ningún componente: registrar un stub
+global en `.storybook/preview.ts` usando el export `setup()` de
+`@storybook/vue3-vite`, que renderiza `<a :href="to"><slot /></a>`.
+
+Se descartaron las dos alternativas: que los componentes rendericen `<a>`
+suelto (convertiría toda navegación interna en recarga completa, tirando el
+enrutamiento de cliente de todo el sitio para resolver un problema del
+catálogo) y una prop `linkComponent` por componente (contamina la superficie
+pública de cinco componentes por una preocupación del arnés de pruebas).
+
+**Corolario que vale más que la regla:** el catálogo solo puede detectar esto
+si los componentes de `ui/` **no llaman ninguna composable de Nuxt**. Esa
+disciplina — copy y destinos resueltos llegan como props, `logic/` los
+resuelve — es lo que hace que un componente tramposo falle de inmediato en
+Storybook en vez de en producción.
+
+### R24 · El renglón superior del footer de escritorio está sobre-restringido en el diseño
+
+`design-extract.md` § 9.bis registra tres valores que no pueden cumplirse a la
+vez en el frame de 1440:
+
+```
+caja de contenido = 1440 − 80 − 80        = 1280
+Marca                                      =  340
+Columnas = 4 × 180 + 3 × 64                =  912
+Marca + Columnas                           = 1252   (caben, sobran 28)
+Marca + gap 80 + Columnas                  = 1332   (se pasan por 52)
+```
+
+**Decisión:** cede el gap. El renglón es `space_between` — que el mismo § 9.bis
+registra — y `space_between` reparte lo que sobra en vez de honrar un gap
+declarado; a 1440 exactos realiza 28px, no 80. La Marca conserva sus 340 y
+**las columnas flexionan: los 180 son una base, no un ancho fijo.** Tratarlos
+como fijos reproduce el desbordamiento.
+
+El frame móvil no tiene el conflicto: `390 − 24 − 24 = 342`, y dos columnas con
+gap 20 lo dividen en 161 cada una — los mismos 342 que usan los items y el
+divisor del menú.
+
+**Pendiente:** Clau debería corregirlo en el archivo de diseño, junto con el
+filete fuera de paleta de R11. Mismo criterio que R2 y R11: se implementa lo
+coherente con el sistema y se registra la discrepancia en vez de silenciarla.
+
+---
+
+## Feature 003 · Site shell — hallazgos de implementación (2026-09-07)
+
+> Las reglas R21–R24 salieron del ciclo de **especificación** de esta misma
+> feature y siguen vigentes tal cual. Las tres de abajo salieron al
+> **implementarla** y ninguna estaba anticipada. Se agregan al final; nada de
+> lo anterior se toca.
+
+### R25 · Nitro **no** emite archivo para `rootRedirect`, ni forzándolo
+
+`research.md` § R1d de la feature 003 proponía `i18n.rootRedirect: '/es'` más
+`'/'` en `nitro.prerender.routes`, y pedía explícitamente **correr el comando**
+en vez de cerrarlo leyendo. Se corrió, y el resultado es negativo:
+
+```
+$ pnpm generate
+[nitro] ℹ Prerendering 5 initial routes with crawler
+[nitro]   ├─ /200.html  ├─ /404.html  ├─ /es  ├─ /en …     ← `/` no aparece
+$ ls .output/public/index.html
+ls: .output/public/index.html: No such file or directory
+```
+
+`rootRedirect` sí llega al runtime config del HTML generado
+(`rootRedirect:"/es"`), así que la opción está bien puesta: lo que no ocurre es
+la escritura del archivo. La ruta se descarta del crawl y el redirect queda
+como comportamiento de **runtime**, que en un sitio estático no corre nadie.
+
+**Decisión:** se aplicó el fallback que la propia tarea contemplaba — un
+`public/index.html` versionado con `meta refresh`, `canonical` y el juego de
+`hreflang`, más un enlace real para que funcione sin scripting y sin refresh.
+La entrada en `nitro.prerender.routes` se **borró** en vez de dejarse como
+no-op: una línea de configuración que no hace nada es peor que su ausencia,
+porque el siguiente lector asume que sí hace algo. `rootRedirect` se conserva
+porque sí gobierna `nuxt dev` y el router de cliente cuando el host sirve
+`200.html` como fallback de SPA.
+
+**Generaliza:** cualquier redirect declarado como configuración de runtime hay
+que verificarlo contra `.output/public`, no contra la documentación de la
+opción. En este repo la pregunta siempre es "¿qué archivo se escribió?".
+
+### R26 · Una arroba en un archivo de locale rompe la compilación de vue-i18n
+
+`support@muush.dev` en `i18n/locales/*.json` **impide compilar el archivo
+entero**:
+
+```
+Error: Invalid linked format (error code: 10) in i18n/locales/en.json
+  target message: support@muush.dev
+  target message path: shell.footer.contact.email
+```
+
+vue-i18n lee `@` como el inicio de un *linked message* (`@:otra.clave`). No es
+un warning: la suite de paridad falló al importar el JSON, y el sitio no
+compila.
+
+**Regla:** una arroba literal en copy se escribe `{'@'}` — la escapatoria
+documentada de vue-i18n, que renderiza un `@` normal. Verificado en el HTML
+generado: el ítem del footer dice `support@muush.dev`.
+
+**Ojo con el alcance:** esto aplica **solo** al copy. El `mailto:` del footer y
+las URLs de TikTok (`tiktok.com/@muush.dev`) viven en
+`app/features/shell/data/`, que es TypeScript y no pasa por el compilador de
+mensajes. Si alguna vez una URL con arroba se mueve al archivo de locale,
+vuelve a romper.
+
+### R27 · El JSON de locales llega como AST, no como objeto, y eso vacía una prueba
+
+La transformación de Vite de `@nuxtjs/i18n` compila los archivos de locale a un
+**AST de mensajes** en el import — desde `app/` y también desde `tests/`. Un
+nodo del AST nunca es la cadena vacía, así que la aserción "ningún valor vacío"
+de `tests/i18n-parity.test.ts` **pasaba con cualquier entrada**. La de "mismas
+claves" seguía siendo válida por casualidad: las dos estructuras compiladas son
+igual de profundas.
+
+Descubierto al escribir una prueba que comparaba un valor de copy contra su
+texto literal y recibía un objeto con `{ type, start, end, loc, … }`.
+
+**Regla:** toda prueba que afirme algo sobre el **contenido** de un archivo de
+locale lo lee del disco (`readFileSync` + `JSON.parse`), nunca lo importa. Ya
+está aplicado a `tests/i18n-parity.test.ts` y a `tests/shell-copy.test.ts`, y
+la comprobación de vacíos quedó verificada con un control negativo: poner
+`""` en una clave hace fallar la suite.
+
+**Detalle de entorno:** el path se arma con `node:path` y `process.cwd()`, no
+con `new URL(..., import.meta.url)`. El entorno global es `happy-dom`
+(§ R16), que reemplaza el `URL` global por una implementación que `node:fs` no
+acepta — el síntoma es un `ENOENT` sobre la ruta `[object Object]`.

@@ -535,3 +535,149 @@ implementadas.
   `docs/harness/progress/impl_section_glow.md`. Verdict del reviewer:
   `docs/harness/progress/review_section_glow.md`.
 - `feature_list.json`: feature id 5 status `reviewing` → `done`.
+
+## 2026-09-07 — Feature 3: site_shell (done)
+
+`sdd: true`. Ciclo SDD completo en `specs/003-site-shell/` (spec, clarify,
+plan, research, data-model, contracts, quickstart, 45 tasks). **La primera
+feature que pone algo visible en el sitio**, y la primera que construye un
+módulo de feature real: `app/features/shell/` en la forma `data/` · `logic/` ·
+`ui/` con barrel, que es lo que los Artículos I–III describían sin que nadie
+los hubiera ejercido todavía.
+
+### Lo que shippeó
+
+Nav responsiva, menú móvil a pantalla completa, Footer de 4 columnas y toggle
+ES/EN, más el layout que los pone en toda página y la segunda ruta para que los
+links del nav resuelvan en vez de dar 404.
+
+- **5 componentes** (`SiteNav`, `MobileMenu`, `SiteFooter`, `FooterColumn`,
+  `LanguageToggle`), 3 con story; `MobileMenu`, `FooterColumn` y
+  `LanguageToggle` quedan **sin exportar** — son detalle de composición.
+- **3 piezas de `logic/`**: `resolveLocaleDestination` (pura, sin Nuxt, el
+  objetivo real de las pruebas unitarias), `useShellNavigation` (la única
+  costura con el runtime de Nuxt) y `useMobileMenu` (estado, bloqueo de scroll,
+  Escape, `inert`, sin dependencia nueva — VueUse se rechazó explícitamente).
+- **39 tokens** nuevos en `global.css`, cero ediciones a tokens existentes.
+- `app/pages/nosotros.vue` resolviendo en `/es/nosotros` y `/en/about` desde un
+  solo componente, con el segmento traducido declarado **una vez** en
+  `nuxt.config.ts` bajo `i18n.pages`.
+- `./init.sh` exit 0 · **216 tests en 20 archivos** · 3 entradas nuevas en el
+  catálogo.
+
+### Los dos hallazgos de i18n que condicionan todo lo que venga
+
+Ninguno de los dos estaba anticipado en la spec y los dos son de sistema, no de
+esta feature. Quedan como **R26** y **R27** en `docs/business/rules.md`.
+
+1. **Una arroba literal en un archivo de locale rompe la compilación de
+   vue-i18n.** `support@muush.dev` produjo
+   `Invalid linked format (error code: 10)` y dejó de compilar el archivo
+   entero — vue-i18n lee `@` como el inicio de un *linked message*. Se escapa
+   como `{'@'}`, que renderiza un `@` normal. **Aplica solo al copy**: el
+   `mailto:` y la URL de TikTok viven en TypeScript y no pasan por el
+   compilador de mensajes. Cualquier feature que mueva una URL con arroba al
+   archivo de locale lo vuelve a romper.
+
+2. **El JSON de locales llega como AST de mensajes, no como objeto**, por la
+   transformación de Vite de `@nuxtjs/i18n` — desde `app/` y también desde
+   `tests/`. Un nodo del AST nunca es la cadena vacía, así que la aserción
+   "ningún valor vacío" de `tests/i18n-parity.test.ts` **venía pasando con
+   cualquier entrada**: era verde falso, y lo había sido desde que se escribió.
+   Se arregló leyendo del disco (`readFileSync` + `JSON.parse`) y se verificó
+   con control negativo — poner `""` en una clave ahora hace fallar la suite.
+   Toda prueba futura sobre el *contenido* de un locale lee del disco.
+
+   Detalle asociado: el path se arma con `node:path`, no con
+   `new URL(..., import.meta.url)`. El entorno global es `happy-dom` (§ R16),
+   que reemplaza el `URL` global por uno que `node:fs` rechaza; el síntoma es
+   un `ENOENT` sobre la ruta `[object Object]`.
+
+**R25** también salió de aquí: `i18n.rootRedirect` **no** emite archivo, ni
+agregando `'/'` a `nitro.prerender.routes` — se corrió, la ruta se descarta del
+crawl y `.output/public/index.html` no aparece. El redirect es de runtime y un
+sitio estático no corre nada. El objeto en la raíz es un `public/index.html`
+versionado con meta refresh, canonical y `hreflang`. La entrada de prerender se
+**borró** en vez de dejarse como no-op.
+
+### El review: rechazo en la primera ronda, y de qué
+
+La primera ronda salió **REJECTED** por dos motivos, y **uno de los dos no era
+del implementer**: el reviewer marcó un ensanchamiento no declarado de la
+supresión de lint en `biome.json` y un § R20 sobreescrito y con fecha hacia
+atrás en `rules.md`. Los dos cambios eran del **leader**, hechos el 2026-09-06
+y dejados sin commitear por instrucción de Roberto para que viajaran con la
+feature 3; ya estaban en el working tree cuando arrancó el implementer.
+
+Vale la pena registrar cómo quedó resuelto, porque es un límite del arnés y no
+un incidente: el leader lo verificó con `git diff master` y el reviewer
+**registró la corrección como atestiguada, no como verificada de forma
+independiente**. El reviewer no puede distinguir por sí solo un cambio ajeno
+sin commitear de uno propio no declarado; en un working tree compartido, la
+autoría solo la puede aportar quien la tiene.
+
+El motivo real del rechazo era **C7**: el criterio de aceptación 6, SC-001 y
+SC-003 no tenían prueba. Se cerró con `tests/static-output.test.ts` — 20 casos
+que afirman sobre `.output/public`, el artefacto que se despliega, porque
+ninguna de esas tres afirmaciones es observable desde un componente montado.
+
+Dos cosas de ese test que conviene imitar:
+
+- **Se construye el sitio de cero antes de cada corrida**
+  (`tests/global-setup.ts`), en `globalSetup` y no en un `beforeAll`: Vitest
+  paraleliza archivos y un build reescribiendo `.nuxt/` por debajo es una
+  carrera. Se rechazó una guarda del tipo "construir solo si falta", que habría
+  dejado pasar un artefacto viejo — exactamente el defecto de R27. El reviewer
+  lo confirmó por accidente: al borrar `public/index.html` tenía un
+  `.output/public/index.html` viejo de sus propios experimentos en disco, **y
+  el test falló igual**. Un generate en frío son 3.3s.
+- **Se verificó por mutación**, no por lectura. Tres controles negativos:
+  romper el segmento traducido pone **10 de 20** casos en rojo a la vez, borrar
+  el documento raíz pone 1, quitar el `<SiteFooter>` del layout pone 4.
+
+Un cuarto detalle que el reviewer destacó: la aserción de "nav byte-idéntica
+entre Landing y Nosotros" tuvo que **excluir los `href` y la marca de página
+activa** antes de comparar, y documentar por qué cada uno *debe* diferir. Sin
+eso el test habría afirmado en silencio que SC-003 estaba roto — el toggle
+resuelve a `/en` desde la landing y a `/en/about` desde Nosotros, y que
+coincidieran sería el bug.
+
+También en la segunda ronda: `messageKey` se movió de `ShellItem` a la variante
+`external` de `ShellDestination`, que era una alternativa dentro del contrato
+que el implementer no había considerado. Deja `ShellItem` tal cual lo fija
+`contracts/components.md` y vuelve **irrepresentable** adjuntar un mensaje
+precargado a una ruta, un ancla o un ítem sin destino.
+
+### Lo que sigue abierto
+
+- 🔴 **Sin pasada visual.** Nada de esto se vio renderizar en un navegador. Se
+  verificó contra el HTML emitido, el CSS que ships y los manifiestos de build.
+  Se suma a las pasadas visuales pendientes de las features 2, 4 y 5 — **son
+  cuatro acumuladas**, y esta es la primera que un visitante vería.
+- 🔴 **A-01 · el breakpoint de 1024px no tiene fuente de diseño.** Se
+  implementó y quedó marcado UNVERIFIED en el código. **De Clau.**
+- 🔴 **A-02 · el tope de contenido de 1440px no tiene fuente de diseño.**
+  Mismo tratamiento. **De Clau.**
+- 🔴 **Decisión #2 (link de Google Calendar) y #3 (página de FAQ) siguen
+  abiertas.** `Agenda una llamada` y `FAQ` renderizan como texto ink-300 inerte
+  — sin `<a>`, sin cursor, sin hover — igual que el `Blog · próximamente` que
+  el diseño ya especifica así. **No se inventó ninguna URL.**
+- 🔴 **El footer de escritorio del diseño se pasa 52px de su propia caja**
+  (Marca 340 + gap 80 + Columnas 912 = 1332 contra 1280). En código cede el
+  gap y las columnas flexionan (R24); **el archivo de diseño sigue mal.**
+  **De Clau.**
+- 🟡 El filete del footer fuera de paleta (`#c9c9c91f`, R11) se unificó a
+  bone-100 @12%; el `.pen` sigue con los dos colores. **De Clau.**
+- 🟡 La forma de la URL de LinkedIn sigue asumida como `/company/` (R13). Una
+  línea en `data/socialProfiles.ts`. **De Clau.**
+- 🟡 La reescritura de documento índice en CloudFront (R21/R1c) es un
+  **requisito de despliegue** y no se puede verificar desde este repo.
+  **De Roberto.**
+- El fondo de papel punteado y los glows no tienen feature dueña (A-03), y
+  recordar el idioma en `localStorage` quedó diferido (A-10). **De Roberto.**
+
+- Resumen completo del implementer:
+  `docs/harness/progress/impl_site_shell.md`. Verdict del reviewer (rechazo de
+  la ronda 1 y aprobación de la ronda 2, ambas intactas):
+  `docs/harness/progress/review_site_shell.md`.
+- `feature_list.json`: feature id 3 status `reviewing` → `done`.
