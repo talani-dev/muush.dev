@@ -141,3 +141,54 @@ shipped, what's still open.
 - `feature_list.json`: feature id 2 status `reviewing` -> `done`.
 - Full implementer summary: `docs/harness/progress/impl_primitive_ui_layer.md`.
   Full reviewer verdict: `docs/harness/progress/review_primitive_ui_layer.md`.
+
+## 2026-09-06 — Migración de Astro a Nuxt 4
+
+Decisión de Roberto tras revisar el inventario de JS del diseño (spotlight de
+cursor, cursor personalizado, 2 carruseles, efecto lyrics, menú móvil, 2
+formularios). El análisis técnico concluía que Astro seguía siendo viable
+—ninguna de esas piezas comparte estado, que es donde islands duele— pero
+pesó más la productividad: Roberto trabaja en Vue, no en Svelte.
+
+**Qué se hizo**
+
+- `nuxi init` (Nuxt 4.5.2), estructura Feature-Based de talani-site:
+  `app/features/<feature>/{ui,logic,data}` + `app/shared/{ui,logic,data,utils}`.
+- Tailwind v4 vía `@tailwindcss/vite` — **no** `@nuxtjs/tailwindcss`, que
+  sigue siendo el módulo de la era v3 y habría roto la sintaxis `@theme inline`
+  de `global.css`.
+- `@nuxtjs/i18n` con `strategy: 'prefix'` (ambos locales con prefijo, decisión
+  del 2026-09-06). Los locales viven en `i18n/locales/{es,en}.json`.
+- Salida estática con `nitro.preset: 'static'` → `.output/public` para
+  S3 + CloudFront. Verificado: prerenderiza `/es` y `/en`.
+- **Storybook agregado** (`@storybook/vue3-vite`), revirtiendo la prohibición
+  del Artículo VII de la constitution v1.0.0. Decisión de Roberto: resuelve el
+  problema de no poder ver los componentes antes de componerlos en páginas.
+- Constitution reescrita a **v2.0.0** con la estructura de talani-site:
+  12 artículos, Feature-Based + Capas, dependency direction y feature
+  isolation como NON-NEGOTIABLE.
+- `init.sh` reescrito: agrega `nuxt prepare` automático si falta `.nuxt/`
+  (si no, un clon fresco falla el typecheck por una razón ajena al cambio),
+  más `pnpm generate` y `pnpm storybook:build`.
+
+**Qué sobrevivió intacto**
+
+`docs/business/**` completo (incluido `design-extract.md` con todas las
+medidas del `.pen`), `feature_list.json`, los 4 hooks de Husky (llaman
+scripts npm, no comandos de framework), `biome.json` (adaptado a `.vue`),
+los 6 SVG ya normalizados, y los tokens de color y la escala fluida — CSS
+es CSS.
+
+**Qué se descartó**
+
+Los 8 componentes `.astro`, `BaseLayout.astro`, las páginas de Astro, los
+utils de i18n hechos a mano (los reemplaza `@nuxtjs/i18n`) y las specs
+001/002/003. Todo sigue en el historial de git sobre `master`.
+
+**Features 1 y 2 regresaron a `pending`** — sus implementaciones eran de
+Astro. Sus descripciones se reescribieron para Vue; los contratos de props
+de los primitivos siguen siendo válidos y están en git.
+
+**Deuda registrada**: el test de i18n de la era Astro se reemplazó por
+`tests/i18n-parity.test.ts`, que ahora hace cumplir mecánicamente el
+Artículo VI comparando las llaves de `es.json` y `en.json`.
