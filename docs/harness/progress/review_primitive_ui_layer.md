@@ -1,190 +1,245 @@
 # Review: primitive_ui_layer (feature 002)
 
-## Verdict: APPROVED
+## APPROVED
 
-Reviewed 2026-09-06. `feature_list.json` id 2 confirmed `reviewing` before
-this review started. No file in the repo was modified by this review — all
-build/type experiments ran in an isolated copy outside the working tree;
-`git status --short` is identical before and after.
+Reviewed 2026-09-06 (Nuxt 4 / Vue 3 / Tailwind v4 / Storybook 10 cycle). This
+file replaces the Astro-era review of the same name; that implementation was
+discarded by the 2026-09-06 migration and nothing below refers to it.
 
-## Checkpoints (docs/harness/CHECKPOINTS.md)
+Feature 2 confirmed at status `reviewing` in `feature_list.json` before this
+review began. No repository file was modified by this review other than this
+one.
 
-- **C1** — base + harness files present; `.specify/memory/constitution.md` is
-  real (v1.0.0, 9 articles); `docs/business/` populated; `./init.sh` exit 0.
-- **C2** — exactly one feature in `reviewing` (id 2); feature 1 went
-  `in_progress → reviewing → done`; existing Vitest suite green.
-- **C3** — no constitution violation, see below.
-- **C4** — `pnpm test` 1 file / 5 tests, all green; `pnpm build` succeeds.
-- **C5** — the last feature worked is in its correct status. **Leader
-  follow-up**: `current.md` still reads "Feature 2 — spec_ready" and
-  `history.md` has no entry for this session yet. Both are session-close
-  duties that follow this review; neither blocks approval.
-- **C6** — `spec.md`/`plan.md`/`tasks.md` (+ research, data-model,
-  quickstart, contracts, checklist) all present; the Constitution Check
-  table is this repo's Phase -1 gate equivalent and every one of the 9
-  articles is filled in PASS / N/A with justification, no blanks; all 41
-  tasks checked `[x]`; no `[NEEDS CLARIFICATION]` in spec.md.
-- **C7** — N/A. No route and no `ui.ts` key added or changed;
-  `src/pages/` still holds only `index.astro`, `es/index.astro`,
-  `en/index.astro`.
+**Reason**: all eight primitives are correct against `design-extract.md`
+§§ 1-8, every acceptance criterion is covered by a test, all 36 tasks are
+truthfully done except the human-visual pass noted below, no Constitution
+violation was found, and `./init.sh` exits 0 with 8/8 checks.
 
-## Constitution
+---
 
-- **Article I** — `output: 'static'` untouched, no `server/` dir, no API
-  route, build emits 3 static pages.
-- **Article II** — `grep -rInE '<script|client:|islands/' src/components/`
-  returns nothing across all 8 files. Built HTML from a full-composition
-  page contains no `<script>` tag. All 8 are `.astro`.
-- **Article IV** — both literal gates
-  (`#[0-9a-fA-F]{3,8}` and `\[[0-9]+(px|rem|%)|[0-9]+px`) return zero hits
-  in `src/components/`. Every visual value resolves to a token; verified in
-  the compiled stylesheet that all 43 utility classes the components use
-  actually emit CSS (none silently unresolved).
-- **Article V** — `astro check` 0 errors / 0 warnings / 0 hints; no `any`,
-  no `@ts-ignore`, no `@ts-expect-error`.
-- **Article VI** — only same-directory relative imports (`./Radar.astro`,
-  `./Wordmark.astro`); all cross-boundary imports use the `@/assets/*`
-  alias added to `tsconfig.json` (compliance, not an exception).
-- **Article VII / IX** — no test framework added; no speculative variants.
+## Checkpoints C1-C8
 
-## Verified against design-extract.md (independently recomputed)
+- **C1 — harness complete.** CONFIRMED. All base and harness files present;
+  `constitution.md` v2.0.0 is real, not a template. `./init.sh` exits 0.
+- **C2 — state coherent.** CONFIRMED with one housekeeping defect. Exactly one
+  feature active (id 2, `reviewing`); feature 1 `done` with `init.sh`-verified
+  criteria. **`docs/harness/progress/current.md` is stale** — it still
+  describes the `spec_author` session and states feature 2 is `spec_ready`,
+  contradicting `feature_list.json`. Leader-owned; fix before closing.
+- **C3 — architecture (Feature-Based).** CONFIRMED. `app/features/`,
+  `app/layouts/` and `app/pages/` untouched (`app/pages/index.vue` pre-exists);
+  this feature deliberately creates no feature module. Everything landed in
+  `app/shared/ui/`. Largest component is `BotonPrimario.vue` at 134 lines; no
+  function approaches 30. No cross-layer import exists to violate.
+- **C4 — constitution in code.** CONFIRMED. See the article-by-article section.
+- **C5 — verification real.** CONFIRMED. 9 Storybook entries / 39 stories
+  (`storybook-static/index.json`), one per `app/shared/ui/` component plus
+  `Foundations/Design tokens`. `pnpm test` = 63 passing in 9 files.
+  `pnpm generate` writes `.output/public` (8 routes). `pnpm storybook:build`
+  succeeds.
+- **C6 — session closed cleanly.** NOT YET APPLICABLE. `history.md`'s last
+  entry covers the feature-1 close, not the feature-2 implementation session;
+  the session is still open pending this review. Leader to add the entry and
+  move status on close.
+- **C7 — SDD.** CONFIRMED. `spec.md`, `plan.md`, `tasks.md`, `research.md`,
+  `data-model.md`, `contracts/components.md`, `quickstart.md` and
+  `checklists/requirements.md` all present. All Phase -1 gates `[x]`. Zero
+  `[NEEDS CLARIFICATION]` markers. 36/36 tasks `[x]`, none unchecked.
+- **C8 — i18n parity.** CONFIRMED. Both `/es/` and `/en/` prerender.
+  `es.json` and `en.json` share the same key tree and
+  `tests/i18n-parity.test.ts` passes. No i18n key was added — correctly, since
+  every visible string in these primitives comes from the caller (FR-005). The
+  only hardcoded strings are the Wordmark's `muush` / `.` / `dev` runs, which
+  the spec designates as locale-invariant brand identity.
 
-- **§ 9 fluid scale** — all 57 fluid/fixed tokens evaluated symbolically at
-  390px and 1440px: **57/57 land on the documented endpoint within 0.05px**,
-  and clamp correctly outside the range (display holds 46.00 at 320px and
-  98.00 at 1920px). Fixed roles are single `rem` values, not degenerate
-  clamps. `grep "@media" src/styles/global.css` → 0.
-- **§ 1 GlassPanel** — 6 variants × fill / border / blur / radius / padding
-  = **30/30 correct**, including the 8-digit-hex → percentage conversions
-  (`#CF31472B`→17%, `#CF314778`→47%, `#FBF8F60F`→6%, `#1C1416A6`→65%,
-  `#FBF8F63B`→23%). `bone`'s second padding is the orthogonal `tight` mode,
-  no seventh variant.
-- **§ 2 Radar** — sm 20/14/7, md 30/20/12, sm-alt 22/16/10 all exact;
-  three rings stacked in one grid cell, genuinely concentric.
-- **§ 3 Pill** — radius full, dark glass, bone-100 18% border, gap 11,
-  padding 9/20/9/10 via logical properties, label bone-200, 13→12px.
-- **§ 4 BotonPrimario** — nav [13,24]/14, hero [18,32]→[16,26]/16→15,
-  submit [18,32]→[16,28], radius 12, ring 1.5px. Emitted gradient is
-  `conic-gradient(from var(--led-angle), var(--red-400) 0%,
-  var(--bone-100) 50%, var(--red-400) 100%)` — 3 stops, **no wine
-  anywhere**. Hover-gated 2.6s linear rotation, reduced-motion collapses to
-  a flat `var(--red-400)` ring, mask-composite band verified in output.
-  *Note for the docs, not a defect*: design-extract § 4/§ 11 writes the
-  third stop as `#cf3247` while § 0 and the token both say red-400 is
-  `#cf3147`. The doc says in the same sentence that the stop "es Red 400
-  otra vez", so `var(--red-400)` is right and the doc has a digit typo.
-- **§ 5 Wordmark** — both forms, Poppins 600, 19→24px, −0.03em both frames,
-  dot always red-400, runs joined.
-- **§ 6 Lockup** — gap 9→12, isotipo width 40→52, **stroke-width formula
-  NOT replicated**: the inlined `<svg>` carries only `viewBox` +
-  `stroke-width="12"` and the component sets width alone, so the browser
-  scales it to 8.851 @52 / 6.809 @40 on its own. No `strokeWidth` prop, no
-  `src/utils/` helper. Checkpoint 7 satisfied.
-- **§ 7 LinkArrow** — 16px / 20→23px, weight 600, no background or border
-  in any state, external gets `target="_blank" rel="noopener noreferrer"`.
-- **§ 8 SocialIcon** — 48×48, radius 10, bone-100 18% border, dark glass,
-  24×24 glyph, container `text-bone-100` so `currentColor` resolves to
-  `#FBF8F6`.
+---
 
-## Social glyphs (decisions-open.md § Íconos de redes)
+## Constitution v2.0.0
 
-All four required steps confirmed on all three files: shared square
-`viewBox="0 0 24 24"`; every `fill="currentColor"`; zero `<style>`,
-`<defs>`, DOCTYPE, prolog, comments, `class=`, `xmlns:serif`, `xml:space`;
-nested transforms flattened to one wrapping `<g>`. The glyphs are inlined
-as real `<svg>` (not `<img>`), so the token inheritance actually works.
-TikTok's optical centring was recomputed from the transformed path extents:
-**x ∈ [1.530, 22.454], y ∈ [0, 23.994]** — matches the claimed 1.53 inset.
-LinkedIn's `scale(8.53333)` and viewBox offset are gone; Instagram's
-`.cls-1` global class is gone.
+- **Article IV — static purity.** CONFIRMED. `nitro.preset: 'static'` unchanged
+  in `nuxt.config.ts`; no `server/` directory exists; no route added. No
+  component carries an event handler, a `ref` driving a style, or `onMounted`.
+  The LED ring is pure CSS.
+- **Article V — component discipline.** CONFIRMED. All 8 SFCs open with
+  `<script setup lang="ts">`. Zero occurrences of `defineComponent`,
+  `export default {` or `inheritAttrs`. All under 200 lines.
+- **Article VII — token discipline.** CONFIRMED, mechanically. All three
+  `quickstart.md` § 4 greps return **zero** matches across
+  `app/shared/ui/*.vue`: no hex / `rgb()` / `oklch()`, no `px`/`rem`/`em`
+  literal, no arbitrary bracketed value, no breakpoint-driven size utility.
+  Cleaner than the spec budgeted — the two pre-declared exceptions were
+  reworded out rather than footnoted. Poppins appears only in `Wordmark.vue`.
+- **Article X — story + test per component.** CONFIRMED. All 8 have both:
+  `<Name>.vue` + `<Name>.stories.ts` + `<Name>.test.ts`, plus
+  `tokens.stories.ts`. Test names follow `should <expected> when <condition>`
+  throughout. No test depends on another's state.
+- **Article XII — absolute imports.** CONFIRMED. No relative import crosses a
+  directory boundary; the only relative imports are same-directory
+  (`./Radar.vue`, `./Wordmark.vue`), which the article permits. Asset imports
+  use `@/assets/...`. **No new alias was added**, so nothing new needed
+  mirroring; the six existing aliases in `.storybook/main.ts` still match
+  `nuxt.config.ts` exactly.
 
-## Task-checkmark spot checks (not taken on faith)
+---
 
-- T001 alias present in `tsconfig.json`, other six untouched.
-- T002–T007: `--dark-glass`, `--stroke-led`, 13 glass/radar colours, 22 type
-  roles, 19 spacing + 9 radar, 4 radius, 3 blur, `@property --led-angle`,
-  `@keyframes led-spin` all present with the documented values.
-- T010: `git diff --numstat src/styles/global.css` → **231 insertions, 0
-  deletions**, so every feature-001 ramp, font token and `@font-face` block
-  is byte-identical (FR-008 holds).
-- T036/T038: nothing under `src/pages/`, `src/layouts/`, `src/islands/`,
-  `src/i18n/`, `src/utils/`, `tests/`, `astro.config.mjs`, `package.json`
-  or `biome.json`.
-- T039–T041: re-run here, all green.
+## Measured values vs `design-extract.md`
+
+Every value below was traced from the component's utility class through the
+token declaration in `app/assets/css/global.css` to the design figure. All
+CONFIRMED.
+
+- **§ 1 GlassPanel, 6 variants.** `red-strong` 17% fill / 47% border,
+  `red-soft` 12% / 35%, `bone-strong` 10% / 18%, `bone` 6% / 18%,
+  `bone-faint` 4% / 16% (the design's `#FBF8F2` resolved to bone-100 at 16% per
+  rules.md § R2), `dark` 65% of `--dark-glass` / 23%. Blur `22/20` (red),
+  `16` (bone), `22` (dark). Radius `22/18` (`--radius-panel`) and `20/18`
+  (`--radius-panel-sm`). Padding `32/22`, `28/22`, `34/24`, tight `22/18`.
+  The `bone-faint` variant correctly maps to the 32/22 padding token, matching
+  the design's row.
+- **§ 2 Radar, 3 sizes.** `sm` 20/14/7, `md` 30/20/12, `sm-alt` 22/16/10 — all
+  exact in rem. One colour recipe across all three: outer red-400 @12%, middle
+  @30%, core solid red-400. Three genuinely nested rings, `aria-hidden`, no
+  opacity or colour prop.
+- **§ 3 Pill.** gap 11, padding `[9, 20, 9, 10]` expressed logically
+  (`py`/`ps`/`pe`), radius 999, dark-glass fill, 18% border, `text-pill`
+  13→12 at weight 500 and ls 0.054em (= 0.7/13). One prop, `label`.
+- **§ 4 BotonPrimario, 3 sizes + LED.** `nav` `[13, 24]` @14,
+  `hero` `[18/16, 32/26]` @16/15, `submit` `[18/16, 32/28]` @16/15. Radius 12,
+  ring `--stroke-led` = 1.5px. **LED gradient CONFIRMED as
+  `red-400 0% → bone-100 50% → red-400 100%` — three stops, NOT wine.** Zero
+  occurrences of any wine token in any component; the only "wine" string in the
+  layer is the comment explaining its absence, and `BotonPrimario.test.ts`
+  asserts it. Verified in the emitted CSS
+  (`storybook-static/assets/BotonPrimario-*.css`): masked pseudo-element with
+  `mask-composite: exclude` and its `-webkit-` companion, `@media (hover: hover)`
+  gating a `2.6s linear infinite` spin, and `@media (prefers-reduced-motion:
+  reduce)` flattening to `background: var(--red-400); animation: none`. No
+  JavaScript.
+- **§ 5 Wordmark.** Both lockups. `muush` and `dev` bone-100, separating `.`
+  red-400, three flush runs with no gap, `text-wordmark` 24→19 at weight 600
+  and ls -0.03em (= -0.72/24 = -0.57/19).
+- **§ 6 Lockup.** gap 12→9 (`--spacing-lockup-gap`), isotipo width 52→40
+  (`--spacing-isotipo`), on-ink variant, `aria-hidden`, not a link.
+- **§ 7 LinkArrow.** `text-link` 16 fixed, `text-link-lg` 20→23 at ls -0.03em
+  (= -0.7/23), always bone-100, no background or border in any state.
+- **§ 8 SocialIcon.** 48×48 (`--spacing-social`), radius 10 (`--radius-icon`),
+  18% border, dark-glass fill, glyph at 24 (`--spacing-social-glyph`, spec
+  A-06), inlined via `?raw` + `v-html` + `:deep(svg)` so `currentColor`
+  resolves to bone-100.
+
+## Isotipo stroke formula (§ 6) — the load-bearing check
+
+**CONFIRMED NOT replicated.** `Lockup.vue` sets `w-isotipo` and nothing else;
+height and stroke are left to the viewBox. The asset declares
+`viewBox="14.5 38.5 70.5 39.5"` with `stroke-width="12"` in user units, so the
+browser produces 8.851 at width 52 and 6.809 at width 40 on its own, matching
+the design's 8.85 and 6.8. The formula `12 × width ÷ 70.5` appears only in
+explanatory comments and in `Lockup.test.ts`, which asserts the rendered output
+contains exactly one `stroke-width` (the asset's own `12`) and that the
+template contains neither a stroke value nor `70.5`. No prop, no computed
+value, no helper. Double-scaling is impossible.
+
+---
+
+## Ruling on the three flagged deviations
+
+### 1. `var(--red-400)` instead of `var(--color-red-400)` — CORRECT, justification partly overstated
+
+The **decision is right and was necessary.** Verified against both builds:
+`dist/_nuxt/*.css` (the shipped site) contains **zero** `--color-*`
+declarations, so `var(--color-red-400)` would have resolved to nothing and the
+LED ring would not have painted in production. The `:root` ramp names
+`--red-400` / `--bone-100` are emitted unconditionally and are the safe target.
+
+The justification is **imprecise, not wrong**: `--color-red-400:var(--red-400)`
+*is* present in the Storybook stylesheet, so R18's blanket wording ("`--color-red-400`
+no existe") holds for the site build but not for the catalogue build. Worth a
+one-line correction to R18; it changes no code.
+
+### 2. `@vitejs/plugin-vue` + `.storybook/main.ts` — NECESSARY, correct, no cleaner in-scope option
+
+The claim reproduces. **CONFIRMED at source**, not from the error message:
+`@storybook/vue3-vite@10.6.0`'s `viteFinal` returns exactly two plugins —
+`templateCompilation()`, which only aliases `vue` to `vue/dist/vue.esm-bundler.js`,
+and a docgen plugin that runs `order: 'post'` on already-compiled output.
+Neither transforms SFC source. `grep -rl plugin-vue` across
+`@storybook/vue3-vite`, `@storybook/vue3` and `@storybook/builder-vite` returns
+**nothing**, and `plugin-vue` is not among their dependencies. `builder-vite`
+expects the SFC plugin from the project's own `vite.config.*`, and this
+repository has none because Nuxt owns the Vite config. So without the explicit
+registration Storybook genuinely cannot compile a single `.vue` file — a real
+blocker, and one that makes Article X unimplementable.
+
+The alternatives are all worse: inline-template-only stories would defeat the
+purpose of the story (it must render the real component); adding a root
+`vite.config.ts` introduces a second config surface competing with Nuxt's.
+
+The dependency addition is also genuinely inert, verified: the `pnpm-lock.yaml`
+diff is **3 lines** — an importer entry only, no new package entry and no new
+integrity hash. `@vitejs/plugin-vue@6.0.8` was already installed in three
+peer-resolved variants as a transitive dependency of Nuxt's Vite builder, from
+the official `vitejs` publisher, and already executes on every `pnpm dev` and
+`pnpm generate`. Promoting it to an explicit devDependency adds zero new code
+to the tree and merely makes it importable from the project root under pnpm's
+strict layout. Registering `vue()` in `.storybook/main.ts` is the same duty
+Article XII already imposes on that file ("what Nuxt provides, Storybook
+redeclares"), extended from aliases to the compiler.
+
+**Ruling: the deviation was correct and was correctly flagged.** One paperwork
+gap follows from it — see below.
+
+### 3. `useVueMultiWordComponentNames` produces 4 `info`s — ACCURATE
+
+Reproduced exactly: `pnpm check` emits one `info` each for `Radar.vue`,
+`Wordmark.vue`, `Lockup.vue` and `Pill.vue`, and `biome check
+--error-on-warnings` still exits 0 because `info` is not promoted. `biome.json`
+was correctly left unmodified. `research.md` § R9's operative conclusion holds;
+only its "no diagnostic" wording was too strong. Not a defect.
+
+---
 
 ## Accuracy of the implementer's summary
 
-Cross-checked against the tree rather than trusted. Every material claim
-holds. One immaterial error: the summary says global.css grew by **215**
-insertions; the actual diff is **231**. The append-only claim it was
-supporting is correct (0 deletions). The claim that the modified files under
-`docs/business/` predate this task is *inferred*, not confirmed — their
-content is the leader's 2026-09-06 design-extract corrections, consistent
-with the story, and none is code.
+Independently verified rather than taken on trust. Every quantitative claim
+holds: 63 tests in 9 files; 9 catalogue entries and 39 stories; all three grep
+gates clean; `--color-*` absent from the site build; the LED CSS as described;
+one `stroke-width` in the Lockup output; `./init.sh` exit 0 with 8/8. The
+per-component variant/story/test table matches the files. The two disclosed
+implementation notes (the `biome-ignore` comments on the two anchors, and
+`LinkArrow` dropping its `<style>` block in favour of utilities) are accurate
+and are improvements, not defects.
 
-## Ruling on the 5 flagged deviations
+The summary is also honest about what it could **not** do, which is the reason
+it can be trusted on the rest.
 
-1. **9 extra radar geometry tokens** — **ACCEPTED.** T005's list of 19 was
-   written before Radar's markup existed; without these, the three
-   diameters would be px literals in the component, which Article IV and
-   FR-030 forbid outright. Values match § 2 exactly and `research.md` § R7
-   already anticipated "sized from three tokens per variant". Following the
-   task list literally here would have *caused* a violation.
-2. **TikTok `fill-rule="nonzero"` instead of T032's `evenodd`** —
-   **ACCEPTED.** Verified in the vendor source: 1 `fill-rule:evenodd` on the
-   root `style` and 4 `fill-rule:nonzero` on the paths, so the paths
-   override the root and `nonzero` is what the art actually renders with.
-   T032 was wrong; preserving the source's effective value is correct. Moot
-   in practice (each path is a single subpath) and documented in the asset
-   README.
-3. **GlassPanel's `}: Props = Astro.props` annotation** — **ACCEPTED.**
-   Reproduced both halves independently: removing the annotation produces
-   exactly 3 `ts(7053)` implicit-any errors, and with it, callers are still
-   rejected on a bad prop (`Type '"not-a-variant"' is not assignable to type
-   'GlassVariant'`). It is a plain type annotation — no `any`, no
-   `@ts-expect-error` — so Article V is satisfied. Minimal correct fix.
-4. **Biome `useAnchorContent` suppression in LinkArrow** — **ACCEPTED WITH
-   A NOTE.** Reproduced all three states: the rule genuinely fires on a
-   slot-labelled anchor, the `{/* biome-ignore */}` form does **not**
-   suppress it, and only the HTML-comment form does — so the leaked comment
-   is unavoidable in-file, exactly as claimed. Turning the slot into a
-   `label` prop would break the published contract in
-   `contracts/components.md`, which is the worse trade. The comment is
-   inert, ~70 bytes, on 4 instances. *Note*: the cleaner fix is a
-   file-scoped `overrides` entry in `biome.json` — out of scope for this
-   feature (T038 forbids touching it), so it should be picked up by whatever
-   feature is next allowed to edit `biome.json`.
-5. **`black` in the mask gradients** — **ACCEPTED.** `linear-gradient(black
-   0 0)` under `mask-composite: exclude` is an alpha stencil; only the alpha
-   channel is read and the hue is never painted. It is not a design value,
-   so Article IV does not apply, and the Article IV grep gate (hex literals)
-   is unaffected. Correctly flagged rather than hidden.
+---
 
-## Observations that are not defects
+## Open items — none blocking, all for the leader before `done`
 
-- `--text-display--line-height` is fixed at 0.98, so at 390px it does not
-  render the 1.0 that spec US1 scenario 2 states literally. This is the
-  explicit `research.md` § R2 decision ("line height fixed per role at the
-  desktop value; every documented mobile deviation is ≤ 4%"), the same
-  approved bundle the scenario lives in, and the resulting difference is
-  0.92px on a 46px heading — inside SC-001's 1px tolerance. Same for h2
-  (1.02 vs 1.03) and h3-alt (1.26 midpoint). The implementation is faithful
-  to the artifacts; the scenario wording is the stale side.
-- No new Vitest test. Correct under Article VII: this feature adds no logic
-  to `src/i18n/` or `src/utils/`, and its one logic candidate (the
-  stroke-width formula) turned out to be free SVG scaling, so there is no
-  function to test. Same precedent as feature 001. Every acceptance
-  criterion was instead verified by recomputation, compiled-CSS inspection
-  and built-HTML inspection, as recorded above.
-- Weights 500/600 have no font binary yet (`public/fonts/` empty, feature
-  001's TODO). Pre-existing, documented as spec A-10, out of scope.
-- `src/layouts/BaseLayout.astro` imports `'../styles/global.css'`, a
-  relative import crossing a directory boundary. **Pre-existing** — that
-  file was not touched by this feature — but there is no `@/styles/*` alias
-  to fix it with. Worth cleaning up in a later feature.
+1. **`plan.md` Complexity Tracking has no row for deviation 2.** The table
+   still lists `vitest.config.ts` as the single file outside `app/shared/ui/`,
+   and the Article VIII gate still reads "no new dependency or build tool
+   added". The Constitution's Compliance Review requires a violation to be
+   justified *in that table*. The justification exists and is excellent — it is
+   just recorded in `impl_primitive_ui_layer.md` and `rules.md` § R19 instead.
+   Add the row. Consequently SC-011 ("files modified outside `app/shared/ui/`,
+   the test configuration and the spec directory: zero") is literally unmet:
+   `.storybook/main.ts`, `package.json`, `pnpm-lock.yaml` and
+   `docs/business/rules.md` were also touched. Approved because the cause was a
+   proven toolchain blocker, not scope creep.
+2. **T015 / T034 are checked `[x]` but the human-visual pass was not
+   performed** — the implementer disclosed this. Structural verification is
+   CONFIRMED (9 entries, 39 stories, clean build, every relied-on utility
+   present in the emitted CSS, and `.storybook/preview.ts` does define the
+   `ink`/`bone` backgrounds and the 390/1440 viewports). The visual pass itself
+   is **UNVERIFIED** — no browser was available to this review either. A human
+   should open the catalogue once before feature 3 composes these.
+3. **`current.md` is stale** (C2) and **`history.md` lacks this session's
+   entry** (C6).
+4. **R18's wording** should be narrowed to the site build (deviation 1 above).
 
-## Result
-
-All checkpoints green. No Constitution violation. All 41 tasks checked and
-truthful. All 5 flagged deviations are justified on their merits. `./init.sh`
-exits 0. **APPROVED.**
+Carried-forward assumptions A-02 (LED on touch, `decisions-open.md` #8, owner
+Clau), A-07 (focus geometry, still UNVERIFIED — and the implementer's note that
+Chrome's `outline-style: auto` may not honour `outline-red-400` is a real
+observation worth Clau's attention) and A-11 (font binaries missing) were
+correctly carried forward, not re-decided.

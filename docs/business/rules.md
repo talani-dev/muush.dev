@@ -174,3 +174,150 @@ Instagram y TikTok sí tienen ruta completa, así que el hueco es específico de
 LinkedIn. Se asume página de empresa (muush es una empresa) y el valor vive en
 un solo lugar de los datos del shell, para que corregirlo sea una línea.
 **Pendiente de confirmación de Clau.**
+
+---
+
+## Feature 002 · Primitive UI layer — reespecificación sobre Nuxt (2026-09-06)
+
+> Las reglas R1–R8 de arriba salieron del ciclo original en Astro y **siguen
+> vigentes**: son reglas de diseño y de marca, no de framework. Las cuatro de
+> abajo salieron al reescribir la misma feature sobre Nuxt 4 + Vue 3 y son de
+> sistema. Se agregan al final para no tocar nada de lo anterior.
+
+### R14 · Un SVG que necesita `currentColor` se inlinea con `?raw`, no con un plugin
+
+Vue/Nuxt **no tiene** el equivalente del import de componente SVG de Astro que
+usaba la implementación anterior. La forma que se adoptó, sin agregar ninguna
+dependencia:
+
+```ts
+import glifo from '@/assets/social/linkedin.svg?raw'
+```
+
+y se pinta con `v-html` dentro de un envoltorio `aria-hidden`, dimensionado con
+un `:deep(svg) { width: 100%; height: auto }` en el `<style scoped>`. El
+`:deep()` **no es opcional**: el contenido que inyecta `v-html` no lo reescribe
+la transformación de estilos con scope de Vue, así que una regla `svg {}` a
+secas nunca hace match.
+
+Verificado: `vite/client.d.ts` declara `*?raw` como `string`, y
+`.nuxt/types/builder-env.d.ts` lo importa, así que tipa solo. El alias
+`@/assets` ya está declarado en los tres lugares que hacen falta.
+
+**Por qué importa más allá de esta feature:** el menú móvil necesita el ícono
+`x` de lucide, y los formularios necesitan `chevron-down` y `paperclip`. Todos
+siguen esta misma vía. Se descartó agregar un plugin de Vite para SVG —
+infraestructura de build nueva, con su propia superficie de supply chain, para
+un problema de cuatro archivos, y habría que sincronizarla aparte en
+`.storybook/main.ts`. Se reevalúa solo si aparece un sistema de iconografía de
+verdad.
+
+### R15 · Los alias solo se duplican en Storybook, no en Vitest
+
+El Artículo XII pide replicar los alias en `.storybook/main.ts` porque ahí Vite
+corre fuera de Nuxt. **`vitest.config.ts` no lo necesita**: `defineVitestConfig`
+de `@nuxt/test-utils` levanta Nuxt y fusiona su config de Vite resuelta —
+incluidos `resolve.alias`, el plugin de Vue y el manejo de `?raw`. Duplicarlos
+ahí sería una tercera copia que se desincroniza sola.
+
+### R16 · El entorno de pruebas es uno solo, y es global
+
+Vitest 4 eliminó `environmentMatchGlobs`, y `defineVitestConfig` **lanza un
+error** si la config declara `projects` o `workspace`. No hay forma limpia de
+dar DOM a una carpeta y dejar otra en Node.
+
+**Regla:** `environment: 'happy-dom'` global, e `include` que abarque tanto
+`tests/**` como los tests de componente colocados junto a su `.vue`. Las
+pruebas que no tocan el DOM no se rompen por tenerlo disponible. Cualquier
+feature futura que agregue tests de componente extiende ese `include`, no
+inventa un proyecto nuevo.
+
+### R17 · Los nombres de una sola palabra de los primitivos no violan el lint
+
+`Radar`, `Wordmark`, `Lockup` y `Pill` son de una sola palabra, y `biome.json`
+desactiva `useVueMultiWordComponentNames` para `app/pages/**` y
+`app/layouts/**` — lo que parecía indicar que la regla iba a estallar en
+`app/shared/ui/`.
+
+**No estalla.** Verificado ejecutando Biome dos veces contra el config real: la
+regla **no forma parte del preset `recommended`**, y solo dispara si se activa
+a mano. Los nombres del contrato se conservan tal cual y **no hace falta tocar
+`biome.json`**. El override existente para páginas y layouts es defensivo, no
+una señal.
+
+---
+
+## Feature 002 · Primitive UI layer — hallazgos de implementación (2026-09-06)
+
+> Las tres reglas de abajo salieron al **implementar** la feature 002 y
+> corrigen suposiciones de su propio `research.md`. Se agregan al final; nada
+> de lo anterior se toca.
+
+### R18 · En el build del sitio, las variables `--color-*` del tema no existen
+
+`app/assets/css/global.css` declara el tema con `@theme inline`. Esa palabra
+clave hace que Tailwind **sustituya el valor directamente dentro de cada
+utilidad** en vez de referenciarlo, así que la variable del tema solo llega a
+`:root` si el escaneo de contenido encuentra a alguien usándola.
+
+Verificado sobre el CSS emitido por `pnpm generate`
+(`.output/public/_nuxt/*.css`): `--red-400` está en `:root`, y las
+declaraciones `--color-*` son **cero**.
+
+**Regla:** cualquier CSS escrito a mano (un `<style scoped>`, una at-rule de
+documento) tiene que referirse a los nombres de la rampa — `var(--red-400)`,
+`var(--bone-100)`, `var(--stroke-led)` — nunca a los nombres del tema
+(`var(--color-red-400)`), que en el sitio resolverían a nada y romperían el
+degradado en silencio. Las utilidades (`bg-red-400`, `text-bone-100`) no se
+ven afectadas; esto aplica **solo** a CSS escrito a mano.
+
+> ⚠️ **El catálogo no sirve para detectar este error.** En
+> `storybook-static/assets/iframe-*.css` sí aparecen
+> `--color-red-400: var(--red-400)` y `--color-bone-100: var(--bone-100)` —
+> exactamente esas dos y ninguna más. No es que Storybook trate el tema
+> distinto: es que su escaneo de contenido alcanza los `.md` de `specs/` y
+> `docs/`, donde esos dos nombres están escritos como `var(--color-…)` (13 y 4
+> ocurrencias), y Tailwind emite la variable del tema al verla usada. El del
+> sitio, acotado por Nuxt a la app, no los ve.
+>
+> Consecuencia práctica: un anillo escrito con `var(--color-red-400)` se
+> vería **bien en Storybook y roto en producción**, y dejaría de verse bien en
+> Storybook en cuanto alguien editara esos `.md`. Al verificar este tipo de
+> variable, mirar el build del sitio, no el del catálogo.
+
+`research.md` § R3 de la feature 002 documentaba `var(--color-red-400)` para
+el anillo LED. Es incorrecto y quedó implementado con `var(--red-400)`, que es
+además lo que ya usaba la implementación anterior en Astro.
+
+### R19 · Storybook necesita el plugin de SFC declarado a mano
+
+`@storybook/vue3-vite@10` **no aporta `@vitejs/plugin-vue`**: su preset solo
+agrega su compilación de plantillas y su docgen, y `@storybook/builder-vite`
+espera encontrar el plugin en el `vite.config.*` del proyecto. Este repo no
+tiene uno, porque Nuxt es el dueño de la config de Vite.
+
+Síntoma exacto sin el plugin: `PARSE_ERROR — Unexpected JSX expression` en la
+primera línea de cada `.vue` importado desde un story, y `pnpm storybook:build`
+falla. Con solo stories de plantilla en línea el problema no aparece, que es
+por qué no se detectó al montar Storybook.
+
+**Regla:** `.storybook/main.ts` registra `vue()` en su `viteFinal`, junto a
+`tailwindcss()` y a los seis alias. Es la misma obligación del Artículo XII
+("lo que Nuxt provee, Storybook lo redeclara"), extendida al compilador de
+SFC. `@vitejs/plugin-vue` pasa a ser devDependency explícita en la versión que
+ya estaba en el árbol como dependencia transitiva de Nuxt (6.0.8): no entra
+código nuevo, solo se vuelve importable.
+
+### R20 · `useVueMultiWordComponentNames` sí emite diagnóstico, pero no rompe el gate
+
+Corrección a R17. La regla **no** está silenciosa: con `preset: recommended`
+emite un diagnóstico de nivel **info** por cada componente de una palabra
+(`Radar`, `Wordmark`, `Lockup`, `Pill`). Lo que R17 acertó es la consecuencia
+práctica: `biome check --error-on-warnings` **sale con código 0**, porque no
+promueve los `info` a error.
+
+**Regla:** los cuatro nombres del contrato se conservan y `biome.json` no se
+toca. Los 4 `info` en la salida de `pnpm check` son esperados y no son un
+defecto pendiente. Si algún día molestan, la solución es un `overrides` para
+`app/shared/ui/**`, no renombrar los primitivos: los nombres vienen del
+vocabulario del diseño.

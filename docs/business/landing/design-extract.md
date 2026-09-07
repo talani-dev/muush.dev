@@ -58,7 +58,21 @@ opacidad. Es el componente de mayor impacto del sistema.
 
 ## 2 · Radar — 3 tamaños
 
-Siempre 3 elipses concéntricas: `halo2` (externo) + `halo` (medio) +
+> ⚠️ **Leer antes de implementar (aclarado 2026-09-06).** En el `.pen` el
+> radar son 3 elipses concéntricas, pero **los dos halos no son aros que
+> deban existir en el sitio**: son la manera de dibujar la animación en un
+> mockup estático. Pencil no anima, así que la diseñadora congeló el pulso
+> del radar como círculos concéntricos para comunicar la intención.
+>
+> **En código el radar es: el punto rojo + el ping animado.** Los dos halos
+> no se replican — hacerlo produce un punto con aros que además pulsa, que
+> es el efecto dibujado más el efecto real, duplicado.
+>
+> Lo que sí se conserva de la tabla de abajo es **el espacio reservado**
+> (la medida de `halo2`), porque las medidas de la Pill y de las secciones
+> están calculadas contra ese footprint. El punto va centrado dentro.
+
+Medidas del archivo de diseño: `halo2` (externo) + `halo` (medio) +
 `dot` (núcleo, siempre `$red-400`).
 
 | Tamaño | halo2 | halo | dot | Dónde |
@@ -66,6 +80,17 @@ Siempre 3 elipses concéntricas: `halo2` (externo) + `halo` (medio) +
 | **sm** | 20 · `#CF31471F` | 14 @(3,3) · `#CF31474D` | 7 @(6.5,6.5) | Dentro de **Pill sección** |
 | **md** | 30 · `#CF31471F` | 20 @(5,5) · `#CF31474D` | 12 @(9,9) | **Propósito** ×3 y **Servicios** ×5 (desktop) |
 | **sm-alt** | 22 | 16 | 10 | **Servicios móvil** (con opacidades del efecto lyrics) |
+
+**Cómo se traduce a código:**
+
+| Tamaño | Footprint reservado | Punto rojo | Halos |
+|---|---|---|---|
+| `sm` | 20×20 | 7 | no se replican |
+| `md` | 30×30 | 12 | no se replican |
+| `sm-alt` | 22×22 | 10 | no se replican |
+
+El punto va centrado en su footprint, y el ping se expande desde el punto.
+Ver `ui-map.md` § Receta del ping del radar.
 
 Servicios móvil aplica opacidad al conjunto radar+texto según posición:
 `0.18` (lejos) · `0.45` (vecino) · `1` (activo).
@@ -433,11 +458,71 @@ Contenido (idéntico D/M tras la corrección del 2026-09-06):
 - **Redes** → LinkedIn · Instagram · TikTok
 
 ### SectionGlow
+
 Frames circulares (`cornerRadius: 999`) con fill de gradiente radial
-`color → #26262600`. ~21 instancias entre las dos páginas.
-Desktop 820–1500px · móvil 480–760px.
-Colores base: `#CF3147A6` (foco hero), `#8A455266` / `#591F284D` /
-`#591F2833` / `#8A45522B` (wine intermedios).
+`color → #26262600` (ink-500 transparente). **22 instancias** — 12 en
+Landing, 10 en Nosotros. Es el fondo entero del sitio.
+
+> ⚠️ **No hay sistema de variantes aquí.** Son 22 glows afinados a mano:
+> tres colores base combinados con **diez** opacidades distintas (65, 60,
+> 40, 37, 30, 28, 20, 17, 14 y 12%), en 12 pares color+opacidad, y nombres
+> que no siempre corresponden al color (`Propósito · red` usa wine-300, no
+> rojo). **No inventes variantes con nombre.** El componente debe recibir
+> color, opacidad y tamaño explícitos, y esta tabla es la referencia de qué
+> combinación va en cada posición.
+
+**Colores base — solo 3:**
+
+| Hex | Token | Dónde |
+|---|---|---|
+| `#CF3147` | `red-400` | Solo en `foco` (hero y CTA) |
+| `#8A4552` | `wine-300` | Capa media |
+| `#591F28` | `wine-400` | Capa de cierre |
+
+**Landing — 12 glows** (desktop / móvil):
+
+| Nombre | Color | Opacidad | Tamaño D / M |
+|---|---|---|---|
+| Hero · foco | red-400 | 65% | 1500 / 700 |
+| Hero · wine | wine-300 | 40% | 1100 / 520 |
+| Hero · cierre | wine-400 | 30% | 900 / 520 |
+| Propósito · wine | wine-400 | 20% | 1000 / 560 |
+| Propósito · red | wine-300 | 17% | 820 / 480 |
+| Servicios · red | wine-300 | 14% | 900 / 520 |
+| Servicios · wine | wine-400 | 12% | 860 / 480 |
+| Proyectos · wine | wine-400 | 14% | 880 / 500 |
+| CTA · foco | red-400 | 60% | 1500 / 760 |
+| CTA · wine | wine-300 | 37% | 1000 / 560 |
+| CTA · cierre | wine-400 | 28% | 900 / 520 |
+| Glow origen | red-400 | 12% | 920 / — |
+
+**Nosotros — 10 glows:**
+
+| Nombre | Color | Opacidad | Tamaño D / M |
+|---|---|---|---|
+| Hero · foco | red-400 | 60% D / 65% M | 1400 / 700 |
+| Hero · wine | wine-300 | 37% D / 40% M | 1000 / 520 |
+| Hero · cierre | wine-400 | 28% D / 30% M | 860 / 520 |
+| Equipo · wine | wine-400 | 20% | 960 / 560 |
+| Equipo · red | wine-300 | 17% | 820 / 480 |
+| Network · red | wine-300 | 14% | 900 / 520 |
+| Network · wine | wine-400 | 12% | 860 / 480 |
+| Work · foco | red-400 | 60% | 1500 / 760 |
+| Work · wine | wine-300 | 37% | 1000 / 560 |
+| Work · cierre | wine-400 | 28% | 900 / 520 |
+
+**Observaciones:**
+
+- El hero de Nosotros es **ligeramente más tenue que el de Landing** en
+  desktop (60% vs 65%) pero **idéntico en móvil** (ambos 65%). Puede ser
+  intencional o deriva; no bloquea nada.
+- `Glow origen` solo existe en Propósito de Landing desktop — es el que
+  ancla los arcos concéntricos de la constelación.
+- Los tamaños móviles rondan el **0.5×** del desktop, no una fracción
+  exacta. Candidato a `clamp()`, pero verificar caso por caso: Hero·cierre
+  es 0.58× mientras Hero·foco es 0.47×.
+- El posicionamiento es absoluto y distinto en las 22 — **lo resuelve quien
+  monta la sección, no el componente**.
 
 ### DottedPaper
 ⚠️ **NO es un componente.** En Pencil son 90+ tiles × 144 elipses de 2.5px

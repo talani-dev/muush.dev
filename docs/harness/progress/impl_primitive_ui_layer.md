@@ -3,174 +3,223 @@
 **Status after this work**: implementation complete, ready for review (leader
 to move `feature_list.json` status to `reviewing`).
 
-All 41 tasks in `specs/002-primitive-ui-layer/tasks.md` are checked off.
-`./init.sh` exits 0.
+This file replaces the Astro-era summary of the same name. That
+implementation was discarded by the 2026-09-06 migration; nothing below
+refers to it except where a decision was deliberately carried forward.
 
-## What changed
+All 36 tasks in `specs/002-primitive-ui-layer/tasks.md` are checked off.
+`./init.sh` exits **0**, all eight checks green, no `[WARN]` and no `[FAIL]`.
 
-### Phase 1 — Setup (T001)
+---
 
-- `tsconfig.json`: added `"@/assets/*": ["src/assets/*"]` to
-  `compilerOptions.paths`, above the existing six aliases (untouched). This
-  is Article VI compliance, not an exception: without it Lockup and
-  SocialIcon would need a boundary-crossing relative import.
+## What shipped
 
-### Phase 2 — Tokens (T002–T007, `src/styles/global.css`)
+Eight Vue SFCs in `app/shared/ui/`, each with a Storybook story and a
+component test, plus one story for the design token set. No page, layout,
+feature module, i18n key or token value was created or changed.
 
-Appended only. `git diff --stat` on the file reports **231 insertions, 0
-deletions**, so every feature-001 ramp, font token and `@font-face` block is
-byte-identical (FR-008).
+| Component | Variants | Story | Test |
+|---|---|---|---|
+| `GlassPanel.vue` | 6 surfaces × 3 paddings × 4 elements | 9 stories | 12 cases |
+| `Radar.vue` | 3 sizes | 4 stories | 6 cases |
+| `Wordmark.vue` | 2 forms | 3 stories | 5 cases |
+| `Lockup.vue` | 2 forms (forwarded) | 3 stories | 7 cases |
+| `Pill.vue` | 1 prop (`label`) | 4 stories | 4 cases |
+| `BotonPrimario.vue` | 3 sizes, link/button | 6 stories | 11 cases |
+| `LinkArrow.vue` | 2 sizes, external | 4 stories | 8 cases |
+| `SocialIcon.vue` | 3 networks | 4 stories | 8 cases |
+| `tokens.stories.ts` | 20 swatches, 22 type roles | 2 stories | — |
 
-- `:root`: `--dark-glass: #1c1416` (warm near-black of the dark glass
-  surfaces, explicitly not `--ink-500`; `rules.md` § R1) and
-  `--stroke-led: 0.09375rem` (the 1.5 LED band).
-- `@theme inline`: 13 `--color-glass-*` / `--color-radar-*` tokens, each a
-  `color-mix(in srgb, <ramp token> <alpha>%, transparent)` so the 8-digit
-  hexes of the design keep pointing at the brand ramp.
-- `@theme inline`: 22 type roles, each with size + `--line-height` +
-  `--letter-spacing` + `--font-weight`, so one class carries the whole role.
-- `@theme inline`: 19 `--spacing-*`, 4 `--radius-*`, 3 `--blur-*` surface
-  tokens.
-- Document level: `@property --led-angle` and `@keyframes led-spin`.
-- **Zero `@media` rules in the file** (`grep -c "@media" src/styles/global.css`
-  → 0), so no sizing breakpoint exists anywhere in this layer (SC-002).
+`pnpm test` runs **63 tests in 9 files**, all passing (the i18n parity suite
+plus the eight component suites). The catalogue builds with exactly **nine
+sidebar entries**, verified from `storybook-static/index.json`:
+`Foundations/Design tokens` + `Shared/UI/{BotonPrimario, GlassPanel,
+LinkArrow, Lockup, Pill, Radar, SocialIcon, Wordmark}` (SC-004).
 
-### Phase 3 — Fluid scale verified (T008–T010)
+The placeholder `Shared/Tokens smoke test` story was deleted, not extended
+(FR-048); its job moved to `tokens.stories.ts`.
 
-Every `clamp()` in the file was evaluated symbolically at a 390px and a
-1440px viewport (rem = 16px). All 44 fluid tokens land on their
-design-extract endpoint within **0.01px** — well inside SC-001's 1px
-tolerance. Spot values: `display` 46.00 / 98.00 · `h1` 38.00 / 74.00 ·
-`pill` 12.00 / 13.00 · `meta` 11.50 / 12.50 · `--spacing-page` 24 / 80 ·
-`--spacing-isotipo` 40 / 52 · `--radius-panel` 18 / 22 · `--blur-glass-red`
-20 / 22. Fixed roles (`service-brief`, `form-label`, `input-value`,
-`button-sm`, `link`) are single `rem` values, not degenerate clamps.
+## Verification performed
 
-### Phases 4–9 — The eight components (T011–T035)
+- **FR-050 / SC-002 / SC-003 grep gate** — all three commands from
+  `quickstart.md` § 4 return **zero matches** across `app/shared/ui/*.vue`.
+  Cleaner than the spec budgeted: the two pre-declared exceptions
+  (`width: 100%` and `2.6s`) do not match the patterns at all, and two
+  incidental matches in explanatory comments (a hex quoted from the design
+  file, the phrase "1px border") were reworded so the gate is mechanically
+  clean rather than clean-with-footnotes.
+- **Utilities actually compile.** Every class the eight components rely on
+  was grepped out of the built Storybook stylesheet — `size-radar-sm-halo`,
+  `backdrop-blur-glass-red`, `p-glass-tight`, `w-isotipo`, `gap-lockup-gap`,
+  `text-wordmark`, `pe-pill-end`, `px-btn-nav-x`, `text-link-lg`,
+  `rounded-icon`, `size-social-glyph`, `font-poppins`,
+  `focus-visible:outline-red-400`, `group-hover:translate-x-0.5`,
+  `motion-reduce:transition-none` — all present. **No token was added.**
+- **Spike A (SFC type export)** passed with a negative control: a consumer
+  writing `import type { GlassVariant } from '@/shared/ui/GlassPanel.vue'`
+  type-checks, and an invalid member fails with TS2322. `types.ts` was
+  therefore **not** created (Article VIII).
+- **Spike B (`?raw` + `v-html` + `:deep(svg)`)** passed: mounting SocialIcon
+  yields inline `<svg>` markup with `currentColor` intact, never an `<img>`.
+  The scoped rule compiles to `[data-v-…] svg{width:100%;height:auto}` in
+  both the Lockup and SocialIcon chunks.
+- **LED ring** compiles to the intended CSS, verified in
+  `storybook-static/assets/BotonPrimario-*.css`: three stops
+  `var(--red-400) 0% → var(--bone-100) 50% → var(--red-400) 100%`,
+  `mask-clip: content-box, border-box` with `mask-composite: exclude` and the
+  `-webkit-` companion, `@media (hover: hover)` gating the 2.6s linear spin,
+  and `@media (prefers-reduced-motion: reduce)` flattening it to
+  `background: var(--red-400); animation: none`. **Zero wine, zero
+  JavaScript.**
+- **Isotipo stroke** — `Lockup.test.ts` asserts the rendered output contains
+  exactly one `stroke-width`, the asset's own `12` in user units, and that
+  the template contains neither `stroke` nor `70.5`. The Pencil formula
+  appears nowhere in code (FR-023, SC-005).
 
-All eight are static `.astro` in `src/components/`, prop signatures exactly
-as `contracts/components.md` defines them (including the exported variant
-types). Verified in the built HTML from a throwaway route:
+## Three deviations from the plan — please review
 
-- **GlassPanel** — 6 variants × 3 padding modes, `as` renders
-  `div`/`article`/`section`/`aside`, `class` merges, slot unconstrained.
-- **Radar** — 3 sizes, three rings stacked in one grid cell so they are
-  exactly concentric, `aria-hidden="true"`.
-- **Wordmark** — `full` / `short`. The three runs sit in an
-  `inline-flex` with no gap, which also makes the markup immune to
-  formatter-inserted whitespace; rendered output is
-  `<span>muush</span><span class="text-red-400">.</span><span>dev</span>`.
-- **Lockup** — isotipo (`on-ink`) + Wordmark, `gap-lockup-gap`. Only the
-  isotipo width is set; no `strokeWidth` prop and no `src/utils/` helper.
-- **Pill** — composes `<Radar size="sm" />` + caller label, `rounded-full`.
-- **BotonPrimario** — `<a>` when `href` is set, otherwise
-  `<button type>` (`submit` defaults to `type="submit"`), 3 size variants.
-- **LinkArrow** — 2 sizes, arrow appended by the component, never a box.
-- **SocialIcon** — 48 glass square, glyph inheriting `bone-100`.
+### 1. `research.md` § R3 is wrong about the CSS variable names
 
-Dependency graph is exactly what FR-013 permits: Pill → Radar,
-Lockup → Wordmark + isotipo asset, SocialIcon → the three glyph assets. No
-other component imports another.
+The plan, `data-model.md` § 7 and task T016 all specify the LED gradient as
+`var(--color-red-400)` / `var(--color-bone-100)`. **Those custom properties
+do not exist at runtime in the site build.** `global.css` declares the theme
+with `@theme inline`, which substitutes values directly into utilities rather
+than referencing them, so a theme variable only reaches `:root` if the content
+scan finds it used. Confirmed against `pnpm generate` output
+(`.output/public/_nuxt/*.css`): `--red-400:#cf3147` is present and there are
+**zero** `--color-*` declarations.
 
-### Social glyphs (T030–T033, `src/assets/social/`)
+The catalogue would not have caught this: `storybook-static` *does* declare
+`--color-red-400` and `--color-bone-100`, and only those two — because
+Storybook's Tailwind scan reaches the `specs/` and `docs/` markdown where
+those two names are written out as `var(--color-…)`. A ring written as
+specified would have looked correct in Storybook and been broken in
+production. Rule **R18** records the narrower, true version.
 
-Three normalized SVGs plus a README recording source, original viewBox,
-transform applied and what was stripped, per file. All three declare
-`viewBox="0 0 24 24"`, carry a `<title>`, use `fill="currentColor"` only,
-and contain no `<style>`, `<defs>`, DOCTYPE, prolog, tool metadata or
-`class` attribute. TikTok's four nested `<g transform>` levels were
-collapsed into one wrapper plus one matrix per path; its optical centring
-was verified against the transformed path extents (x lands in
-`[1.53, 22.45]`, y in `[0, 24]`).
+Written as specified, the conic gradient would have resolved to nothing and
+the ring would not have painted. Implemented instead with `var(--red-400)`
+and `var(--bone-100)`, the `:root` ramp names — which is also what the
+pre-migration Astro implementation used. Recorded as **R18** in
+`docs/business/rules.md`, because it applies to every hand-written CSS block
+in the repository, not just this one.
 
-## The three leader rulings, as implemented
+### 2. Storybook could not compile a single `.vue` file — scope had to widen
 
-1. **LED on touch devices** — `@media (hover: hover)` gates the rotation, so
-   a touch device shows the same static ring as the reduced-motion and no-JS
-   fallbacks. Reversal is deleting one media query.
-2. **`@/assets/*` alias** — added, one line, existing aliases untouched.
-3. **Isotipo stroke width** — the formula is *not* replicated. Lockup sets
-   `w-isotipo` and `h-auto` and lets the viewBox scale the stroke, which
-   reproduces 8.851 at width 52 and 6.809 at width 40.
+`research.md` § R7 confirmed the framework, the story glob and the aliases,
+but the placeholder story was pure inline templates, so no `.vue` file had
+ever been imported into the catalogue. The first real story failed the build
+with `PARSE_ERROR — Unexpected JSX expression` on line 1 of every SFC.
 
-## Verification
+Cause: `@storybook/vue3-vite@10` does **not** contribute `@vitejs/plugin-vue`
+— its preset adds only template compilation and docgen, and
+`@storybook/builder-vite` expects the SFC plugin to come from the project's
+own `vite.config.*`, which this repo does not have because Nuxt owns the Vite
+config.
 
-- `pnpm check` (Biome, `--error-on-warnings`) — pass.
-- `pnpm typecheck` (`astro check`) — 0 errors, 0 warnings, 0 hints.
-- `pnpm test` (Vitest) — existing suite passes unmodified (1 file, 5 tests).
-  No new test: the one candidate for non-trivial logic (the stroke-width
-  formula) does not exist as code, per `research.md` § R6 and Article VII.
-- `pnpm build` — passes. **No page emits a `<script>` tag** and no page
-  references the Svelte client bundle (`grep -l "client.svelte" dist -r` →
-  nothing), so SC-005 holds.
-- `./init.sh` — exit code 0.
-- **Article IV gate**: `grep -rInE '#[0-9a-fA-F]{3,8}\b' src/components/` and
-  `grep -rInE '\[[0-9]+(px|rem|%)|[0-9]+px' src/components/` both return
-  nothing.
-- **Article II gate**: `grep -rInE '<script|client:|islands/' src/components/`
-  returns nothing.
-- **Asset gate**: `grep -riE '#fff|#ffffff|<style|<defs|DOCTYPE|serif:|class='
-  src/assets/social/` returns nothing; all three files declare
-  `viewBox="0 0 24 24"`.
-- **Glass gate (SC-003)**: the built stylesheet was read back and all 30
-  checks (6 variants × fill / border / blur / radius / padding) match the
-  `design-extract.md` § 1 row.
-- **LED gate**: the emitted rule is
-  `conic-gradient(from var(--led-angle), var(--red-400) 0%, var(--bone-100) 50%, var(--red-400) 100%)`
-  with `mask-composite: exclude`, `@media (hover:hover)` for the 2.6s linear
-  rotation and `@media (prefers-reduced-motion: reduce)` collapsing it to a
-  flat `var(--red-400)` ring. `--wine-` appears nowhere in the page.
-- **Style-bleed gate (SC-007)**: a page carrying a `.cls-1` element plus all
-  three inlined glyphs produced no `.cls-1` rule in the output.
+Fix, and the two files it touched outside the declared scope:
 
-The verification route (`src/pages/scratch-002.astro`) was deleted (T036);
-`git status --short` shows nothing under `src/pages/`.
+- `.storybook/main.ts` — `vue()` registered in `viteFinal` beside
+  `tailwindcss()` and the six aliases. Same duty Article XII already imposes
+  ("what Nuxt provides, Storybook redeclares"), extended to the SFC compiler.
+- `package.json` — `@vitejs/plugin-vue` promoted to an explicit
+  `devDependency` at `^6.0.8`. **No new code enters the tree**: 6.0.8 was
+  already installed as a transitive dependency of Nuxt's Vite builder, same
+  version, same integrity hash in `pnpm-lock.yaml`; it was simply not
+  importable from the project root under pnpm's strict layout. Publisher is
+  the official `vitejs` org; the plugin already executes on every
+  `pnpm dev`/`pnpm generate`.
 
-## Deviations and judgement calls the reviewer should look at
+Without this, Constitution Article X ("every component in `app/shared/ui/`
+MUST have a story") is unimplementable and `pnpm storybook:build` fails.
+Flagged because both changes are outside the scope `tasks.md` declared.
+Recorded as **R19** in `docs/business/rules.md`.
 
-1. **Nine radar tokens beyond the 19 the task list enumerates.** T005 lists
-   no radar geometry, but Radar needs three diameters per size and FR-030
-   forbids a size literal in markup. `--spacing-radar-{sm,md,alt}` +
-   `-halo` + `-core` were added to `global.css`, exactly the values in
-   `design-extract.md` § 2. This is the option `research.md` § R7 already
-   anticipated ("sized from three tokens per variant").
-2. **TikTok's fill rule is `nonzero`, not the `evenodd` T032 asks for.** In
-   the source, the root `style="fill-rule:evenodd"` is overridden by
-   `fill-rule:nonzero` on every path, so `nonzero` is what the vendor art
-   actually renders with. It is moot either way — each of the four paths is
-   a single subpath — but the source's own value was preserved rather than
-   silently changed. Recorded in `src/assets/social/README.md` too.
-3. **GlassPanel annotates its destructuring target (`}: Props =
-   Astro.props`).** A `Props` interface that declares an `as` member is read
-   by Astro's TSX transform as the polymorphic-component signature, which
-   leaves `Astro.props` untyped inside the component and produced three
-   `ts(7053)` errors. Callers are still checked against `Props` (verified
-   with a deliberate bad prop). No `any`, no `@ts-expect-error`.
-4. **One Biome suppression in LinkArrow.** `lint/a11y/useAnchorContent`
-   cannot see through an Astro `<slot />`, so *any* slot-labelled anchor
-   fails it. The suppression is the HTML-comment form because neither the
-   JSX-expression form nor a frontmatter comment is recognised — which means
-   the comment does appear in the rendered HTML. The alternative was turning
-   the slot into a `label` prop, which would break the published contract.
-5. **`black` appears in LinkArrow's / BotonPrimario's mask gradients.** It is
-   a mask, not a surface: only its alpha channel is read, and it carries no
-   design meaning. Flagged so it is not mistaken for a colour literal.
+### 3. `research.md` § R9 overstates the Biome result
 
-## Files touched
+R9 says `useVueMultiWordComponentNames` produces "no diagnostic" under the
+`recommended` preset. It does produce one — an **info** — for each of
+`Radar`, `Wordmark`, `Lockup` and `Pill`. R9's operative conclusion still
+holds: `biome check --error-on-warnings` exits **0**, because info-level
+diagnostics are not promoted. `biome.json` was **not** modified, exactly as
+R9 instructed. The four `info` lines in `pnpm check` output are expected, not
+a pending defect. Recorded as **R20**.
 
-- `tsconfig.json` (1 line added)
-- `src/styles/global.css` (append-only, 231 lines)
-- `src/components/GlassPanel.astro`, `Radar.astro`, `Wordmark.astro`,
-  `Lockup.astro`, `Pill.astro`, `BotonPrimario.astro`, `LinkArrow.astro`,
-  `SocialIcon.astro` (new)
-- `src/assets/social/linkedin.svg`, `instagram.svg`, `tiktok.svg`,
-  `README.md` (new)
-- `specs/002-primitive-ui-layer/tasks.md` (T001–T041 checked off)
-- `docs/harness/progress/impl_primitive_ui_layer.md` (this file)
+## Carried forward, not re-decided
 
-Nothing under `src/pages/`, `src/layouts/`, `src/islands/`, `src/i18n/`,
-`src/utils/`, `src/types/`, `tests/`, `astro.config.mjs`, `package.json` or
-`biome.json` was created or modified. The other entries in `git status`
-(`.claude/agents/*`, `.specify/feature.json`, `docs/business/*`,
-`docs/harness/progress/current.md`, `feature_list.json`) were already
-modified before this task started and were not touched here.
+- **A-02 · LED on touch devices.** `@media (hover: hover)` kept, so a touch
+  device gets the static red-400 ring. `decisions-open.md` #8 is still open,
+  owner Clau. The component says so in a comment; reversing it is deleting
+  one media query.
+- **A-07 · Focus-indicator geometry.** The one value in the spec with no
+  design source. All three interactive primitives set
+  `focus-visible:outline-red-400` and nothing else, so the platform default
+  outline geometry stands, recoloured. **Still UNVERIFIED** — and worth
+  noting for Clau that Chrome draws its `outline-style: auto` focus ring with
+  its own colour, so the red may not appear there until a geometry is
+  specified and `outline-width`/`outline-offset` are set explicitly. Left as
+  the spec directed rather than invented.
+- **A-11 · Font binaries.** `public/fonts/` is still empty, so every
+  specimen and the Wordmark render in a fallback face. Noted in the Wordmark
+  story. Out of scope, blocks nothing.
+- **A-08 · Glass on glass** is documented in the GlassPanel story and
+  enforced at review; a leaf component cannot check its ancestry.
+
+## Two implementation notes a reviewer will notice
+
+- **`LinkArrow` and `SocialIcon` open their template with a `biome-ignore`
+  comment.** Biome's `useAnchorContent` cannot see slot content or an
+  `aria-label`, so it flags both anchors as errors. The ignore comments carry
+  the justification. Consequence: Vue's root vnode for those two is a
+  fragment of `[comment, anchor]`. Attribute fallthrough is **unaffected** —
+  Vue skips comments when resolving the single root, verified by asserting a
+  caller-supplied `class` still merges — but their tests reach for
+  `.find('a')` rather than the wrapper, and each test file says why.
+- **`LinkArrow` has no `<style>` block.** The pre-migration version carried
+  `--arrow-shift: 0.15em`, a magic number with no design source that the
+  FR-050 grep would have flagged as a third exception. The hover affordance
+  is expressed entirely in utilities instead —
+  `group-hover:translate-x-0.5 transition-transform duration-200
+  motion-reduce:transition-none hover:underline` — which is both token-based
+  and one less file section. Behaviour is unchanged: underline plus a small
+  arrow shift, never a background (FR-036).
+
+## Not done, deliberately
+
+- No page, layout, route, feature module, Nav, Footer, card or form
+  component. `app/features/`, `app/layouts/` and `app/pages/` are untouched.
+- No change to any token value in `app/assets/css/global.css` (FR-006).
+- No re-normalizing, re-scaling or relocating of the logo and social SVGs
+  (FR-044) — the three glyphs are consumed exactly as feature 1 delivered
+  them.
+- No `types.ts` barrel, no `index.ts` barrel (Spike A made both unnecessary).
+- No visual browsing of the catalogue: T015/T034's "open each on ink, flip to
+  bone, toggle the two viewports" was verified **structurally** — nine
+  entries, 39 stories, a clean build, and every utility present in the
+  emitted CSS — not with human eyes on a browser. A visual pass is a genuine
+  reviewer step that remains open.
+
+## Files
+
+Created — `app/shared/ui/`: `GlassPanel`, `Radar`, `Wordmark`, `Lockup`,
+`Pill`, `BotonPrimario`, `LinkArrow`, `SocialIcon` (`.vue` + `.stories.ts` +
+`.test.ts` each) and `tokens.stories.ts`. 25 files.
+
+Modified — `vitest.config.ts` (`environment: 'happy-dom'`, `include` extended
+to `app/shared/ui/**/*.test.ts`), `.storybook/main.ts` (deviation 2),
+`package.json` + `pnpm-lock.yaml` (deviation 2), `docs/business/rules.md`
+(appended R18–R20), `specs/002-primitive-ui-layer/tasks.md` (tasks checked
+off).
+
+Deleted — the placeholder `app/shared/ui/GlassPanel.stories.ts`
+(`Shared/Tokens smoke test`), replaced by the real story at the same path.
+
+## Gates
+
+| Gate | Result |
+|---|---|
+| `pnpm check` | pass (exit 0; 4 expected `info`, see deviation 3) |
+| `pnpm typecheck` | pass |
+| `pnpm test` | pass — 63 tests, 9 files |
+| `pnpm generate` | pass — 8 routes prerendered |
+| `pnpm storybook:build` | pass — 9 entries, 39 stories |
+| `./init.sh` | **exit 0**, 8/8 checks |

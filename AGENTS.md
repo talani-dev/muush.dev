@@ -52,6 +52,27 @@ pending → [spec_author] → spec_ready → ⏸ HUMAN → in_progress
   → [implementer → reviewer] → reviewing → done
 ```
 
+### Features with `sdd: false`
+
+A small change may skip the spec phase, but **not the review gate**.
+`feature_list.json`'s `reviewing_required_before_done` is unconditional:
+
+```
+pending → ⏸ HUMAN → in_progress → [implementer] → reviewing → [reviewer] → done
+```
+
+The `reviewer` reviews against the feature's `acceptance` array in
+`feature_list.json` plus whichever business doc carries the recipe, instead
+of against a `spec.md`. The `leader` MUST say so when launching it, since
+the reviewer's protocol assumes a spec package exists.
+
+> Verifying the work yourself as `leader` does **not** substitute for the
+> reviewer. That shortcut is the exact failure the `reviewing` state was
+> introduced to prevent: the work looks obviously complete, so the gate
+> feels like ceremony, and it gets skipped. Established 2026-09-06, when
+> the `implementer` correctly refused a `done` transition on feature 4
+> because no reviewer had run.
+
 1. `leader` finds the next `pending` feature with `"sdd": true` in
    `feature_list.json`.
 2. `leader` launches `spec_author`, which runs `/speckit-specify` + (`/speckit-clarify`

@@ -36,6 +36,15 @@
 
   /* Grosor del anillo LED del botón primario: 1.5px */
   --stroke-led: 0.09375rem;
+
+  /*
+   * Duración del ping del radar (ui-map.md § Receta del ping del radar).
+   * Es una elección de implementación, no un valor del diseño, y queda como
+   * token para poder reajustarla sin tocar el componente. Deliberadamente
+   * distinta de los 2.6s del borde LED, para que los dos loops no entren en
+   * fase y produzcan un pulso conjunto no buscado.
+   */
+  --duration-radar-ping: 2.4s;
 }
 
 @theme inline {
@@ -67,10 +76,13 @@
   --font-instrument: "Instrument Sans", sans-serif;
 
   /*
-   * Vidrio y radar — cada valor es el hex de 8 dígitos del diseño
+   * Vidrio — cada valor es el hex de 8 dígitos del diseño
    * (docs/business/landing/design-extract.md § 0 y § 1) reexpresado como
    * mezcla sobre la rampa de marca, para que un cambio de marca toque
    * solo este archivo.
+   *
+   * El radar no aparece aquí: es un punto $red-400 y su ping, sin halos
+   * (design-extract.md § 2), así que no necesita color propio.
    */
   --color-glass-red-strong: color-mix(in srgb, var(--red-400) 17%, transparent);
   --color-glass-red-soft: color-mix(in srgb, var(--red-400) 12%, transparent);
@@ -100,8 +112,72 @@
   );
   --color-glass-dark: color-mix(in srgb, var(--dark-glass) 65%, transparent);
   --color-glass-dark-line: color-mix(in srgb, var(--bone-100) 23%, transparent);
-  --color-radar-halo-outer: color-mix(in srgb, var(--red-400) 12%, transparent);
-  --color-radar-halo-mid: color-mix(in srgb, var(--red-400) 30%, transparent);
+
+  /*
+   * Glows — la parada central de los 22 degradados radiales que forman el
+   * fondo del sitio (design-extract.md § 10 · SectionGlow).
+   *
+   * NO es un sistema de variantes: son tres colores base combinados a mano
+   * con las opacidades que aparecen en la tabla del diseño, y nada más.
+   * Solo existen aquí los 12 pares color+opacidad realmente usados; un par
+   * que el diseño no dibuja no tiene token, y por eso SectionGlow no lo
+   * acepta. Los nombres son la medida, no la posición: `Propósito · red`
+   * usa wine-300, así que un token llamado por su sección mentiría.
+   *
+   * La parada exterior no está aquí: el diseño la escribe `#26262600`
+   * (ink-500 con alfa 0) y se resuelve con `to-transparent`, ver
+   * SectionGlow.vue.
+   */
+  --color-glow-red-400-65: color-mix(in srgb, var(--red-400) 65%, transparent);
+  --color-glow-red-400-60: color-mix(in srgb, var(--red-400) 60%, transparent);
+  --color-glow-red-400-12: color-mix(in srgb, var(--red-400) 12%, transparent);
+
+  --color-glow-wine-300-40: color-mix(
+    in srgb,
+    var(--wine-300) 40%,
+    transparent
+  );
+  --color-glow-wine-300-37: color-mix(
+    in srgb,
+    var(--wine-300) 37%,
+    transparent
+  );
+  --color-glow-wine-300-17: color-mix(
+    in srgb,
+    var(--wine-300) 17%,
+    transparent
+  );
+  --color-glow-wine-300-14: color-mix(
+    in srgb,
+    var(--wine-300) 14%,
+    transparent
+  );
+
+  --color-glow-wine-400-30: color-mix(
+    in srgb,
+    var(--wine-400) 30%,
+    transparent
+  );
+  --color-glow-wine-400-28: color-mix(
+    in srgb,
+    var(--wine-400) 28%,
+    transparent
+  );
+  --color-glow-wine-400-20: color-mix(
+    in srgb,
+    var(--wine-400) 20%,
+    transparent
+  );
+  --color-glow-wine-400-14: color-mix(
+    in srgb,
+    var(--wine-400) 14%,
+    transparent
+  );
+  --color-glow-wine-400-12: color-mix(
+    in srgb,
+    var(--wine-400) 12%,
+    transparent
+  );
 
   /*
    * Escala tipográfica fluida — interpola entre los dos únicos frames del
@@ -244,17 +320,46 @@
   --spacing-social: 3rem;
   --spacing-social-glyph: 1.5rem;
 
-  /* Diámetros del radar (design-extract § 2), fijos en ambos frames.
-     Sin token propio, los 3 anillos serían literales en el componente. */
+  /* Medidas del radar (design-extract § 2), fijas en ambos frames. Dos por
+     tamaño: el footprint reservado (20/30/22 — contra el que están medidas
+     la Pill y las secciones) y el punto rojo centrado dentro (7/12/10).
+     Los dos halos del .pen no se replican: eran el dibujo estático del ping.
+     Sin token propio, ambas medidas serían literales en el componente. */
   --spacing-radar-sm: 1.25rem;
-  --spacing-radar-sm-halo: 0.875rem;
   --spacing-radar-sm-core: 0.4375rem;
   --spacing-radar-md: 1.875rem;
-  --spacing-radar-md-halo: 1.25rem;
   --spacing-radar-md-core: 0.75rem;
   --spacing-radar-alt: 1.375rem;
-  --spacing-radar-alt-halo: 1rem;
   --spacing-radar-alt-core: 0.625rem;
+
+  /*
+   * Diámetros de los glows (design-extract.md § 10 · SectionGlow), uno por
+   * cada par escritorio/móvil distinto de la tabla — el nombre ES el par.
+   *
+   * Un token por par y no una sola fracción porque los tamaños móviles no
+   * son un múltiplo constante del escritorio: van de 0.47× (1500→700) a
+   * 0.60× (860→520). Tampoco basta con el diámetro de escritorio, porque
+   * dos glows lo comparten y bajan a móviles distintos (1500→700 y
+   * 1500→760; 1000→560 y 1000→520). Cada par interpola 390 → 1440 igual
+   * que el resto de la escala, así que quien monta la sección no necesita
+   * ningún breakpoint de tamaño.
+   */
+  --spacing-glow-1500-760: clamp(47.5rem, 30.3214rem + 70.4762vw, 93.75rem);
+  --spacing-glow-1500-700: clamp(43.75rem, 25.1786rem + 76.1905vw, 93.75rem);
+  --spacing-glow-1400-700: clamp(43.75rem, 27.5rem + 66.6667vw, 87.5rem);
+  --spacing-glow-1100-520: clamp(32.5rem, 19.0357rem + 55.2381vw, 68.75rem);
+  --spacing-glow-1000-560: clamp(35rem, 24.7857rem + 41.9048vw, 62.5rem);
+  --spacing-glow-1000-520: clamp(32.5rem, 21.3571rem + 45.7143vw, 62.5rem);
+  --spacing-glow-960-560: clamp(35rem, 25.7143rem + 38.0952vw, 60rem);
+  --spacing-glow-900-520: clamp(32.5rem, 23.6786rem + 36.1905vw, 56.25rem);
+  --spacing-glow-880-500: clamp(31.25rem, 22.4286rem + 36.1905vw, 55rem);
+  --spacing-glow-860-520: clamp(32.5rem, 24.6071rem + 32.381vw, 53.75rem);
+  --spacing-glow-860-480: clamp(30rem, 21.1786rem + 36.1905vw, 53.75rem);
+  --spacing-glow-820-480: clamp(30rem, 22.1071rem + 32.381vw, 51.25rem);
+  /* `Glow origen` solo existe en el Propósito de Landing en escritorio, así
+     que el diseño no le da medida móvil y el token es fijo; ocultarlo en
+     móvil es de quien monta la sección. */
+  --spacing-glow-920: 57.5rem;
 
   /* Radios: los paneles son fluidos, los controles fijos.
      La cápsula del Pill usa rounded-full, no un token propio. */
@@ -317,5 +422,28 @@
 @keyframes led-spin {
   to {
     --led-angle: 360deg;
+  }
+}
+
+/*
+ * Ping del radar: el anillo fantasma sale del punto rojo, se expande y se
+ * desvanece (ui-map.md § Receta del ping del radar). Los valores de escala
+ * y opacidad son la receta literal; la duración es el token
+ * --duration-radar-ping y la fija quien monta la animación.
+ *
+ * scale(3) sobre el punto rebasa el footprint (7→21, 12→36, 10→30), que es
+ * lo que le da lectura de barrido de radar en vez de simple halo.
+ *
+ * Como led-spin, es una at-rule de documento y se declara una sola vez
+ * aunque el radar aparezca 19 veces.
+ */
+@keyframes radar-ping {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3);
   }
 }
