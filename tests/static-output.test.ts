@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -47,6 +47,22 @@ const ROUTES = Object.keys(DOCUMENTS) as RoutePath[]
 
 function documentFor(route: RoutePath): string {
   return readFileSync(join(OUTPUT, DOCUMENTS[route]), 'utf8')
+}
+
+/** Every file under `.output/public`, recursively — the deployed file set. */
+function everyEmittedFile(directory: string = OUTPUT): string[] {
+  return readdirSync(directory).flatMap(entry => {
+    const path = join(directory, entry)
+    return statSync(path).isDirectory() ? everyEmittedFile(path) : [path]
+  })
+}
+
+/** The emitted stylesheets, concatenated — where the font faces land. */
+function emittedCss(): string {
+  return everyEmittedFile(join(OUTPUT, '_nuxt'))
+    .filter(path => path.endsWith('.css'))
+    .map(path => readFileSync(path, 'utf8'))
+    .join('\n')
 }
 
 /**
@@ -185,6 +201,38 @@ describe('static output · the layout wraps every page', () => {
     })
   }
 
+  for (const route of ROUTES) {
+    it(`should paint the background layers when the page is ${route}`, () => {
+      /*
+       * The background costs zero JavaScript (spec FR-009) and is the
+       * layout's, not a page's (FR-004) — so it must already be in the
+       * prerendered document, on every route, in both locales. A mounted
+       * component cannot show either of those things.
+       *
+       * What is asserted is the host contract plus the sheet: the layout root
+       * is the page's single stacking context (`isolate`), is positioned, and
+       * clips horizontal overflow with `clip` rather than `hidden` so the
+       * off-canvas glows never turn the page into a scroll container
+       * (feature 006 `research.md` § R3). Paint order itself is not testable
+       * here — `happy-dom` does no painting, and pretending otherwise would
+       * ship a test that always passes (`rules.md` § R27). It is reviewed in
+       * the `DotGrid` / `SectionBackdrop` stories instead.
+       */
+      const html = documentFor(route)
+
+      const layoutRoot = html.match(/<div class="([^"]*bg-ink-500[^"]*)"/)?.[1]
+
+      expect(layoutRoot, route).toBeDefined()
+      for (const utility of ['relative', 'isolate', 'overflow-x-clip']) {
+        expect(layoutRoot?.split(' '), `${route} · ${utility}`).toContain(
+          utility
+        )
+      }
+
+      expect(html, route).toMatch(/<div aria-hidden="true" class="dot-grid/)
+    })
+  }
+
   it('should render the same nav markup on the landing and on About', () => {
     /*
      * § 9.bis verified the two pages' chrome is byte-identical, which is why
@@ -213,5 +261,136 @@ describe('static output · the layout wraps every page', () => {
 
     expect(landingNav).toBeDefined()
     expect(navMarkup('/es/nosotros')).toBe(landingNav)
+  })
+})
+
+describe('static output · the brand type is self-hosted', () => {
+  /*
+   * Feature 006, FR-015 / SC-007. `@nuxt/fonts` resolves the families from
+   * Google at **build** time and writes the binaries into
+   * `.output/public/_fonts`; the deployed artefact must therefore be
+   * self-contained, with no runtime request to a third party (Constitution
+   * Article IV).
+   *
+   * This is the mechanical half of the check. The other half — that the site
+   * visibly renders in Poppins and Instrument Sans rather than in a fallback
+   * that happens to be loaded — cannot be asserted here and is a by-eye task
+   * (feature 006 `quickstart.md` § 4, `research.md` § R7).
+   *
+   * The rule this enforces is the standing one: verify against
+   * `.output/public`, never against the dev server or the catalogue
+   * (docs/business/rules.md §§ R25, R31).
+   */
+  const BRAND_FONT_WEIGHTS = [
+    { family: 'Poppins', weight: 600 },
+    { family: 'Instrument Sans', weight: 400 },
+    { family: 'Instrument Sans', weight: 500 },
+    { family: 'Instrument Sans', weight: 600 },
+  ] as const
+
+  it('should emit a face for every brand weight when the site is generated', () => {
+    /* The closed set of `branding.md` § Tipografía: Poppins is the wordmark's
+       alone, everything else is Instrument Sans. A weight missing here is a
+       weight the browser synthesises (FR-017). */
+    const css = emittedCss()
+
+    for (const { family, weight } of BRAND_FONT_WEIGHTS) {
+      const face = new RegExp(
+        `@font-face\\{font-family:${family}[^}]*font-weight:${weight}[^}]*\\}`
+      )
+
+      expect(css, `${family} ${weight}`).toMatch(face)
+    }
+  })
+
+  it('should serve every font binary from its own origin when the site is generated', () => {
+    const fontsDirectory = join(OUTPUT, '_fonts')
+
+    expect(existsSync(fontsDirectory)).toBe(true)
+    expect(readdirSync(fontsDirectory).length).toBeGreaterThan(0)
+
+    /* Emitted from `_nuxt/*.css`, so `../_fonts/…` is `/_fonts/…`. Any
+       absolute URL here would be a runtime dependency on someone else. */
+    const sources = [...emittedCss().matchAll(/src:([^;}]*)/g)].map(
+      ([, value]) => value ?? ''
+    )
+    const remoteSources = sources.filter(value => value.includes('url(http'))
+
+    expect(remoteSources).toEqual([])
+  })
+
+  it('should reach no third-party font host from any emitted file', () => {
+    const offenders = everyEmittedFile().filter(path => {
+      const contents = readFileSync(path, 'utf8')
+      return (
+        contents.includes('fonts.gstatic.com') ||
+        contents.includes('fonts.googleapis.com')
+      )
+    })
+
+    expect(offenders).toEqual([])
+  })
+
+  it('should leave no trace of the deleted hand-written faces when the site is generated', () => {
+    /* The four `/fonts/*.woff2` paths pointed at files that never existed, and
+       every one produced a `[VUE_ROUTER_R0004]` warning in dev (FR-013,
+       FR-016). */
+    const deletedPaths = [
+      '/fonts/Poppins-Regular.woff2',
+      '/fonts/Poppins-Bold.woff2',
+      '/fonts/InstrumentSans-Regular.woff2',
+      '/fonts/InstrumentSans-Bold.woff2',
+    ]
+
+    const offenders = everyEmittedFile().filter(path => {
+      const contents = readFileSync(path, 'utf8')
+      return deletedPaths.some(deleted => contents.includes(deleted))
+    })
+
+    expect(offenders).toEqual([])
+  })
+})
+
+describe('static output · the muush mark', () => {
+  /*
+   * Feature 006, FR-024 / FR-025 / SC-010. Nothing declared an icon before:
+   * Nuxt served `public/favicon.ico` by convention and that file was the stock
+   * Nuxt logo. The declaration is now explicit, in `app.head.link`, so every
+   * prerendered page in both locales carries it.
+   *
+   * What a test cannot do is look at a tab. Whether a browser honours
+   * `prefers-color-scheme` inside an SVG favicon is a by-eye check
+   * (spec A-08), and the light-scheme colours are the file's unconditional
+   * default so that a browser which ignores the query still shows a correct
+   * mark.
+   */
+  for (const route of ROUTES) {
+    it(`should declare the muush icon when the page is ${route}`, () => {
+      expect(documentFor(route)).toContain(
+        '<link rel="icon" type="image/svg+xml" href="/favicon.svg">'
+      )
+    })
+  }
+
+  it('should emit the isotipo geometry and no stock icon when the site is generated', () => {
+    const icon = readFileSync(join(OUTPUT, 'favicon.svg'), 'utf8')
+
+    /* The geometry `app/assets/logo/README.md` records, in the square
+       avatar framing `branding.md` § Isotipo documents (FR-021, FR-022). */
+    expect(icon).toContain('viewBox="0 0 100 100"')
+    expect(icon).toContain('transform="translate(3, -8)"')
+    expect(icon).toContain('cx="21" cy="45" r="6.5"')
+    expect(icon).toContain('M21 72a17 17 0 0 1 34 0 12 12 0 0 1 24 0')
+    expect(icon).toContain('stroke-width="12"')
+    expect(icon).toContain('stroke-linecap="round"')
+
+    /* Adaptive, with the light scheme as the unconditional default. */
+    expect(icon).toContain('#262626')
+    expect(icon).toMatch(/@media \(prefers-color-scheme: dark\)/)
+    expect(icon).toContain('#FBF8F6')
+    expect(icon).toContain('#CF3147')
+
+    /* The `.ico` is deleted, not replaced (spec A-06). */
+    expect(existsSync(join(OUTPUT, 'favicon.ico'))).toBe(false)
   })
 })
