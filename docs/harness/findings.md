@@ -504,6 +504,11 @@ sobresalga por abajo lo reproduce** mientras sea la última del documento, y
 porque la cura —recortar el eje vertical en la raíz del layout— es un cambio
 en un archivo de la feature 006, no de la sección.
 
+> **Cerrada por la § R57** (feature 010, 2026-09-08). Y con una corrección: la
+> cura que se propone arriba —recortar el eje vertical— es necesaria pero **no
+> suficiente**. No cubre el overscroll, que descubre el lienzo a cualquier
+> altura de página. La superficie tenía que ir en `html`.
+
 ### R55 · La altura del nav móvil construido es 78.19, no 76 — falta el borde de la hamburguesa
 
 Medida en el artefacto generado con `Emulation.setDeviceMetricsOverride`
@@ -571,3 +576,194 @@ grep del código fuente crudo buscando `/@(click|mouseenter|mouseleave)/` para
 probar que el componente no lleva script de cliente. Un **comentario** que
 mencione `@click` en prosa rompe esa prueba. La salida correcta es reescribir
 la prosa, no aflojar la guarda.
+
+## Feature 010 · Banda blanca y candado de build — hallazgos (2026-09-08)
+
+### R57 · Un `<div>` no pinta el lienzo, y por eso la § R54 no se cura recortando el desbordamiento
+
+Cierre de la § R54. El fondo del sitio vivía en `bg-ink-500` sobre el `<div>`
+raíz del layout, y **ninguna regla de la hoja compilada tocaba `html` ni
+`body`** (verificado: `grep -o "html{[^}]*}"` solo daba la preflight de
+Tailwind). El lienzo del documento toma el fondo del **elemento raíz**, y solo
+lo hereda del `body` si el del raíz es transparente
+(CSS Backgrounds 3 § 3.11.2). Un `<div>`, por muy raíz del layout que sea, no
+participa: donde no llega, pinta el blanco por defecto del navegador.
+
+Eso hace que el defecto tenga **dos** manifestaciones y que solo una dependa
+de la altura de la página:
+
+| | Se ve cuando | Recortar el eje vertical lo cura | Fondo en `html` lo cura |
+|---|---|---|---|
+| Banda bajo el documento | un glow alarga el documento | sí | sí |
+| **Overscroll** | se arrastra más allá del final, a **cualquier** altura | **no** | sí |
+
+El overscroll es el que decide dónde va la cura: trackpad de macOS e iOS
+descubren el lienzo por debajo del documento con la página en cualquier
+tamaño, así que **ninguna sección futura lo tapa** y recortar el
+desbordamiento no lo toca. La superficie va en `html`.
+
+Medido en el artefacto generado, mismo método que la § R44
+(`Emulation.setDeviceMetricsOverride`, CDP), después del cambio:
+
+| Ancho | Sobrante bajo la raíz | Desbordamiento horizontal | `background` de `html` |
+|---|---|---|---|
+| 320 | +0.38 | 0 | `rgb(38, 38, 38)` |
+| 390 | +0.47 | 0 | `rgb(38, 38, 38)` |
+| 768 | +0.47 | 0 | `rgb(38, 38, 38)` |
+| 1024 | −0.48 | 0 | `rgb(38, 38, 38)` |
+| 1440 | **−0.03** (era **+158.97**) | 0 | `rgb(38, 38, 38)` |
+| 2560 | −0.03 | 0 | `rgb(38, 38, 38)` |
+
+`body` sigue en `rgba(0, 0, 0, 0)` a propósito: una sola declaración decide el
+lienzo. Dos —una en `html` y otra en `body`— lo dejarían decidido por el orden.
+
+**Lo que costó cero:** el eje vertical se recortó además del horizontal
+(`overflow-clip` en vez de `overflow-x-clip`), y no se pierde nada dibujado. El
+footer lleva su propio `bg-ink-500` opaco, así que la cola del glow
+`Hero · cierre` ya estaba tapada en todo el tramo que solapa al footer; lo
+único que asomaba era la banda de 159px **por debajo** del footer, que es el
+defecto. El diseño hace lo mismo: su página mide 5060 y `CTA · cierre` llega a
+5080, o sea que el marco de la página lo corta.
+
+**Verificado que `overflow: clip` en los dos ejes no rompe nada de lo que ya
+estaba:** el nav sigue `sticky` y queda en `top: 0` con el scroll al máximo
+(261 de 261), y el panel `fixed inset-0 z-50` del menú móvil mide 390×844 y
+acierta el hit-test en el centro **y** en la esquina inferior derecha — un
+descendiente `position: fixed` no lo recorta el `overflow` de un ancestro que no
+sea contenedor de bloque para `fixed`. Con `hidden` en un eje no valdría lo
+mismo: coacciona el otro a `auto` y vuelve la raíz un contenedor de scroll
+(§ FR-007 / feature 006 `research.md` § R3).
+
+El orden de capas de las §§ R28/R37 medido sobre la página generada, no en
+Storybook: backdrop de sección `z-index: -3`, hoja de puntos `-2`
+(`radial-gradient(color(srgb .85098 .85098 .85098 / .12) …)`), spotlight `-1`
+—ausente hasta el primer `mousemove` y presente después—, footer y nav en flujo
+normal.
+
+### R58 · El candado de build de Nuxt es un archivo JSON, y solo está activo dentro de un agente
+
+`@nuxt/cli` 3.37 escribe `<buildDir>/nuxt.lock` antes de construir y antes de
+levantar el dev server, y se niega a arrancar un segundo Nuxt mientras un
+proceso vivo lo tenga (`dist/lockfile-*.mjs`, `acquireLock`). El archivo es
+JSON plano y trae todo lo que hace falta para decir qué matar:
+
+```json
+{ "pid": 10237, "startedAt": 1788854149138, "command": "dev",
+  "cwd": "/Users/…/muush.dev", "port": 3000, "url": "http://[::1]:3000" }
+```
+
+Un candado se considera **inactivo** —y se borra— si el PID no vive, si es el
+PID propio, o si `startedAt` tiene más de 24h (`MAX_LOCK_AGE_MS`). Las tres
+condiciones se replicaron tal cual en `tests/nuxt-build-lock.ts`: un lector que
+las juzgue distinto daría un mensaje que contradice a la herramienta que
+describe.
+
+**El detalle que explica por qué esto muerde a los agentes y no a las
+personas:** `isLockEnabled()` devuelve `isAgent` de `std-env` por defecto.
+`NUXT_LOCK=1` lo fuerza encendido, `NUXT_IGNORE_LOCK=1` apagado. Un humano en
+su terminal con `pnpm dev` corriendo genera sin candado (y sin protección
+contra la carrera sobre `.nuxt/`); una sesión automatizada choca.
+
+Consecuencia para las pruebas: `tests/global-setup.ts` hace `execFileSync('pnpm',
+['generate'])`, y Vitest serializa la excepción de `execFileSync` por sus
+propiedades enumerables — de ahí el `Serialized Error: { status: 1 }` que no
+nombra nada. Cuatro apariciones, tres de ellas costando una corrida completa.
+La cura es leer el candado antes de invocar, volver a leerlo si la build falla
+igual, y en cualquier otro caso reportar el **texto** que imprimió la build en
+vez de su código de salida (por eso `stdio` pasó de `'ignore'` a `'pipe'`).
+
+Reproducido para verificar el mensaje —`NUXT_LOCK=1 pnpm dev` de fondo y
+`pnpm test` encima— y la salida está en
+`docs/harness/progress/impl_white_band_and_build_lock.md`.
+
+## Feature 022 · Botón primario en píldora — hallazgos (2026-09-08)
+
+### R59 · Un anillo enmascarado sobrevive a un radio de píldora, y la razón es que `mask-clip: content-box` redondea
+
+El anillo LED de `BotonPrimario` se pinta con un pseudo-elemento de
+`padding: 1.5px` y `mask-composite: exclude` entre una máscara de `border-box` y
+otra de `content-box`. La duda razonable al pasar de r12 a píldora era si la
+banda se adelgazaría o se cortaría en las tapas — un agujero **rectangular**
+dentro de una forma de estadio dejaría la banda vacía justo en las curvas.
+
+No pasa, y no por suerte: `mask-clip: content-box` recorta con las esquinas
+redondeadas por el **radio menos el padding** (CSS Backgrounds 3 § 5.3), así que
+para una píldora el borde interior vale (alto ÷ 2) − 1.5 = medio alto del
+content box: otra píldora, concéntrica. `border-radius: inherit` copia el valor
+*especificado*, y cada caja lo acota a su propio tamaño — por eso hereda "lo más
+redondo posible" y no un número que le quedaría grande al pseudo-elemento.
+
+**Medido sobre `.output/public` con Chrome (§ R44)**, no en Storybook: hero
+236.19×55.19 a 1440 (radio de tapa 27.6), hero móvil 213.55×50 a 390 (25), CTA
+del nav 198.78×42.8 (21.4). Banda de 1.5px continua en las tres, a 0/45/90/135/
+180/270 grados de barrido, a DPR 1 y a DPR 4, y con
+`prefers-reduced-motion: reduce` forzado (anillo rojo plano). Sin hilo, sin
+muesca donde la tapa encuentra el lado recto.
+
+**Corrección al valor del radio (2026-09-08).** `rounded-full` emite
+`border-radius: 2147483647px` **verbatim en la hoja de estilos generada** —eso
+se verificó y es literal—, pero el valor **computado** en vivo no es ese: el
+navegador lo devuelve como `3.35544e+07px`, y solo después lo acota al pintar a
+la mitad del lado corto. Son dos números distintos de la misma declaración. Si
+alguien vuelve a medir esto por `getComputedStyle` y busca el 2147483647, no lo
+va a encontrar y va a creer que la clase no se aplicó. Por eso la aserción de
+`tests/static-output.test.ts` no fija el literal: comprueba que el radio emitido
+supera 1000, que es la propiedad que lo hace píldora a cualquier tamaño.
+
+**Lo que la píldora sí cambia** es dónde se lee el barrido, y conviene decirlo
+antes de que alguien lo reporte como defecto: una caja mucho más ancha que alta
+le da a cada tapa apenas ±12° del giro, así que la parada `bone-100` cae como un
+arco brillante corto sobre la línea central vertical y las tapas se leen casi de
+un solo color. Es función de la proporción de la caja, no del radio: el mismo
+botón a 12px pone el arco en el mismo sitio (comparado lado a lado).
+
+### R60 · `--screenshot` de Chrome headless recorta el contenido y **miente** sobre el desbordamiento
+
+Capturando `/es` con `--window-size=390,844` el titular del Hero sale cortado a
+la derecha, igual a DPR 1 que a DPR 3 — la imagen de un sitio con
+desbordamiento horizontal. Medido por CDP con
+`Emulation.setDeviceMetricsOverride` a los mismos 390: `scrollWidth === clientWidth === 390`
+y el `<h1>` con `scrollWidth === offsetWidth === 342`. **No hay
+desbordamiento**: el recorte es del capturador, no de la página.
+
+**Regla:** una captura sirve para juzgar forma y color; para afirmar
+**geometría** —anchos, desbordamiento, alturas— se mide por CDP, que es
+exactamente lo que la § R44 ya pedía. Un agente que reporte "la landing se
+desborda en móvil" a partir de una captura está reportando su herramienta.
+
+---
+
+## Feature 012 · rescatado antes de cancelarla (2026-09-08)
+
+> La feature 12 (`english_url_segments`) se canceló por decisión de Roberto:
+> se le hace caso al Artículo VI, que manda segmentos de ruta traducidos. Su
+> spec se borró, pero este hallazgo **no dependía de ella** y se pierde si no
+> queda aquí.
+
+### R61 · Ninguna prueba detecta un `aria-current="page"` roto en el nav
+
+`SiteNav` marca el link activo con `aria-current="page"`, que se anuncia a
+tecnología asistiva y **a propósito no se dibuja** (feature 3, spec A-04). Si
+la marca desaparece, nada se ve.
+
+**Y ninguna de las dos pruebas existentes lo caza:**
+
+- `tests/static-output.test.ts:286` compara el markup del nav entre páginas y
+  **le quita `aria-current="page"` a propósito** (línea 321), porque las dos
+  páginas tienen que diferir justo en eso. Al quitarlo, su ausencia se vuelve
+  invisible ahí.
+- `SiteNav.test.ts:103` afirma sobre `aria-current` con un fixture al que le
+  pasan `current: true` a mano. Prueba el render del componente, nunca la
+  comparación de nombre de ruta que produce la marca.
+
+`ShellRouteName` siendo una unión literal cerrada hace que el **compilador**
+cace un descriptor con nombre inválido. No puede cazar el inverso: unión y
+descriptores actualizados juntos mientras el archivo de página sigue con el
+nombre viejo type-checkea perfecto y deja de marcar en silencio.
+
+**Regla:** una marca que solo existe para tecnología asistiva necesita una
+aserción sobre el artefacto generado — en `/es/nosotros` y `/en/about` un link
+del nav lleva `aria-current="page"`; en `/es` y `/en` ninguno lo lleva. La
+prueba que la afirme se verifica en rojo primero (§ R39).
+
+**Estado:** el hueco sigue abierto. No hay feature que lo reclame.

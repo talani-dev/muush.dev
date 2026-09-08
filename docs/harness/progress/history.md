@@ -1330,3 +1330,316 @@ ser. El reviewer lo avaló como justificado, no como relleno.
   `docs/harness/progress/impl_call_link_and_pointer_cursor.md`. Verdict del
   reviewer: `docs/harness/progress/review_call_link_and_pointer_cursor.md`.
 - `feature_list.json`: feature id 11 status `reviewing` → `done`.
+
+## 2026-09-08 — Feature 10: white_band_and_build_lock (done)
+
+`sdd: false`. Sin `specs/010-*`: el brief fueron las 9 entradas `acceptance` de
+`feature_list.json` más `findings.md` § R54. Ciclo `implementer` → `reviewer`,
+rechazada en la ronda 1 por dos bloqueos que **eran del leader** (un formato
+biome roto en `feature_list.json` y una escritura en `docs/business/`), no del
+diff — corregidos, y **APROBADA** en la ronda 2. Compuerta de review respetada.
+
+### Lo que shippeó · la banda blanca, cerrada con DOS piezas
+
+Ninguna sustituye a la otra, y el reviewer lo probó revirtiendo cada una por
+separado:
+
+| Pieza | Qué cubre | Revertida sola |
+|---|---|---|
+| `html { background-color: var(--ink-500) }` | el lienzo, a cualquier altura de página | la región más allá del documento vuelve a `rgb(255,255,255)` |
+| `overflow-clip` en los dos ejes de la raíz | que la decoración no alargue el documento | `overflow: visible` devuelve exactamente 159px de scroll muerto |
+
+El lienzo toma el fondo del **elemento raíz** y solo cae al `body` si el del
+raíz es transparente. Declararlo en `html` es lo que hace que **una sola**
+declaración lo decida en vez de dos; `body` también lo pintaría. Lo que **nunca**
+puede decidirlo es la raíz del layout, porque es un `<div>` — y ese era el
+defecto.
+
+### Por qué "que lo tapen las secciones" no era la cura
+
+Tres razones, y conviene dejarlas escritas porque fue el primer instinto de
+Roberto y el razonamiento es lo que lo zanjó:
+
+1. El **overscroll** descubre el lienzo a cualquier altura de página —
+   trackpad de macOS, iOS— hoy y con las 21 secciones construidas.
+2. **Hasta el diseño completo desborda**: página de 5060 y `CTA · cierre`
+   llega a 5080.
+3. Roberto difirió Proyectos, Equipo y Network, así que la página de mañana es
+   **más corta** que la del diseño, no más larga.
+
+### `clip` y no `hidden`, y el eje vertical decidido a propósito
+
+`hidden` en un eje coacciona el otro a `auto` y vuelve la raíz un contenedor de
+scroll, lo que rompería el nav `sticky`. El eje vertical se recortó por
+simetría con FR-007 —una decoración no alarga el documento en **ningún** eje— y
+no cuesta nada dibujado: el footer lleva su propio `bg-ink-500` opaco, así que
+la cola de `Hero · cierre` ya estaba tapada en todo el solape. El panel `fixed`
+del menú móvil sobrevive al recorte: verificado con **muestra de píxel** en
+(385,839) —`rgb(38,38,38)` cerrado, `rgb(31,26,27)` abierto—, no solo con
+hit-test.
+
+### El candado de build ya dice qué matar
+
+Cuatro corridas perdidas contra un `Serialized Error: { status: 1 }` que no
+nombraba nada. `tests/nuxt-build-lock.ts` lee `.nuxt/nuxt.lock` y replica las
+tres condiciones de `nuxi`; `tests/global-setup.ts` lo consulta antes de
+invocar, otra vez si la build falla igual, y si no imprime lo que la build
+imprimió. Reproducido bajo `NUXT_LOCK=1 pnpm dev` **dos veces**: una por el
+implementer y otra, independiente, por el reviewer.
+
+### Dos afirmaciones falsas sobre CSS, cazadas y corregidas
+
+Las dos en comentarios/prosa, no en código: una en `tests/static-output.test.ts`
+("un fondo solo en `body` dejaría el overscroll blanco" — falso, `body` también
+pinta el lienzo) y otra en el propio informe del implementer, que **él mismo
+levantó** después de que se le dijera no tocar nada más, en vez de dejarla
+correr. **Misma clase de defecto que hizo rechazar la feature 9 en la ronda 1:
+el código correcto y la razón registrada falsa.** Levantarla en vez de dejarla
+fue la decisión correcta — el siguiente agente razona desde ahí.
+
+### Lo que sigue abierto
+
+- 🟡 **Escalado, no defecto:** si Claude-como-leader puede transcribir las
+  decisiones de Roberto a `docs/business/`. El reviewer **declinó
+  explícitamente** ratificar la distinción: solo Roberto puede conceder esa
+  excepción. Queda en `pending-decisions.md`.
+- 🔴 **Sin pasada visual humana.** Se midió con Chrome/CDP sobre
+  `.output/public` (dos veces, independientes) y hay capturas, pero nadie lo vio
+  en un navegador de verdad. Se suma a las pasadas acumuladas de las features 2,
+  4, 5, 3, 6, 8, 9 y 11.
+- 🟡 El fondo transparente del nav sigue **diferido a propósito** por Roberto
+  (`ui-map.md` § 2) y lo implementa la feature 21. No es bug.
+- Los pendientes de la feature 7 no los toca esta feature: el comentario
+  obsoleto de `SectionGlow` y su variante `'920'` muerta.
+
+- `docs/harness/findings.md`: §§ **R57** y **R58** nuevas; § **R54** marcada
+  como cerrada **con una corrección** — su propia cura propuesta (recortar el
+  eje vertical) era necesaria pero **no suficiente**.
+- Resumen del implementer:
+  `docs/harness/progress/impl_white_band_and_build_lock.md`. Verdict del
+  reviewer: `docs/harness/progress/review_white_band_and_build_lock.md`.
+- `feature_list.json`: feature id 10 status `reviewing` → `done`.
+
+## 2026-09-08 — Feature 22: primary_button_pill_shape (done)
+
+`sdd: false`. Sin `specs/022-*`: el brief fueron las 8 entradas `acceptance` de
+`feature_list.json`. Ciclo `implementer` → `reviewer`, **APROBADA en la primera
+ronda**. Compuerta de review respetada. `./init.sh` sale 0 · 30 archivos /
+**373 pruebas** · sin commit.
+
+### Lo que shippeó · un cambio de clase, y nada más
+
+`app/shared/ui/BotonPrimario.vue`: `rounded-control` → `rounded-full`. El
+relleno `bg-glass-dark` (`#1c1416a6`), el anillo, los paddings, la lógica del
+cursor y las media queries quedaron intactos. Sin prop de forma y sin variante:
+**el botón tiene una sola forma** y un llamador no puede pedir el rectángulo de
+vuelta. `rounded-full` y no un `--radius-pill` propio porque `global.css` ya
+había resuelto eso para la cápsula del `Pill`; un segundo nombre para la misma
+forma es como dos cápsulas se separan.
+
+Roberto resolvió el 2026-09-08 que la píldora va en **todas** las instancias, así
+que el código va por delante de un `.pen` a medio propagar en vez de reproducir
+su estado.
+
+### El anillo LED: medido dos veces, por dos agentes, con dos pipelines
+
+Era el riesgo real de la feature —un gradiente cónico sobre r999 no se comporta
+como sobre r12— y no se declaró por leer el CSS.
+
+- **Implementer**, Chrome sobre `.output/public` (§ R44): banda de 1.5px continua
+  en las tres cajas —hero 236.19×55.19 a 1440, hero móvil 213.55×50 a 390, CTA
+  del nav 198.78×42.8—, a 0/45/90/135/180/270 grados de barrido, a DPR 1 y a
+  DPR 4, sin hilo y sin muesca donde la tapa encuentra el lado recto.
+- **Reviewer**, pipeline independiente: **decodificador PNG propio**, geometría
+  por `getBoundingClientRect` y nunca desde una captura (§ R60), **720 muestras
+  de contorno por caso**, ancho de banda por integral de cobertura de rojo a lo
+  largo de la normal interior. **0 huecos en 720/720 puntos, en todos los casos,
+  a DPR 1 y a DPR 4.**
+
+**El control que zanja el asunto**: el mismo pipeline con
+`border-radius: 12px` forzado inline da **1.50px** de media contra **1.48px** de
+la píldora en las esquinas (mínimos 0.75 contra 0.73). Píldora y r12 son
+indistinguibles dentro de 0.02px, así que **los mínimos sub-píxel eran error de
+registro del muestreo, no un defecto de las tapas** — aparecen igual en el r12
+conocido-bueno. Eso es lo que convierte "se ve bien" en una afirmación
+falsable.
+
+La razón de que sobreviva está en § **R59** y no es la suerte:
+`mask-clip: content-box` recorta por el **radio menos el padding**, así que para
+una píldora el borde interior vale medio alto del content box — otra píldora,
+concéntrica. `border-radius: inherit` copia el valor *especificado* y cada caja
+lo acota a su propio tamaño.
+
+### El hallazgo de proporción: el cambio es visualmente más chico de lo que suena
+
+Lo único que la forma cambia es dónde se lee el barrido: una caja mucho más
+ancha que alta le da a cada tapa apenas ±12° del giro, así que la parada
+`bone-100` cae como un arco brillante corto sobre la línea central vertical y
+las tapas se leen casi de un solo color.
+
+**No es del radio, es de la proporción**, y el reviewer lo confirmó midiéndolo:
+el punto más brillante del contorno sigue la posición cónica esperada dentro de
+1.4°, y **píldora contra r12 coinciden dentro de 0.5° en cada uno de los 6
+ángulos**. El radio no mueve el arco. Queda escrito antes de que alguien lo
+reporte como defecto de esta feature.
+
+### ⚠️ El CTA del nav es inalcanzable hoy — y la palanca faltaba en el informe
+
+**No hay ninguna posición de scroll alcanzable en la que el CTA del nav sea
+visible**: el documento mide 1161px, el `scrollY` máximo es 261, `showCta` es
+falso en todas y `::before` computa `visibility: hidden`. El implementer **sí**
+lo midió, pero solo con `Emulation.setScriptExecutionDisabled` por CDP, que deja
+que la regla `<noscript>` de `SiteNav` revele el control — **y su informe no
+nombró la palanca**. Un agente que lo siguiera al pie de la letra iba a medir un
+nav en blanco y concluir que el anillo se rompió. Añadida al informe en el
+cierre.
+
+**No es defecto y se cierra solo**: el caso es inalcanzable porque la landing
+todavía no tiene sección después del hero, así que no hay altura para scrollear
+más allá de él. Cuando la siguiente sección aterrice, el reveal se ejerce con
+scroll normal. Mismo límite que la feature 9 ya registró para 1440×900.
+
+### Excepción registrada al Artículo V
+
+`BotonPrimario.vue` pasó de **176 a 251 líneas crudas** (`wc -l`; las 251
+incluyen la nota de excepción misma) contra el límite de 200 — y **74 líneas
+no-comentario y no-vacías antes y después**. La feature agregó **una clase** y
+ni una línea de código. El reviewer contó 177/214 y 78 líneas de código; la
+diferencia es de método sobre las líneas delimitadoras de comentario, y las dos
+medidas coinciden en lo que importa.
+
+Es materialmente la misma excepción ya registrada para `CursorSpotlight.vue`,
+que estableció el conteo no-comentario como la única métrica estable. **No se
+reestructuró nada**: la cláusula de remedio del Artículo V ("extract
+sub-components") es lo que identifica la enfermedad como complejidad
+**estructural**, y aquí no hay ninguna — un elemento, un pseudo-elemento
+enmascarado, dos media queries. Partirlo pondría la máscara, el radio heredado y
+el relleno al 65% en dos archivos que tendrían que coincidir.
+
+Va en el encabezado del propio archivo y no en una tabla *Complexity Tracking*
+porque la feature es `sdd: false` y no tiene paquete de spec que la sostenga; la
+§ *Compliance Review* exige que el registro sea **explícito**, no que viva en un
+archivo concreto.
+
+### `--radius-control` lo guarda una prueba, no un comentario
+
+El token quedó **sin ningún consumidor** en `app/` y se conservó a propósito: el
+12 sigue siendo el radio de control del diseño y lo pide `FormField`
+(`design-extract.md § FormField`, `cornerRadius 12`, 13 usos). Pero un token sin
+consumidor defendido solo con prosa es exactamente cómo la variante `'920'` de
+`SectionGlow` estuvo a punto de irse por código muerto, así que ahora lo guarda
+una aserción.
+
+Sobre el **fuente** de `global.css` y no sobre el artefacto, porque Tailwind v4
+lo elimina del build por no tener referencias: el token **no está en
+`.output/public`** y el artefacto no puede hablar por él. Leído con
+`readFileSync` y no con `?raw`, que el plugin de Tailwind devuelve vacío.
+**Visto en rojo antes de confiar en él** (renombrando el token: 1 failed | 17
+passed), y token restaurado.
+
+### Lo que sigue abierto
+
+- 🔴 **Sin pasada visual humana.** Se midió con Chrome/CDP sobre
+  `.output/public` dos veces e independientes, pero nadie lo vio en un navegador
+  de verdad. Se suma a las pasadas acumuladas de las features 2, 4, 5, 3, 6, 8,
+  9, 10 y 11 — y esta cambia visiblemente una página **ya en producción**.
+- 🟡 **Tres documentos contradicen el radio nuevo y ninguno lo arregla un
+  agente** (en `pending-decisions.md`, dueño Clau): el `.pen` a medio propagar
+  —componente `OqChv` en r12, hero móvil y los dos Submit heredando 12, solo
+  hero de escritorio y los cuatro CTA de nav en r999—, `branding.md`
+  § Materiales ("radio 12px controles") y `design-extract.md` § 4
+  (`cornerRadius 12`). Ningún agente editó el `.pen` ni `docs/business/`.
+- Los Submit de los dos formularios heredan la forma nueva **cuando existan**;
+  hoy no hay página que los monte.
+
+- `docs/harness/findings.md`: §§ **R59** y **R60** nuevas. § R59 corregida en el
+  cierre: `border-radius: 2147483647px` es verbatim en la hoja generada, pero el
+  valor **computado** en vivo se acota a `3.35544e+07px` — quien vuelva a medir
+  por `getComputedStyle` no va a encontrar el literal.
+- Resumen del implementer:
+  `docs/harness/progress/impl_primary_button_pill_shape.md` (con la adenda de
+  cierre). Verdict del reviewer:
+  `docs/harness/progress/review_primary_button_pill_shape.md`.
+- `feature_list.json`: feature id 22 status `reviewing` → `done`.
+
+---
+
+## 2026-09-08 — Feature 7: stale_docs_and_dead_glow_code (done)
+
+Limpieza de comentarios que se volvieron falsos. **Cinco archivos, cero líneas
+de código**: el reviewer lo probó mecánicamente en vez de creerlo — quitando
+toda forma de comentario de HEAD y del árbol de trabajo, los cuatro archivos
+TS/Vue quedan byte-idénticos (80=80, 118=118, 170=170, 27=27) — y **re-derivó**
+`entry.DbyTAhZp.css`. Como ese nombre sale del contenido, reproducirlo **es** la
+prueba de que un comentario nunca llega a la hoja de estilos. El implementer lo
+había establecido por la otra vía: snapshot de `.output/public` antes de editar y
+diff después, 35 archivos byte-idénticos salvo el UUID de build y
+`prerenderedAt`, que cambian entre dos corridas cualesquiera. Dos rutas
+independientes a la misma conclusión.
+
+### El tema real: tres cosas parecen código muerto y no lo son
+
+Esta es la lección de la feature, no una nota al pie.
+
+- La variante `'920'` de `GlowSize` y `--spacing-glow-920` **esperan a
+  Propósito**. `Glow origen` es real: mide 920×920 y vive **anidado dentro del
+  frame de Propósito desktop** (nodo `ayCiG`), no en el grupo de fondo a nivel de
+  página — que es exactamente por qué el conteo de la página dio **11 y no 12**.
+- `--radius-control` **espera a `FormField`** y desde la feature 22 lo guarda una
+  aserción, no un comentario.
+
+**Esta feature originalmente ordenaba borrar los dos primeros, y la instrucción
+era incorrecta.** La corrigió el líder leyendo el `.pen` el 2026-09-08. El
+componente ahora lo dice en prosa —`'920'` está documentada como *no consumida
+hoy y no código muerto*— para que nadie repita el intento leyendo el árbol.
+
+### Dos criterios retirados antes de implementar
+
+Los dos quedaron registrados en la descripción de la feature, con su razón:
+
+1. «`SectionGlow.test.ts` is updated in the same change» se escribió cuando el
+   plan era **borrar** la variante `'920'`; al conservarla, contradecía al
+   criterio que dice que el test no se toca.
+2. «`rules.md`'s preamble line 9 is disambiguated against R32» pedía editar
+   `docs/business/`, de autoría humana y solo lectura para todo agente desde el
+   2026-09-07. Pasó a tarea humana en `pending-decisions.md`.
+
+### Un conteo viejo contamina el razonamiento construido encima
+
+La afirmación falsa en `SectionGlow.test.ts` eran **dos líneas, no una**: la
+aritmética *"would be right once and wrong 21 times"* estaba **derivada** del 22
+falso. Arreglar solo el número habría dejado la oración igual de equivocada.
+Vale escribirlo: al corregir un conteo hay que leer la frase completa que lo
+rodea, no solo el dígito.
+
+### La simetría del reviewer, que corta en las dos direcciones
+
+El implementer surfaceó —sin decidirlo él— que dos «22» sobrevivían por la
+literalidad de un criterio (`SectionGlow.test.ts:237` y `global.css:312`) cuando
+el criterio existía para proteger otra cosa: la aserción de alcanzabilidad de
+tokens, que es la que se habría puesto roja si alguien borraba `'920'`. El líder
+autorizó ambos arreglos aclarando su propio criterio.
+
+**Y el reviewer aplicó la misma vara en la dirección contraria, contra el
+líder:** la letra del criterio #1 («no longer says '22'») **tampoco se cumple**,
+porque `SectionGlow.vue:27` dice "Why 21 and not § 10's 22". Aprobó por intención
+sobre literalidad —esa mención es una afirmación *verdadera* sobre un documento
+viejo— y dejó anotado que la consistencia aplica en ambos sentidos. Es la parte
+útil del ciclo: un criterio se interpreta por lo que protege, y quien lo escribió
+no queda exento de esa lectura.
+
+### Lo que sigue abierto (fuera de esta feature, tareas humanas)
+
+- 🟡 Los conteos de `design-extract.md` § 10 (dice 22 y 12) — en
+  `pending-decisions.md`. La mención en `SectionGlow.stories.ts:7` («§ 10 still
+  prints 22 and 12») es deliberada y verdadera hasta que se corrija.
+- 🟡 La ambigüedad del preámbulo de `rules.md` frente a § R32 — misma lista.
+- 🔴 Sin pasada visual humana, como las features 2–11 y 22. Esta no cambia nada
+  renderizado, así que no agrega deuda visual nueva.
+
+- Resumen del implementer:
+  `docs/harness/progress/impl_stale_docs_and_dead_glow_code.md`. Verdict del
+  reviewer: `docs/harness/progress/review_stale_docs_and_dead_glow_code.md`.
+- `./init.sh` exit 0 · **30 archivos / 373 pruebas**, sin cambio respecto al
+  baseline: la feature no agregó comportamiento.
+- `feature_list.json`: feature id 7 status `reviewing` → `done`.

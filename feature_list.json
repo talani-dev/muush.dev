@@ -11,10 +11,12 @@
       "in_progress",
       "reviewing",
       "done",
+      "human_confirm",
       "blocked"
     ],
     "reviewing_required_before_done": true,
-    "sdd_required_when": "feature has \"sdd\": true"
+    "sdd_required_when": "feature has \"sdd\": true",
+    "human_confirm_means": "Esperando una decisión, un valor o copy que solo un humano puede dar. La duda está en docs/harness/progress/pending-decisions.md. Introducido 2026-09-08 por Roberto para una corrida autónoma nocturna."
   },
   "features": [
     {
@@ -146,19 +148,18 @@
       "id": 7,
       "name": "stale_docs_and_dead_glow_code",
       "title": "Retire the documentation and code that features 5 and 6 made false",
-      "description": "Pure cleanup: text and dead code that four separate agents flagged during feature 6 and deliberately left alone, because each sat in a file the spec froze or did not own. Nothing here changes rendered output. Grouped so the churn lands in one review instead of leaking into whatever feature touches these files next. Scoped sdd:false — there is nothing to design, only a list to execute. NOTE the trap the implementer recorded when handing this over: SectionGlow.test.ts asserts that every declared token is reachable, so deleting the '920' size variant without deleting its assertion turns a cleanup into a red suite. The design-file correction is Clau's and is tracked here only so it is not forgotten; it is not a code task and must not block the rest.",
+      "description": "Pure cleanup: text and dead code that four separate agents flagged during feature 6 and deliberately left alone, because each sat in a file the spec froze or did not own. Nothing here changes rendered output. Grouped so the churn lands in one review instead of leaking into whatever feature touches these files next. Scoped sdd:false — there is nothing to design, only a list to execute. NOTE the trap the implementer recorded when handing this over: SectionGlow.test.ts asserts that every declared token is reachable, so deleting the '920' size variant without deleting its assertion turns a cleanup into a red suite. The design-file correction is Clau's and is tracked here only so it is not forgotten; it is not a code task and must not block the rest. CORRECCIÓN 2026-09-08 (leader, leyendo el .pen): el criterio que manda borrar la variante '920' y --spacing-glow-920 es FALSO. `Glow origen` sí existe — mide 920x920 y vive ANIDADO dentro del frame de Propósito desktop (nodo `ayCiG`), no a nivel de página, que es exactamente por qué el conteo de glows de página dio 11 y no 12. No es código muerto: es código que la feature de Propósito va a consumir. NO SE BORRA. DOS CRITERIOS RETIRADOS 2026-09-08 por el leader, con razón registrada. (a) «SectionGlow.test.ts is updated in the same change» se escribió cuando el plan era BORRAR la variante '920'; al conservarla, ese criterio contradecía al que dice que el test no se toca. Se quitó el obsoleto. (b) «rules.md's preamble line 9 is disambiguated against R32» pedía editar `docs/business/`, que desde el 2026-09-07 es de autoría humana y de solo lectura para todo agente. Pasó a ser tarea humana y está en docs/harness/progress/pending-decisions.md. Esta feature queda entonces acotada a código y stories.",
       "acceptance": [
         "SectionGlow.vue's doc comment no longer says '22' or '12 on Landing' — the counts are 21 site-wide and 11 on Landing (rules.md § R32, the .pen is the source of truth)",
         "SectionGlow.stories.ts carries the corrected counts too — the reviewer found the stale numbers in both files",
-        "The '920' GlowSize variant is removed from SectionGlow.vue along with the --spacing-glow-920 token in global.css; both existed for Glow origen alone, which the .pen does not contain",
-        "SectionGlow.test.ts is updated in the same change so its every-declared-token-is-reachable assertion still passes — deleting the variant without the assertion is a red suite",
         "Wordmark.stories.ts:8-10 no longer claims the font binaries are missing, that public/fonts/ is empty, or that the wordmark renders in a fallback typeface — all three became false in feature 6",
-        "rules.md's preamble line 9 ('donde haya conflicto, gana el documento específico') is disambiguated against R32, so it is clear it governs rules.md versus the specific docs and not the .pen versus anything",
         "No rendered output changes: pnpm generate produces the same four documents, and the SectionGlow and Wordmark stories still render every remaining variant",
-        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass",
+        "La variante '920' de GlowSize y el token --spacing-glow-920 SE CONSERVAN. Verificado en el .pen 2026-09-08: `Glow origen` mide 920px y está anidado dentro de Propósito desktop (nodo `ayCiG`). Borrarlo rompería la feature de Propósito",
+        "SectionGlow.test.ts sigue pasando sin modificaciones — no se toca ninguna variante ni ningún token de su namespace cerrado (rules.md § R36)"
       ],
       "sdd": false,
-      "status": "pending",
+      "status": "done",
       "depends_on": [6]
     },
     {
@@ -208,8 +209,8 @@
         "All copy lives in i18n/locales/{es,en}.json with both locales present; tests/i18n-parity.test.ts stays green; zero hardcoded strings in components (Constitution Article VI)",
         "Zero hardcoded hex or px; every value resolves through a design token, and the responsive step reuses the existing fluid scale rather than adding breakpoint-specific sizes where a clamp already covers it (Constitution Article VII)",
         "A Storybook story covers the Hero at both viewports and both locales (Constitution Article X), and a component test covers the token and copy mapping",
-        "SCOPE ADDED 2026-09-07 (Roberto, recorded in ui-map.md \u00a7 2): the nav is pinned to the top of the viewport at its current height and background, with no compressed state and no animation of the nav itself",
-        "SCOPE ADDED 2026-09-07: the nav CTA is hidden while the Hero is in view, fades in once the Hero is scrolled past and fades out on scrolling back; on every route without a Hero it is visible from first paint with no animation. Desktop only \u2014 the nav has no CTA below lg. Visible with no JavaScript, still shows and hides under prefers-reduced-motion, and hidden in the landing HTML so it cannot flash. This modifies feature 3 files; spec.md \u00a7 Files this feature modifies lists them",
+        "SCOPE ADDED 2026-09-07 (Roberto, recorded in ui-map.md § 2): the nav is pinned to the top of the viewport at its current height and background, with no compressed state and no animation of the nav itself",
+        "SCOPE ADDED 2026-09-07: the nav CTA is hidden while the Hero is in view, fades in once the Hero is scrolled past and fades out on scrolling back; on every route without a Hero it is visible from first paint with no animation. Desktop only — the nav has no CTA below lg. Visible with no JavaScript, still shows and hides under prefers-reduced-motion, and hidden in the landing HTML so it cannot flash. This modifies feature 3 files; spec.md § Files this feature modifies lists them",
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
       ],
       "sdd": true,
@@ -233,7 +234,7 @@
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
       ],
       "sdd": false,
-      "status": "pending",
+      "status": "done",
       "depends_on": [6, 9]
     },
     {
@@ -255,6 +256,238 @@
       "sdd": false,
       "status": "done",
       "depends_on": [3, 9]
+    },
+    {
+      "id": 13,
+      "name": "purpose_section",
+      "title": "Propósito — constelación Golden Circle que se revela al hover, y carrusel con efecto lyrics en móvil",
+      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `ayCiG` (1440x900), móvil `D2AvaO` (390x534). ES LA SECCIÓN MÁS DIVERGENTE DEL SITIO — no es la misma composición reescalada, son dos piezas distintas. ESCRITORIO: constelación de Why/How/What. Tres tarjetas (700x228 / 700x187 / 700x146, gap 14, copy a 30px/500), tres Radar de 30px, tres labels de 17px/600, tres líneas conectoras (rectangle 394x1 / 244x1 / 94x1 — anchos distintos a propósito), y TRES ARCOS CONCÉNTRICOS gigantes (ellipse 2134 / 1617 / 1039) que se salen del frame. Además `Glow origen`, 920x920, ANIDADO en la sección — no en la capa de página. MÓVIL: carrusel de tres cartas con efecto lyrics (ui-map.md § 4): activa Why al 100% (274x316, copy 22px/600), vecinas al 45% (241x278, copy 18px/600), más indicador de 3 puntos (8px activo, 6px inactivos). Frames de referencia del efecto: `N6vkLA`, `Y1YaY0`, `TzoQx`. Los arcos y las líneas conectoras NO existen en móvil. La sección no crea stacking context ni pinta fondo opaco, o sus glows saltan encima de la sábana de puntos sin error alguno (rules.md §§ R28, R37). Los glows llegan por el mecanismo de la feature 6, sin editar SectionGlow, DotGrid ni SectionBackdrop. Offsets relativos a la sección, nunca las coordenadas absolutas de página que registra el diseño (rules.md §§ R29, R48). Glows de sección: wine-400 20% size 1000-560 (centro 140,1480 desktop · 80,1180 móvil) y wine-300 17% size 820-480 (centro 1490,1630 · 480,1420). Todos los tokens ya existen en global.css. INTERACCIÓN DEFINIDA POR ROBERTO 2026-09-08 — EL .pen DIBUJA EL ESTADO REVELADO, NO EL DE REPOSO. En reposo la constelación muestra ÚNICAMENTE los tres puntos de radar con su animación de ping y sus tres palabras. Ni las líneas ni las tarjetas están visibles. Al hacer hover sobre el punto de radar O sobre la palabra, la línea se extiende hacia la derecha y al final aparece la tarjeta con su texto. Igual para los tres, de forma independiente. Es el mismo malentendido que ui-map.md § Receta del ping ya documentó para el radar: «los dos halos del .pen NO se replican — eran la forma de dibujar esta animación en un mockup estático». GEOMETRÍA MEDIDA (relativa a la sección, escritorio): Radar Why 30x30 @235,249 · Label Why 220x21 @140,214 · link Why 394x1 @266,264 · Tarjeta Why 700x228 @660,150. Radar How @385,501 · Label How @290,466 · link How 244x1 @416,515.5 · Tarjeta How 700x187 @660,422. Radar What @535,711 · Label What @440,676 · link What 94x1 @566,726 · Tarjeta What 700x146 @660,653. LOS TRES LARGOS DE LÍNEA SON UNA SOLA FÓRMULA, NO TRES NÚMEROS MÁGICOS: los radares avanzan 150px a la derecha (235 → 385 → 535) y las tres tarjetas se alinean en x=660, así que el largo es `660 − (radarX + 31)` → 394, 244, 94, cada uno 150 menos que el anterior. TARJETAS: radio 22, padding 32. El 17%/47% de la tarjeta Why ES SU ESTADO HOVER — el frame dibuja Why con hover puesto y las otras dos sin él (Roberto, 2026-09-08). Y HAY UN SEGUNDO EFECTO QUE EL ARCHIVO NO PUEDE DIBUJAR: el punto de radar también cambia de intensidad, apagado en reposo y encendido en hover. Los tres Radar del frame son IDÉNTICOS entre sí (medido 2026-09-08: halo2 30px #CF31471F, halo 20px #CF31474D, dot 12px #CF3147), así que el archivo solo contiene UN juego de valores y no se puede saber cuál de los dos estados es. Pregunta abierta en pending-decisions.md.",
+      "acceptance": [
+        "En reposo la constelación de escritorio muestra SOLO los tres Radar con su ping y las tres palabras. Ni líneas ni tarjetas. El frame `ayCiG` dibuja el estado revelado, igual que dibujaba los halos del radar que resultaron ser la animación (ui-map.md § Receta del ping)",
+        "El hover sobre el punto de radar O sobre la palabra revela primero la línea extendiéndose hacia la derecha y después la tarjeta. Los tres son independientes entre sí",
+        "Al quitar el hover la tarjeta DESAPARECE y la línea se retrae — no queda visible en un estado apagado. Los tres puntos son independientes: solo responde aquel sobre el que está el cursor",
+        "El punto de radar tiene DOS intensidades: apagada en reposo y encendida en hover. Es un efecto que el .pen no puede dibujar — los tres Radar del frame son idénticos — así que los valores de reposo y de hover se piden a Roberto o Clau en vez de inferirse (rules.md § R38). BLOQUEA la implementación",
+        "El 17% de fill y 47% de borde que el frame dibuja en la tarjeta Why son SU ESTADO HOVER, no jerarquía del Golden Circle. Las tres tarjetas comparten valores; el frame dibuja Why con el cursor encima y las otras dos sin él",
+        "El largo de cada línea se deriva de `660 − (radarX + 31)`, no se escriben 394/244/94 como literales. Los radares avanzan de 150 en 150 y las tarjetas se alinean en x=660; esa relación es la que genera los tres valores",
+        "SE PREFIERE CSS PURO — :hover y :focus-within con transición de ancho y opacidad, sin JavaScript, igual que el borde LED y el ping del radar. Si resulta imposible en CSS, se justifica por qué antes de meter una composable",
+        "ACCESIBILIDAD, Y NO ES NEGOCIABLE: la copy de Why/How/What es la sustancia de la sección, no decoración. Tiene que revelarse también con teclado (:focus-visible sobre el punto o la palabra) y estar en el DOM para tecnología asistiva aunque no se vea",
+        "prefers-reduced-motion: reduce conserva la revelación y apaga solo la transición — mostrar la tarjeta es información, el deslizamiento es adorno",
+        "El hover es solo de escritorio; móvil no tiene hover y resuelve con el carrusel. La constelación no se renderiza en móvil en absoluto",
+        "Escritorio renderiza la constelación completa del frame `ayCiG`: tres tarjetas, tres Radar, tres labels, las tres líneas conectoras con sus anchos distintos y los tres arcos concéntricos (2134/1617/1039)",
+        "Los arcos rebasan el frame de la sección a propósito; se recortan o se dejan salir de forma decidida y declarada, sin crear stacking context (rules.md § R28)",
+        "`Glow origen` (920px, red-400 12%) se renderiza DENTRO de la sección, que es donde el diseño lo pone. Consume la variante '920' de SectionGlow, que por eso NO es código muerto — ver la corrección en la feature 7",
+        "Móvil renderiza el carrusel con efecto lyrics de ui-map.md § 4: activa al 100%, vecinas al 45%, tamaños de copy 22px/18px según el frame `D2AvaO`",
+        "El indicador de tres puntos son botones reales que centran su carta y se navega con teclado (ui-map.md § Accesibilidad mínima)",
+        "Sin JavaScript el carrusel degrada a scroll horizontal nativo con scroll-snap y las tres cartas quedan al 100%, nunca atenuadas (ui-map.md § 10)",
+        "prefers-reduced-motion apaga las transiciones del carrusel y deja las tres cartas al 100%",
+        "El label va FUERA de la tarjeta en escritorio y DENTRO en móvil — es la diferencia deliberada D6 de decisions-open.md, no una discrepancia. El componente recibe siempre label + copy y cada viewport decide dónde pintarlo, sin prop de modo",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados en componentes (Artículo VI)",
+        "Cero hex o px hardcodeados; todo resuelve por token, y se reutiliza la escala fluida existente antes de inventar tokens por breakpoint (Artículo VII)",
+        "Storybook cubre la sección en ambos viewports y ambos locales (Artículo X), y hay test de componente sobre el mapeo de tokens y copy",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [9]
+    },
+    {
+      "id": 14,
+      "name": "services_section",
+      "title": "Servicios — cinco servicios dispersos en escritorio, línea de tiempo vertical en móvil",
+      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `GiLTU` (1440x1020), móvil `F2Zu8X` (390x1290). ESCRITORIO: cinco servicios colocados a mano en posiciones dispersas, cada uno con Radar de 30/20/12 y bloque de nombre (19px/600) + brief (14px/400) de 232px de ancho, más cuatro rectangles que hacen de líneas conectoras entre ellos (280x131, 261x241, 261x191, 201x231). Cierre de delivery abajo: Pill + copy de 24px/500 a 900px. MÓVIL: línea de tiempo vertical — un rectangle de 1x750 como eje, cinco items con Radar de 22/16/10 y bloques de 310px, nombre 18px/600 y brief 14px/400. Cierre de delivery apilado (Pill + copy 17px/500). El efecto lyrics de ui-map.md § 5 aplica al móvil: área centrada al 100%, vecinas al 45%, siguientes al 22%, con seguimiento de scroll. Frames de referencia: `q3xIU`, `yEgo5`, `x0h292`. La sección no crea stacking context ni pinta fondo opaco, o sus glows saltan encima de la sábana de puntos sin error alguno (rules.md §§ R28, R37). Los glows llegan por el mecanismo de la feature 6, sin editar SectionGlow, DotGrid ni SectionBackdrop. Offsets relativos a la sección, nunca las coordenadas absolutas de página que registra el diseño (rules.md §§ R29, R48). Glows: wine-300 14% size 900-520 (centro 1470,2470 · 460,2160) y wine-400 12% size 860-480 (centro 130,2810 · 60,2520).",
+      "acceptance": [
+        "Los cinco nombres de servicio SE TRADUCEN: español en /es, inglés en /en. Roberto, 2026-09-08 — «se traduce todo». Que el frame en español los dibuje en inglés no los exime. `services.md` tiene los briefs en ES-MX pero los nombres en inglés, así que la traducción de los nombres no existe todavía y hay que pedirla",
+        "Escritorio coloca los cinco servicios en las posiciones del frame `GiLTU` con sus Radar de 30px y sus cuatro líneas conectoras; no es una rejilla, son posiciones a mano",
+        "Móvil renderiza la línea de tiempo vertical con el eje de 1x750, los cinco Radar de 22px y los bloques de 310px del frame `F2Zu8X`",
+        "El efecto lyrics de ui-map.md § 5 funciona en móvil con seguimiento de scroll: centrada 100%, vecinas 45%, siguientes 22%, aplicado a texto y a los puntos con halo",
+        "Sin JavaScript las cinco áreas quedan al 100%, nunca atenuadas por defecto (ui-map.md § 10). prefers-reduced-motion hace lo mismo",
+        "Servicios NO está en el nav según content.md, pero el rediseño del nav (feature 21) SÍ lo agrega. La contradicción se reporta; el diseño gana por § R32",
+        "La línea de cierre de Delivery & Technology Management es texto, no es interactiva (ui-map.md § 5)",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados en componentes (Artículo VI)",
+        "Cero hex o px hardcodeados; todo resuelve por token, y se reutiliza la escala fluida existente antes de inventar tokens por breakpoint (Artículo VII)",
+        "Storybook cubre la sección en ambos viewports y ambos locales (Artículo X), y hay test de componente sobre el mapeo de tokens y copy",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [9]
+    },
+    {
+      "id": 15,
+      "name": "projects_section",
+      "title": "Proyectos — bento asimétrico en escritorio, carrusel horizontal en móvil, cuatro slots reservados",
+      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `BiKea` (1440x900), móvil `x9OR6w` (390x560). ESCRITORIO: bento asimétrico estático de cuatro slots con tamaños distintos — Caso 01 620x560, Caso 02 636x265, Caso 03 y 04 306x265. Heading 52px/600 «Nuestro trabajo», nota de 13px. MÓVIL: carrusel horizontal de cuatro cartas de 252x290, con barra de progreso (track 342x3, thumb 97x3) y hint «Desliza →» de 11px/500. Heading a 34px. DISCREPANCIA DEL ARCHIVO DE DISEÑO detectada 2026-09-08: en el frame móvil la etiqueta del Caso 04 dice «Caso 03» — está duplicada. Confirmarlo con Clau antes de replicarlo. La sección no crea stacking context ni pinta fondo opaco, o sus glows saltan encima de la sábana de puntos sin error alguno (rules.md §§ R28, R37). Los glows llegan por el mecanismo de la feature 6, sin editar SectionGlow, DotGrid ni SectionBackdrop. Offsets relativos a la sección, nunca las coordenadas absolutas de página que registra el diseño (rules.md §§ R29, R48). Glow: wine-400 14% size 880-500 (centro 1500,3440 · 470,3050). DIFERIDA POR ROBERTO 2026-09-08: no se construye hasta que él lo diga. La razón no es técnica — hacen falta más colaboradores, más proyectos que presentar y más red. Una sección que existe vacía se lee como sitio incompleto, y el diseño mismo la rotula «Espacio reservado». Sigue en `blocked` hasta instrucción explícita suya; no la desbloquea ningún agente ni el hecho de que sus dependencias cierren.",
+      "acceptance": [
+        "Escritorio renderiza el bento asimétrico con los cuatro tamaños exactos del frame `BiKea` — no es una rejilla uniforme",
+        "Móvil renderiza el carrusel horizontal con barra de progreso en red-400 y el hint «Desliza →», sin flechas y sin loop (ui-map.md § 6)",
+        "MIENTRAS DIGAN «Próximamente» LOS CUATRO SLOTS NO SON CLICKEABLES: sin cursor de link y sin hover. ui-map.md § 6 lo dice explícito — «un espacio reservado que parece clickeable y no lleva a nada se lee como sitio roto»",
+        "La etiqueta duplicada del Caso 04 móvil se resuelve con Clau, no se replica en silencio ni se corrige por cuenta propia",
+        "Sin JavaScript el carrusel degrada a scroll horizontal nativo con scroll-snap; se pierde el loop y nada más (ui-map.md § 10)",
+        "La plantilla de caso de estudio NO entra aquí: cuando lleguen los permisos de SUMO cada slot se vuelve link, y eso es alcance nuevo (ui-map.md § 6)",
+        "Cuatro slots en ambos viewports — la discrepancia D1 de decisions-open.md ya se resolvió a favor de cuatro",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados en componentes (Artículo VI)",
+        "Cero hex o px hardcodeados; todo resuelve por token, y se reutiliza la escala fluida existente antes de inventar tokens por breakpoint (Artículo VII)",
+        "Storybook cubre la sección en ambos viewports y ambos locales (Artículo X), y hay test de componente sobre el mapeo de tokens y copy",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "blocked",
+      "depends_on": [9]
+    },
+    {
+      "id": 16,
+      "name": "contact_section",
+      "title": "CTA final y formulario de contacto — la sección que cierra la landing",
+      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `Xrs80` (1440x900), móvil `r3PHqc` (390x1260). Bloque izquierdo con Pill + heading 62px/600 «Cuéntanos tu proyecto.» + copy 18px + ruta alterna; formulario en vidrio oscuro de 660x701 (escritorio) / 342x626 (móvil) con siete campos. En móvil la ruta alterna se mueve DEBAJO del formulario, no arriba. Los siete campos, su validación y los cinco estados de envío están tabulados en ui-map.md § 7. ESTA SECCIÓN DA HOGAR AL ANCLA DEL CTA PRIMARIO: hoy el botón del hero no emite href porque su destino no existe, y gana el pointer por construcción cuando esta sección aterrice (feature 11). La sección no crea stacking context ni pinta fondo opaco, o sus glows saltan encima de la sábana de puntos sin error alguno (rules.md §§ R28, R37). Los glows llegan por el mecanismo de la feature 6, sin editar SectionGlow, DotGrid ni SectionBackdrop. Offsets relativos a la sección, nunca las coordenadas absolutas de página que registra el diseño (rules.md §§ R29, R48). Glows: red-400 60% size 1500-760 (centro 1170,4310 · 410,3560), wine-300 37% size 1000-560 (1580,4520 · 480,3840), wine-400 28% size 900-520 (190,4630 · 80,3960). DESBLOQUEADA POR ROBERTO 2026-09-08: los formularios NO ENVÍAN NADA por ahora — es puro modelado de UI/UX. La decisión #1 de decisions-open deja de bloquear porque no se implementa envío. QUÉ SÍ ENTRA: el layout, los campos, los estados visuales y la validación de cliente, que es real y no depende de servidor. QUÉ NO ENTRA: el envío, y con él los estados que requieren respuesta remota — «enviando», «éxito» y «error del servidor». Esos se modelan en Storybook para que existan y estén revisados, pero no se cablean. FEATURE 12 CANCELADA 2026-09-08 por Roberto: se le hace caso al Artículo VI, que manda segmentos de ruta traducidos. El sitio se queda con `/es/nosotros ↔ /en/about` y con las anclas en español —`#proposito`, `#servicios`, `#proyectos`, `#contacto`—. Esta feature ya no depende de ella y usa los nombres españoles que ya existen en app/features/shell/data/navigation.ts.",
+      "acceptance": [
+        "El formulario de contacto NO envía. Se construyen layout, campos, estados visuales y validación de cliente; el envío y los estados que dependen de respuesta remota quedan fuera",
+        "Los estados «enviando», «éxito» y «error del servidor» existen como stories revisables, no como código cableado a un destino inexistente",
+        "El submit no simula un envío ni muestra un éxito falso. Si no hay destino, el control lo refleja — mismo criterio que ui-map.md § 6 aplica a los slots de Proyectos",
+        "Los siete campos, su obligatoriedad y su validación coinciden con la tabla de ui-map.md § 7",
+        "Los cinco estados de ui-map.md § 7 existen como estados visuales: idle, validación fallida con foco al primer error y sin limpiar nada, enviando con botón deshabilitado y borde LED detenido, éxito reemplazando el formulario en la misma tarjeta, y error del servidor conservando todo lo capturado. Los tres últimos viven en stories porque no hay envío; los dos primeros son reales",
+        "La copy de éxito y de error de ui-map.md § 7 se implementa en ambos idiomas aunque los estados no se disparen todavía — es copy aprobada y va a i18n, no se inventa después",
+        "El campo de WhatsApp aparece solo si se elige esa opción, con transición de alto y opacidad, y su valor SE DESCARTA si el usuario regresa a Correo",
+        "La sección expone el ancla que el CTA primario del hero y el del nav apuntan — con el nombre español que ya existe: `#contacto`",
+        "En móvil la ruta alterna va debajo del formulario y en escritorio dentro del bloque izquierdo, según los frames",
+        "Contraste mínimo 4.5:1 sobre el vidrio; si no llega, se oscurece el fondo (ui-map.md § Accesibilidad mínima)",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados en componentes (Artículo VI)",
+        "Cero hex o px hardcodeados; todo resuelve por token, y se reutiliza la escala fluida existente antes de inventar tokens por breakpoint (Artículo VII)",
+        "Storybook cubre la sección en ambos viewports y ambos locales (Artículo X), y hay test de componente sobre el mapeo de tokens y copy",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [9]
+    },
+    {
+      "id": 17,
+      "name": "about_hero_section",
+      "title": "Nosotros — Hero de la página About",
+      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `m3cbXr` (960x376, vertical gap 32), móvil `Pkv8h` (342x349, gap 22). Tres hijos: Pill, headline «El equipo se arma alrededor del proyecto.» a 74px/600 en escritorio y 38px/600 en móvil, e intro de 20px/400 a 700px de ancho (escritorio) o 16px/400 a 342px (móvil). Es la pieza más simple de las ocho: misma estructura que el Hero de la landing menos la fila de CTAs. ADVERTENCIA: decisions-open.md marca la copy de Nosotros como BORRADOR pendiente de aprobar — hero, Network y Work with muush. No se implementa copy sin aprobación. La sección no crea stacking context ni pinta fondo opaco, o sus glows saltan encima de la sábana de puntos sin error alguno (rules.md §§ R28, R37). Los glows llegan por el mecanismo de la feature 6, sin editar SectionGlow, DotGrid ni SectionBackdrop. Offsets relativos a la sección, nunca las coordenadas absolutas de página que registra el diseño (rules.md §§ R29, R48). Glows de página Nosotros: red-400 60% size 1400-700 (centro 1260,180 · 410,50), wine-300 37% size 1000-520 (80,240 · 40,140), wine-400 28% size 860-520 (1410,770 · 440,500). Las opacidades son las de ESCRITORIO en ambos viewports: el .pen dibuja el móvil con 65/40/30, pero Roberto lo revisó el 2026-09-08 y lo declaró error del archivo, no diseño. FEATURE 12 CANCELADA 2026-09-08 por Roberto: se le hace caso al Artículo VI, que manda segmentos de ruta traducidos. El sitio se queda con `/es/nosotros ↔ /en/about` y con las anclas en español —`#proposito`, `#servicios`, `#proyectos`, `#contacto`—. Esta feature ya no depende de ella y usa los nombres españoles que ya existen en app/features/shell/data/navigation.ts.",
+      "acceptance": [
+        "Los tres glows usan las opacidades de escritorio (60/37/28) en AMBOS viewports. El 65/40/30 que dibuja el frame móvil es un error del archivo declarado por Roberto el 2026-09-08, no una decisión de diseño",
+        "Renderiza los tres hijos del frame `m3cbXr` / `Pkv8h` con sus tamaños y gaps exactos",
+        "Reutiliza el HeroSection de la feature 9 o comparte su base en vez de duplicar la estructura; la única diferencia real es que no lleva fila de CTAs",
+        "La copy no se implementa hasta que Clau apruebe el borrador que decisions-open.md marca como pendiente",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados en componentes (Artículo VI)",
+        "Cero hex o px hardcodeados; todo resuelve por token, y se reutiliza la escala fluida existente antes de inventar tokens por breakpoint (Artículo VII)",
+        "Storybook cubre la sección en ambos viewports y ambos locales (Artículo X), y hay test de componente sobre el mapeo de tokens y copy",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "pending",
+      "depends_on": [9]
+    },
+    {
+      "id": 18,
+      "name": "team_section",
+      "title": "Nosotros — Equipo, tres integrantes con foto en blanco y negro",
+      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `aaGPf` (1440x820), móvil `eQGAW` (390x1180). ESCRITORIO: Pill + rejilla de 1280x511 con tres columnas de 409x511, gap 20. MÓVIL: las tres apiladas a 342x317, cada una con foto de 342x260 y bloque de datos de 342x43. Los tres son Roberto, Claudia y Alexa. DOS COSAS PENDIENTES QUE NO SON DEL CÓDIGO: los nombres del diseño dicen «Nombre y apellido» — son placeholder, los reales entran con la sesión de fotos B&N (decisions-open.md, discrepancia D3). Y las fotos no existen todavía. DIFERIDA POR ROBERTO 2026-09-08: no se construye hasta que él lo diga. La razón no es técnica — hacen falta más colaboradores, más proyectos que presentar y más red. Una sección que existe vacía se lee como sitio incompleto, y el diseño mismo la rotula «Espacio reservado». Sigue en `blocked` hasta instrucción explícita suya; no la desbloquea ningún agente ni el hecho de que sus dependencias cierren.",
+      "acceptance": [
+        "Escritorio renderiza la rejilla de tres columnas del frame `aaGPf`; móvil las apila según `eQGAW`",
+        "Las fotos son en blanco y negro y su tratamiento queda tokenizado, no aplicado a mano en cada instancia",
+        "Los nombres siguen como placeholder hasta que llegue la sesión de fotos, y el placeholder es visiblemente eso — no un nombre inventado que alguien pueda confundir con real",
+        "El hueco de las fotos se declara explícitamente en el componente, con la misma disciplina que Network usa para su globo reservado",
+        "La sección no crea stacking context ni pinta fondo opaco (rules.md §§ R28, R37)",
+        "Glows: wine-400 20% size 960-560 (centro 140,1380 · 80,1080) y wine-300 17% size 820-480 (1490,1590 · 480,1540), por el mecanismo de la feature 6 y con offsets relativos a la sección",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados en componentes (Artículo VI)",
+        "Cero hex o px hardcodeados; todo resuelve por token, y se reutiliza la escala fluida existente antes de inventar tokens por breakpoint (Artículo VII)",
+        "Storybook cubre la sección en ambos viewports y ambos locales (Artículo X), y hay test de componente sobre el mapeo de tokens y copy",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "blocked",
+      "depends_on": [17]
+    },
+    {
+      "id": 19,
+      "name": "network_section",
+      "title": "Nosotros — Network, con el globo terráqueo declarado como espacio reservado",
+      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `Hvx0f` (1440x860), móvil `AWefb` (390x760). Pill + copy de 34px/600 a 820px (escritorio) o 22px/600 a 342px (móvil), más un bloque «Reservado · globo» de 1280x520 / 342x480 que el propio diseño rotula como espacio reservado. ORDEN INVERTIDO ENTRE VIEWPORTS: en escritorio el bloque reservado va ARRIBA de la Pill y la copy; en móvil va ABAJO. No es un descuido del extracto, está así en los dos frames. El globo NO se construye — el diseño lo declara reservado. La copy está marcada como BORRADOR. DIFERIDA POR ROBERTO 2026-09-08: no se construye hasta que él lo diga. La razón no es técnica — hacen falta más colaboradores, más proyectos que presentar y más red. Una sección que existe vacía se lee como sitio incompleto, y el diseño mismo la rotula «Espacio reservado». Sigue en `blocked` hasta instrucción explícita suya; no la desbloquea ningún agente ni el hecho de que sus dependencias cierren.",
+      "acceptance": [
+        "Renderiza Pill y copy con los tamaños de cada frame, y el bloque reservado con su nota y su detalle tal como el diseño los rotula",
+        "El orden se invierte entre viewports — reservado arriba en escritorio, abajo en móvil — porque así están los dos frames; se implementa con orden de layout, no duplicando markup",
+        "El globo terráqueo con pines NO se construye. El espacio queda reservado y visiblemente rotulado como tal, igual que en el diseño",
+        "La copy no se implementa hasta que Clau apruebe el borrador",
+        "Glows: wine-300 14% size 900-520 (centro 1450,1950 · 460,2260) y wine-400 12% size 860-480 (110,2210 · 60,2590)",
+        "La sección no crea stacking context ni pinta fondo opaco (rules.md §§ R28, R37)",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados en componentes (Artículo VI)",
+        "Cero hex o px hardcodeados; todo resuelve por token, y se reutiliza la escala fluida existente antes de inventar tokens por breakpoint (Artículo VII)",
+        "Storybook cubre la sección en ambos viewports y ambos locales (Artículo X), y hay test de componente sobre el mapeo de tokens y copy",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "blocked",
+      "depends_on": [17]
+    },
+    {
+      "id": 20,
+      "name": "work_with_muush_section",
+      "title": "Nosotros — Work with muush, el formulario de aplicación",
+      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `ZfhBB` (1440x950), móvil `LOCPY` (390x1000). Bloque izquierdo con Pill + headline 44px/600 «Tú eliges en qué proyectos entras, con quién y cuándo.» + copy 18px; formulario de aplicación en vidrio de 660x744 / 342x665 con OCHO campos: Nombre, Correo, Área y rol, Portafolio, LinkedIn, CV, preferencia de contacto y submit. Estados diseñados en los frames `YBa7P`, `Nldxe`, `zYE5q`. La copy está marcada como BORRADOR. La sección no crea stacking context ni pinta fondo opaco, o sus glows saltan encima de la sábana de puntos sin error alguno (rules.md §§ R28, R37). Los glows llegan por el mecanismo de la feature 6, sin editar SectionGlow, DotGrid ni SectionBackdrop. Offsets relativos a la sección, nunca las coordenadas absolutas de página que registra el diseño (rules.md §§ R29, R48). Glows: red-400 60% size 1500-760 (centro 1170,3030 · 410,3130), wine-300 37% size 1000-560 (1580,3240 · 480,3430), wine-400 28% size 900-520 (190,3350 · 80,3610). DISPOSICIÓN POR VIEWPORT (medida 2026-09-08): en ESCRITORIO son dos columnas lado a lado — bloque Left 520x318 en @80,130 y formulario 660x744 en @700,100. En MÓVIL se apilan — Left 342x258 en @24,0 y formulario 342x665 en @24,290. DESBLOQUEADA POR ROBERTO 2026-09-08: los formularios NO ENVÍAN NADA por ahora — es puro modelado de UI/UX. La decisión #1 deja de bloquear porque no se implementa envío ni subida de archivos. FEATURE 12 CANCELADA 2026-09-08 por Roberto: se le hace caso al Artículo VI, que manda segmentos de ruta traducidos. El sitio se queda con `/es/nosotros ↔ /en/about` y con las anclas en español —`#proposito`, `#servicios`, `#proyectos`, `#contacto`—. Esta feature ya no depende de ella y usa los nombres españoles que ya existen en app/features/shell/data/navigation.ts.",
+      "acceptance": [
+        "El formulario de aplicación NO envía. Se construyen layout, campos, estados visuales y validación de cliente; el envío y los estados que dependen de respuesta remota quedan fuera",
+        "Los estados «enviando», «éxito» y «error del servidor» existen como stories revisables, no como código cableado a un destino inexistente",
+        "El submit no simula un envío ni muestra un éxito falso",
+        "Escritorio pone el bloque de texto y el formulario en dos columnas (Left @80,130 y formulario @700,100); móvil los apila (@24,0 y @24,290). Se resuelve con el mismo mecanismo que la sección de contacto, no con markup duplicado por viewport",
+        "Los ocho campos y sus estados coinciden con los frames `YBa7P`, `Nldxe` y `zYE5q` y con ui-map.md § 9",
+        "Reutiliza los primitivos del formulario de contacto (feature 16) en vez de duplicarlos — son dos formularios con el mismo vocabulario de campos",
+        "La copy no se implementa hasta que Clau apruebe el borrador",
+        "Si el CV es obligatorio es decisión abierta (decisions-open.md #7) y afecta solo la validación de cliente. Se pregunta, no se asume",
+        "El campo de WhatsApp aparece solo si se elige esa opción y descarta su valor al cambiar a Correo, igual que en contacto",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados en componentes (Artículo VI)",
+        "Cero hex o px hardcodeados; todo resuelve por token, y se reutiliza la escala fluida existente antes de inventar tokens por breakpoint (Artículo VII)",
+        "Storybook cubre la sección en ambos viewports y ambos locales (Artículo X), y hay test de componente sobre el mapeo de tokens y copy",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [16, 17]
+    },
+    {
+      "id": 21,
+      "name": "floating_nav_redesign",
+      "title": "Rediseño del header — nav flotante en píldora de vidrio, paths en inglés, sin Proyectos",
+      "description": "Clau rediseñó el nav y el .pen cambió bajo nosotros: los nodos que la feature 3 midió (`JYhmR`, `IQjRU`) YA NO EXISTEN. Verificado por el leader el 2026-09-08 (rules.md § R32). QUÉ CAMBIÓ EN ESCRITORIO — de una barra de 1440x103 a sangre completa sin fondo, a una PÍLDORA FLOTANTE de 1280x72 en `x80 y24`, con `fill #1c1416a6` (el vidrio oscuro del sistema), `cornerRadius 999` y borde `#FBF8F62E` de 1px. Nodos nuevos: `WGhSI` Landing ES, `UfsGV` Landing EN, `s0ni6l` Nosotros ES, `Ggtb1` Nosotros EN. Los links pasan a `Servicios · Proyectos · Nosotros` a 15px/500 con gap 34 — y OJO, ahora incluye Servicios, que content.md declara explícitamente fuera del nav; el diseño manda por § R32 pero la contradicción se reporta. El CTA nav crece a 221x48 con `r999` y GANA UNA FLECHA `→` de 15px/600. El toggle de idioma deja de ser `ES / EN` y pasa a un BOTÓN CIRCULAR de 44x44 que muestra solo el locale activo (estudio elegido: `tGVGq`, Banda 1). MÓVIL prácticamente no cambia: `X3Xquh` sigue en 390x76; comparar contra lo construido antes de tocarlo. ESTO RESUELVE EL D-07: el nav pegajoso ya no es transparente, trae el vidrio oscuro, así que la ilegibilidad que Roberto difirió a Clau el 2026-09-07 queda contestada por el diseño. INSTRUCCIÓN DE ROBERTO QUE CONTRADICE AL DISEÑO: quitar `Proyectos` del nav. El .pen lo dibuja, pero la sección queda diferida (feature 15, `blocked`), y un link a una sección que no existe es justo lo que ui-map.md § 6 llama «sitio roto». Es una decisión humana que le gana al archivo de diseño en este punto. SOBRE EL CTA: es el MISMO BotonPrimario, no una variante ni un componente nuevo (Roberto, 2026-09-08). Solo cambió su UI —se redondeó— y eso va en TODAS las instancias (feature 22). Y NO pierde el relleno: conserva su `#1c1416a6`. Que en el frame se vea sin fondo es porque el vidrio del nav está detrás; el `fill: undefined` del frame desprendido `Rm6Wu` es artefacto de haberlo desprendido en el canvas. FEATURE 12 CANCELADA 2026-09-08 por Roberto: se le hace caso al Artículo VI, que manda segmentos de ruta traducidos. Así que el rediseño del nav NO cambia paths ni anclas — conserva `/es/nosotros ↔ /en/about` y las cuatro anclas españolas que ya emite. Este cambio es puramente visual: la píldora flotante, el CTA con flecha y el botón circular de idioma. La instrucción de Roberto del 2026-09-08 de que «todos los paths van en inglés» quedó revertida por su propia decisión posterior de seguir el Artículo VI.",
+      "acceptance": [
+        "El nav de escritorio es la píldora flotante de 1280x72 de los frames `WGhSI` / `s0ni6l`: vidrio oscuro #1c1416a6, radio 999, borde bone-100 al 18%, anclada a x80 y24 — no una barra a sangre",
+        "El CTA del nav es una instancia de BotonPrimario, con su relleno #1c1416a6 intacto. El `fill: undefined` del frame desprendido en el .pen es artefacto de canvas, no diseño — Roberto lo confirmó el 2026-09-08. El redondeo lo aporta la feature 22, no esta",
+        "Reutiliza el token --dark-glass y el vocabulario de vidrio que ya usan Pill, BotonPrimario, los formularios y el panel del menú móvil. No introduce una superficie nueva",
+        "`Proyectos` NO aparece en el nav, por instrucción de Roberto del 2026-09-08, aunque el .pen lo dibuje. Quedan `Servicios` y `Nosotros`. La divergencia respecto al diseño se documenta en el componente para que nadie la 'corrija' leyendo el frame",
+        "`Servicios` SÍ aparece, lo cual contradice content.md. El diseño gana por § R32, y la contradicción se reporta para que un humano actualice content.md — un agente no edita docs/business/",
+        "El CTA nav mide 221x48 con radio 999 y lleva la flecha `→` como elemento propio, no dentro del string traducible — misma disciplina que LinkArrow (spec 009 FR-010)",
+        "El toggle de idioma es el botón circular de 44x44 que muestra solo el locale activo (frame `tGVGq`, Banda 1), no el par `ES / EN`. Sigue resolviendo la ruta equivalente por el mapa de i18n y nunca por manipulación de string (Artículo VI)",
+        "El nav móvil se compara contra el frame `X3Xquh` antes de modificarlo; si no cambió, no se toca",
+        "La revelación del CTA al scrollear que construyó la feature 9 sigue funcionando sobre el nav nuevo, y el fondo de la píldora no la rompe",
+        "ui-map.md § 2 queda desactualizado por este rediseño. Se reporta para que un humano lo corrija; ningún agente escribe en docs/business/",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados en componentes (Artículo VI)",
+        "Cero hex o px hardcodeados; todo resuelve por token, y se reutiliza la escala fluida existente antes de inventar tokens por breakpoint (Artículo VII)",
+        "Storybook cubre el nav en ambos viewports y ambos locales (Artículo X), y hay test de componente sobre el mapeo de tokens y copy",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan",
+        "El nav NO cambia paths ni anclas: conserva `/es/nosotros ↔ /en/about` y las cuatro anclas españolas que ya emite. La feature 12 se canceló y el Artículo VI manda segmentos traducidos. Este rediseño es puramente visual"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [3, 22]
+    },
+    {
+      "id": 22,
+      "name": "primary_button_pill_shape",
+      "title": "BotonPrimario pasa a forma de píldora en todas sus instancias",
+      "description": "Clau redondeó el botón primario y Roberto lo confirmó el 2026-09-08: el cambio va en TODAS las instancias, no solo donde el .pen ya lo dibuja. `cornerRadius` pasa de 12 a 999. El relleno NO cambia: sigue siendo `#1c1416a6`. ESTADO MEDIDO DEL .pen (leader, 2026-09-08), que está a medio propagar y por eso no sirve como fuente literal: el componente `OqChv` sigue en r12; los CTA de hero de ESCRITORIO (`ITYU6`, `W4vWx0`) tienen override a r999; los de hero MÓVIL (`wJxJc`, `FlmrR`) y los dos Submit (`uBI9F`, `dVj6J`) heredan r12; y los cuatro CTA de nav están desprendidos con r999. Roberto resolvió la inconsistencia a favor de redondear todo, así que el código va por delante del archivo de diseño y a Clau le queda propagarlo. CONSECUENCIA: el hero ya construido (feature 9) renderiza r12 hoy; este cambio lo actualiza.",
+      "acceptance": [
+        "BotonPrimario usa radio de píldora en todas sus instancias — hero escritorio y móvil, CTA del nav y los Submit de ambos formularios cuando existan. No hay prop de forma ni variante: el botón tiene una sola forma",
+        "El relleno `#1c1416a6` NO cambia. El botón del nav se ve distinto en el frame porque el vidrio del nav está detrás, no porque pierda el suyo (confirmado por Roberto 2026-09-08)",
+        "El borde LED sigue siendo el gradiente cónico red-400 → bone-100 → red-400 a 1.5px y se adapta a la forma nueva sin cortarse en las esquinas — un anillo cónico sobre un radio de 999 no se comporta igual que sobre uno de 12",
+        "El radio sale de un token o utilidad, no de un literal, y respeta prefers-reduced-motion igual que hoy (Artículo VII)",
+        "BotonPrimario.test.ts y BotonPrimario.stories.ts se actualizan; el guard que hace grep sobre su propio código fuente buscando handlers de eventos sigue intacto (findings.md § R56)",
+        "Las pruebas de artefacto que afirman sobre el hero se actualizan al radio nuevo — el hero ya está en producción con r12 y este cambio lo modifica visiblemente",
+        "Se reporta a Roberto que el .pen quedó a medio propagar. El código va por delante y Clau tiene que alinear el archivo. Ningún agente edita el .pen ni docs/business/",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": [2, 9]
     }
   ]
 }

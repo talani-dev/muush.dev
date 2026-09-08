@@ -234,8 +234,8 @@ describe('SectionGlow', () => {
     const wrapper = mount(SectionGlow, { props: anyGlow })
 
     /*
-     * All 22 sit at different absolute offsets, so any coordinate or
-     * positioning class in here would be right once and wrong 21 times.
+     * All 21 sit at different absolute offsets, so any coordinate or
+     * positioning class in here would be right once and wrong 20 times.
      */
     expect(wrapper.attributes('style')).toBeUndefined()
     const positioning = ['absolute', 'relative', 'fixed', 'sticky', 'inset-0']

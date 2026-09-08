@@ -200,6 +200,33 @@
   --duration-nav-cta-fade: 0.2s;
 }
 
+/*
+ * EL LIENZO. La base ink-500 vive en la raíz del layout (`bg-ink-500` en
+ * default.vue), que es un `<div>` y por lo tanto NO pinta el lienzo del
+ * documento. Donde ese div no llega, no pinta nadie y el navegador muestra su
+ * blanco por defecto: la banda blanca de la feature 010, medida en
+ * findings.md § R54.
+ *
+ * Va en `html` y no en `body`: el lienzo toma el fondo del elemento raíz y
+ * solo lo hereda del `body` si el del raíz es transparente (CSS Backgrounds 3
+ * § 3.11.2). Declararlo en `html` es además la única forma de cubrir el
+ * OVERSCROLL —arrastrar más allá del final del documento en un trackpad de
+ * macOS o en iOS descubre el lienzo—, que ocurre a CUALQUIER altura de página
+ * y no depende de que existan más secciones. Por eso la cura está aquí y no en
+ * recortar el eje vertical: eso último resuelve el desbordamiento, no el
+ * lienzo, y default.vue explica por qué se hacen las dos cosas.
+ *
+ * Sin `@layer` a propósito: una regla sin capa le gana a la preflight de
+ * Tailwind —que sí vive en `@layer base`— sin `!important` y sin depender del
+ * orden del archivo.
+ *
+ * El valor tiene que coincidir con el `bg-ink-500` de la raíz del layout: son
+ * dos superficies contiguas y una diferencia se vería como una costura.
+ */
+html {
+  background-color: var(--ink-500);
+}
+
 @theme inline {
   --color-bone-100: var(--bone-100);
   --color-bone-200: var(--bone-200);
@@ -282,7 +309,7 @@
   --color-divider-menu: color-mix(in srgb, var(--bone-100) 8%, transparent);
 
   /*
-   * Glows — la parada central de los 22 degradados radiales que forman el
+   * Glows — la parada central de los 21 degradados radiales que forman el
    * fondo del sitio (design-extract.md § 10 · SectionGlow).
    *
    * NO es un sistema de variantes: son tres colores base combinados a mano
@@ -755,7 +782,16 @@
   );
 
   /* Radios: los paneles son fluidos, los controles fijos.
-     La cápsula del Pill usa rounded-full, no un token propio. */
+     La cápsula del Pill usa rounded-full, no un token propio — y desde la
+     feature 22 el botón primario también: Roberto resolvió el 2026-09-08 que
+     va en píldora en TODAS sus instancias, así que ya no consume
+     --radius-control. El token se queda porque el 12 sigue siendo el radio de
+     control del diseño: lo pide FormField (design-extract.md § FormField,
+     cornerRadius 12) cuando se construyan los formularios. Este comentario no
+     es lo que lo protege: lo guarda una aserción en
+     app/shared/ui/BotonPrimario.test.ts, porque un token sin consumidor
+     defendido solo con prosa es como la variante '920' de SectionGlow estuvo a
+     punto de irse por código muerto. */
   --radius-panel: clamp(1.125rem, 1.0321rem + 0.381vw, 1.375rem);
   --radius-panel-sm: clamp(1.125rem, 1.0786rem + 0.1905vw, 1.25rem);
   --radius-control: 0.75rem;
