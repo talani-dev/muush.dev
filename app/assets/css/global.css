@@ -198,6 +198,177 @@
    * spotlight para que los dos fundidos del chrome coincidan (spec A-15).
    */
   --duration-nav-cta-fade: 0.2s;
+
+  /*
+   * ═══ Propósito · la constelación del Golden Circle (feature 013) ═══
+   *
+   * Los tokens de abajo los lee CSS ESCRITO A MANO (los `<style scoped>` de
+   * PurposeConstellation.vue y PurposeCarousel.vue), así que van en `:root` y
+   * NO en `@theme inline`: un token de tema nombrado desde CSS a mano
+   * resuelve a nada, en silencio (rules.md § R18, findings.md §§ R46, R52).
+   * Los que se consumen como utilidad (`pt-*`, `top-*`, `w-*`, `text-*`)
+   * están abajo, en `@theme inline`.
+   *
+   * ⚠️ Ninguno se llama `--color-glow-*` ni `--spacing-glow-*`: ese namespace
+   * es cerrado y pertenece a SectionGlow (rules.md § R36).
+   *
+   * Marco de referencia: frame `ayCiG` (escritorio 1440×900) y `D2AvaO`
+   * (móvil 390×534), leídos del `.pen` por el líder (§ R32). Coordenadas del
+   * frame → coordenadas de la SECCIÓN: `x − 80` y `y + 164` en escritorio
+   * (el frame arranca en la página y 940 y la sección en 776, o sea 164 más
+   * arriba — rules.md § R49); `x − 24` y `y + 90` en móvil.
+   *
+   * ⚠️ SOLO LOS DOS EXTREMOS SON DISEÑO. La geometría horizontal de la
+   * constelación se expresa como PORCENTAJE de la caja de contenido de la
+   * sección (1280 a 1440), derivada del único frame de 1440. El
+   * comportamiento a cualquier otro ancho es una decisión de suavizado, no
+   * algo que dibujó Clau (rules.md § R48 § 4, spec A-01).
+   */
+
+  /* Centro x del primer radar: 170 / 1280. Frame x 250 → sección 170. */
+  --purpose-node-x: 13.28125%;
+  /* Paso entre radares: 150 / 1280. Frame 250 → 400 → 550. */
+  --purpose-node-step: 11.71875%;
+  /*
+   * Ancho de la tarjeta: 700 / 1280. Las tres comparten una sola columna a
+   * ras del borde derecho de la caja de contenido: 660 + 700 = 1360 =
+   * 1440 − 80, o sea sección 580 = 1280 − 700. Eso es lo que permite
+   * expresar toda la fila en porcentajes en vez de en píxeles.
+   */
+  --purpose-card-w: 54.6875%;
+  /*
+   * De dónde arranca la línea, medido desde el CENTRO del radar: la mitad del
+   * footprint md (30 ÷ 2 = 15) más el hueco de 1px que dibuja el frame.
+   * Frame: radar en 250, línea en 266.
+   */
+  --purpose-link-offset: 1rem;
+  /* Grosor de la línea conectora: 1px (frame). */
+  --purpose-link-h: 0.0625rem;
+  /* `#FBF8F63D` del frame: 0x3D ÷ 255 = 23.9% → bone-100 al 24%. */
+  --purpose-link-color: color-mix(in srgb, var(--bone-100) 24%, transparent);
+  /*
+   * Cuánto sube la caja del label sobre el BORDE SUPERIOR del footprint del
+   * radar: 249 − 235 = 14 en el frame. No es un hueco entre las dos cajas —
+   * el label de 21px de alto llega a 256 y solapa los 7px vacíos de arriba
+   * del footprint de 30px, cuyo punto rojo empieza en 258.
+   */
+  --purpose-label-gap: 0.875rem;
+  /* Gap de la columna de tarjetas: 422 − 378 = 44 y 653 − 609 = 44. */
+  --purpose-row-gap: 2.75rem;
+
+  /*
+   * Origen de la constelación: los TRES arcos y `Glow origen` comparten un
+   * solo punto. Los cuatro bounding boxes del frame centran en (−100, −120)
+   * relativo al frame → sección (−180, 44).
+   *
+   * El eje Y es un solo token porque los cuatro elementos lo comparten y
+   * ninguno escala con el ancho. El eje X son DOS tokens y no es duplicación:
+   * los arcos escalan con el ancho (porcentaje, spec A-01/A-02) y el glow no
+   * (offset fijo, igual que los tres del Hero). Coinciden a 1440 exactos y
+   * divergen a propósito en cualquier otro ancho — el mismo caso que
+   * --spacing-hero-glow-wine-y contra --spacing-hero-top.
+   */
+  --purpose-origin-y: 2.75rem;
+  --purpose-arc-origin-x: -14.0625%;
+
+  /*
+   * Diámetros de los arcos, como porcentaje de 1280. NO son tres números
+   * mágicos: cada uno es `2 × distancia(origen, centro del radar)`, así que
+   * cada arco PASA POR su propio radar. Verificado contra los tres:
+   *
+   * | Nodo | dx  | dy  | √(dx²+dy²) | radio dibujado |
+   * |------|-----|-----|------------|----------------|
+   * | Why  | 350 | 384 | 519.6      | 519.5          |
+   * | How  | 500 | 636 | 809.0      | 808.5          |
+   * | What | 650 | 846 | 1066.9     | 1067.0         |
+   *
+   * Eso es el Golden Circle: un origen, tres anillos, un nodo por anillo.
+   * Los valores de abajo son el diámetro de la LÍNEA MEDIA del trazo, que es
+   * lo que dibuja el frame; PurposeSection.vue le suma un grosor de borde
+   * para llegar al `width` de la caja.
+   */
+  --purpose-arc-why: 81.171875%;
+  --purpose-arc-how: 126.328125%;
+  --purpose-arc-what: 166.71875%;
+
+  /*
+   * ⚠️ Los tres arcos NO comparten trazo. Leído del `.pen` por el líder el
+   * 2026-09-08, y corrige lo que la spec había sembrado (un solo bone-100 al
+   * 24% para los tres):
+   *
+   *   Arco Why   `#CF31475C` → 0x5C ÷ 255 = 36.1% → red-400  al 36%
+   *   Arco How   `#FBF8F62E` → 0x2E ÷ 255 = 18.0% → bone-100 al 18%
+   *   Arco What  `#FBF8F61F` → 0x1F ÷ 255 = 12.2% → bone-100 al 12%
+   *
+   * El anillo interior va teñido de rojo y los dos de afuera son hueso a
+   * opacidad decreciente: el centro del Golden Circle se lee más cálido.
+   * Son tres tokens, no uno.
+   */
+  --purpose-arc-why-color: color-mix(in srgb, var(--red-400) 36%, transparent);
+  --purpose-arc-how-color: color-mix(in srgb, var(--bone-100) 18%, transparent);
+  --purpose-arc-what-color: color-mix(
+    in srgb,
+    var(--bone-100) 12%,
+    transparent
+  );
+  /* strokeWidth 1 en los tres, sin relleno. */
+  --purpose-arc-w: 0.0625rem;
+
+  /*
+   * ⚠️ UNVERIFIED — dueño: Roberto / Clau (spec O-01, rules.md § R38).
+   *
+   * El radar tiene dos intensidades, más tenue en reposo y más brillante al
+   * revelarse, pero los tres radares del frame son byte-idénticos: el archivo
+   * guarda UN estado y no puede decir cuál. No es documentación vieja
+   * (§ R32), es una imposibilidad estructural, igual que
+   * --dot-paper-lit-color.
+   *
+   * El valor es una DERIVACIÓN, no una medida: es la media de las dos únicas
+   * razones reposo:hover que el frame sí contiene, que son las de la propia
+   * tarjeta — relleno 31/43 = 0.721 (red-400 12% contra 17%) y trazo
+   * 89/120 = 0.742 (35% contra 47%). Media 0.73. No presentarlo como valor de
+   * diseño; el día que Clau dé una cifra cuesta esta línea.
+   */
+  --purpose-radar-rest-opacity: 0.73;
+
+  /*
+   * La tarjeta vecina del carrusel móvil es LA MISMA tarjeta a escala, nunca
+   * una segunda más chica: 241/274 = 0.8796 y 278/316 = 0.8797 — acuerdo a
+   * cuatro decimales en los dos ejes. Los 18px de copy que dibuja el frame
+   * son 22 × 0.88 = 19.4 redondeado por la diseñadora, o sea el dibujo
+   * estático del estado escalado (la misma cosa que eran los halos del
+   * radar).
+   */
+  --purpose-card-scale: 0.88;
+  /* Opacidad de la vecina: 45% del frame (ui-map.md § 4 dice 50%, § R32). */
+  --purpose-card-dim: 0.45;
+  /*
+   * Aire PINTADO entre dos tarjetas contiguas del carrusel: 10px, y sale dos
+   * veces del frame — la activa termina en 332 y la vecina derecha empieza en
+   * 342; la vecina izquierda termina en 48 y la activa empieza en 58.
+   *
+   * De ahí sale el asomo de 48px que ui-map.md § 4 pide con palabras:
+   * 390 − 332 − 10 = 48 de cada lado. PurposeCarousel.vue convierte estos
+   * 10px pintados en el gap de MAQUETA que hace falta, que es negativo porque
+   * la escala ya mete cada borde pintado 16.5px hacia dentro.
+   */
+  --purpose-card-air: 0.625rem;
+  /*
+   * Ancho de la tarjeta activa del carrusel: 274 del frame. Vive en `:root`
+   * porque el `<style scoped>` lo necesita para el calc del gap de maqueta, y
+   * `@theme inline` lo REFERENCIA abajo en vez de repetirlo — el patrón que
+   * findings.md § R46 verificó.
+   */
+  --purpose-card-m: 17.125rem;
+
+  /*
+   * ⚠️ UNVERIFIED — dueño: Clau (spec O-06, rules.md § R38). Ningún frame
+   * puede dibujar una transición, así que el tiempo del revelado no está en
+   * el diseño: mismo caso que el ping del radar, el fundido del spotlight y
+   * el del CTA del nav. Se siembra en los mismos 0.2s para que los tiempos de
+   * la página sigan siendo coherentes. Un token, una línea para corregirlo.
+   */
+  --duration-purpose-reveal: 0.2s;
 }
 
 /*
@@ -780,6 +951,135 @@ html {
     30.7619vw,
     47.9375rem
   );
+
+  /*
+   * Propósito (feature 013 · `02 Propósito`, la segunda sección del sitio).
+   *
+   * Los de aquí se consumen como UTILIDAD (`pt-*`, `mt-*`, `top-*`, `left-*`,
+   * `w-*`, `gap-*`, `size-*`, `text-*`), que es lo que findings.md § R47
+   * verificó que lee el namespace `--spacing-*` por nombre y acepta
+   * porcentajes, `calc()` y `clamp()`. Los que lee CSS escrito a mano están
+   * arriba, en el bloque `:root` (rules.md § R18).
+   *
+   * ⚠️ Ninguno se llama `--spacing-glow-*` ni `--color-glow-*`: después de
+   * `--spacing` viene `-purpose`, no `-glow`, así que no hacen match con la
+   * prueba de SectionGlow (rules.md § R36).
+   */
+
+  /*
+   * 90 → 254. Es el sobrante que le dejó el Hero (90 / 164, rules.md § R49)
+   * MÁS el offset interno del primer hijo de la sección, que la § R49 ya
+   * anticipaba: la Pill va en y 90 del frame de escritorio (127×38 @80,90) y
+   * en y 0 del móvil (122×38 @24,0), así que 164 + 90 = 254 y 90 + 0 = 90.
+   *
+   * ⚠️ La spec había supuesto la Pill en y 0 en los dos frames. Es falso en
+   * escritorio, y por eso este token vale 254 y no 164.
+   */
+  --spacing-purpose-top: clamp(5.625rem, 1.8179rem + 15.619vw, 15.875rem);
+  /*
+   * Aire entre la Pill y la composición: 58 en móvil → 22 en escritorio, y
+   * DECRECE con el ancho (por eso el `clamp()` lleva el valor de escritorio
+   * como mínimo, igual que --spacing-purpose-glow-b-y).
+   *
+   * Los dos extremos salen de restar cajas del frame, no de una suposición:
+   * escritorio 150 − (90 + 38) = 22; móvil 96 − (0 + 38) = 58.
+   */
+  --spacing-purpose-eyebrow-gap: clamp(
+    1.375rem,
+    4.4607rem -
+    3.4286vw,
+    3.625rem
+  );
+
+  /* Tarjeta activa del carrusel: 274, solo móvil. Valor crudo en `:root`. */
+  --spacing-purpose-card-m: var(--purpose-card-m);
+  /*
+   * Gap interno de la tarjeta: 14 (design-extract.md § 10 · PurposeCard).
+   * Solo se ve debajo de `lg`, que es donde el label vive DENTRO de la
+   * tarjeta; en escritorio la tarjeta lleva únicamente copy y el gap queda
+   * inerte (decisions-open.md § D6).
+   */
+  --spacing-purpose-card-gap: 0.875rem;
+  /*
+   * Del borde inferior del carril al indicador: 436 − (96 + 316) = 24.
+   * ⚠️ La spec lo tenía sembrado; la lectura del frame lo CONFIRMA en 24.
+   */
+  --spacing-purpose-indicator-gap: 1.5rem;
+  /*
+   * El indicador del frame es una fila de 40×8 en @175,215 — centrada en los
+   * 390 — con el punto activo de 8px en @0,0 y los inactivos de 6px en @18,1
+   * y @34,1. La `y` de 1 es el centrado vertical del punto chico en la fila
+   * de 8, y los huecos son 18 − 8 = 10 y 34 − 24 = 10.
+   *
+   * ⚠️ El gap medido es 10, no los 8 que la spec había sembrado.
+   */
+  --spacing-purpose-dot: 0.5rem;
+  --spacing-purpose-dot-sm: 0.375rem;
+  --spacing-purpose-dot-gap: 0.625rem;
+
+  /*
+   * Anclas de los tres glows de la sección — cinco tokens, porque
+   * `Glow origen` no tiene medida móvil.
+   *
+   * Misma receta que el Hero (rules.md § R48): los DOS extremos se miden, uno
+   * por glow por eje, ninguno se deriva del otro viewport, el offset es
+   * relativo a la esquina superior izquierda de la SECCIÓN y el glow se ancla
+   * por su CENTRO con `-translate-x-1/2 -translate-y-1/2`.
+   *
+   * | Glow                     | Centro de página D / M | Sección D / M     |
+   * |--------------------------|------------------------|-------------------|
+   * | Propósito · wine  (a)    | 140,1480 / 80,1180     | 60,704 / 56,630   |
+   * | Propósito · red   (b)    | 1490,1630 / 480,1420   | 1410,854 / 456,870|
+   * | Glow origen              | esquina −560,−580      | −180,44 (solo D)  |
+   *
+   * `x − 80 / x − 24` en horizontal y `y − 776 / y − 550` en vertical (el
+   * borde superior de la sección en la página). `Glow origen` viene dado por
+   * su esquina, así que su centro es `+460` en los dos ejes.
+   *
+   * ⚠️ Solo los dos extremos son diseño; la interpolación es suavizado.
+   */
+  --spacing-purpose-glow-a-x: clamp(3.5rem, 3.4071rem + 0.381vw, 3.75rem);
+  --spacing-purpose-glow-a-y: clamp(39.375rem, 37.6571rem + 7.0476vw, 44rem);
+  --spacing-purpose-glow-b-x: clamp(28.5rem, 6.3536rem + 90.8571vw, 88.125rem);
+  /* ⚠️ DECRECE con el ancho: 870 → 854. Por eso el mínimo del `clamp()` es el
+     valor de escritorio y el máximo el de móvil. */
+  --spacing-purpose-glow-b-y: clamp(
+    53.375rem,
+    54.7464rem -
+    1.5238vw,
+    54.375rem
+  );
+  /*
+   * `Glow origen`: −180,44 de sección, y SOLO escritorio — el diseño no le da
+   * tamaño móvil, así que la sección lo esconde debajo de `lg` (spec FR-028).
+   * Es el consumidor de la variante `'920'` de SectionGlow, la que la
+   * feature 7 estuvo a punto de borrar por código muerto.
+   *
+   * Fijo y no `clamp()` por lo mismo que los del Hero. El eje Y referencia el
+   * valor crudo que comparte con los arcos; el X no, ver el comentario de
+   * --purpose-arc-origin-x.
+   */
+  --spacing-purpose-origen-x: -11.25rem;
+  --spacing-purpose-origen-y: var(--purpose-origin-y);
+
+  /*
+   * Los dos roles de label de Propósito. NO pueden ser un solo `clamp()`: el
+   * letterSpacing CAMBIA DE SIGNO (−0.2/17 = −0.0118em contra
+   * 0.9/13 = +0.0692em) y cada uno existe en exactamente un frame — la misma
+   * razón por la que --text-menu-item es un token fijo.
+   */
+  /* Label de la constelación, fuera de la tarjeta: 17px/600 ls −0.2. Solo
+     escritorio. La altura de línea sale de los 21px de la caja del frame:
+     21 ÷ 17 = 1.235. */
+  --text-purpose-label: 1.0625rem;
+  --text-purpose-label--line-height: 1.24;
+  --text-purpose-label--letter-spacing: -0.0118em;
+  --text-purpose-label--font-weight: 600;
+  /* Label dentro de la tarjeta: 13px/500 ls 0.9. Solo móvil. */
+  --text-purpose-card-label: 0.8125rem;
+  --text-purpose-card-label--line-height: 1.4;
+  --text-purpose-card-label--letter-spacing: 0.0692em;
+  --text-purpose-card-label--font-weight: 500;
 
   /* Radios: los paneles son fluidos, los controles fijos.
      La cápsula del Pill usa rounded-full, no un token propio — y desde la

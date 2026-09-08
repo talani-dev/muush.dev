@@ -669,6 +669,264 @@ describe('static output · the landing hero', () => {
   })
 })
 
+describe('static output · the landing purpose section', () => {
+  /*
+   * Feature 013. Four claims only the artefact can settle: that both
+   * compositions reach the prerendered HTML in each locale, that the three
+   * labels are deliberately **not** translated, that the carousel ships its
+   * no-JS state rather than its enhanced one, and that the anchor three shell
+   * links already point at now exists.
+   *
+   * The desktop reveal costs zero JavaScript, so this document is also what a
+   * browser with scripting disabled renders — asserting on it is how the no-JS
+   * case is verified at all (the discipline of `rules.md` §§ R25, R31).
+   */
+  const PURPOSE_COPY = {
+    es: {
+      eyebrow: 'Propósito',
+      why: 'Construimos con el estándar de las aplicaciones que admiramos. Tu negocio merece estar a la misma altura.',
+      how: 'Con precisión: lo que tu negocio necesita, sin relleno. Un technology solution studio que responde como un solo equipo.',
+      what: 'Diseñamos y construimos soluciones digitales alrededor de tu negocio.',
+    },
+    en: {
+      eyebrow: 'Purpose',
+      why: 'We build to the standard of the apps we admire. Your business deserves to be held to it.',
+      how: 'With precision: what your business needs, nothing padded. A technology solution studio that answers as one team.',
+      what: 'We design and build digital solutions around your business.',
+    },
+  } as const
+
+  /** Identical in both locales, on purpose — read from the design file. */
+  const LABELS = ['Why', 'How', 'What'] as const
+
+  /**
+   * The rendered `<section id="proposito">`, found by matching its own closing
+   * tag rather than the first one.
+   *
+   * The mobile carousel is itself a named `<section>`, so a lazy
+   * `[\s\S]*?</section>` would stop inside the section and every count below
+   * would be off by one composition. Counting the nesting is what keeps this
+   * correct when feature 14 puts another section after this one.
+   */
+  function purposeSection(route: RoutePath): string {
+    const html = documentFor(route)
+    const start = html.indexOf('<section id="proposito"')
+
+    expect(start, route).toBeGreaterThan(-1)
+
+    let depth = 0
+    for (const tag of html.slice(start).matchAll(/<(\/?)section[\s>]/g)) {
+      depth += tag[1] === '/' ? -1 : 1
+      if (depth === 0) return html.slice(start, start + tag.index + 10)
+    }
+
+    throw new Error(`unbalanced purpose section in ${route}`)
+  }
+
+  function occurrences(haystack: string, needle: string): number {
+    return haystack.split(needle).length - 1
+  }
+
+  for (const route of ['/es', '/en'] as const) {
+    const locale = route === '/en' ? 'en' : 'es'
+
+    it(`should render both compositions in their own locale when the page is ${route}`, () => {
+      /*
+       * Each copy block appears **twice** — once in the constellation and once
+       * in the carousel — and that is by design, not a bug: both are in the
+       * HTML and exactly one is `display: none` at any width (spec FR-002), so
+       * only one is ever announced.
+       */
+      const section = purposeSection(route)
+      const copy = PURPOSE_COPY[locale]
+
+      expect(section, route).toContain(copy.eyebrow)
+      for (const block of ['why', 'how', 'what'] as const) {
+        expect(occurrences(section, copy[block]), `${route} · ${block}`).toBe(2)
+      }
+    })
+
+    it(`should carry the untranslated labels when the page is ${route}`, () => {
+      /* ⚠️ Not a missing translation. The design file draws `Why` / `How` /
+         `What` in both locale frames, the same treatment
+         `landing.hero.eyebrow` gets. Each appears three times: the
+         constellation's word, the card's own label, and the carousel dot's
+         accessible name is absent from the artefact, so it is twice per
+         composition minus the dots. */
+      const section = purposeSection(route)
+
+      for (const label of LABELS) {
+        expect(occurrences(section, `>${label}<`), `${route} · ${label}`).toBe(
+          3
+        )
+      }
+    })
+
+    it(`should reveal nothing and hide nothing structurally when the page is ${route}`, () => {
+      /*
+       * FR-006 and FR-010 together, on the document a screen reader actually
+       * receives: every card's copy is present, and no card is removed from
+       * the accessibility tree to hide it. Hiding is `opacity` only, which
+       * lives in the scoped stylesheet and cannot be asserted here — it is
+       * measured in Chrome instead.
+       */
+      const section = purposeSection(route)
+
+      expect(section, route).not.toContain('aria-hidden="true" class="node')
+      expect(section, route).not.toMatch(/<article[^>]*\shidden\b/)
+      expect(section, route).not.toMatch(/<article[^>]*class="[^"]*\bhidden\b/)
+      expect(section, route).not.toMatch(/<article[^>]*class="[^"]*invisible/)
+    })
+
+    it(`should ship the carousel's no-JS state when the page is ${route}`, () => {
+      /*
+       * `ui-map.md` § 10: without scripting the carousel is a native snap
+       * track with all three cards at **full size and full opacity**, never
+       * dimmed by default (spec FR-023) — and no indicator, because three dots
+       * that do nothing are three controls that look clickable and lead
+       * nowhere (`findings.md` § R56).
+       */
+      const section = purposeSection(route)
+      /* Scoped to the carousel's own `<section aria-label>`: the
+         constellation's three triggers are `<button>`s too, and they are
+         supposed to be — a real focusable control is what makes the desktop
+         reveal reachable by keyboard (spec FR-009). */
+      const carousel = section.slice(section.indexOf('<section aria-label='))
+
+      expect(carousel, route).not.toContain('data-dimmed')
+      expect(carousel, route).not.toContain('<button')
+      expect(carousel, route).toContain('snap-x')
+      expect(carousel, route).toContain('snap-center')
+    })
+
+    it(`should emit no destination from the section when the page is ${route}`, () => {
+      /* The cards are not links and the triggers go nowhere (`ui-map.md` § 4,
+         spec FR-009). The document-wide "no anchor without an href" assertion
+         above covers the other half. */
+      const section = purposeSection(route)
+
+      expect(section, route).not.toContain('<a ')
+      expect(section, route).not.toContain('cursor-pointer')
+    })
+  }
+
+  it('should close three of the shell dangling anchors on every landing document', () => {
+    /*
+     * The footer's *Navegación* column and the mobile menu already emit three
+     * links at this anchor (`rules.md` § R50), and until this section existed
+     * clicking any of them changed the URL and moved nothing.
+     *
+     * ⚠️ The shell resolves the fragment against the locale's home, so what it
+     * emits is `/es#proposito` and `/en#proposito`, never a bare `#proposito`.
+     * Asserting the bare form would have looked like the shell was broken.
+     * The `id` is Spanish in both locales because Article VI keeps translated
+     * route segments and Spanish anchors.
+     */
+    for (const route of ['/es', '/en'] as const) {
+      expect(documentFor(route), route).toContain('<section id="proposito"')
+      expect(documentFor(route), route).toContain(`href="${route}#proposito"`)
+    }
+  })
+
+  it('should contribute the three glows without breaking the paint order', () => {
+    /* FR-030 mechanically, on the artefact: the section is positioned, paints
+       no background of its own, declares no stacking-context utility, and its
+       backdrop holds all three glows — `Glow origen` included, which is what
+       makes `SectionGlow`'s `'920'` variant not dead code. */
+    for (const route of ['/es', '/en'] as const) {
+      const section = purposeSection(route)
+      const root = section.match(/<section id="proposito" class="([^"]*)"/)?.[1]
+
+      expect(root?.split(' '), route).toContain('relative')
+      expect(root?.split(' '), route).toContain('pt-purpose-top')
+      expect(
+        root?.split(' ').some(name => name.startsWith('bg-')),
+        route
+      ).toBe(false)
+      expect(
+        root
+          ?.split(' ')
+          .some(name =>
+            /^(transform|translate|scale|rotate|filter|backdrop-|opacity-|isolate|will-change|contain-|fixed|sticky|overflow-)/.test(
+              name
+            )
+          ),
+        route
+      ).toBe(false)
+
+      expect(section, route).toContain('size-glow-1000-560')
+      expect(section, route).toContain('size-glow-820-480')
+      expect(section, route).toContain('size-glow-920')
+      expect(section, route).toContain('overflow-clip')
+    }
+  })
+
+  it('should emit every purpose anchor and the connector formula when generated', () => {
+    /*
+     * The § R18 check, on the **site** build and never the catalogue:
+     * Storybook's content scan reaches `specs/` and `docs/`, so it emits theme
+     * variables the site does not and cannot detect a token that failed to
+     * resolve.
+     *
+     * The utilities land in `_nuxt/*.css`; the connector's `calc()` over
+     * `--i` is a scoped rule, which Nuxt inlines per document.
+     */
+    const css = emittedCss()
+
+    expect(css).toMatch(
+      /\.pt-purpose-top\{padding-top:clamp\(5\.625rem,1\.8179rem \+ 15\.619vw,15\.875rem\)\}/
+    )
+    for (const anchor of [
+      /\.top-purpose-glow-a-y\{top:clamp\(/,
+      /\.top-purpose-glow-b-y\{top:clamp\(/,
+      /\.left-purpose-glow-a-x\{left:clamp\(/,
+      /\.left-purpose-glow-b-x\{left:clamp\(/,
+      /\.left-purpose-origen-x\{left:-11\.25rem\}/,
+    ]) {
+      expect(css, String(anchor)).toMatch(anchor)
+    }
+
+    /* Every `:root` token the hand-written CSS names has to be reachable, or
+       the declaration resolves to nothing in silence (`findings.md` § R46). */
+    for (const token of [
+      '--purpose-node-x:',
+      '--purpose-node-step:',
+      '--purpose-card-w:',
+      '--purpose-link-offset:',
+      '--purpose-arc-why:',
+      '--purpose-arc-origin-x:',
+      '--purpose-origin-y:',
+      '--purpose-radar-rest-opacity:',
+      '--purpose-card-scale:',
+      '--purpose-card-air:',
+      '--duration-purpose-reveal:',
+    ]) {
+      expect(css, token).toContain(token)
+    }
+
+    const document = documentFor('/es')
+
+    expect(document).toContain('--purpose-link-revealed:calc(')
+    expect(document).toContain('var(--i)*var(--purpose-node-step)')
+    expect(document).toMatch(/\.trigger:hover~\.card\[data-v-[0-9a-f]+\]/)
+  })
+
+  it('should add no token to the closed glow namespace when generated', () => {
+    /*
+     * `rules.md` § R36. `app/shared/ui/SectionGlow.test.ts` asserts in both
+     * directions over `--(?:color|spacing)-glow-[\w-]+`, so a token named
+     * `--spacing-glow-purpose-…` would turn this feature red in a file it
+     * never opened — and the instinct would be to relax that test. This is the
+     * guard stated where this feature can see it.
+     */
+    const glowTokens = [
+      ...emittedCss().matchAll(/--(?:color|spacing)-glow-[\w-]+(?=\s*:)/g),
+    ].map(([token]) => token)
+
+    expect(glowTokens.filter(token => token.includes('purpose'))).toEqual([])
+  })
+})
+
 describe('static output · the brand type is self-hosted', () => {
   /*
    * Feature 006, FR-015 / SC-007. `@nuxt/fonts` resolves the families from

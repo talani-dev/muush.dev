@@ -16,6 +16,22 @@
       "subhead": "We design and build digital solutions around your business.",
       "ctaPrimary": "Tell us about your project",
       "ctaSecondary": "Book a call"
+    },
+    "purpose": {
+      "eyebrow": "Purpose",
+      "carouselLabel": "Purpose",
+      "why": {
+        "label": "Why",
+        "copy": "We build to the standard of the apps we admire. Your business deserves to be held to it."
+      },
+      "how": {
+        "label": "How",
+        "copy": "With precision: what your business needs, nothing padded. A technology solution studio that answers as one team."
+      },
+      "what": {
+        "label": "What",
+        "copy": "We design and build digital solutions around your business."
+      }
     }
   },
   "shell": {

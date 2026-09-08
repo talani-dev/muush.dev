@@ -287,7 +287,7 @@
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
       ],
       "sdd": true,
-      "status": "pending",
+      "status": "done",
       "depends_on": [9]
     },
     {
