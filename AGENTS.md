@@ -12,7 +12,11 @@
    `"sdd": true`.
 5. Read **all** files in `docs/business/` recursively (including
    `docs/business/landing/`) before writing a spec or making architecture
-   decisions.
+   decisions. Note they are **derived** from the `.pen` design file and can
+   lag it — see `docs/business/rules.md` § R32. Only the leader session can
+   read the `.pen`, so a measurement the leader supplies outranks a
+   `docs/business/` value, and a subagent missing a visual value asks the
+   leader instead of falling back to the document.
 6. Read `.specify/memory/constitution.md` — the architectural source of truth.
 
 ## 2. Repository map
@@ -23,7 +27,7 @@
 | `docs/harness/progress/current.md` | Active session state | Always, at start |
 | `docs/harness/progress/history.md` | Past sessions log | If you need history |
 | `specs/<num>-<name>/` | `spec.md` + `plan.md` + `tasks.md` (+ optional `data-model.md`, `research.md`, `contracts/`) | Before implementing |
-| `docs/business/` | Company (overview, services, messaging, branding) — read ALL files recursively | Before spec/architecture decisions |
+| `docs/business/` | Company (overview, services, messaging, branding) — read ALL files recursively. **Derived from the `.pen`; the design file wins on any visual value (`rules.md` § R32)** | Before spec/architecture decisions |
 | `docs/business/landing/` | Landing-specific: approved copy (`content.md`), behavior spec (`ui-map.md`), open decisions and discrepancies (`decisions-open.md`) | Before any spec/feature that touches the landing or Nosotros pages |
 | `.specify/memory/constitution.md` | Static-site purity, component/island discipline, i18n parity, NON-NEGOTIABLE rules | Before spec/implementation |
 | `docs/harness/specs.md` | SDD process: spec-kit flow, approval gate | Before writing a spec |

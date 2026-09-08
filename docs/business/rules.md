@@ -547,3 +547,269 @@ la comprobación de vacíos quedó verificada con un control negativo: poner
 con `new URL(..., import.meta.url)`. El entorno global es `happy-dom`
 (§ R16), que reemplaza el `URL` global por una implementación que `node:fs` no
 acepta — el síntoma es un `ENOENT` sobre la ruta `[object Object]`.
+
+---
+
+## Feature 006 · Fondo del sitio y chrome de marca — especificación (2026-09-07)
+
+> Las cuatro reglas de abajo salieron al **especificar** la feature 006
+> (`site_background_and_brand_chrome`). Se agregan al final; nada de lo
+> anterior se toca. Las que salgan al implementarla se agregan después, en su
+> propia sección, igual que hicieron R25–R27 con la feature 003.
+
+### R28 · El orden de pintado es el contrato del fondo, y se rompe en silencio
+
+El fondo del sitio son cuatro capas, en el orden que fija el frame `SdEJx`:
+base `ink-500` → glows de sección → papel punteado → contenido.
+
+La restricción real no es dibujarlas: es que **el papel punteado es una sola
+hoja de página completa** y **los glows se escriben dentro de cada sección**,
+pero tienen que pintarse **debajo** de esa hoja. Se resuelve con orden de
+pintado de CSS, no con estado:
+
+| Nivel | Qué | Dónde se escribe |
+|---|---|---|
+| fondo del elemento raíz | base `ink-500` | el layout |
+| `--layer-glow` (`-2`) | los glows de cada sección | dentro de la sección |
+| `--layer-dots` (`-1`) | el papel punteado, de página completa | el layout |
+| flujo normal | nav, contenido, footer | en todas partes |
+
+**Los dos niveles tienen que ser distintos.** Si compartieran nivel, el
+desempate es el orden del documento y los glows —que van después— quedarían
+**encima** de los puntos, invirtiendo el diseño.
+
+**Lo que le exige a cualquier sección futura:** la sección es
+`position: relative`, mete sus glows en `<SectionBackdrop>`, y **ni ella ni
+ningún envoltorio entre ella y la raíz del layout puede crear un contexto de
+apilamiento** (`transform`, `translate`, `filter`, `backdrop-filter`,
+`opacity < 1`, `isolation`, `will-change`, `contain: paint`, `sticky`/`fixed`
+con `z-index`). Tampoco puede pintarse un fondo opaco propio: se taparía sus
+propios glows. El único bloque opaco del diseño es el footer, y no aporta
+glows.
+
+**El modo de falla es silencioso**: no hay error, la página simplemente deja
+de parecerse al diseño. Por eso la regla vive en tres lugares — el comentario
+de `SectionBackdrop.vue`, el `quickstart.md` de la feature y aquí.
+
+**Salida de emergencia:** una sección que de verdad necesite un `transform`
+sube sus glows al nivel de página. Es un cambio en esa sección, no en la capa.
+
+Se descartaron, con razones, `<Teleport>` (Vue SSR no resuelve un teleport a
+un selector arbitrario dentro de la app, así que los glows no saldrían en el
+HTML prerenderizado), un registro con `provide`/`inject` (en SSR el padre
+renderiza antes que el hijo, así que la capa saldría vacía, y agrega estado de
+cliente a algo idéntico en cada carga) y una lista central de los 21 en el
+layout (lo que Roberto descartó explícitamente el 2026-09-07: cinco features
+futuras editando la misma lista).
+
+### R29 · Los offsets de los glows del diseño son absolutos de página; en código son relativos a su sección
+
+`design-extract.md` § 10 y el archivo de diseño colocan los glows por
+posición absoluta dentro de un frame de 1440×5060, varios con x negativa. **Un
+offset absoluto de página no sobrevive al contenido real**: la altura de cada
+sección depende del copy y del idioma, así que en cuanto una frase crece, todo
+lo que venía después se desalinea.
+
+**Regla:** cada glow se posiciona relativo a **su propia sección**. Convertir
+el offset del diseño a un offset relativo a la sección es trabajo de la
+feature que construya esa sección, no del fondo.
+
+**Discrepancia registrada de paso (D-01):** el frame `SdEJx` tiene **once**
+glows en Landing; § 10 documenta **doce**. El sobrante es `Glow origen`
+(red-400 12%, 920px, solo escritorio), que § 10 describe como el ancla de la
+constelación de Propósito. **Gana el archivo de diseño** (decisión de Roberto,
+2026-09-07 — ver § R32): Landing tiene **once**, el total del sitio es **21**
+y no 22, y `Glow origen` es documentación vieja, no un nodo que falte
+encontrar. **Lo que se corrige es `design-extract.md` § 10** — la fila, el
+total y el bullet de "Observaciones" que lo menciona. Pendiente de Clau.
+Quien construya Propósito monta once, y no resucita el doceavo desde el
+documento.
+
+### R30 · Storybook también necesita las fuentes declaradas aparte
+
+Extensión directa de R19 y R23. Storybook corre Vite fuera de Nuxt, así que
+además del compilador de SFC, los alias y el stub de `NuxtLink`, **tampoco ve
+el módulo de fuentes**: no hay `@nuxt/fonts`, no hay handler de `/_fonts`, y
+los binarios que el módulo escribe en `.nuxt/cache/fonts` llevan nombre con
+hash de contenido, así que no se pueden referenciar a mano.
+
+Al borrar los `@font-face` escritos a mano de `global.css`, el catálogo se
+queda **sin ninguna declaración de fuente** y renderiza todo en la tipografía
+de sistema — que es exactamente lo que el Artículo X existe para evitar: un
+componente revisado en la tipografía equivocada no está revisado.
+
+**Regla:** el catálogo declara las dos familias por su cuenta, en
+`.storybook/`. Es tooling local y nunca se despliega; el artefacto del sitio
+sigue siendo autocontenido, que es lo que gobierna el Artículo IV.
+
+### R31 · `@nuxt/fonts` descarga en build y emite en `/_fonts` — se verifica sobre `.output/public`
+
+Verificado sobre las declaraciones de tipos publicadas de `@nuxt/fonts@0.14.0`
+(que extiende `FontlessOptions` de `fontless`) y sobre su `dist/module.mjs`:
+
+- El módulo registra un `publicAssets` de Nitro apuntando a
+  `<buildDir>/cache/fonts` con baseURL `assets.prefix` (por defecto `/_fonts`).
+- En `rollup:before` descarga cada URL resuelta (con caché en
+  `node_modules/.cache/nuxt/fonts`) y escribe los binarios ahí. Con
+  `nitro.preset: 'static'` terminan en `.output/public/_fonts/`.
+- La inyección de `@font-face` es **por uso**: escanea el CSS buscando
+  declaraciones de `font-family`. Si no aparecieran, la salida documentada es
+  `global: true` por familia.
+- `processCSSVariables` vale `'font-prefixed-only'` por defecto, que es
+  justamente lo que atiende las variables `--font-*` del tema de Tailwind v4.
+- `throwOnError` vale `false` por defecto: una descarga fallida es un
+  **warning** y el sitio se publica con `@font-face` apuntando a archivos que
+  nunca se escribieron. En este repo se pone en `true` — el defecto que la
+  feature 006 existe para eliminar es exactamente ese, tipografía de respaldo
+  sin que nadie se entere.
+
+**Regla, que es la de siempre (§§ R18, R25) aplicada a fuentes:** la
+verificación es un grep sobre `.output/public` — que existan los binarios, que
+el CSS emitido apunte a `/_fonts/…`, y que `fonts.gstatic.com` no aparezca en
+ningún archivo. Ni el servidor de desarrollo ni el catálogo sirven como
+prueba.
+
+**Contrapartida que hay que decir en voz alta:** esto mete una dependencia de
+red **en tiempo de build** y un paquete nuevo. La alternativa —commitear los
+dos `.woff2` y declarar las caras a mano— no necesita ninguna de las dos, pero
+mete binarios opacos sin procedencia ni ruta de actualización. Se eligió el
+módulo con aprobación de Roberto (2026-09-07); revertir es volver al enfoque
+actual con los pesos correctos.
+
+### R32 · El `.pen` manda sobre `docs/business/` · y el que extrae los valores es el líder
+
+> Decisión de Roberto, 2026-09-07. Corrige cómo la spec de la feature 006
+> había resuelto D-01, que había preferido el documento.
+
+**Primera mitad — precedencia.** El archivo de diseño
+`/Users/betonajera/Documents/Muush/Landing Page/muush.pen` es el artefacto
+**más actualizado** y la **fuente de verdad de todo lo visual**. Los archivos
+de `docs/business/` —`landing/design-extract.md` el primero— son **derivados**
+de él y pueden quedarse atrás.
+
+**Cuando se contradicen, gana el `.pen` y lo que se corrige es el documento.**
+Nunca al revés, y nunca "se registra la discrepancia y se sigue con el
+documento": eso deja el error vivo en el archivo que todos leen. La
+discrepancia se registra **y** se abre la corrección del documento con dueño
+(Clau, salvo que sea un dato que le toque a otra persona).
+
+Esto no degrada a `design-extract.md`: sigue siendo la referencia de medidas
+que se lee todos los días, precisamente porque el `.pen` no se puede abrir
+desde cualquier sesión. Solo fija quién gana un empate.
+
+**Segunda mitad — y esta es la que muerde.** El puente MCP de Pencil **solo
+existe en la sesión interactiva principal**: los subagentes (`spec_author`,
+`implementer`, `reviewer`) no lo heredan aunque aparezca en su lista de
+herramientas. Está registrado en la Constitución (§ *Development Workflow*) y
+en la descripción de la feature 3 en `feature_list.json`.
+
+Consecuencia operativa, en orden:
+
+1. **Un subagente no puede verificar la fuente de verdad por su cuenta.** No
+   es una cuestión de disciplina, es que la herramienta no responde.
+2. **Extraer valores del `.pen` es responsabilidad del líder.** Los lee del
+   frame y los pasa hacia abajo en el prompt de la tarea — exactamente como se
+   hizo con el frame `SdEJx` para la feature 006.
+3. **Una lectura del frame que da el líder pesa más que
+   `docs/business/`.** Una spec que en silencio prefiere el valor del documento
+   sobre el que le pasaron está reintroduciendo el bug que esta regla existe
+   para cerrar.
+4. **Si a un subagente le falta un valor, lo pide.** Pregunta al líder; no cae
+   al documento y no lo presenta como medida del diseño. La alternativa es
+   marcarlo `UNVERIFIED` con dueño, que es lo que ya hacen A-01/A-02 de la
+   feature 003.
+
+**Cómo se lee esto en una spec:** la sección de procedencia distingue
+`CONFIRMED` (contra el `.pen`, vía el líder, o contra el repositorio),
+`DERIVED` (aritmética a la vista) y `UNVERIFIED` (nadie lo documenta). Un
+valor tomado solo de `docs/business/` y contradicho por el frame **no es
+`CONFIRMED`**: es documentación vieja.
+
+---
+
+## Feature 006 · Fondo del sitio y chrome de marca — hallazgos de implementación (2026-09-07)
+
+> Las reglas R28–R32 salieron del ciclo de **especificación** de esta misma
+> feature. Se verificaron una por una al implementarla y **las cinco quedan
+> vigentes tal cual**: el orden de pintado funciona como lo describe R28
+> (verificado en el navegador, ver abajo), R31 acertó en la ruta de emisión de
+> `@nuxt/fonts` **y en que no haría falta `global: true`**, y R29, R30 y R32 no
+> se tocan. Las tres de abajo salieron al implementar y ninguna estaba
+> anticipada. Se agregan al final; nada de lo anterior se toca.
+
+### R33 · Storybook copiaba `public/` DOS veces sobre su propia salida, y una era Vite
+
+Al declarar el favicon del catálogo se descubrió que
+`storybook-static/index.html` **no era el documento del manager**: era el
+`public/index.html` del sitio, los 1480 bytes del `<meta http-equiv="refresh"
+content="0; url=/es">` de la § R25. El catálogo construido redirigía desde su
+propia raíz a una página que no existe dentro de él. `public/favicon.svg`
+pisaba al de Storybook por la misma vía, que es por qué la pestaña del catálogo
+venía mostrando el logo de Nuxt.
+
+**Son dos copias, no una, y hay que apagar las dos:**
+
+1. `staticDirs: ['../public']` copia el directorio **al raíz** de la salida,
+   después de que Storybook escribe sus archivos. Se cambió a la forma con
+   mapeo, `[{ from: '../public', to: '/brand' }]`, que el tipo
+   `DirectoryMapping` de `storybook@10.6.0` ya soporta.
+2. **El `publicDir` de Vite vale `<root>/public` por defecto**, que en este
+   repo es el mismo directorio — así que el build del *preview* lo volvía a
+   copiar al raíz, por su cuenta, independientemente de `staticDirs`. Se
+   verificó corriendo el build: con solo el punto 1 aplicado, `index.html`
+   seguía midiendo 1480 bytes. Se apaga con `viteConfig.publicDir = false` en
+   el `viteFinal` de `.storybook/main.ts`.
+
+Con las dos, `storybook-static/index.html` vuelve a ser el manager (3816 bytes)
+y el ícono vive en `/brand/favicon.svg`, **un solo archivo fuente compartido
+con el sitio**, apuntado desde `.storybook/manager-head.html`.
+
+**Generaliza, y es la § R19/R23 otra vez:** todo lo que Storybook comparte con
+la app hay que verificarlo sobre `storybook-static/`, no suponerlo. Este error
+llevaba desde la feature 003 sin que nadie lo notara, porque
+`pnpm storybook:build` **sale con código 0**: sobreescribir el documento de
+entrada no es un error de build. Cualquier archivo que se agregue a `public/`
+con un nombre que Storybook también use vuelve a producirlo.
+
+### R34 · `--headless --window-size` de Chrome no fija el viewport, y eso miente en las capturas
+
+Al verificar el fondo a 390px (spec FR-007, SC-004) las capturas de
+`--headless=new --window-size=390,844` salían con el texto cortado en el borde
+derecho: parecía que `overflow-x: clip` estaba recortando contenido, que es
+justo lo que la FR-007 prohíbe.
+
+**No era cierto.** Medido dentro de la página —
+`documentElement.scrollWidth` contra `clientWidth`, y el rectángulo de cada
+elemento contra el ancho del viewport— **no hay un solo elemento que rebase los
+390px**, ni con el clip puesto ni quitándolo en caliente. Chrome renderiza con
+un viewport más ancho que el `--window-size` pedido y **recorta la imagen** al
+tamaño solicitado; el resultado se ve idéntico a un desbordamiento real.
+
+**Regla:** una captura headless no sirve como evidencia de layout a un ancho
+dado. Para un ancho concreto, se carga la página en un `<iframe>` de ese ancho
+exacto dentro de una página contenedora y se mide desde ahí — el `<iframe>` sí
+fija el viewport de layout, y de paso permite medir `scrollWidth`, recorrer los
+rectángulos y capturar la imagen correcta. Es la misma disciplina de la § R25
+aplicada a los píxeles: la pregunta es "¿qué mide el documento?", no "¿qué
+parece la foto?".
+
+### R35 · El `.woff2` que descarga `@nuxt/fonts` no es uno por peso
+
+`.output/public/_fonts/` contiene **cuatro** binarios para cuatro pesos, pero no
+se corresponden uno a uno: Google sirve Instrument Sans como fuente variable,
+así que **los pesos 400, 500 y 600 apuntan al mismo archivo** (uno por subset,
+`latin` y `latin-ext`) con distinto `font-weight` en cada `@font-face`. Poppins
+sí trae su propio binario por subset. Ocho declaraciones `@font-face`, cuatro
+archivos.
+
+Es correcto y esperado, no una mala configuración — pero cualquier
+verificación que cuente archivos y espere uno por peso va a fallar. **Lo que se
+verifica es que exista una cara por cada peso de la marca y que ningún `src`
+apunte fuera del propio origen**, que es lo que asserta
+`tests/static-output.test.ts`.
+
+Verificado también en el navegador contra el artefacto generado: las cuatro
+caras cargan (`document.fonts.check` en verde para Poppins 600 e Instrument
+Sans 400/500/600), y el ancho medido del mismo texto difiere entre los tres
+pesos de Instrument Sans (289.92 / 293.72 / 297.53 px) y contra la familia de
+respaldo (288.16 px). Es decir: hay tres caras reales, no una sintetizada.

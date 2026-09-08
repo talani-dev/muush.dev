@@ -23,9 +23,35 @@ const config: StorybookConfig = {
     name: '@storybook/vue3-vite',
     options: {},
   },
-  staticDirs: ['../public'],
+  /*
+   * `public/` is served under `/brand`, not at the static root.
+   *
+   * Verified, not assumed (feature 006, T021): with `staticDirs: ['../public']`
+   * the copy happens **after** Storybook writes its own files, so
+   * `public/index.html` — the site's `/` redirect stub — overwrote the
+   * catalogue's manager document, and `storybook-static/index.html` was a
+   * 1480-byte `<meta http-equiv="refresh" content="0; url=/es">`. The built
+   * catalogue's root was redirecting to a page that does not exist inside it.
+   * `public/favicon.svg` collided with Storybook's own the same way, which is
+   * why the catalogue's tab has been showing the stock Nuxt logo.
+   *
+   * Mapping the directory to a prefix keeps one source file for the icon —
+   * `public/favicon.svg`, the same one the site ships — and ends both
+   * collisions. `.storybook/manager-head.html` points the tab at
+   * `./brand/favicon.svg`.
+   */
+  staticDirs: [{ from: '../public', to: '/brand' }],
   viteFinal: async viteConfig => {
     viteConfig.plugins = [...(viteConfig.plugins ?? []), vue(), tailwindcss()]
+    /*
+     * Vite's own `publicDir` defaults to `<root>/public`, which in this
+     * repository is the site's public directory — so the preview build copied
+     * it over the catalogue's output a second time, independently of
+     * `staticDirs`, and `public/index.html` landed on top of Storybook's
+     * manager document. Storybook owns static files through `staticDirs`;
+     * Vite must not also claim them.
+     */
+    viteConfig.publicDir = false
     viteConfig.resolve = {
       ...viteConfig.resolve,
       alias: {

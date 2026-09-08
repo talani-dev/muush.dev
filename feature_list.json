@@ -112,6 +112,54 @@
       "sdd": false,
       "status": "done",
       "depends_on": [2]
+    },
+    {
+      "id": 6,
+      "name": "site_background_and_brand_chrome",
+      "title": "Paint the site background (dotted paper + glows) and fix the brand chrome (fonts, favicon)",
+      "description": "Three foundations of the site's chrome that no feature owns yet, grouped because they share one review cycle. (1) BACKGROUND: build the dotted-paper primitive and the background layer that composes it in app/layouts/default.vue, resolving the scope flag left by feature 3 — default.vue's own comment states 'The dotted paper and the section glows are not painted — no feature owns them yet (spec A-03, scope flagged for Roberto)'. SectionGlow.vue already exists and is done (feature 5); this feature places it, it does NOT rebuild it. (2) FONTS: public/fonts/ is empty and the four @font-face blocks in global.css declare the WRONG weights — Poppins 400/700 and Instrument Sans 400/700, while branding.md § Tipografía requires Poppins 600 and Instrument Sans 400/500/600. Nothing in the design uses 700. This produces the [VUE_ROUTER_R0004] warning storm on pnpm dev and renders the whole site in fallback type. (3) FAVICON: public/favicon.svg and favicon.ico are still the stock Nuxt logo, on both the site and Storybook. Decisions taken with Roberto 2026-09-07: one feature not three, and an adaptive prefers-color-scheme favicon.",
+      "acceptance": [
+        "app/shared/ui/DotGrid.vue exists as a Vue SFC with <script setup lang=\"ts\">, rendering the .pen 'Dot tile' recipe: 2.5px dots on a 24px grid in #D9D9D91F, as a repeating CSS background — not 144 DOM nodes per tile the way the design file draws it",
+        "Zero hardcoded hex or px in DotGrid.vue; dot size, grid step and colour all resolve through design tokens added to global.css (Constitution Article VII)",
+        "The background layer is painted in app/layouts/default.vue so both Landing and Nosotros inherit it, and the comment at default.vue:16-20 that says it is unpainted is removed or rewritten to match reality",
+        "Layer order matches the .pen exactly: ink-500 base, then the SectionGlow circles, then the dot grid on top, then page content. Verified against frame SdEJx child order",
+        "Glow placement is per-section and additive: the layer accepts the glows a section contributes rather than hardcoding all 22, so future section features add theirs without editing the layer. Roberto's explicit requirement 2026-09-07",
+        "The background is decorative and inert — aria-hidden, pointer-events-none, and it never intercepts a pointer or reaches assistive technology",
+        "The background does not scroll-trap or clip page content, and the mobile menu's existing glass blur still reads against it (spec A-03 named this interaction)",
+        "@nuxt/fonts is installed and configured in nuxt.config.ts to self-host Poppins 600 and Instrument Sans 400/500/600 from the google provider, downloaded at build time so no runtime request reaches fonts.gstatic.com (Constitution Article I, static-site purity)",
+        "The four hand-written @font-face blocks and the stale TODO at global.css:529 are removed — @nuxt/fonts emits them instead",
+        "The typographic tokens resolve to the weights branding.md actually specifies; no element renders a synthesised bold from a missing weight",
+        "pnpm dev produces zero [VUE_ROUTER_R0004] warnings for /fonts/* paths",
+        "public/favicon.svg carries the muush isotipo geometry from app/assets/logo/README.md (viewBox 14.5 38.5 70.5 39.5, circle cx21 cy45 r6.5, stroke-width 12, stroke-linecap round) with a prefers-color-scheme media query swapping the stroke between ink-500 and bone-100; the dot stays red-400 in both",
+        "favicon.ico is replaced or removed so no stock Nuxt logo remains anywhere in public/",
+        "Storybook shows the muush favicon in its browser tab, configured in .storybook/",
+        "A Storybook story shows the dot grid and the composed background against real content (Constitution Article X)",
+        "A component test covers DotGrid's token mapping, and the existing shell tests still pass (Constitution Article X)",
+        "docs/business/branding.md lines 63-64 are corrected: they claim the @font-face blocks match the branding book and cite src/styles/global.css, and both halves are false — the weights differ and the path is app/assets/css/global.css",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+      ],
+      "sdd": true,
+      "status": "done",
+      "depends_on": [3, 5]
+    },
+    {
+      "id": 7,
+      "name": "stale_docs_and_dead_glow_code",
+      "title": "Retire the documentation and code that features 5 and 6 made false",
+      "description": "Pure cleanup: text and dead code that four separate agents flagged during feature 6 and deliberately left alone, because each sat in a file the spec froze or did not own. Nothing here changes rendered output. Grouped so the churn lands in one review instead of leaking into whatever feature touches these files next. Scoped sdd:false — there is nothing to design, only a list to execute. NOTE the trap the implementer recorded when handing this over: SectionGlow.test.ts asserts that every declared token is reachable, so deleting the '920' size variant without deleting its assertion turns a cleanup into a red suite. The design-file correction is Clau's and is tracked here only so it is not forgotten; it is not a code task and must not block the rest.",
+      "acceptance": [
+        "SectionGlow.vue's doc comment no longer says '22' or '12 on Landing' — the counts are 21 site-wide and 11 on Landing (rules.md § R32, the .pen is the source of truth)",
+        "SectionGlow.stories.ts carries the corrected counts too — the reviewer found the stale numbers in both files",
+        "The '920' GlowSize variant is removed from SectionGlow.vue along with the --spacing-glow-920 token in global.css; both existed for Glow origen alone, which the .pen does not contain",
+        "SectionGlow.test.ts is updated in the same change so its every-declared-token-is-reachable assertion still passes — deleting the variant without the assertion is a red suite",
+        "Wordmark.stories.ts:8-10 no longer claims the font binaries are missing, that public/fonts/ is empty, or that the wordmark renders in a fallback typeface — all three became false in feature 6",
+        "rules.md's preamble line 9 ('donde haya conflicto, gana el documento específico') is disambiguated against R32, so it is clear it governs rules.md versus the specific docs and not the .pen versus anything",
+        "No rendered output changes: pnpm generate produces the same four documents, and the SectionGlow and Wordmark stories still render every remaining variant",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+      ],
+      "sdd": false,
+      "status": "pending",
+      "depends_on": [6]
     }
   ]
 }

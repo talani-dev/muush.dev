@@ -1,0 +1,15 @@
+<!--
+  The catalogue's tab icon — the same muush isotipo the site ships, not a
+  second copy of it.
+
+  `public/` is mapped to `/brand` in `.storybook/main.ts` rather than served at
+  the static root, because at the root `public/index.html` overwrote
+  Storybook's own manager document and `public/favicon.svg` overwrote
+  Storybook's own icon. So the one file, `public/favicon.svg`, is reachable
+  here at `./brand/favicon.svg`.
+
+  Storybook's manager builds its own `<link rel="icon">`, so this one is
+  declared after it and wins. The icon adapts to the browser's colour scheme
+  by itself; there is nothing to configure here for that.
+-->
+<link rel="icon" type="image/svg+xml" href="./brand/favicon.svg" />

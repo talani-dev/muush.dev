@@ -1,0 +1,30 @@
+<!--
+  The catalogue's type. **Catalogue only — the deployed site never loads this.**
+
+  Storybook runs Vite outside Nuxt, so it sees no Nuxt module: no
+  `@nuxt/fonts`, no `/_fonts` handler, and no way to reference the
+  content-hashed binaries the module writes into `.nuxt/cache/fonts`
+  (docs/business/rules.md §§ R19, R23, R30). Once feature 006 deleted the four
+  hand-written `@font-face` blocks from `app/assets/css/global.css`, the
+  catalogue had no font declaration at all and rendered every story in the
+  system fallback — which is what Constitution Article X exists to prevent: a
+  component reviewed in the wrong typeface has not been reviewed, and
+  `Wordmark` exists precisely to show Poppins.
+
+  So the catalogue declares the two families itself, at exactly the weights the
+  site uses: Poppins 600 (the wordmark, and nothing else) and Instrument Sans
+  400 / 500 / 600.
+
+  The site's own artefact stays fully self-hosted — `@nuxt/fonts` downloads at
+  build time and emits into `.output/public/_fonts`, and Constitution
+  Article IV governs the deployed artefact, not local tooling. The consequence
+  is stated rather than hidden: the local catalogue makes an external request
+  and needs the network on first load (spec A-05). Reversing it costs this one
+  file.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Poppins:wght@600&display=swap"
+/>

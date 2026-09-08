@@ -48,7 +48,7 @@ escala de Tailwind debe ajustarse a 5 pasos, no 10.
 - foto → siempre capa de contraste
 - degradado B → todo bone 100, lockup en el tercio Red 400
 
-## Tipografía (ya aplicada en este repo — coincide)
+## Tipografía (aplicada en el repo desde la feature 006 — ver la nota de abajo)
 
 | Uso | Fuente |
 |---|---|
@@ -60,8 +60,25 @@ escala de Tailwind debe ajustarse a 5 pasos, no 10.
 **Solo dos tipografías en el sistema: Poppins e Instrument Sans.** IBM Plex
 Mono quedó fuera del sistema (corrección 2026-08-18) — lo que antes iba en
 mono se resuelve con Instrument Sans en tamaño reducido y tracking
-abierto. Esto ya coincide con las `@font-face` declaradas en
-`src/styles/global.css`.
+abierto.
+
+> ⚠️ **Corregido 2026-09-07 (feature 006 · fondo del sitio y chrome de marca).**
+> Estas dos líneas decían que la tabla de arriba "ya coincide con las
+> `@font-face` declaradas en `src/styles/global.css`". **Las dos mitades eran
+> falsas.** Las `@font-face` escritas a mano declaraban Poppins 400/700 e
+> Instrument Sans 400/700 — dos pesos que el diseño no usa en ninguna parte y
+> ninguno de los tres que sí pide esta tabla (Poppins 600, Instrument Sans
+> 400/500/600) — y apuntaban a archivos que nunca existieron en
+> `public/fonts/`, así que el sitio entero se renderizaba en la tipografía de
+> sistema. Además la ruta citada no existe desde la migración a Nuxt: el
+> archivo es `app/assets/css/global.css`.
+>
+> **Estado real desde la feature 006:** las cuatro declaraciones escritas a
+> mano se borraron. Las caras las emite `@nuxt/fonts`, configurado en
+> `nuxt.config.ts` exactamente con los pesos de esta tabla; los binarios se
+> descargan en tiempo de build y se sirven desde el propio origen del sitio
+> (`/_fonts`), sin ninguna petición a un tercero en runtime. La verificación
+> es un grep sobre `.output/public` — ver `rules.md` § R31.
 
 ## Logo — assets fuente (isotipo, lockup C)
 
