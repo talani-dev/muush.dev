@@ -1216,6 +1216,115 @@ describe('static output · the landing contact section', () => {
   })
 })
 
+describe('static output · the about work section', () => {
+  /*
+   * Feature 020. Claims only the artefact can settle: `#work` resolves to
+   * the real section on both localized About documents (no more placeholder
+   * heading), the eight-field form ships `novalidate` and a native submit
+   * with no `action`, the three reused glows paint without breaking the
+   * paint order, and no code path in the compiled bundle — for either the
+   * form or the CV field specifically — reaches a network call.
+   */
+  function workSection(route: RoutePath): string {
+    const html = documentFor(route)
+    const start = html.indexOf('<section id="work"')
+
+    expect(start, route).toBeGreaterThan(-1)
+
+    let depth = 0
+    for (const tag of html.slice(start).matchAll(/<(\/?)section[\s>]/g)) {
+      depth += tag[1] === '/' ? -1 : 1
+      if (depth === 0) return html.slice(start, start + tag.index + 10)
+    }
+
+    throw new Error(`unbalanced work section in ${route}`)
+  }
+
+  it('should carry id="work" on both About documents', () => {
+    for (const route of ['/es/nosotros', '/en/about'] as const) {
+      expect(documentFor(route), route).toContain('<section id="work"')
+    }
+  })
+
+  it('should render a native, unactioned eight-field form with no destination when generated', () => {
+    for (const route of ['/es/nosotros', '/en/about'] as const) {
+      const section = workSection(route)
+      const form = section.match(/<form[^>]*>/)?.[0]
+
+      expect(form, route).toBeDefined()
+      expect(form, route).toContain('novalidate')
+      expect(form, route).not.toMatch(/\baction="/)
+      expect(section, route).toContain('type="submit"')
+      expect(section, route).toContain('type="file"')
+      expect([...section.matchAll(/<optgroup/g)].length, route).toBe(6)
+    }
+  })
+
+  it('should contribute the three reused glows without breaking the paint order', () => {
+    for (const route of ['/es/nosotros', '/en/about'] as const) {
+      const section = workSection(route)
+      const root = section.match(/<section id="work" class="([^"]*)"/)?.[1]
+
+      expect(root?.split(' '), route).toContain('relative')
+      expect(root?.split(' '), route).toContain('pt-work-top')
+      expect(
+        root?.split(' ').some(name => name.startsWith('bg-')),
+        route
+      ).toBe(false)
+      expect(
+        root
+          ?.split(' ')
+          .some(name =>
+            /^(transform|translate|scale|rotate|filter|backdrop-|opacity-|isolate|will-change|contain-|fixed|sticky|overflow-)/.test(
+              name
+            )
+          ),
+        route
+      ).toBe(false)
+
+      expect(section, route).toContain('size-glow-1500-760')
+      expect(section, route).toContain('size-glow-1000-560')
+      expect(section, route).toContain('size-glow-900-520')
+    }
+  })
+
+  it('should add no token to the closed glow namespace when generated', () => {
+    /* `rules.md` § R36 — the guard stated where this feature can see it. */
+    const glowTokens = [
+      ...emittedCss().matchAll(/--(?:color|spacing)-glow-[\w-]+(?=\s*:)/g),
+    ].map(([token]) => token)
+
+    expect(glowTokens.filter(token => token.includes('work'))).toEqual([])
+  })
+
+  it('should reach no network call from the compiled application-form chunk, CV field included', () => {
+    /*
+     * FR-003/FR-011, this feature's central guarantee, extended from
+     * feature 016's contact-form check to the file field specifically: the
+     * built chunk containing `ApplicationForm`/`useApplicationForm`/
+     * `FileField`'s compiled code carries no `fetch(`, `XMLHttpRequest`,
+     * `FormData` construction or `createObjectURL`.
+     */
+    const scripts = everyEmittedFile(join(OUTPUT, '_nuxt'))
+      .filter(path => path.endsWith('.js'))
+      .map(path => readFileSync(path, 'utf8'))
+      .filter(
+        source =>
+          source.includes('ApplicationForm') ||
+          source.includes('useApplicationForm') ||
+          source.includes('FileField')
+      )
+
+    expect(scripts.length).toBeGreaterThan(0)
+    for (const source of scripts) {
+      expect(source).not.toMatch(/fetch\(/)
+      expect(source).not.toContain('XMLHttpRequest')
+      expect(source).not.toMatch(/new FormData\(/)
+      expect(source).not.toContain('createObjectURL')
+    }
+  })
+})
+
 describe('static output · the brand type is self-hosted', () => {
   /*
    * Feature 006, FR-015 / SC-007. `@nuxt/fonts` resolves the families from

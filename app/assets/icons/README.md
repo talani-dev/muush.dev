@@ -54,3 +54,17 @@ geometry, not a design value this repository owns.
 
 Used by `SelectField.vue` (feature 016, `app/features/forms/`) as the select
 control's affordance glyph. Same stroke-attribute convention as `x.svg`.
+
+### `paperclip.svg`
+
+| | |
+|---|---|
+| Source | lucide `paperclip` (ISC licence) |
+| Original viewBox | `0 0 24 24` — already square, unchanged |
+| Transform applied | none |
+| Stripped | `width="24"`, `height="24"`, `class` |
+
+Used by `FileField.vue` (feature 020, `app/features/forms/`) as the CV
+upload control's affordance glyph
+(`docs/business/landing/design-extract.md` § FormField, "upload" variant).
+Same stroke-attribute convention as `x.svg` and `chevron-down.svg`.

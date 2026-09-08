@@ -502,6 +502,37 @@
      24 → 34 range at its desktop value, since no measurement for this
      section's own left block reached this implementation. */
   --contact-left-gap: 1.5rem;
+
+  /*
+   * Work with muush · About's second section (feature 020). Frame widths
+   * read from the leader's 2026-09-08 brief: Left 520×318 (D) / 342×258 (M),
+   * form 660×744 (D) / 342×665 (M) — CONFIRMED. Read only by
+   * `WorkWithMuushSection.vue`'s hand-written `<style scoped>` grid, never by
+   * a Tailwind utility class, so these live here and NOT in `@theme inline`
+   * — the same placement `--contact-form-w`/`--contact-left-w` use above,
+   * for the identical reason (`rules.md` § R18: an `@theme inline` token
+   * with no scanned utility consumer never reaches `:root` at all).
+   */
+  --work-form-w: clamp(21.375rem, 13.9929rem + 30.2857vw, 41.25rem);
+  --work-left-w: clamp(21.375rem, 17.2429rem + 16.9524vw, 32.5rem);
+  /* Desktop only: form x700 − (left x80 + left width 520) = 100px. */
+  --work-col-gap: 6.25rem;
+  /* Mobile only: form y290 − (left y0 + left height 258) = 32px — NOT the
+     generic `--spacing-form-gap` (14–16px), a distinct, measured value. */
+  --work-stack-gap: 2rem;
+  /*
+   * Desktop only, fixed round-2 review rejection: the Left block sits at
+   * local y130, the form at local y100 — the form starts 30px HIGHER than
+   * the text column, not level with it. `--spacing-work-top` (below) is
+   * calibrated from the Left block's own y130, so the single-row grid's
+   * `align-items: start` lands both columns at that same y by default; this
+   * offset pulls the form column back up by the confirmed 30px delta via a
+   * negative `margin-top` in `WorkWithMuushSection.vue`'s hand-written CSS.
+   * Desktop only — mobile's stacked flow has no such offset (spec/plan.md
+   * give no local y for the form's mobile position relative to the text
+   * block beyond `--work-stack-gap`).
+   */
+  --work-form-y-offset: 1.875rem;
 }
 
 /*
@@ -1476,6 +1507,71 @@ html {
   );
 
   /*
+   * ═══ Work with muush · About's second section (feature 020) ═══
+   *
+   * Consumed as UTILITY (`pt-*`, `top-*`, `left-*`, `gap-*`), per
+   * `findings.md` § R47. The layout widths/gaps
+   * (`--work-form-w`/`--work-left-w`/`--work-col-gap`/`--work-stack-gap`/
+   * `--work-form-y-offset`) live in `:root` above, not here — see that
+   * block's own comment.
+   *
+   * ⚠️ None is named `--spacing-glow-*` / `--color-glow-*` (rules.md § R36).
+   * The three glows themselves reuse the exact color+opacity+size pairs
+   * already declared for feature 016's Contacto section
+   * (`--color-glow-red-400-60`, `--color-glow-wine-300-37`,
+   * `--color-glow-wine-400-28`, `--spacing-glow-1500-760`,
+   * `--spacing-glow-1000-560`, `--spacing-glow-900-520`) — zero new
+   * color/size declarations for them.
+   */
+
+  /* This section's own top padding — the frame's own Left-block y-offset
+     (130 D / 0 M), taken directly (plan.md D-3): Team (18) and Network (19)
+     both stay `blocked`, so this section renders as `AboutHeroSection`'s
+     immediate next sibling with nothing between them, and that section
+     declares no bottom padding — this is the whole of the separation. */
+  --spacing-work-top: clamp(0rem, -3.0179rem + 12.381vw, 8.125rem);
+  /* ⚠️ UNVERIFIED — dueño Clau. The left block's own internal stack gap
+     (Pill → heading → body); no measurement beyond the two frame widths
+     reached this implementation. Seeded from `--spacing-contact-text-gap`'s
+     own range — the closest analogous left-block stack in this codebase. */
+  --spacing-work-text-gap: clamp(1.5rem, 1.2679rem + 0.9524vw, 2.125rem);
+
+  /*
+   * Anclas de los tres glows — seis tokens (rules.md § R48). Page-absolute
+   * centres from the leader's 2026-09-08 brief: foco 1170,3030 (D) ·
+   * 410,3130 (M); wine 1580,3240 (D) · 480,3430 (M); cierre 190,3350 (D) ·
+   * 80,3610 (M).
+   *
+   * Horizontal is CONFIRMED: `x − 80` (D) / `x − 24` (M) — the same page
+   * margin every prior section subtracts. These three x values are IDENTICAL
+   * to Contacto's own (`--spacing-contact-glow-*-x`): the two sections share
+   * a horizontal glow position while scrolling to different vertical ones, a
+   * real coincidence in the source data, not a copy-paste.
+   *
+   * ⚠️ Vertical origin is NOT confirmed, same limitation `--spacing-contact-glow-*`
+   * already recorded: this section's own page-absolute top edge in the FULL
+   * stitched design depends on Team's and Network's heights, and both stay
+   * `blocked` — deferred, not merely unbuilt. What IS confirmed is the three
+   * glows' relative vertical spread (arithmetic over the given page-absolute
+   * values, true regardless of the unknown origin). `foco` is anchored at
+   * this section's own top edge (`0`) as a documented placeholder; `wine`/
+   * `cierre` are that baseline plus the confirmed deltas. Flagged for leader
+   * confirmation (rules.md § R32 point 4) rather than silently presented as a
+   * measured position.
+   */
+  --spacing-work-glow-foco-x: clamp(
+    24.125rem,
+    7.7821rem +
+    67.0476vw,
+    68.125rem
+  );
+  --spacing-work-glow-foco-y: 0rem;
+  --spacing-work-glow-wine-x: clamp(28.5rem, 4.2643rem + 99.4286vw, 93.75rem);
+  --spacing-work-glow-wine-y: clamp(13.125rem, 20.8393rem - 8.5714vw, 18.75rem);
+  --spacing-work-glow-cierre-x: clamp(3.5rem, 2.2464rem + 5.1429vw, 6.875rem);
+  --spacing-work-glow-cierre-y: clamp(20rem, 33.7143rem - 15.2381vw, 30rem);
+
+  /*
    * FormField (design-extract.md § FormField): label→control gap 8 (D) / 7
    * (M); control's own padding [14,16], fixed — the design gives one pair,
    * not two frames, unlike the fluid tokens above.
@@ -1495,6 +1591,19 @@ html {
    * draws no intermediate transition frame.
    */
   --spacing-contact-whatsapp-h: 4.625rem;
+
+  /*
+   * FileField's "upload" variant (design-extract.md § FormField): padding
+   * 16×16 — `--spacing-field-x` above is already 16px and covers the
+   * horizontal axis, so only the vertical axis (16 vs. the shared recipe's
+   * 14) gets its own token. Gap 10 between the `paperclip` icon and the
+   * label text: the closest existing gap, `--spacing-radio-gap` at 9px, is
+   * off by enough not to reuse under the same tolerance `rules.md` §§
+   * R2/R11 already accepted for a 4/255-channel difference — 9 vs. 10 is a
+   * documented, distinct measurement.
+   */
+  --spacing-upload-y: 1rem;
+  --spacing-upload-gap: 0.625rem;
 
   /* RadioPill (design-extract.md § RadioPill): gap 9, padding [11,18], dot 8. */
   --spacing-radio-gap: 0.5625rem;
