@@ -5,8 +5,14 @@
   "pages": {
     "about": {
       "title": "About us · muush",
-      "heading": "About us",
       "work": "Work with muush"
+    }
+  },
+  "about": {
+    "hero": {
+      "eyebrow": "About us",
+      "headline": "We build the team around the project.",
+      "intro": "We bring together the right talent for each project and give them freedom to choose which projects they join and where they work from. That flexibility is what holds our talent pool together, and what lets us deliver without carrying a heavy structure."
     }
   },
   "landing": {

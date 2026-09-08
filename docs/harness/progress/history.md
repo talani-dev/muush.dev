@@ -1892,3 +1892,46 @@ byte-identical after).
   Reviewer's verdict: `docs/harness/progress/review_contact_section.md`.
 - `./init.sh` exit 0 · **49 files / 582 tests** (baseline 41/519).
 - `feature_list.json`: feature id 16 status `reviewing` → `done`.
+
+## 2026-09-08 — Feature 17 `about_hero_section` — `01 Hero` of Nosotros/About (done)
+
+Built `app/features/about/` (new module) plus a shared base extracted from
+the landing Hero. Reviewer **APPROVED**.
+
+- **`HeroStack.vue` extracted as a shared base** (`app/shared/ui/`), with
+  `variant: 'landing' | 'about'` selecting each frame's own type role/width
+  and a default slot carrying the CTA row. The landing and About Heroes stop
+  duplicating the Pill+headline+intro pattern. Verified as a **safe**
+  extraction rather than assumed safe because it compiled: `HeroSection.vue`'s
+  existing test file was left untouched and still passed, and the generated
+  `/es/index.html` markup for the landing Hero came out byte-identical
+  (Pill/h1/p/CTA row intact) before and after the refactor.
+- **The stale acceptance criterion the implementer caught itself.**
+  Criterion #3 originally said the copy had to wait for Clau's approval —
+  written before Roberto approved both locales directly in this session,
+  after the leader read them aloud from the `.pen`. The implementer flagged
+  the contradiction in its own report instead of silently shipping against a
+  criterion that said otherwise; the leader corrected the criterion in
+  `feature_list.json` before review. Good instinct, worth recording as such
+  rather than as a footnote.
+- **Mobile glow opacities are 60/37/28 on both viewports**, confirmed in the
+  generated CSS. The `.pen`'s mobile frame draws 65/40/30 — Roberto ruled
+  that a design-file error tonight, not intent, making this the one place on
+  the site where the file itself is wrong and the code does not "correct"
+  itself to match it.
+- **`--spacing-about-hero-top` is UNVERIFIED**, seeded from the landing
+  Hero's own top spacing because no design y-position exists to derive it
+  from (no centre gives it away, unlike the six glow anchors). Reviewer
+  judged this non-blocking and consistent with the repo's existing
+  convention for similarly-undecidable values (owner flagged in the code
+  comment).
+- **Zero tokens duplicated (R36)**: the three glow colour+size pairs
+  (`red-400`/60, `wine-300`/37, `wine-400`/28 at `1400-700`/`1000-520`/
+  `860-520`) were reused verbatim from feature 9's own definitions in
+  `global.css` — no new colour/size token exists for this feature, only the
+  new anchor/width/gap tokens the different frame needs.
+
+- Implementer's report: `docs/harness/progress/impl_about_hero_section.md`.
+  Reviewer's verdict: `docs/harness/progress/review_about_hero_section.md`.
+- `./init.sh` exit 0 · **52 files / 605 tests** (baseline 49/582).
+- `feature_list.json`: feature id 17 status `reviewing` → `done`.

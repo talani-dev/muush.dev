@@ -2,14 +2,21 @@
 import { useTemplateRef } from 'vue'
 import { useHeroSentinel } from '@/shared/logic/useNavCtaReveal'
 import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
+import HeroStack from '@/shared/ui/HeroStack.vue'
 import LinkArrow from '@/shared/ui/LinkArrow.vue'
-import Pill from '@/shared/ui/Pill.vue'
 import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/SectionGlow.vue'
 
 /**
  * `01 Hero` — the landing's first section, and the first section the site has
  * ever had. Four children in a vertical stack over three radial glows.
+ *
+ * The Pill + headline + intro three are `HeroStack.vue`
+ * (`app/shared/ui/`) — the base this section shares with `02 Hero` of
+ * Nosotros (feature 17) rather than a second copy of the same three tags
+ * (Constitution Article VIII). This section supplies `variant="landing"`
+ * (the default) and appends the CTA row through `HeroStack`'s default slot,
+ * which is the **only** structural difference the two frames draw.
  *
  * One responsive component, not two. The two frames are structurally
  * identical — same children, same order, same roles — and every size
@@ -132,24 +139,7 @@ useHeroSentinel(root)
       />
     </SectionBackdrop>
 
-    <!--
-      `items-start` keeps the Pill at its intrinsic width instead of stretching
-      it across the body; `w-full` puts the headline and the subhead back at
-      the stack's width so they wrap where the design wraps them.
-    -->
-    <div class="flex max-w-hero-body flex-col items-start gap-hero-gap">
-      <Pill :label="eyebrow" />
-
-      <h1 class="w-full font-instrument text-display text-bone-100">
-        {{ headline }}
-      </h1>
-
-      <p
-        class="w-full max-w-hero-measure font-instrument text-body-lg text-ink-100"
-      >
-        {{ subhead }}
-      </p>
-
+    <HeroStack :eyebrow="eyebrow" :headline="headline" :body="subhead">
       <!--
         The feature's only breakpoint: direction and cross-axis alignment,
         never a size. `items-start` on the mobile axis is what keeps the
@@ -184,6 +174,6 @@ useHeroSentinel(root)
           {{ ctaSecondary }}
         </span>
       </div>
-    </div>
+    </HeroStack>
   </section>
 </template>
