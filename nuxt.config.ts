@@ -18,7 +18,58 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/global.css'],
 
-  modules: ['@nuxtjs/i18n'],
+  /*
+   * The site icon, declared once so every prerendered page in both locales
+   * carries it. Until now nothing declared an icon at all: Nuxt was serving
+   * `public/favicon.ico` by convention, and that file was still the stock Nuxt
+   * logo. It is deleted, and the adaptive SVG is the only icon the site ships
+   * (spec A-06 — producing a real `.ico` needs a rasterizer this repository
+   * does not have, and adding a build dependency for a 16×16 legacy format
+   * fails Article VIII). Requests to `/favicon.ico` now 404, which browsers
+   * handle silently.
+   */
+  app: {
+    head: {
+      link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    },
+  },
+
+  modules: ['@nuxtjs/i18n', '@nuxt/fonts'],
+
+  /*
+   * The brand type, self-hosted. `branding.md` § Tipografía grants Poppins to
+   * the logo/wordmark alone, at 600, and gives everything else to Instrument
+   * Sans at 400 / 500 / 600. The set is closed: the 32 type tokens in
+   * global.css name those weights and no other, so a weight added here would
+   * be bytes no page asks for, and one missing would be synthesised by the
+   * browser — the defect this feature exists to remove.
+   *
+   * The binaries are downloaded at **build** time and emitted into
+   * `.output/public/_fonts`, so the deployed artefact makes no request to a
+   * third party at runtime (Constitution Article IV). That means `pnpm
+   * generate` now needs the network on a cold cache — the trade recorded in
+   * spec A-09.
+   *
+   * `throwOnError` is on deliberately. Its default is `false`, which turns a
+   * failed download into a warning and ships `@font-face` rules pointing at
+   * files that were never written: fallback type, silently, which is exactly
+   * today's defect wearing a different hat.
+   *
+   * Subsets are latin + latin-ext (spec A-11): the site ships Spanish and
+   * English only. Verify the result against `.output/public`, never against
+   * the dev server or the catalogue (docs/business/rules.md §§ R25, R31).
+   */
+  fonts: {
+    defaults: {
+      styles: ['normal'],
+      subsets: ['latin', 'latin-ext'],
+    },
+    families: [
+      { name: 'Poppins', provider: 'google', weights: [600] },
+      { name: 'Instrument Sans', provider: 'google', weights: [400, 500, 600] },
+    ],
+    throwOnError: true,
+  },
 
   /*
    * Both locales carry a prefix (/es/, /en/) — decided 2026-09-06, see

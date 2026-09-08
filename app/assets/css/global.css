@@ -561,39 +561,6 @@
   --blur-menu-panel: 1.25rem;
 }
 
-/* TODO: faltan los archivos de fuente en public/fonts — agregar los .woff2 del branding book */
-@font-face {
-  font-family: "Poppins";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/Poppins-Regular.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Poppins";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/Poppins-Bold.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Instrument Sans";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/InstrumentSans-Regular.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Instrument Sans";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/InstrumentSans-Bold.woff2") format("woff2");
-}
-
 /*
  * Primitivas del borde LED del botón primario. Van fuera de @theme porque
  * son at-rules de documento: así se declaran una sola vez aunque el botón
