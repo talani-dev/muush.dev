@@ -20,11 +20,11 @@ describe('hero destinations', () => {
     expect(HERO_DESTINATIONS.callUrl).toBe(CALL_BOOKING_URL)
   })
 
-  it('should leave the primary call to action without a destination while section 05 does not exist', () => {
-    /* Not an oversight and not fillable with a substitute: no `mailto:`, no
-       WhatsApp, no scroll to an arbitrary position (spec FR-014). While it is
-       absent the control is a real `<button>` that emits no fragment. */
-    expect(HERO_DESTINATIONS.contactHash).toBeUndefined()
+  it('should point the primary call to action at the contact section', () => {
+    /* Filled 2026-09-08 (feature 016): `06 CTA final` exists now, with
+       `id="contacto"`. Not a substitute destination — the real section this
+       key was always reserved for (spec FR-002). */
+    expect(HERO_DESTINATIONS.contactHash).toBe('#contacto')
   })
 
   it('should keep the arrow out of the secondary label key', () => {

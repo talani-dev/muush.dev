@@ -7,12 +7,15 @@
  * its own key lists / geometry, not something another feature reads.
  */
 
+export type { ContactContent } from './data/contactContent'
 export type { HeroContent } from './data/heroContent'
 export type { PurposeContent } from './data/purposeContent'
 export type { ServicesContent } from './data/servicesContent'
+export { useContactContent } from './logic/useContactContent'
 export { useHeroContent } from './logic/useHeroContent'
 export { usePurposeContent } from './logic/usePurposeContent'
 export { useServicesContent } from './logic/useServicesContent'
+export { default as ContactSection } from './ui/ContactSection.vue'
 export { default as HeroSection } from './ui/HeroSection.vue'
 export { default as PurposeSection } from './ui/PurposeSection.vue'
 export { default as ServicesSection } from './ui/ServicesSection.vue'
