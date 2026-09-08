@@ -504,6 +504,11 @@ sobresalga por abajo lo reproduce** mientras sea la última del documento, y
 porque la cura —recortar el eje vertical en la raíz del layout— es un cambio
 en un archivo de la feature 006, no de la sección.
 
+> **Cerrada por la § R57** (feature 010, 2026-09-08). Y con una corrección: la
+> cura que se propone arriba —recortar el eje vertical— es necesaria pero **no
+> suficiente**. No cubre el overscroll, que descubre el lienzo a cualquier
+> altura de página. La superficie tenía que ir en `html`.
+
 ### R55 · La altura del nav móvil construido es 78.19, no 76 — falta el borde de la hamburguesa
 
 Medida en el artefacto generado con `Emulation.setDeviceMetricsOverride`
@@ -571,3 +576,102 @@ grep del código fuente crudo buscando `/@(click|mouseenter|mouseleave)/` para
 probar que el componente no lleva script de cliente. Un **comentario** que
 mencione `@click` en prosa rompe esa prueba. La salida correcta es reescribir
 la prosa, no aflojar la guarda.
+
+## Feature 010 · Banda blanca y candado de build — hallazgos (2026-09-08)
+
+### R57 · Un `<div>` no pinta el lienzo, y por eso la § R54 no se cura recortando el desbordamiento
+
+Cierre de la § R54. El fondo del sitio vivía en `bg-ink-500` sobre el `<div>`
+raíz del layout, y **ninguna regla de la hoja compilada tocaba `html` ni
+`body`** (verificado: `grep -o "html{[^}]*}"` solo daba la preflight de
+Tailwind). El lienzo del documento toma el fondo del **elemento raíz**, y solo
+lo hereda del `body` si el del raíz es transparente
+(CSS Backgrounds 3 § 3.11.2). Un `<div>`, por muy raíz del layout que sea, no
+participa: donde no llega, pinta el blanco por defecto del navegador.
+
+Eso hace que el defecto tenga **dos** manifestaciones y que solo una dependa
+de la altura de la página:
+
+| | Se ve cuando | Recortar el eje vertical lo cura | Fondo en `html` lo cura |
+|---|---|---|---|
+| Banda bajo el documento | un glow alarga el documento | sí | sí |
+| **Overscroll** | se arrastra más allá del final, a **cualquier** altura | **no** | sí |
+
+El overscroll es el que decide dónde va la cura: trackpad de macOS e iOS
+descubren el lienzo por debajo del documento con la página en cualquier
+tamaño, así que **ninguna sección futura lo tapa** y recortar el
+desbordamiento no lo toca. La superficie va en `html`.
+
+Medido en el artefacto generado, mismo método que la § R44
+(`Emulation.setDeviceMetricsOverride`, CDP), después del cambio:
+
+| Ancho | Sobrante bajo la raíz | Desbordamiento horizontal | `background` de `html` |
+|---|---|---|---|
+| 320 | +0.38 | 0 | `rgb(38, 38, 38)` |
+| 390 | +0.47 | 0 | `rgb(38, 38, 38)` |
+| 768 | +0.47 | 0 | `rgb(38, 38, 38)` |
+| 1024 | −0.48 | 0 | `rgb(38, 38, 38)` |
+| 1440 | **−0.03** (era **+158.97**) | 0 | `rgb(38, 38, 38)` |
+| 2560 | −0.03 | 0 | `rgb(38, 38, 38)` |
+
+`body` sigue en `rgba(0, 0, 0, 0)` a propósito: una sola declaración decide el
+lienzo. Dos —una en `html` y otra en `body`— lo dejarían decidido por el orden.
+
+**Lo que costó cero:** el eje vertical se recortó además del horizontal
+(`overflow-clip` en vez de `overflow-x-clip`), y no se pierde nada dibujado. El
+footer lleva su propio `bg-ink-500` opaco, así que la cola del glow
+`Hero · cierre` ya estaba tapada en todo el tramo que solapa al footer; lo
+único que asomaba era la banda de 159px **por debajo** del footer, que es el
+defecto. El diseño hace lo mismo: su página mide 5060 y `CTA · cierre` llega a
+5080, o sea que el marco de la página lo corta.
+
+**Verificado que `overflow: clip` en los dos ejes no rompe nada de lo que ya
+estaba:** el nav sigue `sticky` y queda en `top: 0` con el scroll al máximo
+(261 de 261), y el panel `fixed inset-0 z-50` del menú móvil mide 390×844 y
+acierta el hit-test en el centro **y** en la esquina inferior derecha — un
+descendiente `position: fixed` no lo recorta el `overflow` de un ancestro que no
+sea contenedor de bloque para `fixed`. Con `hidden` en un eje no valdría lo
+mismo: coacciona el otro a `auto` y vuelve la raíz un contenedor de scroll
+(§ FR-007 / feature 006 `research.md` § R3).
+
+El orden de capas de las §§ R28/R37 medido sobre la página generada, no en
+Storybook: backdrop de sección `z-index: -3`, hoja de puntos `-2`
+(`radial-gradient(color(srgb .85098 .85098 .85098 / .12) …)`), spotlight `-1`
+—ausente hasta el primer `mousemove` y presente después—, footer y nav en flujo
+normal.
+
+### R58 · El candado de build de Nuxt es un archivo JSON, y solo está activo dentro de un agente
+
+`@nuxt/cli` 3.37 escribe `<buildDir>/nuxt.lock` antes de construir y antes de
+levantar el dev server, y se niega a arrancar un segundo Nuxt mientras un
+proceso vivo lo tenga (`dist/lockfile-*.mjs`, `acquireLock`). El archivo es
+JSON plano y trae todo lo que hace falta para decir qué matar:
+
+```json
+{ "pid": 10237, "startedAt": 1788854149138, "command": "dev",
+  "cwd": "/Users/…/muush.dev", "port": 3000, "url": "http://[::1]:3000" }
+```
+
+Un candado se considera **inactivo** —y se borra— si el PID no vive, si es el
+PID propio, o si `startedAt` tiene más de 24h (`MAX_LOCK_AGE_MS`). Las tres
+condiciones se replicaron tal cual en `tests/nuxt-build-lock.ts`: un lector que
+las juzgue distinto daría un mensaje que contradice a la herramienta que
+describe.
+
+**El detalle que explica por qué esto muerde a los agentes y no a las
+personas:** `isLockEnabled()` devuelve `isAgent` de `std-env` por defecto.
+`NUXT_LOCK=1` lo fuerza encendido, `NUXT_IGNORE_LOCK=1` apagado. Un humano en
+su terminal con `pnpm dev` corriendo genera sin candado (y sin protección
+contra la carrera sobre `.nuxt/`); una sesión automatizada choca.
+
+Consecuencia para las pruebas: `tests/global-setup.ts` hace `execFileSync('pnpm',
+['generate'])`, y Vitest serializa la excepción de `execFileSync` por sus
+propiedades enumerables — de ahí el `Serialized Error: { status: 1 }` que no
+nombra nada. Cuatro apariciones, tres de ellas costando una corrida completa.
+La cura es leer el candado antes de invocar, volver a leerlo si la build falla
+igual, y en cualquier otro caso reportar el **texto** que imprimió la build en
+vez de su código de salida (por eso `stdio` pasó de `'ignore'` a `'pipe'`).
+
+Reproducido para verificar el mensaje —`NUXT_LOCK=1 pnpm dev` de fondo y
+`pnpm test` encima— y la salida está en
+`docs/harness/progress/impl_white_band_and_build_lock.md`.

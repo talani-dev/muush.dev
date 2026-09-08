@@ -57,11 +57,31 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
  * This root is also the element the spotlight's coordinates are published on,
  * which is what makes them agree with `DotGrid`'s own origin.
  *
- * `overflow-x: clip`, not `hidden`: several glows sit at negative x in the
- * design, and both keep them from producing a horizontal scrollbar — but
- * `hidden` on one axis coerces `visible` on the other to `auto`, turning the
- * page into a scroll container and breaking any future `position: sticky`.
- * `clip` does not (CSS Overflow 3; feature 006 `research.md` § R3).
+ * ## Overflow — `clip` on both axes, decided rather than defaulted
+ *
+ * The horizontal axis was always clipped: several glows sit at negative x in
+ * the design and clipping is what keeps them from producing a horizontal
+ * scrollbar (feature 006, FR-007). Feature 010 decides the **vertical** axis
+ * the same way instead of leaving it at `visible`, because the reason is the
+ * same on both: a glow is decoration, and decoration must not change how far
+ * the document scrolls. Left visible, the Hero's `cierre` glow made the
+ * document 159px taller than this element with nothing but glow in the gap
+ * (`findings.md` § R54) — and the design itself cuts that glow, its page being
+ * 5060 tall while `CTA · cierre` spans 4180→5080.
+ *
+ * Clipping the vertical axis cannot cut content: the in-flow children are what
+ * give this element its height, so only the absolutely positioned glows can
+ * ever reach past it, and only past the very end of the page.
+ *
+ * `clip`, not `hidden`, on both: `hidden` makes the element a scroll container,
+ * which would break `position: sticky` — the nav's, today. `clip` does not
+ * (CSS Overflow 3; feature 006 `research.md` § R3).
+ *
+ * **The white band is not fixed here.** Clipping stops the document from
+ * growing past this div; it does nothing about the canvas underneath, which is
+ * what an overscroll reveals at any page height. The ink surface is declared
+ * on `html` in `global.css`, and that is the fix. Both are needed and neither
+ * substitutes for the other.
  *
  * Feature 3's scope flag **A-03 is resolved by feature 006**: the dotted paper
  * and the glow mechanism are painted here. The mobile menu still repaints
@@ -106,7 +126,7 @@ useHead(useLocaleHead())
 <template>
   <div
     ref="layoutRoot"
-    class="relative isolate min-h-screen overflow-x-clip bg-ink-500"
+    class="relative isolate min-h-screen overflow-clip bg-ink-500"
   >
     <!--
       The page-wide dotted paper, rendered once: not per page and not per

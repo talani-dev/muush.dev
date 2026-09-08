@@ -200,6 +200,33 @@
   --duration-nav-cta-fade: 0.2s;
 }
 
+/*
+ * EL LIENZO. La base ink-500 vive en la raíz del layout (`bg-ink-500` en
+ * default.vue), que es un `<div>` y por lo tanto NO pinta el lienzo del
+ * documento. Donde ese div no llega, no pinta nadie y el navegador muestra su
+ * blanco por defecto: la banda blanca de la feature 010, medida en
+ * findings.md § R54.
+ *
+ * Va en `html` y no en `body`: el lienzo toma el fondo del elemento raíz y
+ * solo lo hereda del `body` si el del raíz es transparente (CSS Backgrounds 3
+ * § 3.11.2). Declararlo en `html` es además la única forma de cubrir el
+ * OVERSCROLL —arrastrar más allá del final del documento en un trackpad de
+ * macOS o en iOS descubre el lienzo—, que ocurre a CUALQUIER altura de página
+ * y no depende de que existan más secciones. Por eso la cura está aquí y no en
+ * recortar el eje vertical: eso último resuelve el desbordamiento, no el
+ * lienzo, y default.vue explica por qué se hacen las dos cosas.
+ *
+ * Sin `@layer` a propósito: una regla sin capa le gana a la preflight de
+ * Tailwind —que sí vive en `@layer base`— sin `!important` y sin depender del
+ * orden del archivo.
+ *
+ * El valor tiene que coincidir con el `bg-ink-500` de la raíz del layout: son
+ * dos superficies contiguas y una diferencia se vería como una costura.
+ */
+html {
+  background-color: var(--ink-500);
+}
+
 @theme inline {
   --color-bone-100: var(--bone-100);
   --color-bone-200: var(--bone-200);

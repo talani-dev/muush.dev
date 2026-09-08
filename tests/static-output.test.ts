@@ -212,19 +212,19 @@ describe('static output · the layout wraps every page', () => {
        *
        * What is asserted is the host contract plus the sheet: the layout root
        * is the page's single stacking context (`isolate`), is positioned, and
-       * clips horizontal overflow with `clip` rather than `hidden` so the
-       * off-canvas glows never turn the page into a scroll container
-       * (feature 006 `research.md` § R3). Paint order itself is not testable
-       * here — `happy-dom` does no painting, and pretending otherwise would
-       * ship a test that always passes (`rules.md` § R27). It is reviewed in
-       * the `DotGrid` / `SectionBackdrop` stories instead.
+       * clips overflow with `clip` rather than `hidden` so the off-canvas
+       * glows never turn the page into a scroll container (feature 006
+       * `research.md` § R3). Paint order itself is not testable here —
+       * `happy-dom` does no painting, and pretending otherwise would ship a
+       * test that always passes (`rules.md` § R27). It is reviewed in the
+       * `DotGrid` / `SectionBackdrop` stories instead.
        */
       const html = documentFor(route)
 
       const layoutRoot = html.match(/<div class="([^"]*bg-ink-500[^"]*)"/)?.[1]
 
       expect(layoutRoot, route).toBeDefined()
-      for (const utility of ['relative', 'isolate', 'overflow-x-clip']) {
+      for (const utility of ['relative', 'isolate', 'overflow-clip']) {
         expect(layoutRoot?.split(' '), `${route} · ${utility}`).toContain(
           utility
         )
@@ -423,6 +423,84 @@ describe('static output · the layout wraps every page', () => {
       ).toBe(false)
     }
   })
+})
+
+describe('static output · the canvas under the document', () => {
+  /*
+   * Feature 010, the white band.
+   *
+   * The layout root is a `<div>`. A `<div>` does not paint the canvas, so
+   * wherever the document reached past it — the Hero's `cierre` glow made it
+   * 159px taller at 1440 (`findings.md` § R54) — and wherever a visitor
+   * overscrolls past the end, the browser painted its own white. On a site that
+   * is dark end to end that is `rgb(255,255,255)` below the footer, and the
+   * overscroll case happens at **any** page height, so no future section can
+   * mask it.
+   *
+   * Two mechanisms, asserted separately because neither substitutes for the
+   * other and either one can be reverted alone:
+   *
+   * 1. `html` carries the ink surface, so the canvas inherits it (CSS
+   *    Backgrounds 3 § 3.11.2). This is the one that covers overscroll.
+   * 2. The layout root clips **both** axes, so decoration cannot lengthen the
+   *    document past the content that defines its height.
+   *
+   * ⚠️ These are assertions about the emitted artefact, not about pixels.
+   * `happy-dom` paints nothing, so a test claiming to measure a colour here
+   * would be green forever (`rules.md` § R27). The pixels were measured in
+   * Chrome against this same `.output/public` and recorded in `findings.md`;
+   * what this file can prove is that the two declarations survive, which is
+   * what a future glow would silently take away.
+   */
+
+  it('should paint the document canvas with the ink base when the site is generated', () => {
+    const css = emittedCss()
+
+    /* On `html`, not on `body`: the canvas takes the root element's background
+       and falls through to `body` only when the root's is transparent, so
+       declaring it on `html` is what makes ONE declaration decide the canvas
+       instead of two. `body` alone would also paint it — measured, not assumed
+       (reviewer, 2026-09-08) — but it would leave the outcome depending on
+       `html` staying transparent. What can never paint the canvas is the
+       layout root, because it is a `<div>`, and that is the actual defect. */
+    expect(css).toMatch(/html\s*\{[^}]*background-color:\s*var\(--ink-500\)/)
+    /* And the token it names has to be reachable, or the rule resolves to
+       nothing in silence — the trap `findings.md` § R46 records. */
+    expect(css).toMatch(/--ink-500:\s*#262626/i)
+  })
+
+  it('should leave no other background on the root or the body when the site is generated', () => {
+    /* The complement: one declaration decides the canvas. A second one, on
+       either element, would decide it instead depending on order — which is how
+       this defect would come back without anybody editing the rule above. */
+    const backgroundsOnCanvasElements = [
+      ...emittedCss().matchAll(/(^|[\s,}])(html|body)\s*\{([^}]*)\}/g),
+    ].filter(rule => /background(-color|-image)?\s*:/.test(rule[3] ?? ''))
+
+    expect(backgroundsOnCanvasElements).toHaveLength(1)
+  })
+
+  for (const route of ROUTES) {
+    it(`should clip both axes on the layout root when the page is ${route}`, () => {
+      /*
+       * The vertical axis is decided, not defaulted (feature 010). `clip` and
+       * not `hidden` on both, so the root never becomes a scroll container and
+       * the pinned nav keeps working (feature 006 `research.md` § R3); and both
+       * axes rather than one, because a glow is decoration and decoration must
+       * not change how far the document scrolls on either.
+       *
+       * `overflow-x-clip` is asserted absent on purpose: it is what this
+       * replaced, and it is exactly what a revert would put back.
+       */
+      const layoutRoot = documentFor(route)
+        .match(/<div class="([^"]*bg-ink-500[^"]*)"/)?.[1]
+        ?.split(' ')
+
+      expect(layoutRoot, route).toContain('overflow-clip')
+      expect(layoutRoot, route).not.toContain('overflow-x-clip')
+      expect(layoutRoot, route).not.toContain('overflow-hidden')
+    })
+  }
 })
 
 describe('static output · the landing hero', () => {
