@@ -841,7 +841,21 @@ html {
   --text-button--letter-spacing: 0em;
   --text-button--font-weight: 600;
 
-  --text-button-sm: 0.875rem;
+  /*
+   * Feature 021 (floating nav redesign): 14px → 15px, junto con
+   * --spacing-btn-nav-y/-x abajo, para que el CTA del nav (con su nueva
+   * flecha líder) mida 221×48 a 1440px.
+   *
+   * ⚠️ Corregido en revisión (rechazo, ronda 1): la primera pasada dejó
+   * `--spacing-btn-nav-x` en 1.75rem sin medir contra texto real, y el CTA
+   * salía 232.546875×48 — 11.5px de más, exactamente lo que `findings.md`
+   * § R63 marcó como pendiente de confirmar. Medido por CDP contra el
+   * artefacto real: a font-size 15px/line-height 18px, el contenido (flecha
+   * 15px + el espacio que Vue condensa entre el `<span>` y la etiqueta +
+   * "Cuéntanos tu proyecto") mide 176.546875px. `--spacing-btn-nav-x` se
+   * corrige abajo para que 2× ese padding + 176.546875 dé exactamente 221.
+   */
+  --text-button-sm: 0.9375rem;
   --text-button-sm--line-height: 1.2;
   --text-button-sm--letter-spacing: 0em;
   --text-button-sm--font-weight: 600;
@@ -930,8 +944,20 @@ html {
   --spacing-btn-y: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
   --spacing-btn-hero-x: clamp(1.625rem, 1.4857rem + 0.5714vw, 2rem);
   --spacing-btn-submit-x: clamp(1.75rem, 1.6571rem + 0.381vw, 2rem);
-  --spacing-btn-nav-y: 0.8125rem;
-  --spacing-btn-nav-x: 1.5rem;
+  /*
+   * Feature 021: 13/24 → 15/28, para que la caja del CTA del nav (con la
+   * flecha líder + `--text-button-sm` a 15px de arriba) mida 221×48 a
+   * 1440px, el tamaño del frame redesignado (`WGhSI`/`s0ni6l`). No cambia el
+   * `variant='nav'` en sí ni añade uno nuevo (spec FR-011).
+   *
+   * ⚠️ `-x` corregido en revisión (rechazo, ronda 1): 1.75rem media
+   * 232.546875×48 medido por CDP — 28px de padding por lado contra un
+   * contenido (flecha + espacio + etiqueta) de 176.546875px a font-size
+   * 15px. `1.75rem` no tenía respaldo de medición; `1.3892rem` sí:
+   * (221 − 176.546875) ÷ 2 = 22.2265625px ≈ 1.3892rem por lado.
+   */
+  --spacing-btn-nav-y: 0.9375rem;
+  --spacing-btn-nav-x: 1.3892rem;
   --spacing-social: 3rem;
   --spacing-social-glyph: 1.5rem;
 
@@ -941,9 +967,73 @@ html {
    * --spacing-page: se reusa, no se duplica. El gap interno del lockup
    * (9 → 12) ya es --spacing-lockup-gap, propiedad del primitivo.
    */
-  --spacing-nav-y: clamp(1.375rem, 1.1893rem + 0.7619vw, 1.875rem);
+  /*
+   * ⚠️ Corregido en revisión (feature 021, ronda 1 de rechazo): el extremo
+   * móvil bajó de 1.375rem (22px) a 1.0625rem (17px). La circunferencia de
+   * idioma de 44×44 (abajo) pasó a ser el contenido más alto de la fila
+   * móvil — más que la hamburguesa (~32px) que antes la gobernaba — así que
+   * el mismo padding de antes hacía crecer el alto del nav móvil de ~78px a
+   * 88px, violando FR-020/SC-008 ("nada de móvil se mueve"). Medido en vivo
+   * por CDP contra el artefacto real, no solo el token: 17×2 + 44 = 78px,
+   * exactamente el mismo alto que `findings.md` § R55 ya registraba antes de
+   * esta feature. El extremo de escritorio (1.875rem) se conserva — ya no
+   * gobierna la fila de escritorio (ver `--spacing-nav-pill-py` abajo, que la
+   * sustituye a `lg`), pero sigue siendo el valor de `MobileMenu.vue`'s si
+   * ese panel se mostrara por encima de `lg` (no ocurre en flujo normal).
+   */
+  --spacing-nav-y: clamp(1.0625rem, 0.7607rem + 1.2381vw, 1.875rem);
   --spacing-nav-gap: clamp(0.875rem, 0.5036rem + 1.5238vw, 1.875rem);
   --spacing-lang-gap: clamp(0.3125rem, 0.2893rem + 0.0952vw, 0.375rem);
+
+  /*
+   * Feature 021 (floating nav redesign) — píldora flotante de escritorio,
+   * frames `WGhSI`/`s0ni6l`: 1280×72 en `x80 y24` sobre un canvas de 1440.
+   * Solo existe en `lg`; móvil no lleva píldora (spec FR-020, frame `X3Xquh`
+   * sin cambios) y no tiene su propio frame para interpolar, así que ninguno
+   * de los tres tokens de abajo es un `clamp()`.
+   *
+   * Horizontal: el inset se resuelve reusando `--spacing-page` (ya
+   * `clamp(1.5rem, 0.2rem + 5.3333vw, 5rem)`, exactamente 80 en el extremo
+   * de escritorio) como el `max-width` que estrecha la fila de 1440 a 1280 —
+   * `research.md` R-1. No se declara un segundo valor de 80 bajo otro
+   * nombre. El padding de contenido existente (`px-page`) no se toca, así
+   * que el resultado medible es que el contenido queda un poco más adentro
+   * del viewport que en la barra a sangre anterior — consecuencia del
+   * ancho más angosto, no un segundo uso del mismo gutter.
+   *
+   * Vertical (posición): `y24`, fijo, nuevo — no hay valor existente que
+   * coincida.
+   *
+   * ⚠️ Vertical (padding interno) — `--spacing-nav-pill-py`, agregado en
+   * revisión (rechazo, ronda 1): `--spacing-nav-y` (30px a escritorio) nunca
+   * se tocó para la píldora, así que esta heredaba el padding de la barra
+   * vieja sin fondo y medía 1280×110 en vez de 1280×72 (FR-001/SC-001,
+   * 53% más alta que el objetivo). El contenido más alto de la fila a `lg`
+   * es el CTA (48px, confirmado por CDP).
+   *
+   * Primera pasada: 0.75rem (12px) por lado, es decir 72 − 48 = 24 de
+   * padding total. Medido en vivo por CDP: dio 74, no 72. La cuenta de 24 no
+   * contaba el `border` de 1px que esta misma corrección le agrega a la
+   * píldora (`lg:border`) — con `box-sizing: border-box` global, un borde sí
+   * suma a la altura automática de una caja sin `height` explícito. La barra
+   * vieja no tenía borde, así que esto no existía antes de esta feature.
+   * Corregido a 0.6875rem (11px): 11 + 1 (borde) + 48 + 1 (borde) + 11 = 72,
+   * confirmado por CDP tras la corrección. Sustituye a `--spacing-nav-y`
+   * **solo** a `lg` (`lg:py-nav-pill-py` en `SiteNav.vue`, ganando por
+   * especificidad de media query sobre el `py-nav-y` sin prefijo) — móvil no
+   * lo consume ni lleva borde.
+   */
+  --spacing-nav-pill-w: 80rem;
+  --spacing-nav-pill-y: 1.5rem;
+  --spacing-nav-pill-py: 0.6875rem;
+
+  /*
+   * Feature 021 — el botón circular de idioma, frame `tGVGq` (Banda 1):
+   * 44×44, el mismo valor en los tres lugares donde aparece (nav de
+   * escritorio, nav móvil, panel del menú móvil — spec A-03/FR-019, un solo
+   * componente compartido).
+   */
+  --spacing-lang-circle: 2.75rem;
 
   /*
    * Hamburguesa y botón Cerrar (§ 9.bis). Fijos: solo existen en móvil.

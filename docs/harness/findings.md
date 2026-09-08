@@ -767,3 +767,102 @@ del nav lleva `aria-current="page"`; en `/es` y `/en` ninguno lo lleva. La
 prueba que la afirme se verifica en rojo primero (§ R39).
 
 **Estado:** el hueco sigue abierto. No hay feature que lo reclame.
+
+---
+
+## Feature 021 · Floating nav redesign — hallazgos de implementación (2026-09-08)
+
+### R62 · `LanguageToggle.vue`'s prop contract could not stay `{ locale, href }`
+
+`specs/021-floating-nav-redesign/contracts/components.md` and `plan.md` both
+state the toggle's prop contract is unchanged, and `plan.md`'s own
+Implementation Approach § 3 has the component itself calling
+`t('shell.nav.switchToEn')` to resolve FR-018's accessible name. Both cannot
+be true at once against the rest of this repository's established
+conventions:
+
+- Article VI forbids writing `"Switch to English"` as a literal string inside
+  the component.
+- `docs/business/rules.md` § R23's corollary — and this feature's own
+  `plan.md` Technical Context ("Zero new Nuxt composable calls in `ui/`") —
+  forbids `LanguageToggle.vue` calling `useI18n()` itself, which would also be
+  the first `ui/` component in the repository to do so, and Storybook has no
+  i18n plugin registered to catch it if it slipped through (`.storybook/
+  preview.ts` only stubs `NuxtLink`).
+- The contract says zero new props.
+
+Satisfying FR-018 without breaking either of the first two required breaking
+the third: `LanguageToggle.vue` gained one prop, `switchLabel: string`,
+resolved in `app/layouts/default.vue` (which already calls `t()` for the
+nav's other labels) and threaded through `SiteNav.vue` and `MobileMenu.vue` —
+the same shape `MobileMenu.vue`'s own `label`/`closeLabel` props already use
+for the identical reason. This is a genuine spec-package defect, not a
+preference: the illustrative pseudo-code in one section of `plan.md`
+contradicts a hard constraint stated three paragraphs above it in the same
+document. Resolved in favour of the harder, repository-wide constraint.
+
+**Consequence for the "zero lines changed" file list.** `plan.md`'s own file
+table and `quickstart.md` § 6 list `MobileMenu.vue` as out of scope, expecting
+zero lines changed. Threading the new required prop through it is a direct,
+unavoidable consequence of the deviation above — two lines in the props
+interface, one in the destructure, three in the template — not independent
+scope creep. `git diff --stat` confirms the other five files in that list
+(`useShellNavigation.ts`, `useMobileMenu.ts`, `resolveLocaleDestination.ts`,
+`useNavCtaReveal.ts`, `footerColumns.ts`, `types.ts`) show zero lines changed.
+
+### R63 · No live browser in this implementation session, again
+
+Same caveat `--color-glass-dark-contact`'s own comment in `global.css` already
+records for a different token: this session had no CDP/browser access, so the
+nav CTA's new `--spacing-btn-nav-y`/`-x`/`--text-button-sm` values (13/24/14px
+→ 15/28/15px, targeting the 221×48 box `WGhSI`/`s0ni6l` draw) are a
+first-pass, reasoned derivation, not a measurement. Same for the mobile nav's
+height (T021) and feature 9's CTA-reveal scroll scenarios (T016): the
+underlying composable (`useNavCtaReveal.ts`) and its consuming classes are
+byte-identical (confirmed by `git diff --stat`), and the full Vitest suite
+(706 tests, including every pre-existing CTA-reveal assertion in
+`tests/static-output.test.ts`) is green against the real `pnpm generate`
+output — but neither substitutes for measuring the rendered box and the
+scroll-triggered fade in an actual browser. Flagged for the reviewer.
+
+## Feature 021 · Floating nav redesign — hallazgos de la ronda de rechazo (2026-09-08)
+
+### R64 · CDP sí funcionó esta sesión, y encontró exactamente lo que R63 predijo
+
+Contra lo que R63 registró, esta sesión **sí tuvo** acceso a Chrome headless
+vía CDP (`--remote-debugging-port` + `--remote-allow-origins=*`, sirviendo
+`.output/public` con `python3 -m http.server`). Las tres correcciones exigidas
+por el `reviewer` (píldora 1280×110 → 1280×72, nav móvil 88px → 78px, CTA
+232.546875×48 → ~221×48) se midieron en vivo, no se asumieron:
+
+- **Píldora**: `--spacing-nav-y` nunca se ajustó para la nueva altura de 72px
+  — solo se agregaron tokens de ancho/inset. Se agregó `--spacing-nav-pill-py`
+  (padding vertical, solo `lg`) derivado del contenido más alto medido (el
+  CTA, 48px). **Primera pasada midió 74px, no 72.** La cuenta (72 − 48 = 24,
+  12px por lado) no contaba el `border` de 1px que la propia píldora agrega
+  (`lg:border`): con `box-sizing: border-box` global, un borde sí suma a la
+  altura automática de una caja sin `height` explícito. Corregido a 11px por
+  lado (11+1+48+1+11=72), confirmado por CDP. **Generaliza:** cualquier
+  padding derivado para una caja con borde nuevo tiene que restar el grosor
+  del borde, dos veces, del total — no solo el contenido.
+- **Nav móvil**: el círculo de idioma de 44×44 (antes 32px de la hamburguesa)
+  pasó a ser el contenido más alto de la fila móvil, y `--spacing-nav-y`
+  (22px por lado a 390) nunca bajó para compensarlo — de ahí 22×2+44=88.
+  Bajado a 17px por lado (17×2+44=78), exacto contra `findings.md` § R55.
+- **CTA**: `--spacing-btn-nav-x` se había subido a 28px sin medir contra
+  texto real. Medido el contenido (flecha + espacio + "Cuéntanos tu
+  proyecto") en 176.546875px a 15px de fuente; despejado el padding exacto
+  ((221 − 176.546875) ÷ 2 = 22.2265625px ≈ 1.3892rem) da 220.984375px — a
+  0.016px del objetivo, indistinguible en cualquier medición real.
+
+**Nota aparte, no un defecto:** la misma caja en `/en/about` mide
+236.34375×48 — más ancha, porque "Tell us about your project" es más largo
+que "Cuéntanos tu proyecto" y la caja no tiene ancho fijo. El 221×48 del
+frame es la medida de la versión en español; el inglés siempre iba a diferir
+(ya documentado en `SiteNav.stories.ts`'s nota sobre `English`), y no es uno
+de los tres defectos reportados.
+
+**Regla operativa que deja esta ronda:** un token de padding derivado de
+"target − contenido" sin medir en vivo, y sin considerar un `border` que la
+misma corrección introduce, es exactamente el tipo de error que una lectura
+del token nunca detecta — solo lo hace medir la caja renderizada.

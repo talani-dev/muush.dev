@@ -131,6 +131,15 @@ const buttonType = computed(
 const isClickable = computed(
   () => Boolean(href) || buttonType.value === 'submit'
 )
+/**
+ * `group` (feature 21): a static class, not a prop — the nav CTA's leading
+ * arrow is composed by its one caller (`SiteNav.vue`) as a plain `<span
+ * class="group-hover:...">` inside this component's existing default slot
+ * (spec Clarifications, Q3; `plan.md` § 2). This root needs the ancestor
+ * class for that child's hover animation to read at all; it costs nothing
+ * to every other caller, since none of them declares a `group-hover:` class
+ * today.
+ */
 </script>
 
 <template>
@@ -139,7 +148,7 @@ const isClickable = computed(
     :href="href"
     :type="href ? undefined : buttonType"
     :class="[
-      'led relative inline-flex items-center justify-center rounded-full bg-glass-dark font-instrument text-bone-100 focus-visible:outline-red-400',
+      'led group relative inline-flex items-center justify-center rounded-full bg-glass-dark font-instrument text-bone-100 focus-visible:outline-red-400',
       sizeByVariant[variant],
       isClickable ? 'cursor-pointer' : '',
     ]"

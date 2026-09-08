@@ -1997,3 +1997,85 @@ on round 2** — the rejection is the entry worth reading closely.
   including the five Phase 6 CDP tasks (T051/T052/T056/T058, plus T057 —
   the specific task the rejection was about) the reviewer completed live.
 - `feature_list.json`: feature id 20 status `reviewing` → `done`.
+
+## 2026-09-08 — Feature 21 `floating_nav_redesign` — the nav's glass pill, `Servicios` in, `Proyectos` out (done)
+
+`SiteNav.vue`'s desktop row restyled from a full-bleed, backgroundless bar to
+a floating dark-glass pill; `LanguageToggle.vue` rewritten from `ES / EN` to
+a single 44×44 circle; the nav CTA grew to 221×48 with a leading arrow.
+**Rejected on round 1 (three sizing defects), approved on round 2** — same
+shape as feature 20's rejection earlier tonight, closed the same way.
+
+- **A spec-package defect found and fixed, not just implemented around.**
+  `contracts/components.md` and `plan.md` both claimed `LanguageToggle.vue`'s
+  prop contract (`{ locale, href }`) stays unchanged, with `plan.md`'s own
+  Implementation Approach showing the component calling `t()` directly to
+  resolve FR-018's translated, locale-describing `aria-label`. Both cannot
+  hold at once: Article VI forbids hardcoding the string, and
+  `docs/business/rules.md` § R23's corollary — restated as a hard constraint
+  in this feature's own `plan.md` — forbids a `ui/` component calling
+  `useI18n()`, which this would have been the first one to do. The
+  implementer added one prop, `switchLabel`, resolved in `default.vue` (which
+  already calls `t()` for the nav's other labels) and threaded through
+  `SiteNav.vue`/`MobileMenu.vue` — the same shape `MobileMenu.vue`'s own
+  `label`/`closeLabel` props already use for the identical reason. The
+  reviewer judged this a legitimate, proportionate fix, confirmed the
+  `aria-label` live-translated ("Cambiar a inglés" on `/es/`), and confirmed
+  the ripple into `MobileMenu.vue`/its test/story was limited to threading
+  the prop, nothing else.
+- **Round 1: three sizing defects only live measurement caught.** The
+  implementer's environment lacked CDP/browser access and flagged this
+  explicitly rather than asserting pixel claims from token values alone; the
+  reviewer's environment had it (headless Chrome, `--remote-debugging-port` +
+  `--remote-allow-origins=*`, serving `.output/public`) and measured: the
+  desktop pill at **1280×110** instead of **1280×72** (`--spacing-nav-y`
+  was never adjusted for the new pill, only width/inset tokens were added);
+  the mobile nav row at **88px** instead of the **~78px** `findings.md` § R55
+  baseline (the new 44×44 language-toggle circle overtook the hamburger as
+  the row's tallest content, and nothing compensated); and the nav CTA at
+  **232.5×48** instead of **221×48** (padding tuned without measuring against
+  real text). Same class of gap feature 20's rejection closed a few hours
+  earlier tonight — a spec/plan's own gate or token claiming a state that was
+  never actually measured against the built artefact.
+- **Round 2: all three fixed and measured, including one lesson found mid-fix
+  (`findings.md` § R64).** Desktop: added `--spacing-nav-pill-py`, an
+  `lg`-only override of `--spacing-nav-y`, sized from the row's tallest
+  content (the 48px CTA). First attempt measured **74px**, not 72 — the
+  pill's own new 1px `border` adds to auto-height under `border-box`, which a
+  padding value derived from content height alone does not account for;
+  corrected 12px/side → 11px/side, re-measured at exactly **1280×72**.
+  Mobile: `--spacing-nav-y`'s mobile endpoint lowered 22px → 17px/side,
+  re-measured at exactly **78px**. CTA: measured the actual rendered content
+  width (arrow + Vue-condensed space + label, 176.546875px) and solved
+  `--spacing-btn-nav-x` exactly, landing at **220.984375×48** (target 221).
+  The reviewer independently re-measured all three on a fresh
+  `pnpm generate` and additionally confirmed the EN CTA's different width
+  (236.34375px) is genuine label-length variance, not a padding
+  inconsistency, by checking both locales share identical padding classes.
+- **Both `.pen` divergences documented in code, not silently resolved.**
+  `Proyectos` dropped from the desktop nav link row — Roberto's explicit call
+  (2026-09-08), because feature 15 is deferred indefinitely and a link to a
+  section that doesn't exist reads as a broken site (`ui-map.md` § 6) — with
+  the divergence commented on `NAV_ITEMS` in `navigation.ts` so a future
+  reader does not "restore" it from the frame. `Servicios` added despite
+  `content.md` stating it is excluded — the redesigned `.pen` wins per
+  `rules.md` § R32, since it postdates that document — reported as a
+  contradiction for a human to reconcile in `content.md`, which no agent
+  edits.
+- **Everything reused, confirmed by diff rather than by description.**
+  `useNavCtaReveal.ts`, `useShellNavigation.ts`, `useMobileMenu.ts`,
+  `resolveLocaleDestination.ts`, `footerColumns.ts` and `types.ts` all show
+  **zero** lines changed (`git diff --stat`, both rounds); `BotonPrimario.vue`
+  gained zero new props, its diff limited to one static `group` class (for
+  the nav CTA's leading-arrow hover animation) and its `nav`-variant token
+  *values*. Feature 9's scroll-reveal verified live and unaffected: CTA
+  `invisible opacity-0` at landing scroll 0, `visible opacity-100` past the
+  Hero.
+
+- Implementer's reports: `docs/harness/progress/impl_floating_nav_redesign.md`
+  (both rounds). Reviewer's verdict (round 1 rejection, round 2 approval, one
+  file, both intact): `docs/harness/progress/review_floating_nav_redesign.md`.
+- `./init.sh` exit 0 · **58 files / 706 tests** (baseline 58/688).
+- `specs/021-floating-nav-redesign/tasks.md`: all 25 tasks checked, including
+  T016/T021/T022's live-CDP measurements, completed across both rounds.
+- `feature_list.json`: feature id 21 status `reviewing` → `done`.

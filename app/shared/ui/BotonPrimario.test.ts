@@ -113,6 +113,20 @@ describe('BotonPrimario', () => {
     expect(globalCss).toMatch(/--radius-control:\s*0\.75rem/)
   })
 
+  it('should carry the nav variant tokens sized for the 221×48 CTA box', () => {
+    /* Feature 21 — 13/24/14px → 15/28/15px so the nav CTA (with its new
+       leading arrow, added in `SiteNav.vue`) measures 221×48 at 1440px.
+       `-x` corrected in review round 1 (1.75rem measured 232.546875×48 live
+       via CDP, 11.5px over) to `1.3892rem`, derived from that same live
+       measurement: (221 − 176.546875 content px) ÷ 2. Read from source, not
+       the emitted stylesheet — a minifier is free to reformat `0.9375rem`
+       and this assertion should not depend on that (contrast
+       `--radius-control` above, same technique). */
+    expect(globalCss).toMatch(/--spacing-btn-nav-y:\s*0\.9375rem/)
+    expect(globalCss).toMatch(/--spacing-btn-nav-x:\s*1\.3892rem/)
+    expect(globalCss).toMatch(/--text-button-sm:\s*0\.9375rem/)
+  })
+
   it('should offer a pointer when it renders as a link', () => {
     /* The user agent would give an `<a href>` a pointer anyway; it is declared
        so the two branches stop depending on which element they happen to be

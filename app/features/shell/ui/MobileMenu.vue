@@ -40,6 +40,13 @@ interface Props {
   /** The equivalent route in the other locale, without a fragment. */
   localeSwitchHref: string
   /**
+   * Accessible name of the language toggle, naming the *destination* locale
+   * (spec FR-018, feature 21). Threaded through rather than resolved here,
+   * for the same reason `label`/`closeLabel` below already arrive resolved:
+   * `LanguageToggle.vue` cannot call `useI18n()` itself (`rules.md` § R23).
+   */
+  localeSwitchLabel: string
+  /**
    * Accessible name of the panel, and of the close control.
    *
    * Not in `contracts/components.md`, and added deliberately: a modal surface
@@ -58,6 +65,7 @@ const {
   home,
   locale,
   localeSwitchHref,
+  localeSwitchLabel,
   label,
   closeLabel,
 } = defineProps<Props>()
@@ -109,7 +117,11 @@ function chooseItem(item: ResolvedShellItem) {
       </NuxtLink>
 
       <div class="flex items-center gap-nav-gap">
-        <LanguageToggle :locale="locale" :href="localeSwitchHref" />
+        <LanguageToggle
+          :locale="locale"
+          :href="localeSwitchHref"
+          :switch-label="localeSwitchLabel"
+        />
 
         <!--
           `cursor-pointer` for the same reason as the hamburger it replaces: a

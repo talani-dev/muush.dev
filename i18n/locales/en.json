@@ -219,9 +219,11 @@
   "shell": {
     "nav": {
       "label": "Main navigation",
-      "projects": "Projects",
+      "services": "Services",
       "about": "About us",
-      "cta": "Tell us about your project"
+      "cta": "Tell us about your project",
+      "switchToEs": "Switch to Spanish",
+      "switchToEn": "Switch to English"
     },
     "menu": {
       "label": "Menu",

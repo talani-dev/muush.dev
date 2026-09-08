@@ -467,7 +467,7 @@
         "El nav NO cambia paths ni anclas: conserva `/es/nosotros ↔ /en/about` y las cuatro anclas españolas que ya emite. La feature 12 se canceló y el Artículo VI manda segmentos traducidos. Este rediseño es puramente visual"
       ],
       "sdd": true,
-      "status": "pending",
+      "status": "done",
       "depends_on": [3, 22]
     },
     {
