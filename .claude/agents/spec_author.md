@@ -60,12 +60,26 @@ d. `/speckit-tasks` — generates `tasks.md` with atomic tasks, `[P]` where
   discipline, credential hygiene)
 - `tasks.md` has atomic, non-generic tasks
 
-### 3.5 Capture new business logic (if any)
+### 3.5 Report new business logic — do NOT write it
 
-If `/speckit-specify` or `/speckit-plan` revealed a business rule not already
-documented in `docs/business/`, add it to `docs/business/rules.md` (create if
-missing), citing the feature that originated it. **Append, never overwrite**
-existing content.
+**You cannot determine a business rule.** Only a human can. Established by
+Roberto on 2026-09-07, after this step filled `docs/business/rules.md` with
+23 agent-authored entries that no person ever asked for or reviewed.
+
+If specifying or planning surfaces something that looks like an undocumented
+business rule, **report it to the leader in your return summary** — state what
+you observed and what you inferred. The leader takes it to the human. If they
+confirm it is a rule, they write it or tell you to. You never decide.
+
+Technical findings — tool behaviour, config traps, measurements — are not
+business rules and never were. They go in `docs/harness/findings.md`, in your
+progress report, or as a comment in the file they govern. Prefer the comment:
+a note next to the code it explains gets read; a rule in a growing central
+file does not.
+
+Before writing anything anywhere, ask whether a human would recognise it as a
+rule of *their business*. If the answer needs a paragraph of justification,
+it is not one.
 
 ### 4. Update state
 
@@ -82,8 +96,10 @@ existing content.
 - ❌ Never skip `/speckit-clarify` if markers exist
 - ❌ Never create spec folders by hand (always via `/speckit-specify`)
 - ❌ Never edit files outside `specs/`, `docs/harness/progress/`,
-  `docs/business/rules.md`, and `feature_list.json`
-- ❌ Never overwrite existing `docs/business/` content — only append
+  `docs/harness/findings.md`, and `feature_list.json`
+- ❌ **Never write to `docs/business/`** — not `rules.md`, not any of it. That
+  tree is human-authored. You read it and you report contradictions; you do
+  not edit it, not even to append. See § 3.5
 - ❌ Never propose a plan that adds a server runtime, a backend, or anything
   that violates Constitution Article I (Static-Site Purity)
 - ✅ Always pre-load context before the first skill

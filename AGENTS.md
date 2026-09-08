@@ -33,6 +33,7 @@
 | `docs/harness/specs.md` | SDD process: spec-kit flow, approval gate | Before writing a spec |
 | `docs/harness/verification.md` | How to verify work is real | Before declaring done |
 | `docs/harness/CHECKPOINTS.md` | Objective "correct final state" criteria | To self-evaluate |
+| `docs/harness/findings.md` | Tool behaviour, config traps and measurements found while building. **Not business rules** — agent-authored, unreviewed | When a build step behaves unexpectedly |
 | `.claude/agents/` | Subagent definitions | If orchestrating work |
 | `.claude/skills/speckit-*` | spec-kit skills (`specify`, `plan`, `tasks`, `clarify`, …) — invoke with a hyphen (`/speckit-specify`), not a dot | When invoking spec-kit |
 
@@ -48,6 +49,13 @@
 - **If unsure, check `docs/harness/`, `docs/business/`,
   `.specify/memory/constitution.md`, or `specs/<name>/`** before inventing
   an answer.
+- **`docs/business/` is human-authored and read-only to every agent.** A
+  business rule is determined by a human, never by an agent. If your work
+  surfaces something that looks like an undocumented rule, report it and let
+  the leader take it to a person — do not write it. Technical findings are
+  not business rules: they go in a comment next to the code they govern, in
+  your progress report, or in `docs/harness/findings.md`. Established
+  2026-09-07 after agents wrote 23 unreviewed entries into `rules.md`.
 
 ## 4. SDD flow
 

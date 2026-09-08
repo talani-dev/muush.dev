@@ -1,13 +1,43 @@
-# Reglas de negocio y de sistema descubiertas al especificar
+# Reglas de negocio y de sistema
 
-> Este archivo acumula reglas que **no estaban documentadas** en el resto de
-> `docs/business/` y que salieron al escribir una spec. Cada entrada cita la
-> feature que la originó. **Se agrega, nunca se sobrescribe.**
+> ## Quién puede agregar aquí — política, 2026-09-07
 >
-> Estas reglas complementan `branding.md`, `landing/design-extract.md`,
+> **Una regla de negocio la determina un humano, nunca un agente.** Se agrega
+> aquí solo cuando Roberto —u otra persona— lo pide explícitamente, y siempre
+> apoyada en algo que un humano escribió o decidió. Un agente que "descubre"
+> una regla al especificar o al implementar **no la escribe**: la reporta y
+> espera.
+>
+> Esto corrige lo que venía pasando. El archivo se llenó de hallazgos de
+> herramienta —comportamientos de Chrome, globs de Vitest, defaults de CSS—
+> que nunca fueron reglas de negocio. El `implementer` los escribía sin tener
+> mandato alguno para hacerlo, por imitación del patrón que ya veía en el
+> archivo. Los 14 hallazgos técnicos se movieron a
+> `docs/harness/findings.md` el 2026-09-07.
+>
+> **Dónde va cada cosa:**
+>
+> | Qué | Dónde |
+> |---|---|
+> | Regla de negocio, dicha por un humano | aquí |
+> | Decisión de arquitectura | `.specify/memory/constitution.md` |
+> | Comportamiento de herramienta, medición, trampa | `docs/harness/findings.md` |
+> | Detalle que solo importa en un archivo | comentario en ese archivo |
+>
+> ## Sobre el contenido existente
+>
+> Cada entrada cita la feature que la originó. **Se agrega, nunca se
+> sobrescribe.** Complementan `branding.md`, `landing/design-extract.md`,
 > `landing/ui-map.md` y `landing/decisions-open.md`; donde haya conflicto,
 > gana el documento específico salvo que aquí se marque una corrección
 > explícita con fecha.
+>
+> ⚠️ **R1–R31 y R36–R50 las determinaron agentes, no humanos**, bajo la
+> política anterior. Siguen aquí porque hay código y specs que las
+> referencian, pero **ninguna ha sido revisada por una persona** y varias son
+> decisiones de arquitectura mal ubicadas más que reglas de negocio. La única
+> de origen humano es la § R32, que sale de la decisión de Roberto del
+> 2026-09-07 sobre el `.pen`. Depurarlas es trabajo pendiente.
 
 ---
 
@@ -625,57 +655,6 @@ total y el bullet de "Observaciones" que lo menciona. Pendiente de Clau.
 Quien construya Propósito monta once, y no resucita el doceavo desde el
 documento.
 
-### R30 · Storybook también necesita las fuentes declaradas aparte
-
-Extensión directa de R19 y R23. Storybook corre Vite fuera de Nuxt, así que
-además del compilador de SFC, los alias y el stub de `NuxtLink`, **tampoco ve
-el módulo de fuentes**: no hay `@nuxt/fonts`, no hay handler de `/_fonts`, y
-los binarios que el módulo escribe en `.nuxt/cache/fonts` llevan nombre con
-hash de contenido, así que no se pueden referenciar a mano.
-
-Al borrar los `@font-face` escritos a mano de `global.css`, el catálogo se
-queda **sin ninguna declaración de fuente** y renderiza todo en la tipografía
-de sistema — que es exactamente lo que el Artículo X existe para evitar: un
-componente revisado en la tipografía equivocada no está revisado.
-
-**Regla:** el catálogo declara las dos familias por su cuenta, en
-`.storybook/`. Es tooling local y nunca se despliega; el artefacto del sitio
-sigue siendo autocontenido, que es lo que gobierna el Artículo IV.
-
-### R31 · `@nuxt/fonts` descarga en build y emite en `/_fonts` — se verifica sobre `.output/public`
-
-Verificado sobre las declaraciones de tipos publicadas de `@nuxt/fonts@0.14.0`
-(que extiende `FontlessOptions` de `fontless`) y sobre su `dist/module.mjs`:
-
-- El módulo registra un `publicAssets` de Nitro apuntando a
-  `<buildDir>/cache/fonts` con baseURL `assets.prefix` (por defecto `/_fonts`).
-- En `rollup:before` descarga cada URL resuelta (con caché en
-  `node_modules/.cache/nuxt/fonts`) y escribe los binarios ahí. Con
-  `nitro.preset: 'static'` terminan en `.output/public/_fonts/`.
-- La inyección de `@font-face` es **por uso**: escanea el CSS buscando
-  declaraciones de `font-family`. Si no aparecieran, la salida documentada es
-  `global: true` por familia.
-- `processCSSVariables` vale `'font-prefixed-only'` por defecto, que es
-  justamente lo que atiende las variables `--font-*` del tema de Tailwind v4.
-- `throwOnError` vale `false` por defecto: una descarga fallida es un
-  **warning** y el sitio se publica con `@font-face` apuntando a archivos que
-  nunca se escribieron. En este repo se pone en `true` — el defecto que la
-  feature 006 existe para eliminar es exactamente ese, tipografía de respaldo
-  sin que nadie se entere.
-
-**Regla, que es la de siempre (§§ R18, R25) aplicada a fuentes:** la
-verificación es un grep sobre `.output/public` — que existan los binarios, que
-el CSS emitido apunte a `/_fonts/…`, y que `fonts.gstatic.com` no aparezca en
-ningún archivo. Ni el servidor de desarrollo ni el catálogo sirven como
-prueba.
-
-**Contrapartida que hay que decir en voz alta:** esto mete una dependencia de
-red **en tiempo de build** y un paquete nuevo. La alternativa —commitear los
-dos `.woff2` y declarar las caras a mano— no necesita ninguna de las dos, pero
-mete binarios opacos sin procedencia ni ruta de actualización. Se eligió el
-módulo con aprobación de Roberto (2026-09-07); revertir es volver al enfoque
-actual con los pesos correctos.
-
 ### R32 · El `.pen` manda sobre `docs/business/` · y el que extrae los valores es el líder
 
 > Decisión de Roberto, 2026-09-07. Corrige cómo la spec de la feature 006
@@ -736,85 +715,6 @@ valor tomado solo de `docs/business/` y contradicho por el frame **no es
 > `@nuxt/fonts` **y en que no haría falta `global: true`**, y R29, R30 y R32 no
 > se tocan. Las tres de abajo salieron al implementar y ninguna estaba
 > anticipada. Se agregan al final; nada de lo anterior se toca.
-
-### R33 · Storybook copiaba `public/` DOS veces sobre su propia salida, y una era Vite
-
-Al declarar el favicon del catálogo se descubrió que
-`storybook-static/index.html` **no era el documento del manager**: era el
-`public/index.html` del sitio, los 1480 bytes del `<meta http-equiv="refresh"
-content="0; url=/es">` de la § R25. El catálogo construido redirigía desde su
-propia raíz a una página que no existe dentro de él. `public/favicon.svg`
-pisaba al de Storybook por la misma vía, que es por qué la pestaña del catálogo
-venía mostrando el logo de Nuxt.
-
-**Son dos copias, no una, y hay que apagar las dos:**
-
-1. `staticDirs: ['../public']` copia el directorio **al raíz** de la salida,
-   después de que Storybook escribe sus archivos. Se cambió a la forma con
-   mapeo, `[{ from: '../public', to: '/brand' }]`, que el tipo
-   `DirectoryMapping` de `storybook@10.6.0` ya soporta.
-2. **El `publicDir` de Vite vale `<root>/public` por defecto**, que en este
-   repo es el mismo directorio — así que el build del *preview* lo volvía a
-   copiar al raíz, por su cuenta, independientemente de `staticDirs`. Se
-   verificó corriendo el build: con solo el punto 1 aplicado, `index.html`
-   seguía midiendo 1480 bytes. Se apaga con `viteConfig.publicDir = false` en
-   el `viteFinal` de `.storybook/main.ts`.
-
-Con las dos, `storybook-static/index.html` vuelve a ser el manager (3816 bytes)
-y el ícono vive en `/brand/favicon.svg`, **un solo archivo fuente compartido
-con el sitio**, apuntado desde `.storybook/manager-head.html`.
-
-**Generaliza, y es la § R19/R23 otra vez:** todo lo que Storybook comparte con
-la app hay que verificarlo sobre `storybook-static/`, no suponerlo. Este error
-llevaba desde la feature 003 sin que nadie lo notara, porque
-`pnpm storybook:build` **sale con código 0**: sobreescribir el documento de
-entrada no es un error de build. Cualquier archivo que se agregue a `public/`
-con un nombre que Storybook también use vuelve a producirlo.
-
-### R34 · `--headless --window-size` de Chrome no fija el viewport, y eso miente en las capturas
-
-Al verificar el fondo a 390px (spec FR-007, SC-004) las capturas de
-`--headless=new --window-size=390,844` salían con el texto cortado en el borde
-derecho: parecía que `overflow-x: clip` estaba recortando contenido, que es
-justo lo que la FR-007 prohíbe.
-
-**No era cierto.** Medido dentro de la página —
-`documentElement.scrollWidth` contra `clientWidth`, y el rectángulo de cada
-elemento contra el ancho del viewport— **no hay un solo elemento que rebase los
-390px**, ni con el clip puesto ni quitándolo en caliente. Chrome renderiza con
-un viewport más ancho que el `--window-size` pedido y **recorta la imagen** al
-tamaño solicitado; el resultado se ve idéntico a un desbordamiento real.
-
-**Regla:** una captura headless no sirve como evidencia de layout a un ancho
-dado. Para un ancho concreto, se carga la página en un `<iframe>` de ese ancho
-exacto dentro de una página contenedora y se mide desde ahí — el `<iframe>` sí
-fija el viewport de layout, y de paso permite medir `scrollWidth`, recorrer los
-rectángulos y capturar la imagen correcta. Es la misma disciplina de la § R25
-aplicada a los píxeles: la pregunta es "¿qué mide el documento?", no "¿qué
-parece la foto?".
-
-### R35 · El `.woff2` que descarga `@nuxt/fonts` no es uno por peso
-
-`.output/public/_fonts/` contiene **cuatro** binarios para cuatro pesos, pero no
-se corresponden uno a uno: Google sirve Instrument Sans como fuente variable,
-así que **los pesos 400, 500 y 600 apuntan al mismo archivo** (uno por subset,
-`latin` y `latin-ext`) con distinto `font-weight` en cada `@font-face`. Poppins
-sí trae su propio binario por subset. Ocho declaraciones `@font-face`, cuatro
-archivos.
-
-Es correcto y esperado, no una mala configuración — pero cualquier
-verificación que cuente archivos y espere uno por peso va a fallar. **Lo que se
-verifica es que exista una cara por cada peso de la marca y que ningún `src`
-apunte fuera del propio origen**, que es lo que asserta
-`tests/static-output.test.ts`.
-
-Verificado también en el navegador contra el artefacto generado: las cuatro
-caras cargan (`document.fonts.check` en verde para Poppins 600 e Instrument
-Sans 400/500/600), y el ancho medido del mismo texto difiere entre los tres
-pesos de Instrument Sans (289.92 / 293.72 / 297.53 px) y contra la familia de
-respaldo (288.16 px). Es decir: hay tres caras reales, no una sintetizada.
-
----
 
 ## Feature 008 · Spotlight del cursor — especificación (2026-09-07)
 
@@ -913,27 +813,6 @@ aritmética a partir de valores que **sí** están confirmados, y (3) deja un
 token delante. Presentar la derivación como si fuera una medida del diseño es
 el error que la § R32 cierra.
 
-### R39 · Una prueba en una carpeta que `vitest.config.ts` no incluye reporta verde por no existir
-
-El `include` de `vitest.config.ts` lista `tests/**`,
-`app/shared/ui/**/*.test.ts` y `app/features/**/*.test.ts`. **No incluye
-`app/shared/logic/**`**, que es donde la Constitución (Artículo I) pone las
-composables transversales. Un archivo de pruebas ahí **corre cero veces**, la
-suite sale en verde, y el conteo de archivos sube en cero sin que nadie mire.
-
-La § R16 ya lo anticipaba en una línea ("cualquier feature futura que agregue
-tests de componente extiende ese `include`"); esto lo vuelve explícito y le
-agrega el procedimiento:
-
-**Regla:** al agregar pruebas en una ruta nueva, se extiende el `include`
-**y se demuestra** con una aserción que falle a propósito —hay que *ver* el
-archivo en rojo— antes de escribir las aserciones reales. Un archivo de
-pruebas que nunca se ha visto fallar no se ha demostrado que corra. Un
-proyecto de Vitest aparte no es opción: `defineVitestConfig` lanza error sobre
-`projects` (§ R16).
-
----
-
 ## Feature 008 · Spotlight del cursor — hallazgos de implementación (2026-09-07)
 
 > Las reglas R36–R39 salieron del ciclo de **especificación** de esta misma
@@ -945,144 +824,172 @@ proyecto de Vitest aparte no es opción: `defineVitestConfig` lanza error sobre
 > sola aserción real. Las cinco de abajo salieron al implementar y ninguna
 > estaba anticipada. Se agregan al final; nada de lo anterior se toca.
 
-### R40 · Nuxt inlinea el CSS con scope de un componente aunque el componente no se renderice
+## Feature 009 · Hero — especificación (2026-09-07)
 
-La feature 008 tiene que estar **ausente** del HTML prerenderizado (su spec
-FR-012: ese es el fallback sin JavaScript). La aserción obvia —que la cadena
-`cursor-spotlight` no aparezca en el documento— **falla en las cuatro rutas**, y
-no porque el elemento esté ahí:
+> Las cinco reglas de abajo salieron al **especificar y planear** la feature
+> 009 (`hero_section`), la primera sección real del sitio. Se agregan al final;
+> nada de lo anterior se toca. Las que salgan al implementarla se agregan
+> después, en su propia sección, igual que hicieron R33–R35 con la feature 006
+> y R40–R45 con la 008.
+>
+> Las cuatro primeras son de sistema y **aplican a las cinco secciones que
+> faltan**, no solo al Hero.
 
-```
-<div ... class="dot-grid ..."></div><!---->     ← el v-if no renderizó nada
-<style>.cursor-spotlight[data-v-…]{ … }</style> ← pero su CSS sí está, en el <head>
-```
+### R48 · Cómo se convierte un offset de glow de página a sección — la receta
 
-Nuxt recolecta los estilos de **todos** los componentes del grafo de módulos de
-la ruta y los inlinea en cada documento. Que el `v-if` haya dicho que no es
-irrelevante: el componente está importado por el layout, así que su hoja viaja.
+> ⚠️ **Corregida el mismo día que se escribió (2026-09-07).** La primera
+> versión de esta regla decía que el eje horizontal se vuelve un **porcentaje
+> de la sección** y que basta con el frame de escritorio. **Es falso**, y se
+> deja escrito abajo con su desmentido porque es exactamente la inferencia que
+> las cinco secciones que faltan van a repetir.
 
-**Regla:** una aserción de "esto no está en el artefacto" que busque un nombre
-de clase tiene que acotarse al `<body>`, nunca al documento completo. Un grep
-sobre todo el HTML no distingue marcado de hoja de estilos y reprueba a la
-feature justo por enviar lo que debe enviar (los estilos viajan, el elemento
-espera al ratón). Ya está aplicado en `tests/static-output.test.ts`, que además
-afirma lo contrario en positivo: el CSS **sí** tiene que estar.
+La § R29 dice **que** hay que convertir los offsets y deja el **cómo** a quien
+monte cada sección. Esta es la receta, ya corregida contra los cuatro frames
+del Hero.
 
-### R41 · Leer `window.scrollX` dentro de un `requestAnimationFrame` fuerza estilo, aunque sea lo primero que hace
+1. **Se piden los centros de LOS DOS viewports al líder.** No uno. Las
+   coordenadas del frame son la esquina superior izquierda (convención de todas
+   las lecturas de `docs/business/`: § 9.bis coloca los items del menú en
+   "x 24, y 176"), así que el centro sale sumando el radio — pero eso solo
+   convierte una coordenada, no inventa la otra.
+2. **El origen de la sección es la caja real, no la página.** Horizontal: el
+   margen de página (80 / 24). Vertical: **el borde inferior del nav**, porque
+   el nav va en flujo normal y `<main>` no lleva padding superior (§ R49).
+3. **Cada offset se interpola entre sus dos extremos medidos** con `clamp()`,
+   la misma interpolación 390↔1440 de la escala fluida. Son **seis** tokens por
+   sección de tres glows: uno por glow por eje.
+4. **Solo los extremos son diseño.** Todo ancho intermedio es una decisión de
+   suavizado y hay que decirlo en el comentario del token, o el siguiente
+   lector va a tomar un valor a 900px por algo que dibujó Clau. Se elige el
+   `clamp()` sobre seis media queries para que la sección conserve la propiedad
+   de tener **un solo breakpoint, que cambia dirección y nunca una posición**.
+5. **El glow se ancla por su CENTRO**, con `-translate-x-1/2 -translate-y-1/2`
+   (permitido sobre un glow individual, § R28). Su diámetro es un `clamp()`;
+   anclado por la esquina, el centro se desplazaría al cambiar el diámetro y la
+   composición solo sería correcta a 1440 exactos.
 
-Corrección medida al `research.md` § R2 de esta feature, que pedía leer el
-scroll **primero** y escribir después, con el argumento de que el orden inverso
-fuerza un layout sincrónico. **El orden no basta.** El callback de rAF corre
-*antes* del pase de estilo del cuadro, así que un `window.scrollX` ahí dentro
-tiene que vaciar lo que invalidó la escritura de propiedades del cuadro
-anterior, vaya donde vaya en el callback.
+#### Lo que NO funciona, y por qué parecía que sí
 
-Medido con dos trazas de 5s de movimiento continuo del puntero contra un
-control con el efecto apagado (`prefers-reduced-motion: reduce`):
+La feature 009 derivó primero las posiciones móviles de las de escritorio, de
+dos formas, y **las dos fallaron** al leer los frames `t5n4Sm` / `dwool`:
 
-| | Con el efecto | Control (apagado) | Atribuible |
+| Derivación | Predice a 390 | El diseño dibuja | Error |
 |---|---|---|---|
-| `Blink.ForcedStyleAndLayout` — leyendo en el rAF | 2723 | 2169 | **≈ 600** (2 por cuadro: una por eje) |
-| `Blink.ForcedStyleAndLayout` — con el scroll cacheado | 2147 | 2148 | **0** |
+| `foco` x = 96.094% de la sección | 374.8 | **410** | 35px |
+| `wine` x = 3.906% | 15.2 | **40** | 25px |
+| `cierre` x = 105.469% | 411.3 | **440** | 29px |
+| `cierre` y = `calc(100% + 94px)` | 94px **debajo** del borde inferior | **30px arriba** | cambia de signo |
 
-La línea base de ambas columnas es el número de eventos de puntero: Chrome
-hace un hit test por cada `mousemove` para actualizar `:hover` y el cursor, y
-eso pasa con el efecto puesto o quitado.
+Dos coincidencias hicieron que la derivación pareciera segura, y ninguna
+sobrevivió:
 
-**Regla:** el camino caliente de un efecto por cuadro no lee geometría. El
-offset de scroll se toma en el handler de `scroll` —donde ya está vigente— y en
-la activación; el cuadro hace aritmética y escribe. Vale igual para
-`scrollY`, `getBoundingClientRect`, `offsetTop` y `getComputedStyle`.
+- **El par especular.** En escritorio `foco` y `wine` caen en 0.90972 y 0.09028
+  del ancho de página y **suman exactamente 1**. En móvil caen en 1.0513 y
+  0.1026. La simetría es un hecho de un frame, no un sistema.
+- **La proporción vertical.** El centro de `foco` está al 30.9% del alto de la
+  sección en escritorio y al **7.8%** en móvil.
 
-### R42 · `mask-repeat` vale `repeat` por defecto, y un degradado de máscara se tesela
+**Los glows están colocados a mano, frame por frame.** `design-extract.md` § 10
+ya lo decía con todas sus letras — *"22 glows afinados a mano"*, *"el
+posicionamiento es absoluto y distinto en las 22"* — y esa frase, leída
+despacio, era la advertencia.
 
-Una `mask-image: radial-gradient(...)` sin `mask-repeat: no-repeat` **se repite
-en mosaico** sobre la caja del elemento. En una máscara de recorte circular eso
-no da un círculo: da una retícula de círculos, y lo que sobresale de la caja
-queda visible en vez de recortado.
+**Regla operativa, y vale para cualquier medida visual, no solo para glows:**
+si a un subagente le faltan las coordenadas de un viewport, **las pide**
+(§ R32, punto 4). No las deriva del otro y las presenta como medida del
+diseño. Una derivación que reproduce perfectamente el frame del que salió no
+es evidencia de nada: reproduce su propia fuente.
 
-No es teórico: el CSS emitido de `BotonPrimario.vue` lleva
-`mask-repeat: repeat, repeat`. Ahí no molesta porque su máscara es
-`linear-gradient(black 0 0)`, uniforme, así que teselarla es idéntico a no
-hacerlo. La primera máscara **no uniforme** del repositorio es la de
-`CursorSpotlight.vue`, y ahí sí importa.
+### R49 · El padding vertical de una sección se mide desde el nav, y la sección no lleva padding inferior
 
-**Regla:** toda `mask-image` que no sea uniforme declara `mask-repeat: no-repeat`
-(y su par `-webkit-`) en la misma regla. De paso es lo que convierte a la
-máscara en el recorte del desbordamiento deliberado de sus hijos.
+Dos consecuencias de que el nav esté en flujo normal y de que el diseño sea un
+frame plano de 1440×5060 sin cajas de sección.
 
-### R43 · Una composable con listeners de `window` se filtra entre pruebas del mismo archivo
+**Arriba.** El diseño coloca el primer hijo del Hero en `y310` (escritorio) y
+`y150` (móvil), y `<main>` no lleva padding superior. Entonces el padding
+superior de la sección es **`y del diseño − alto del nav`**, no `y` a secas.
 
-`happy-dom` da **un solo** `window` por archivo de pruebas. Una composable que
-hace `window.addEventListener` en `onMounted` y solo limpia en
-`onScopeDispose` sigue escuchando después de que la prueba terminó, porque
-nadie desmontó el componente.
-
-El síntoma no señala a la causa: la prueba de coalescencia de
-`useCursorSpotlight` esperaba **un** cuadro pedido tras 20 eventos y contó
-**cinco** — uno por cada instancia viva de las pruebas anteriores del mismo
-archivo. Se lee como un fallo del sujeto, no del arnés.
-
-**Regla:** un archivo de pruebas que monta componentes con listeners globales
-lleva un registro de lo montado y lo desmonta en `afterEach`. Es el Artículo X
-("ninguna prueba depende del estado de otra") aplicado a algo que no parece
-estado.
-
-### R44 · La contrapartida de la § R34 — cómo **sí** se mide un ancho, y qué se puede medir de una captura
-
-La § R34 prohíbe la captura headless como evidencia de layout, y tiene razón,
-pero deja al siguiente agente sin método. El que funcionó aquí, contra el
-artefacto generado y servido desde `.output/public`:
-
-- **El viewport se fija con `Emulation.setDeviceMetricsOverride` del protocolo
-  de DevTools, no con `--window-size`.** A diferencia de la bandera, esta sí fija
-  el viewport de layout: el documento reflowea al ancho pedido y `scrollWidth`,
-  `getBoundingClientRect()` y las media queries responden a él. Es el equivalente
-  programático del `<iframe>` de ancho exacto que la § R34 recomienda, y permite
-  además mover el puntero (`Input.dispatchMouseEvent`), emular preferencias
-  (`Emulation.setEmulatedMedia`), apagar el scripting
-  (`Emulation.setScriptExecutionDisabled`) y grabar una traza (`Tracing.*`).
-  Node 22+ trae `WebSocket` global, así que el cliente son ~80 líneas y **cero
-  dependencias nuevas** — Playwright sigue fuera de alcance (Artículo X).
-- **De una captura sí se puede medir color, nunca layout.** Con el viewport
-  fijado y las coordenadas conocidas de antemano, decodificar el PNG y leer
-  píxeles es una medición legítima: se compara un valor contra una aritmética
-  que la spec ya escribió. Lo que la § R34 prohíbe es deducir posiciones o
-  desbordamientos *de la foto*, y eso sigue prohibido.
-
-Así se verificó la § R38 de esta feature, cuya derivación decía que un punto
-iluminado debía quedar en ≈133 R sobre un fondo de ≈109: **medido, el centro
-del punto da exactamente `rgb(133, 43, 56)`**. Y la mitad que ninguna prueba de
-este repositorio alcanza (SC-002) quedó en números: dentro del radio los puntos
-miden luma 84 sobre papel 55 (separación **29**), fuera miden 60 sobre 38
-(separación **22**) — más brillantes **y** más nítidos, que son las dos mitades
-que pide `ui-map.md:271`.
-
-### R45 · Lo que este repositorio verifica es Chrome, y hay tres piezas de CSS moderno que dependen de eso
-
-La feature 008 se midió a fondo (§ R44) **en un solo navegador**: Chrome en
-macOS. No existe arnés multi-navegador y el Artículo X deja E2E fuera de
-alcance, así que no lo habrá pronto. Eso no es un problema mientras se sepa
-qué queda descubierto.
-
-Tres declaraciones del efecto no están verificadas fuera de Chrome:
-
-| Declaración | Dónde | Si el motor no la soporta |
+| | Escritorio (1440) | Móvil (390) |
 |---|---|---|
-| `mod()` | `CursorSpotlight.vue`, el contra-desplazamiento de la hoja iluminada | **La declaración `transform` completa se invalida.** La hoja deja de registrarse contra la retícula base y se ven **puntos dobles** |
-| `mask-image` + `mask-repeat` | el recorte circular de la hoja iluminada | los puntos iluminados no se recortan al radio: canto duro, o mosaico si además falta `no-repeat` (§ R42) |
-| `overflow: clip` | la raíz del spotlight | la página **crece** al acercar el puntero al footer (SC-006) |
+| **Alto del nav, resuelto del frame** | **103** | **76** |
+| Derivado de los tokens del repositorio | 102.8 | 76.2 |
+| **Padding superior de la sección** | 310 − 103 = **207** | 150 − 76 = **74** |
 
-Las tres son baseline en Safari 15.4+ y Firefox 118+ según el
-`research.md` § R3 de la feature, y el modo de falla de la peor de ellas es
-**cosmético**: el efecto es decorativo, solo de escritorio, y no se pierde
-contenido ni se rompe ninguna interacción. Por eso se aceptó publicar así.
+Las dos filas de arriba salieron de métodos sin relación —una lectura del
+archivo de diseño y la aritmética de `--spacing-nav-y` más el hijo más alto del
+renglón— y coinciden dentro del redondeo. **Igual se mide en el navegador**
+(§ R44) como comprobación de que la página construida coincide con el frame;
+dos de los cuatro sumandos de la derivación son productos de una altura de
+línea sobre una tipografía real, y este repositorio ya se equivocó una vez
+sobre una tipografía (la feature 006 existió por eso).
 
-**Regla, y es de proceso más que de CSS:** cuando una feature dependa de CSS
-reciente, (1) se nombra la declaración, (2) se dice qué pasa donde no exista y
-(3) se deja escrito **aquí**, no solo en el reporte de la sesión — un reporte
-de progreso es justo donde el siguiente agente no va a mirar. Si alguna vez
-llegan puntos dobles reportados desde Safari o Firefox, la respuesta ya está
-escrita y costeada en `research.md` § R3 de la feature 008: la composable
-publica el offset reducido en vez de dejárselo a `mod()`, al precio de leer el
-paso de la retícula una vez del estilo computado.
+**Abajo.** La sección **no declara padding inferior**. La separación con lo que
+viene después pertenece al bloque siguiente — que es exactamente lo que
+`app/layouts/default.vue` ya dice del footer ("No bottom padding: the footer's
+own `pt-footer-top` is the separation the design draws").
+
+**Y ese sobrante ahora está medido**, así que quien monte `02 Propósito` no
+tiene que adivinarlo:
+
+| | Escritorio | Móvil |
+|---|---|---|
+| La sección Hero abarca (página) | 0 → **940** | 0 → **640** |
+| La pila de contenido termina en | 776 | 550 |
+| **Sobrante que le toca a Propósito** | **164** | **90** |
+
+`02 Propósito` arranca en 940 / 640, y su padding superior es esos 164 / 90
+**más** el offset interno de su propio primer hijo. Mismo cálculo que el de
+arriba, un nivel más abajo.
+
+**Corroboración aritmética que conviene repetir en cada sección:** con el mapeo
+de tokens elegido, la pila del Hero calcula 38 + 34 + 2×96.04 + 34 + 2×31.5 +
+34 + (14 + 55.2) = **464.3px** contra los **466** del frame. Un acuerdo de
+1.7px entre siete valores derivados por separado no es casualidad: confirma el
+mapeo **y** dice que el titular y el subtítulo van a dos líneas a 1440.
+
+### R50 · Un destino que todavía no existe: las tres formas, y la que se elige según el control
+
+El sitio tiene ya tres controles apuntando a decisiones abiertas y una
+inconsistencia real entre el shell y las secciones. Queda escrito para que la
+próxima sección no la decida otra vez.
+
+**Invariante que ya se cumple y no se negocia:** el HTML generado no contiene
+ningún `<a>` sin `href` — lo asserta `tests/static-output.test.ts` desde la
+feature 003.
+
+| Situación | Cómo se renderiza | Precedente |
+|---|---|---|
+| Ítem de lista sin destino (`FAQ`, `Blog`, `Agenda una llamada` del footer) | `<span class="text-ink-300">`. Sin ancla, sin cursor, sin hover | feature 003, `FooterColumn.vue` |
+| **Texto suelto sin destino** (CTA secundario del Hero) | Igual: `<span>` en `ink-300`, **y sin la flecha** | feature 009 |
+| **Control con caja sin destino** (CTA primario del Hero) | Conserva su caja, su anillo LED y su etiqueta, y **no lleva `href`**: `BotonPrimario` renderiza un `<button type="button">` real. No emite fragmento al HTML | feature 009 |
+
+**Por qué el estado muerto no lleva flecha.** Una flecha es la señal de que
+algo lleva a alguna parte, y esto no lleva a ninguna. Además la misma frase ya
+se pinta sin flecha, en el mismo gris, en el footer de todas las páginas: el
+sitio dice una sola cosa sobre ese control en vez de dos. La flecha vuelve el
+día que llegue la URL, y la pone `LinkArrow`, nunca el copy.
+
+**La flecha NUNCA vive en el string de i18n.** El `.pen` la escribe dentro del
+texto (`Agenda una llamada →`) porque un mockup estático no puede dibujar un
+hover — misma clase de cosa que la § R38. `LinkArrow` es dueño del glifo justo
+para que el hover tenga qué mover, y un glifo en el string se renderizaría
+**dos veces** el día que el control se active.
+
+**Los dos huecos se modelan como datos**, en un solo archivo del módulo, cada
+uno con el comentario de la decisión que lo bloquea. Llenar cualquiera de los
+dos es **cambiar una clave**, nunca editar marcado. Un objeto con campos
+opcionales y vacío hoy (`export const HERO_DESTINATIONS: HeroDestinations = {}`)
+dice eso mejor que dos constantes en `undefined`.
+
+**Ninguno se rellena con un sustituto**: ni `mailto:`, ni WhatsApp, ni el
+footer, ni un scroll a una posición arbitraria.
+
+> ⚠️ **Inconsistencia registrada, pendiente de Roberto.** El shell **ya emite
+> cinco enlaces a anclas que no existen** — `#contacto` desde el CTA del nav,
+> y `#proposito` / `#servicios` / `#proyectos` desde el menú móvil y la columna
+> Navegación del footer. Hacer clic en cualquiera cambia la URL y no mueve
+> nada. La feature 009 toma la línea estricta para su CTA primario (no emite el
+> fragmento) por instrucción explícita y porque un fragmento colgante también
+> es una URL colgante para un rastreador. **La inconsistencia es real y se
+> disuelve sola cuando las secciones existan**; si conviene alinear el shell
+> antes, es decisión de Roberto y no de la feature que toque el tema después.
