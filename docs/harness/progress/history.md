@@ -1643,3 +1643,157 @@ no queda exento de esa lectura.
 - `./init.sh` exit 0 · **30 archivos / 373 pruebas**, sin cambio respecto al
   baseline: la feature no agregó comportamiento.
 - `feature_list.json`: feature id 7 status `reviewing` → `done`.
+
+## 2026-09-08 — Feature 13: purpose_section (done)
+
+`02 Propósito`, la segunda sección del sitio y la **más divergente**: constelación
+Golden Circle en escritorio, carrusel de tres cartas en móvil. Dos composiciones,
+no una reescalada. Ciclo SDD completo con corrida real del `reviewer`.
+
+Cuatro componentes en `app/features/landing/ui/` (`PurposeSection`,
+`PurposeConstellation`, `PurposeCarousel`, `PurposeCard`), `data/purposeContent.ts`,
+`logic/usePurposeContent.ts` y `logic/usePurposeCarousel.ts`, 45 tokens, 9 claves
+por locale y una línea en `app/pages/index.vue`. **El revelado de escritorio es
+CSS puro** — `:hover` / `:focus-visible` en el trigger gobernando a sus hermanos
+posteriores, cero JavaScript; el móvil agrega **un** `IntersectionObserver`.
+`Glow origen` por fin consume la variante `'920'` de `SectionGlow`, la que la
+feature 7 estuvo a punto de borrar por código muerto. Cero líneas cambiadas en los
+seis primitivos, en `app/features/shell/`, en `app/layouts/` y en toda la config.
+
+### Las relaciones generativas, verificadas contra la página construida
+
+Ninguna se transcribió. Todas se midieron en Chrome sobre `.output/public` por CDP
+con `Emulation.setDeviceMetricsOverride` (§ R44), no con `--window-size` (§§ R34,
+R60):
+
+- **Los tres largos de línea son un solo `calc()`** sobre `--i`:
+  `100% − card − nodeX − i·step − offset`. Medidos: **394 / 244 / 94**, que es
+  exactamente lo que dibuja el frame. Escribirlos como literales pone roja una
+  prueba.
+- **Los tres diámetros de arco son `2 × distancia(origen, radar)`**, con el origen
+  medido en exactamente **(−180, 44)** y los radios de línea media en
+  **519.51 / 808.52 / 1067.02** contra los 519.5 / 808.5 / 1067.0 dibujados. Hizo
+  falta `width: diámetro + grosor`: el diámetro del diseño es la **línea media** del
+  trazo y `border-box` mide el borde exterior.
+- **Las tarjetas van a ras del borde derecho** de la caja de contenido: medidas en
+  580.02 de izquierda y 700.02 de ancho.
+- **Las alturas son intrínsecas** — `64 + n×41` — así que no hay token de altura ni
+  `min-height`, y el radar queda centrado en su propia carta por construcción.
+- **La vecina del carrusel es la carta activa a ×0.88**: activa pintada **58→332**,
+  vecina derecha **342→583.12** contra los 342→583 del frame.
+- Los seis centros de glow, exactos: (60,704) · (1410,854) · (−180,44) en
+  escritorio; (56,630) · (456,870) en móvil, con `Glow origen` ausente.
+- Orden de pintado R28/R37 en las dos anchuras: backdrop **−3**, hoja de puntos
+  **−2**, spotlight **−1**, arcos y contenido `auto`. La sección no declara ninguna
+  de las once propiedades de contexto de apilamiento, ni fondo, ni padding inferior
+  u horizontal. Desbordamiento horizontal **0** en 12 anchuras de 320 a 2560.
+
+### 🔴 La tangencia de los arcos — restricción de diseño, no defecto. ABIERTA
+
+Los arcos **dejaron de pasar por sus radares**: deriva ES **13.27 / 29.60 / 29.64px**,
+EN **27.70 / 60.20 / 60.88px**.
+
+El `reviewer` lo aisló con el experimento que el `implementer` no corrió: **forzando
+`Why` a los 228px del frame y quitando los 2px de la `Pill`, la deriva colapsa a
+−0.07 / −0.30 / −0.64px**, toda dentro de 1px. Eso prueba que **los radios y el
+origen están bien derivados y lo que se movió fueron los radares**. La causa: la
+copy de `Why` envuelve en **3** líneas en ES y **2** en EN donde Pencil dibujó **4**
+(`How` 187.5 vs 187 y `What` 147 vs 146 sí coinciden, así que el mapeo tipográfico
+es correcto). Por eso EN deriva más: le falta una línea más.
+
+**FR-015 (alturas intrínsecas) y FR-017 (radios fijos del frame) son
+estructuralmente incompatibles en cuanto la copy envuelve distinto al mockup** — que
+es lo que la propia **spec A-02 ya declaraba**. La tangencia era una propiedad
+**derivada de un frame en un idioma**, nunca un requisito enunciado.
+
+**No se reafinó**, y el `reviewer` llamó correcta esa decisión: reafinar hornearía
+el envolvimiento de un locale en la geometría y destruiría la derivación de FR-017.
+Los arcos son filetes de 1px `aria-hidden` al 12–36%. Opciones, ninguna elegida:
+aceptarlos como decoración fija · fijar alturas (rompe FR-015 y toda edición futura
+de copy) · calcular los radios de los radares renderizados (cuesta la propiedad de
+cero JavaScript) · desacoplar los anillos de las alturas en el diseño.
+**Abierto para Roberto y Clau.**
+
+### Los dos valores derivados que siguen `UNVERIFIED`
+
+Ninguno es un valor de diseño y los dos lo dicen en su comentario:
+
+- **O-01 · `--purpose-radar-rest-opacity: 0.73`** — dueño Roberto/Clau. Los tres
+  radares del frame son byte-idénticos, así que el archivo guarda **un** estado y no
+  puede decir cuál. El 0.73 es la **media de las dos únicas razones reposo:hover que
+  el frame sí contiene**, las de la propia tarjeta: relleno 31/43 = 0.721 y trazo
+  89/120 = 0.742. El token lleva escrito *"no presentarlo como valor de diseño"*.
+- **O-06 · `--duration-purpose-reveal: 0.2s`** — dueño Clau. Ningún frame puede
+  dibujar una transición (§ R38). Sembrado en los 0.2s que ya usan el spotlight y el
+  CTA del nav para que los tiempos de la página sigan siendo coherentes.
+
+Los otros cuatro valores abiertos de la spec quedaron **cerrados** por lecturas del
+`.pen` del líder, y tres corrigieron lo que la spec había supuesto: la `Pill` de
+escritorio está en y **90** y no en 0 (de ahí que el padding superior sea **254** y
+no 164), los tres arcos **no comparten trazo** (red-400 36% / bone-100 18% /
+bone-100 12%) y las etiquetas son **`Why` / `How` / `What` en inglés en los dos
+locales**, como el eyebrow del Hero.
+
+### Los tres huecos declarados, ninguno bloqueante
+
+1. **A 390 no hay vecina izquierda en reposo.** El frame dibuja `What` asomando a la
+   izquierda; el loop del swipe **no** se construyó a propósito (spec A-07: un loop
+   sin costuras exige nodos clonados o teletransporte de scroll, y los dos pelean con
+   el carril de snap nativo que **es** el fallback sin JavaScript). Quedan 48px
+   vacíos hasta que se desliza. Reversible.
+2. **`(hover: none)` conserva el relleno de reposo.** Se revelan los largos de línea
+   y la opacidad de las tarjetas, pero no la superficie brillante, porque esa es una
+   utilidad `peer-hover:`. Es la lectura de FR-011, que pide líneas y tarjetas.
+3. **La `Pill` mide 40px y el frame dibuja 38** — su propio borde de 1px arriba y
+   abajo, exactamente la misma clase que la medición del nav de la **§ R55**. Deja
+   todo lo de abajo 2px bajo. **Se reportó, no se absorbió**, siguiendo ese
+   precedente: es una discrepancia entre el frame y su propio dibujo y la decide una
+   persona. `GlassPanel` deja además una medida de 634 donde el frame tiene 636.
+
+### El candado de build rancio golpeó otra vez — quinta ocurrencia
+
+La primera corrida del `reviewer` falló en el paso 6 por un candado de Nuxt
+sostenido por un **PID muerto** (95582); no quedaba archivo de candado y una corrida
+limpia salió verde. Ambiental, no de código. **El mensaje que dejó la feature 10
+hizo su trabajo**: nombró qué matar y el diagnóstico costó una corrida en vez de
+tres (§ R58).
+
+### Hallazgos del ciclo
+
+Seis, en `docs/harness/findings.md`. Los dos que más valen: Vue propaga el `scopeId`
+del padre a través de **dos** niveles de componentes de raíz única
+(`PurposeCard` → `GlassPanel` → `<article>`), así que `.node > .card` en un
+`<style scoped>` hace match sin `:deep()`; y **Vue Test Utils resuelve el `element`
+de un wrapper de componente al nodo PADRE** cuando la raíz de ese componente es a su
+vez un componente, así que `findAllComponents(X).classes()` devuelve en silencio las
+clases del renglón y todo `not.toContain` pasa por la razón equivocada. Además: CDP
+`Input.dispatchMouseEvent` **sí** mueve `:hover` —el falso negativo era despachar el
+puntero **debajo del pliegue**, porque `getBoundingClientRect` es relativo al
+viewport—, y `Emulation.setEmulatedMedia` **no tiene** feature `hover`/`pointer`:
+`(hover: none)` sale de `setTouchEmulationEnabled` + `mobile: true`.
+
+### Las guardas, verificadas de forma independiente por el reviewer
+
+**§ R36 ✅** — ningún token entró a `--color-glow-*` / `--spacing-glow-*`, y
+renombrar uno de Propósito hacia ese namespace **sí** pone roja
+`SectionGlow.test.ts`: la guarda está viva, no supuesta. **§ R39 ✅** — los cinco
+archivos de prueba nuevos se vieron **rojos a propósito** antes de escribir una
+aserción real, y el `reviewer` probó **8 mutaciones** (ancla, clip en la sección,
+orden del renglón, anchos literales, `lg:hidden` del label, atenuado por defecto,
+clave de `en.json`, namespace de glow) y **las 8 quedaron cazadas**.
+
+### Dos desviaciones de `tasks.md`, las dos avaladas
+
+Los arcos viven en `PurposeSection.vue` y no en `PurposeConstellation.vue` como
+decía T024: su origen está 270px **arriba** de la caja de la constelación y FR-018
+exige el clip sobre la caja de la **sección**. Y se agregó
+`PurposeSection.test.ts`, que no estaba en `tasks.md`, porque el sujeto que nombra
+T032 —«la raíz de la sección», el envoltorio de los arcos— vive en ese componente.
+
+- Resumen del implementer: `docs/harness/progress/impl_purpose_section.md`. Verdict
+  del reviewer: `docs/harness/progress/review_purpose_section.md`.
+- `./init.sh` exit 0 · **35 archivos / 455 pruebas** (baseline 30 / 373), sin
+  modificar ninguna prueba preexistente.
+- `feature_list.json`: feature id 13 status `reviewing` → `done`.
+- De paso: `.specify/feature.json` llegó fallando `biome check` y bloqueaba el gate;
+  se corrigió su formato y su ruta a `013-purpose-section`.
