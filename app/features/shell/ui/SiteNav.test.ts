@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import type {
@@ -41,6 +41,7 @@ const socials: ResolvedSocial[] = [
 const props = {
   items,
   cta: { label: 'Cuéntanos tu proyecto', href: '/es#contacto' },
+  showCta: true,
   home: '/es',
   locale: 'es' as const,
   localeSwitchHref: '/en',
@@ -56,10 +57,15 @@ const props = {
  * Awaited: the hamburger appears only once scripting has run, and the ref
  * that records it schedules its render asynchronously.
  */
-async function mountNav() {
-  const wrapper = mount(SiteNav, { props })
+async function mountNav(overrides: Partial<typeof props> = {}) {
+  const wrapper = mount(SiteNav, { props: { ...props, ...overrides } })
   await nextTick()
   return wrapper
+}
+
+/** The wrapper around the primary call to action, whose state is the feature. */
+function ctaWrapper(wrapper: VueWrapper) {
+  return wrapper.find('.site-nav__cta')
 }
 
 describe('SiteNav', () => {
@@ -127,6 +133,24 @@ describe('SiteNav', () => {
     expect(trigger.classes()).toContain('lg:hidden')
   })
 
+  it('should offer a pointer on the hamburger when it renders', async () => {
+    /* It only renders once scripting is available, so it always opens the
+       menu. A native `<button>` gets `cursor: default` and Tailwind's preflight
+       sets none (`findings.md` § R56). */
+    const trigger = (await mountNav()).find('button[aria-label="Abrir menú"]')
+
+    expect(trigger.classes()).toContain('cursor-pointer')
+  })
+
+  it('should offer a pointer on the primary call to action when rendered', async () => {
+    /* It carries an href, so `BotonPrimario` marks it clickable. */
+    const button = (await mountNav())
+      .findAll('a')
+      .find(link => link.text() === 'Cuéntanos tu proyecto')
+
+    expect(button?.classes()).toContain('cursor-pointer')
+  })
+
   it('should render the locale toggle when rendered', async () => {
     const text = (await mountNav()).text()
 
@@ -170,6 +194,77 @@ describe('SiteNav', () => {
     await wrapper.find('[role="dialog"] li a').trigger('click')
 
     expect(wrapper.find('[role="dialog"]').exists()).toBe(false)
+  })
+
+  it('should pin itself to the top of the viewport when rendered', () => {
+    /* `sticky`, not `fixed`: the nav stays in normal flow, so `<main>` needs
+       no compensating padding and every section's top padding stays
+       `design y − nav height` (spec A-13, `rules.md` § R49). */
+    return mountNav().then(wrapper => {
+      const landmark = wrapper.find('nav')
+
+      expect(landmark.classes()).toContain('sticky')
+      expect(landmark.classes()).toContain('top-0')
+      expect(landmark.classes()).toContain('site-nav')
+    })
+  })
+
+  it('should show the call to action when the route does not suppress it', async () => {
+    const cta = ctaWrapper(await mountNav({ showCta: true }))
+
+    expect(cta.classes()).toContain('visible')
+    expect(cta.classes()).toContain('opacity-100')
+    expect(cta.classes()).not.toContain('invisible')
+  })
+
+  it('should hide the call to action from the pointer and from focus when the route suppresses it', async () => {
+    /* `visibility` as well as opacity: an invisible button that still takes
+       focus and still takes a click is not hidden (spec FR-048). */
+    const cta = ctaWrapper(await mountNav({ showCta: false }))
+
+    expect(cta.classes()).toContain('invisible')
+    expect(cta.classes()).toContain('opacity-0')
+    expect(cta.classes()).not.toContain('visible')
+  })
+
+  it('should keep the nav itself identical whether the call to action shows or not', async () => {
+    /*
+     * The requirement, and the one most likely to be broken by accident: the
+     * nav never animates, never changes height and never changes background —
+     * only the button does (spec FR-042, SC-017). Compared here is every class
+     * on the nav, on the row and on the lockup; the only difference anywhere
+     * in the markup must be the two utilities on the CTA wrapper.
+     */
+    const shown = await mountNav({ showCta: true })
+    const hidden = await mountNav({ showCta: false })
+
+    for (const selector of ['nav', 'nav > div', 'nav > div > a']) {
+      expect(hidden.find(selector).classes(), selector).toEqual(
+        shown.find(selector).classes()
+      )
+    }
+
+    const difference = (wrapper: VueWrapper) =>
+      ctaWrapper(wrapper)
+        .classes()
+        .filter(name => !['site-nav__cta', 'hidden', 'lg:block'].includes(name))
+
+    expect(difference(shown)).toEqual(['visible', 'opacity-100'])
+    expect(difference(hidden)).toEqual(['invisible', 'opacity-0'])
+  })
+
+  it('should force the call to action visible without scripting', async () => {
+    /* The only mechanism that satisfies FR-045 and FR-046 at once: the button
+       ships hidden in the landing's HTML so it cannot flash, and a browser
+       with scripting off applies this override instead. */
+    const noscript = (await mountNav({ showCta: false })).find('noscript')
+
+    /* `innerHTML`, not `html()`: the wrapper's pretty-printer reformats the
+       stylesheet and the assertion would be about the printer. */
+    expect(noscript.exists()).toBe(true)
+    expect(noscript.element.innerHTML).toBe(
+      '<style>.site-nav__cta.site-nav__cta{opacity:1;visibility:visible}</style>'
+    )
   })
 
   it('should offer no menu destination that the footer lacks', () => {

@@ -56,10 +56,47 @@ toggle marca el idioma activo en Bone 100, el inactivo en Ink 200.
 **Servicios no está en el nav** (decisión tomada) — se llega scrolleando
 desde el hero.
 
-> 🔴 Decisión abierta: si el nav es fijo al hacer scroll (hoy solo arriba
-> del hero). Si se hace fijo, falta definir el estado comprimido (fondo
-> `#1c1416a6`, alto reducido, sombra/borde inferior) — no hay frame de ese
-> estado.
+> ✅ **Resuelto por Roberto el 2026-09-07** (reemplaza la decisión abierta
+> anterior, que preguntaba si el nav es fijo y daba por necesario un estado
+> comprimido).
+>
+> **El nav es fijo, y no se comprime.** Conserva el mismo alto y el mismo
+> fondo al scrollear. El estado comprimido queda descartado, así que la falta
+> de frame para él deja de ser un pendiente.
+>
+> **Lo único que cambia al scrollear es el botón «Cuéntanos tu proyecto»:**
+>
+> | Dónde | Qué se ve |
+> |---|---|
+> | Landing, con el hero a la vista | El botón **no aparece** — sería el mismo control que el hero ya ofrece |
+> | Landing, tras salir del hero al bajar | El botón entra **con fade** |
+> | Landing, al volver a subir al hero | El botón se **oculta** otra vez |
+> | Nosotros, y cualquier otra página | El botón está **desde el inicio, sin animación** |
+>
+> La animación es del botón, nunca del nav, y solo ocurre en la landing. En
+> otras páginas el botón es parte del estado inicial y no anima al cargar.
+>
+> No hay frame de ninguno de estos estados en el `.pen` — es una decisión de
+> comportamiento, no de composición.
+>
+> ### 🟡 El nav se queda sin fondo — decisión consciente de Roberto, 2026-09-07
+>
+> El nav fijo **no lleva superficie propia**: conserva el fondo que tiene hoy,
+> que es ninguno.
+>
+> **Consecuencia conocida y aceptada:** al scrollear, el contenido pasa por
+> debajo del nav y el texto se encima. Medido tras implementar el Hero: el
+> titular pasa bajo el lockup y los links, y **ambos quedan ilegibles a
+> cualquier altura de escritorio**, no solo en viewports cortos. El bloque
+> opaco del footer también alcanza el texto del nav a 1440×600 y más corto.
+>
+> Roberto lo revisó y decidió dejarlo así hasta que **Clau diseñe el estado**.
+> No se inventa un fondo mientras tanto: el sistema tiene vidrio oscuro
+> (`#1c1416a6`, el token `--dark-glass`) e `ink-500` sólido como candidatos
+> obvios, pero cuál va aquí es decisión de diseño y no de implementación.
+>
+> **Esto no es un bug que reportar de nuevo.** Está visto, medido y diferido.
+> Cuando exista el frame, son dos clases de utilidad en el nav.
 
 ### Móvil (390px)
 

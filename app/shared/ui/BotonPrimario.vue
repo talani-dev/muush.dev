@@ -13,6 +13,18 @@ import { computed } from 'vue'
  * The LED is not a prop: `branding.md` allows exactly one primary button per
  * screen, so there is nothing for a caller to switch off. It carries no
  * client-side script of any kind.
+ *
+ * ## The pointer cursor is declared, because nothing else declares it
+ *
+ * The browser gives an `<a href>` a pointer for free and gives a `<button>`
+ * `cursor: default`. Tailwind v4's preflight sets no cursor on either — there
+ * was not one `cursor` declaration in the whole emitted stylesheet before this
+ * change — so the `<button>` branch looked unclickable while the `<a>` branch
+ * looked right, purely by accident of the user-agent sheet
+ * (`docs/harness/findings.md` § R56).
+ *
+ * It is declared here rather than at each call site, and it is **conditional**,
+ * because the two branches are not equally clickable.
  */
 export type ButtonVariant = 'nav' | 'hero' | 'submit'
 
@@ -36,6 +48,35 @@ const sizeByVariant = {
 const buttonType = computed(
   () => type ?? (variant === 'submit' ? 'submit' : 'button')
 )
+
+/**
+ * Whether clicking this control does anything — the only thing that earns a
+ * pointer.
+ *
+ * Two states qualify: it has an `href`, or it is a native form submit. What
+ * does **not** qualify is the third state, a `type="button"` with no
+ * destination, which is exactly the Hero's primary CTA while section 05 does
+ * not exist (`rules.md` § R50). `ui-map.md` § 6 already rules on that shape for
+ * the Proyectos slots — *"sin cursor de link ni hover (un espacio reservado que
+ * parece clickeable y no lleva a nada se lee como sitio roto)"* — and this is
+ * the same shape, so it gets the same answer.
+ *
+ * It flips on its own the day the destination arrives: `contactHash` lands in
+ * `HERO_DESTINATIONS`, an `href` reaches this component, and the pointer comes
+ * with it. No edit here.
+ *
+ * ⚠️ **Known limit.** A caller that attached a click listener to a
+ * `type="button"` instance would get a real action and no pointer, because a
+ * listener is not visible from inside the component. No caller does that today,
+ * and the fix when one appears is to give that action a name in this contract
+ * rather than to paint every button.
+ *
+ * (Written without the binding syntax on purpose: this file's own test greps
+ * the raw source for one, and the guard is worth more than the wording.)
+ */
+const isClickable = computed(
+  () => Boolean(href) || buttonType.value === 'submit'
+)
 </script>
 
 <template>
@@ -46,6 +87,7 @@ const buttonType = computed(
     :class="[
       'led relative inline-flex items-center justify-center rounded-control bg-glass-dark font-instrument text-bone-100 focus-visible:outline-red-400',
       sizeByVariant[variant],
+      isClickable ? 'cursor-pointer' : '',
     ]"
   >
     <!--

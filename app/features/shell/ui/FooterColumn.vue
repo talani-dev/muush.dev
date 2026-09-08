@@ -8,9 +8,10 @@ import type { ResolvedShellItem } from '@/features/shell/data/types'
  * This is the single place spec FR-039 is implemented. An item with no `href`
  * renders a `<span>`, never an `<a>` with a dead one: an anchor without an
  * href is not focusable and not announced as a link, but it still invites a
- * pointer, and the item is supposed to read as text. Three items are in that
- * state today — `Agenda una llamada`, `FAQ` and `Blog · próximamente` — and
- * they must read identically.
+ * pointer, and the item is supposed to read as text. Two items are in that
+ * state today — `FAQ` and `Blog · próximamente` — and they must read
+ * identically. `Agenda una llamada` left that state on 2026-09-07 with no edit
+ * to this file, which is the property the branch exists for.
  *
  * `href === undefined` is the whole of it. The type makes the broken-link
  * state unrepresentable rather than merely discouraged.

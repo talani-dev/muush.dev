@@ -18,6 +18,13 @@ import tiktok from '@/assets/social/tiktok.svg?raw'
  *
  * The accessible name comes from the caller, because the glyph carries no
  * text of its own.
+ *
+ * The pointer is declared rather than inherited. It reads as a 48×48 button and
+ * `href` is required, so it is always clickable — but nothing in the stylesheet
+ * said so, and it looked correct only because the user-agent sheet gives an
+ * `<a href>` a pointer (`docs/harness/findings.md` § R56). Stating it keeps the
+ * three glass controls of the mobile menu — the two real `<button>`s and these
+ * three — behaving identically under the pointer.
  */
 export type SocialNetwork = 'linkedin' | 'instagram' | 'tiktok'
 
@@ -50,7 +57,7 @@ const glyphByNetwork = {
     :aria-label="label"
     target="_blank"
     rel="noopener noreferrer"
-    class="inline-grid size-social place-items-center rounded-icon border border-glass-line bg-glass-dark text-bone-100 focus-visible:outline-red-400"
+    class="inline-grid size-social cursor-pointer place-items-center rounded-icon border border-glass-line bg-glass-dark text-bone-100 focus-visible:outline-red-400"
   >
     <!--
       Only the outline colour is set: ui-map.md § 10 requires a visible

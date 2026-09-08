@@ -161,6 +161,43 @@
   --layer-glow: -3;
   --layer-dots: -2;
   --layer-spotlight: -1;
+
+  /*
+   * El nav pinneado (feature 009, ui-map.md § 2 — decisión de Roberto del
+   * 2026-09-07). Un nivel POSITIVO, y hace falta: `position: sticky` vuelve al
+   * nav un elemento posicionado, y la sección del Hero es `position: relative`
+   * MÁS ABAJO en el documento, así que sin nivel explícito el Hero pintaría
+   * encima del nav.
+   *
+   * No toca los tres niveles negativos ni el contrato del fondo: el nav no es
+   * una sección ni ancestro de una —las secciones viven dentro de `<main>`,
+   * en otra rama— así que las §§ R28/R37 de rules.md quedan intactas
+   * (spec A-13).
+   *
+   * Efecto lateral que conviene saber: `sticky` + `z-index` crea un contexto
+   * de apilamiento, así que el `z-50` del panel del menú móvil —que vive
+   * dentro de `<nav>`— pasa a resolverse DENTRO de este nivel en vez de en la
+   * raíz. Sigue tapando la página porque este nivel está por encima del flujo
+   * normal. Lo que importa es la relación, no el número.
+   *
+   * ⚠️ Ni este token ni el de abajo pueden vivir en `@theme inline`: Tailwind
+   * v4 no tiene namespace de tema para `z-index` ni para `transition-duration`
+   * —verificado compilando `z-*` y `duration-*` contra el propio Tailwind del
+   * repositorio (4.3.3): ninguno de los dos emite una sola utilidad— así que
+   * un token de tema aquí no se emitiría a ningún lado y el `var()` del CSS
+   * escrito a mano resolvería a nada, en silencio (rules.md § R18,
+   * findings.md § R46). Van en `:root`, como los otros cuatro `--layer-*` y
+   * las otras dos `--duration-*`, y los lee un `<style scoped>`.
+   */
+  --layer-nav: 1;
+
+  /*
+   * ⚠️ UNVERIFIED — dueño: Clau. `ui-map.md` § 2 dice "fade" y no especifica
+   * timing, y ningún frame puede dibujar uno. Mismo caso y mismo trato que el
+   * ping del radar y el fundido del spotlight; se siembra en los 0.2s del
+   * spotlight para que los dos fundidos del chrome coincidan (spec A-15).
+   */
+  --duration-nav-cta-fade: 0.2s;
 }
 
 @theme inline {
@@ -624,6 +661,98 @@
      que el diseño no le da medida móvil y el token es fijo; ocultarlo en
      móvil es de quien monta la sección. */
   --spacing-glow-920: 57.5rem;
+
+  /*
+   * Hero (feature 009 · `01 Hero`, la primera sección real del sitio).
+   *
+   * Solo hay token para la geometría que la escala fluida NO carga ya. Todo
+   * tamaño de tipo y de control del Hero sale de un rol que ya existe arriba
+   * —--text-display, --text-body-lg, --text-pill, --text-button,
+   * --text-link— y el margen de página lo aporta <main> con --spacing-page,
+   * que el Hero hereda y NUNCA redeclara (spec FR-016).
+   *
+   * ⚠️ Ninguno se llama `--spacing-glow-*` ni `--color-glow-*`: ese namespace
+   * es cerrado y pertenece a SectionGlow, cuya prueba escanea este archivo con
+   * `--(?:color|spacing)-glow-[\w-]+` y falla si encuentra un token con ese
+   * prefijo que sus props no alcancen (rules.md § R36). Un nombre como
+   * `--spacing-hero-glow-foco-x` no hace match: después de `--spacing` viene
+   * `-hero`, no `-glow`.
+   *
+   * Los doce viven aquí, en `@theme inline`, y NADA se agrega al bloque
+   * `:root`: ninguno deriva de otro, así que la trampa de la § R46 —un token
+   * de tema que referencia otro token de tema resuelve a nada en el build del
+   * sitio— no aplica a esta feature.
+   */
+
+  /* 74 → 207. Es `y del diseño − alto del nav`: 150 − 76 y 310 − 103, con el
+     nav confirmado del frame. El nav va en flujo normal y <main> no lleva
+     padding superior, así que la sección se lo pone ella (rules.md § R49). */
+  --spacing-hero-top: clamp(4.625rem, 1.5375rem + 12.6667vw, 12.9375rem);
+  /* 24 → 34, el gap de la pila de cuatro hijos.
+     ⚠️ Comparte sus dos extremos con --spacing-glass-dark (24 → 34) y NO es
+     una duplicación: aquel es el padding de un panel de vidrio, este es el gap
+     de una pila. Un token por rol es la convención de este archivo. */
+  --spacing-hero-gap: clamp(1.5rem, 1.2679rem + 0.9524vw, 2.125rem);
+  /* 20 → 28, el gap entre los dos CTA */
+  --spacing-hero-cta-gap: clamp(1.25rem, 1.0643rem + 0.7619vw, 1.75rem);
+  /* 10 → 14, el aire extra que el diseño da al renglón de CTA sobre el gap */
+  --spacing-hero-cta-top: clamp(0.625rem, 0.5321rem + 0.381vw, 0.875rem);
+  /* 900 de escritorio; a 390 la columna mide 342 y el tope es inerte */
+  --spacing-hero-body: 56.25rem;
+  /* 600 de escritorio; inerte a 390 por la misma razón (spec A-09) */
+  --spacing-hero-measure: 37.5rem;
+
+  /*
+   * Anclas de los tres glows del Hero — SEIS tokens, uno por glow por eje.
+   *
+   * Los dos viewports colocan los glows de forma INDEPENDIENTE: el diseño los
+   * afina a mano frame por frame (design-extract.md § 10, "el posicionamiento
+   * es absoluto y distinto en las 22"), así que ningún valor de abajo se
+   * deriva del otro viewport. Un borrador de esta spec sí lo derivó y falló
+   * por hasta 35px; el desmentido está en rules.md § R48.
+   *
+   * Cada offset se mide desde la ESQUINA SUPERIOR IZQUIERDA DE LA SECCIÓN, no
+   * de la página: un offset absoluto de página se desalinea en cuanto crece
+   * una frase arriba, y el grupo tiene que viajar con su sección
+   * (rules.md §§ R29, R48). El origen de la sección es el margen de página
+   * en horizontal (80 / 24) y el borde inferior del nav en vertical
+   * (103 / 76).
+   *
+   * ⚠️ SOLO LOS DOS EXTREMOS SON DISEÑO. La interpolación entre 390 y 1440 es
+   * una decisión de suavizado, tomada para que la sección conserve la
+   * propiedad de tener un único breakpoint que cambia dirección y nunca una
+   * posición. Un valor a 900px no es algo que dibujó Clau.
+   *
+   * El glow se ancla por su CENTRO (`-translate-x-1/2 -translate-y-1/2` sobre
+   * el glow, permitido por el contrato de SectionBackdrop.vue). Su diámetro es
+   * a su vez un `clamp()`: anclado por la esquina, el centro se desplazaría al
+   * cambiar el diámetro y la composición solo sería correcta a 1440 exactos.
+   */
+  /* Hero · foco — centro de sección 386 → 1230 en x, −26 → 187 en y.
+     ⚠️ La `y` móvil es NEGATIVA a propósito: el centro queda 26px arriba del
+     borde superior de la sección, detrás del nav. Es el diseño. */
+  --spacing-hero-glow-foco-x: clamp(24.125rem, 4.5321rem + 80.381vw, 76.875rem);
+  --spacing-hero-glow-foco-y: clamp(
+    -1.625rem,
+    -6.5696rem +
+    20.2857vw,
+    11.6875rem
+  );
+  /* Hero · wine — 16 → 50 en x, 64 → 207 en y.
+     ⚠️ `wine-y` coincide con --spacing-hero-top a 1440 (ambos 207) y difiere a
+     390 (64 contra 74). Son DOS medidas que se cruzan en un extremo, no una
+     sola: no se colapsan ni se ata la una a la otra. */
+  --spacing-hero-glow-wine-x: clamp(1rem, 0.2107rem + 3.2381vw, 3.125rem);
+  --spacing-hero-glow-wine-y: clamp(4rem, 0.6804rem + 13.619vw, 12.9375rem);
+  /* Hero · cierre — 416 → 1350 en x, 444 → 767 en y. Cae por debajo del borde
+     inferior de la sección en escritorio y por encima en móvil. */
+  --spacing-hero-glow-cierre-x: clamp(26rem, 4.3179rem + 88.9524vw, 84.375rem);
+  --spacing-hero-glow-cierre-y: clamp(
+    27.75rem,
+    20.2518rem +
+    30.7619vw,
+    47.9375rem
+  );
 
   /* Radios: los paneles son fluidos, los controles fijos.
      La cápsula del Pill usa rounded-full, no un token propio. */

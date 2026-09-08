@@ -13,6 +13,7 @@ import type {
   ShellItem,
   ShellLocale,
 } from '@/features/shell/data/types'
+import { useNavCtaReveal } from '@/shared/logic/useNavCtaReveal'
 import { resolveLocaleDestination } from './resolveLocaleDestination'
 
 /**
@@ -128,6 +129,25 @@ export function useShellNavigation() {
     )
   )
 
+  /**
+   * Whether the nav renders its `Cuéntanos tu proyecto` button
+   * (`ui-map.md` § 2, Roberto, 2026-09-07).
+   *
+   * The **route** comparison stays here, because routes already live here, and
+   * this is the single place a future page declares that it renders its own
+   * call to action above the fold. **When** the button appears is the Hero's
+   * to say, through the shared flag; this module imports nothing from
+   * `landing` and `landing` imports nothing from here (Article III).
+   *
+   * It is evaluated identically on the server and on the client, which is what
+   * keeps the landing's button hidden in the generated HTML rather than hidden
+   * on mount, and what leaves a route that starts visible with nothing to
+   * transition from (spec FR-044, FR-045).
+   */
+  const showNavCta = useNavCtaReveal(
+    computed(() => currentRouteName.value === 'index')
+  )
+
   const brand = computed(() => ({
     tagline: t('shell.footer.tagline'),
     category: t('shell.footer.category'),
@@ -138,6 +158,7 @@ export function useShellNavigation() {
   return {
     navItems,
     navCta,
+    showNavCta,
     menuItems,
     footerColumns,
     socials,

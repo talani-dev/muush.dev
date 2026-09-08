@@ -1,16 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { ResolvedFooterColumn } from '@/features/shell/data/types'
+import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import SiteFooter from './SiteFooter.vue'
 
 /**
  * The footer of `design-extract.md` § 9.bis. Switch the viewport control to
  * see the four columns reflow to two rows of two below `lg`.
  *
- * Look at the Contacto and muush columns: `Agenda una llamada`, `FAQ` and
- * `Blog · próximamente` read as plain ink-300 text with no pointer and no
- * hover, because none of the three has a destination yet
- * (`decisions-open.md` #2 and #3 are still open, and the blog is specified
- * with no link). They must read as one treatment, not three states.
+ * Look at the muush column: `FAQ` and `Blog · próximamente` read as plain
+ * ink-300 text with no pointer and no hover, because neither has a destination
+ * (`decisions-open.md` #3 is still open, and the blog is specified with no
+ * link). They must read as one treatment, not two states.
+ *
+ * `Agenda una llamada` was in that same grey state until 2026-09-07, when
+ * `decisions-open.md` #2 resolved. It is now a real link in the Contacto
+ * column, opening in a new tab — and the contrast between it and the two below
+ * is what the inert treatment is supposed to look like next to a live one.
  *
  * The desktop Top row is where the design over-constrains itself by 52px:
  * the brand block holds its 340, the columns flex, and `space_between`
@@ -56,7 +61,7 @@ const spanishColumns: ResolvedFooterColumn[] = [
   {
     title: 'Contacto',
     items: [
-      { label: 'Agenda una llamada' },
+      { label: 'Agenda una llamada', href: CALL_BOOKING_URL, external: true },
       { label: 'support@muush.dev', href: 'mailto:support@muush.dev' },
       {
         label: 'WhatsApp',
@@ -92,7 +97,7 @@ const englishColumns: ResolvedFooterColumn[] = [
   {
     title: 'Contact',
     items: [
-      { label: 'Book a call' },
+      { label: 'Book a call', href: CALL_BOOKING_URL, external: true },
       { label: 'support@muush.dev', href: 'mailto:support@muush.dev' },
       {
         label: 'WhatsApp',

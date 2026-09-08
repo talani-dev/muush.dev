@@ -24,9 +24,12 @@ export type ShellRouteName = 'index' | 'nosotros'
 
 /**
  * Where a shell item points. Four kinds, and `none` is a real state rather
- * than a missing value: `Agenda una llamada`, `FAQ` and `Blog · próximamente`
- * have no destination yet and must render as text, not as a dead link
- * (spec FR-039).
+ * than a missing value: `FAQ` and `Blog · próximamente` have no destination and
+ * must render as text, not as a dead link (spec FR-039).
+ *
+ * `Agenda una llamada` was in that state until 2026-09-07 and moved to
+ * `external` when its URL arrived — which is the point of modelling the absence
+ * as data. `none` stays, because the other two are still in it.
  */
 export type ShellDestination =
   | { kind: 'route'; name: ShellRouteName }

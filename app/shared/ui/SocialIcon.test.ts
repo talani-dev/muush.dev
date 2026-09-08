@@ -90,4 +90,16 @@ describe('SocialIcon', () => {
       'size-social-glyph'
     )
   })
+
+  it('should offer a pointer when rendered', () => {
+    /* `href` is required, so it is always clickable. Declared rather than
+       inherited from the user-agent sheet, so this and the two glass
+       `<button>`s of the mobile menu behave identically under the pointer
+       (`findings.md` § R56). */
+    const link = mount(SocialIcon, {
+      props: { network: 'linkedin', ...profile },
+    }).find('a')
+
+    expect(link.classes()).toContain('cursor-pointer')
+  })
 })

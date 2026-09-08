@@ -71,6 +71,7 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
 const {
   navItems,
   navCta,
+  showNavCta,
   menuItems,
   footerColumns,
   socials,
@@ -123,9 +124,18 @@ useHead(useLocaleHead())
     -->
     <CursorSpotlight v-if="isSpotlightActive" />
 
+    <!--
+      `show-cta` is the only thing feature 009 changes in this file. Whether
+      the nav offers `Cuéntanos tu proyecto` is resolved in the shell's own
+      `logic/` and passed through here, so the layout stays a composer and no
+      page can publish it from below — in SSR the layout renders before the
+      page, which is the same reason feature 006 rejected a `provide`/`inject`
+      glow registry (`rules.md` § R28).
+    -->
     <SiteNav
       :items="navItems"
       :cta="navCta"
+      :show-cta="showNavCta"
       :home="home"
       :locale="locale"
       :locale-switch-href="localeSwitchHref"

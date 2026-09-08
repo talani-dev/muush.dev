@@ -100,6 +100,15 @@ describe('MobileMenu', () => {
     expect(wrapper.emitted('closed')).toHaveLength(1)
   })
 
+  it('should offer a pointer on the close control when open', () => {
+    /* A native `<button>` gets `cursor: default` from the user agent and
+       Tailwind's preflight sets none, so without this it read as unclickable
+       while the anchors beside it read correctly (`findings.md` § R56). */
+    const close = mountMenu().find('button[aria-label="Cerrar menú"]')
+
+    expect(close.classes()).toContain('cursor-pointer')
+  })
+
   it('should report closing when the lockup is activated', async () => {
     const wrapper = mountMenu()
 

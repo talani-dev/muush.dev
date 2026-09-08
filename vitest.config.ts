@@ -28,6 +28,18 @@ export default defineVitestConfig({
        * on `projects` (§ R16).
        */
       'app/shared/logic/**/*.test.ts',
+      /*
+       * Added by feature 011, for the same reason and with the same proof.
+       * `app/shared/data/` is where Article I puts a cross-cutting constant,
+       * and it was **not** collected: a probe file in it whose only assertion
+       * was `expect('collected').toBe('this assertion must fail')` left the
+       * run at "29 files passed". A suite that reports green by never running
+       * is worse than no suite, because it is counted.
+       *
+       * Nothing lives here yet — this feature's own test is in `tests/` — so
+       * the line is written before the need rather than after the false green.
+       */
+      'app/shared/data/**/*.test.ts',
       'app/features/**/*.test.ts',
     ],
   },

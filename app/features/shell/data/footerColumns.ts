@@ -1,3 +1,4 @@
+import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import { SHELL_ANCHORS } from './navigation'
 import { SOCIAL_PROFILES } from './socialProfiles'
 import type { FooterColumnModel } from './types'
@@ -17,12 +18,16 @@ export const WHATSAPP_URL = 'https://wa.me/525639060739'
  * settled the order as Propósito → Servicios → Proyectos → Nosotros in both
  * viewports.
  *
- * Three items carry `kind: 'none'`, and that is the deliberate rendering of
- * an open question rather than a gap: `Agenda una llamada` waits on
- * `decisions-open.md` #2 (the Google Calendar link), `FAQ` on #3 (the page
- * does not exist), and `Blog · próximamente` is specified with no link by the
- * design itself. All three render as plain text, so the three read as one
+ * **Two** items carry `kind: 'none'`, and that is the deliberate rendering of
+ * an open question rather than a gap: `FAQ` waits on `decisions-open.md` #3
+ * (the page does not exist), and `Blog · próximamente` is specified with no
+ * link by the design itself. Both render as plain text, so the two read as one
  * consistent treatment (spec FR-039). No URL is invented here.
+ *
+ * `Agenda una llamada` was the third until 2026-09-07, when `decisions-open.md`
+ * #2 resolved and gave it a real destination. Its href is the shared constant,
+ * not a literal: the same URL is the Hero's secondary CTA and will be the final
+ * CTA's, and the decision scoped it to all three at once.
  */
 export const FOOTER_COLUMNS: FooterColumnModel[] = [
   {
@@ -63,8 +68,12 @@ export const FOOTER_COLUMNS: FooterColumnModel[] = [
     items: [
       {
         labelKey: 'shell.footer.contact.call',
-        // decisions-open.md #2 — the Google Calendar link does not exist yet.
-        destination: { kind: 'none' },
+        /*
+         * decisions-open.md #2, resolved 2026-09-07. `external` is what gives
+         * it the new tab and the severed opener the decision asks for; the
+         * href is never written here, only named.
+         */
+        destination: { kind: 'external', href: CALL_BOOKING_URL },
       },
       {
         labelKey: 'shell.footer.contact.email',

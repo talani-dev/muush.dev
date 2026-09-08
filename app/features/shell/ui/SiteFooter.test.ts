@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import type { ResolvedFooterColumn } from '@/features/shell/data/types'
+import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import SiteFooter from './SiteFooter.vue'
 
 const columns: ResolvedFooterColumn[] = [
@@ -16,7 +17,7 @@ const columns: ResolvedFooterColumn[] = [
   {
     title: 'Contacto',
     items: [
-      { label: 'Agenda una llamada' },
+      { label: 'Agenda una llamada', href: CALL_BOOKING_URL, external: true },
       {
         label: 'support@muush.dev',
         href: 'mailto:support@muush.dev',
@@ -133,7 +134,9 @@ describe('SiteFooter', () => {
  * footer of every page of the site.
  */
 describe('SiteFooter · destination audit', () => {
-  const undecided = ['Agenda una llamada', 'FAQ', 'Blog · próximamente']
+  /* `Agenda una llamada` was a third until 2026-09-07, when its URL arrived
+     (`decisions-open.md` § Decisión 2). It is asserted as a real link below. */
+  const undecided = ['FAQ', 'Blog · próximamente']
 
   it('should place every item in exactly one of the two categories', () => {
     const wrapper = mountFooter()
@@ -150,7 +153,7 @@ describe('SiteFooter · destination audit', () => {
     }
   })
 
-  it('should render the three undecided items as one identical treatment', () => {
+  it('should render the two undecided items as one identical treatment', () => {
     const wrapper = mountFooter()
 
     for (const label of undecided) {
@@ -163,12 +166,24 @@ describe('SiteFooter · destination audit', () => {
     }
   })
 
+  it('should render the call booking as a real link in a new tab', () => {
+    /* The half that would otherwise be untested: it must not fall back to the
+       inert `<span>` treatment its two neighbours in the column still get. */
+    const call = mountFooter()
+      .findAll('a')
+      .find(link => link.text() === 'Agenda una llamada')
+
+    expect(call?.attributes('href')).toBe(CALL_BOOKING_URL)
+    expect(call?.attributes('target')).toBe('_blank')
+    expect(call?.attributes('rel')).toBe('noopener noreferrer')
+  })
+
   it('should sever the opener on every external destination', () => {
     const externals = mountFooter()
       .findAll('a')
       .filter(link => link.attributes('href')?.startsWith('https://'))
 
-    expect(externals).toHaveLength(4)
+    expect(externals).toHaveLength(5)
     for (const link of externals) {
       expect(link.attributes('target')).toBe('_blank')
       expect(link.attributes('rel')).toBe('noopener noreferrer')

@@ -62,3 +62,19 @@ Rules:
 - Never hardcode colors/spacing — use the design tokens (Constitution Article VII)
 - Never add a server route, API endpoint, or backend dependency (Constitution
   Article I)
+- ❌ **Never write to `docs/business/`.** That tree is human-authored — you
+  read it, you never edit it. You have never had a mandate to write there.
+  You did anyway, across features 006 and 008, by copying a pattern you saw
+  in `rules.md`; Roberto stopped it on 2026-09-07. **A business rule is
+  determined by a human, never by you.**
+- ✅ Where your findings DO go, in order of preference:
+  1. **A comment in the file it governs** — a `mask-repeat` default belongs
+     next to the mask, a Vitest glob next to the glob. This is almost always
+     the right answer, because it is read at the moment it matters.
+  2. **Your progress report** under `docs/harness/progress/` — the narrative
+     of the cycle, including what you measured and what you could not.
+  3. **`docs/harness/findings.md`** — only for a trap that will bite someone
+     working on a different file than the one you were in.
+
+  If you think something is a rule of the *business*, say so in your report
+  and let the leader take it to a human. Do not write it yourself.
