@@ -24,8 +24,11 @@ import SectionGlow from '@/shared/ui/SectionGlow.vue'
  * 3. Text sits **above** both, unmuddied.
  *
  * The design's four layers, bottom to top, are the child order of frame
- * `SdEJx`: ink-500 base → section glows (`--layer-glow`, -2) → dotted paper
- * (`--layer-dots`, -1) → content. Flip the viewport control between
+ * `SdEJx`: ink-500 base → section glows (`--layer-glow`, -3) → dotted paper
+ * (`--layer-dots`, -2) → content, with the cursor spotlight
+ * (`--layer-spotlight`, -1) between the dots and the content — feature 008
+ * renumbered the stack to three negative levels so it could paint above the
+ * dots and brighten them (`rules.md` § R37). Flip the viewport control between
  * Móvil (390) and Escritorio (1440): the dot step is fixed and the glow
  * diameters are `clamp()`s, so the dots must stay put while the glows resize.
  */
