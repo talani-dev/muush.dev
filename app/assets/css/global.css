@@ -369,6 +369,99 @@
    * la página sigan siendo coherentes. Un token, una línea para corregirlo.
    */
   --duration-purpose-reveal: 0.2s;
+
+  /*
+   * ═══ Servicios · la constelación de 5 puntos (feature 014) ═══
+   *
+   * Read by hand-written CSS (the `<style scoped>` of ServicesConstellation.vue
+   * and ServicesTimeline.vue), so they go in `:root` and NOT in
+   * `@theme inline` (rules.md § R18, findings.md §§ R46, R52). Utility-consumed
+   * tokens are below, in `@theme inline`.
+   *
+   * ⚠️ None is named `--color-glow-*` / `--spacing-glow-*` (rules.md § R36).
+   *
+   * Frame `GiLTU` (desktop 1440×1020) / `F2Zu8X` (mobile 390×1290), read by the
+   * leader (§ R32). The five radar centres below are the single source every
+   * text-block offset is generated from (never five literals, spec FR-007).
+   *
+   * ⚠️ The four connector lines do NOT read these tokens: `x1`/`y1`/`x2`/`y2`
+   * are SVG geometry *attributes*, not CSS properties, and Biome's
+   * `noUnknownProperty` correctly rejects them written as CSS declarations.
+   * `ServicesConstellation.vue` binds them instead from
+   * `connectorEndpoints(SERVICE_NODE_CENTRES)` — the same five confirmed
+   * centres, read through `data/servicesContent.ts` rather than through a
+   * token (spec FR-008).
+   */
+
+  /* Five radar centres, `spec.md` § Provenance / `data-model.md` § 2.1. */
+  --services-node-1-x: 9.375rem;
+  --services-node-1-y: 20.625rem;
+  --services-node-2-x: 26.875rem;
+  --services-node-2-y: 12.5rem;
+  --services-node-3-x: 43.125rem;
+  --services-node-3-y: 27.5rem;
+  --services-node-4-x: 59.375rem;
+  --services-node-4-y: 15.625rem;
+  --services-node-5-x: 71.875rem;
+  --services-node-5-y: 30rem;
+
+  /*
+   * The one relation every text block's top-left is generated from:
+   * `textBlock = radarCentre + (-4, +28)`, exact to the pixel across all five
+   * (`data-model.md` § 2.1). Text block height is intrinsic to its own copy,
+   * never a token.
+   */
+  --services-text-offset-x: -0.25rem;
+  --services-text-offset-y: 1.75rem;
+
+  /* Canvas explicit height: the closer's own bottom edge (810 + 100 = 910),
+     the tallest extent among all nodes/connectors/closer (`data-model.md`
+     § 2.3) — not an invented number. */
+  --services-canvas-h: 56.875rem;
+
+  /* ⚠️ O-02, owner Clau. Seeded with the same hairline family as Propósito's
+     connector lines (bone-100 @24%, 1px) pending a real stroke colour/width. */
+  --services-link-color: color-mix(in srgb, var(--bone-100) 24%, transparent);
+  --services-link-w: 0.0625rem;
+
+  /*
+   * Eyebrow Pill @80,90 desktop / @24,0 mobile (`data-model.md` § 2.3, § 3).
+   * ⚠️ `data-model.md` § 4.1 also lists the mobile Pill's own rendered size
+   * (118×38). Not carried here: `Pill.vue` is self-sizing from its own
+   * padding/gap tokens (design-extract.md § 3), so a caller-supplied width/
+   * height would have nothing to apply to — the same class of correction
+   * feature 13 made about where the arcs actually live.
+   */
+  --services-pill-x: 5rem;
+  --services-pill-y: 5.625rem;
+
+  /* Delivery closer @80,810, 1280×100 desktop. Mobile's own 342px width lives
+     below in `@theme inline` (`--spacing-services-closer-m-w`), since it is
+     consumed as a `w-*` utility rather than by hand-written CSS. */
+  --services-closer-x: 5rem;
+  --services-closer-y: 50.625rem;
+  --services-closer-w: 80rem;
+  --services-closer-h: 6.25rem;
+
+  /* Mobile timeline: `item.top = 72 + index × 185`, exact across all five
+     (`data-model.md` § 3) — the one relation FR-011 forbids as five literals. */
+  --services-timeline-item-1-top: 4.5rem;
+  --services-timeline-item-step: 11.5625rem;
+  /* Timeline box height: item 5's own bottom edge (812 + 98 = 910), so the
+     closer that follows in flow does not overlap the absolutely-positioned
+     items above it. Same class of approximation as the desktop canvas height:
+     a much longer locale's item 5 could overflow it slightly (spec A-03). */
+  --services-timeline-h: 56.875rem;
+
+  /* Spine: 1×750 @29,86, decorative, not required to terminate at any radar
+     centre (spec A-01). */
+  --services-spine-x: 1.8125rem;
+  --services-spine-y: 5.375rem;
+  --services-spine-h: 46.875rem;
+
+  /* ⚠️ O-04, owner Clau. No frame can draw a scroll-driven transition; seeded
+     close to Propósito's own 0.2s reveal so page timings stay coherent. */
+  --duration-services-lyrics: 0.3s;
 }
 
 /*
@@ -1080,6 +1173,60 @@ html {
   --text-purpose-card-label--line-height: 1.4;
   --text-purpose-card-label--letter-spacing: 0.0692em;
   --text-purpose-card-label--font-weight: 500;
+
+  /*
+   * Servicios (feature 014 · `03 Servicios`, the landing's third section).
+   *
+   * Consumed as UTILITY (`pt-*`, `top-*`, `left-*`, `w-*`, `gap-*`), which
+   * `findings.md` § R47 verified reads the `--spacing-*` namespace by name and
+   * accepts `clamp()`. Hand-written-CSS tokens live above, in `:root`.
+   *
+   * ⚠️ None is named `--spacing-glow-*` / `--color-glow-*` (rules.md § R36).
+   */
+
+  /* 55 (⚠️ O-03, seeded from the Hero→Propósito leftover ratio) → 101
+     (Propósito's own leftover, unchanged — `rules.md` § R49). */
+  --spacing-services-top: clamp(3.4375rem, 2.3696rem + 4.381vw, 6.3125rem);
+
+  /*
+   * The two glows, section-relative, each axis independently measured at both
+   * viewport endpoints (`rules.md` § R48 — never one derived from the other).
+   * `wine-300`: 436,986 (M) → 1390,630 (D). `wine-400`: 36,1346 (M) → 50,970
+   * (D). Both `y` anchors DECREASE with width, so the `clamp()` minimum is the
+   * desktop value.
+   */
+  --spacing-services-glow-a-x: clamp(
+    27.25rem,
+    5.1036rem +
+    90.8571vw,
+    86.875rem
+  );
+  --spacing-services-glow-a-y: clamp(
+    39.375rem,
+    69.8893rem -
+    33.9048vw,
+    61.625rem
+  );
+  --spacing-services-glow-b-x: clamp(2.25rem, 1.925rem + 1.3333vw, 3.125rem);
+  --spacing-services-glow-b-y: clamp(
+    60.625rem,
+    92.8536rem -
+    35.8095vw,
+    84.125rem
+  );
+
+  /* ServiceItem's own name/brief gap: 12 (D) → 10 (M), design-extract.md § 10. */
+  --spacing-services-item-gap: clamp(0.625rem, 0.5786rem + 0.1905vw, 0.75rem);
+  /* Desktop-only text-block width, 232 (design-extract.md § 10). */
+  --spacing-services-text-w: 14.5rem;
+  /* Mobile-only item width, 310 (design-extract.md § 10). */
+  --spacing-services-item-m-w: 19.375rem;
+  /* ⚠️ Not separately measured in the frame — the gap between a mobile item's
+     radar and its text column, assumed consistent with the row's own
+     internal rhythm. */
+  --spacing-services-row-gap-m: 0.875rem;
+  /* Mobile closer width, 342 — the mobile content box (design-extract.md § 9). */
+  --spacing-services-closer-m-w: 21.375rem;
 
   /* Radios: los paneles son fluidos, los controles fijos.
      La cápsula del Pill usa rounded-full, no un token propio — y desde la

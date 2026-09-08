@@ -927,6 +927,193 @@ describe('static output · the landing purpose section', () => {
   })
 })
 
+describe('static output · the landing services section', () => {
+  /*
+   * Feature 014. Claims only the artefact can settle: both compositions reach
+   * the prerendered HTML in each locale with no card surface and no
+   * destination, the mobile timeline ships its no-JS state (every item at
+   * full strength, no `data-lyrics` attribute), and the anchor the shell
+   * already links to now exists.
+   *
+   * The desktop scatter costs zero JavaScript and the mobile timeline's rest
+   * state is the CSS default, so this document is also what a browser with
+   * scripting disabled renders (`rules.md` §§ R25, R31).
+   */
+  const SERVICE_COPY = {
+    es: {
+      eyebrow: 'Servicios',
+      names: [
+        'Technology Consulting & Strategy',
+        'Software & Digital Solutions',
+        'Cloud, Infrastructure & DevOps',
+        'Automation, Data & AI',
+        'Product, UI/UX & Experience',
+      ],
+      delivery:
+        'Y una capacidad que atraviesa las cinco: llevamos el proyecto de principio a fin, con alcance, tiempos, calidad y lanzamiento a nuestro cargo.',
+    },
+    en: {
+      eyebrow: 'Services',
+      names: [
+        'Technology Consulting & Strategy',
+        'Software & Digital Solutions',
+        'Cloud, Infrastructure & DevOps',
+        'Automation, Data & AI',
+        'Product, UI/UX & Experience',
+      ],
+      delivery:
+        'And one capability runs through all five: we carry the project from start to finish, including scope, timelines, quality and launch.',
+    },
+  } as const
+
+  /** The rendered `<section id="servicios">`, balanced against nested `<section>`s. */
+  function servicesSection(route: RoutePath): string {
+    const html = documentFor(route)
+    const start = html.indexOf('<section id="servicios"')
+
+    expect(start, route).toBeGreaterThan(-1)
+
+    let depth = 0
+    for (const tag of html.slice(start).matchAll(/<(\/?)section[\s>]/g)) {
+      depth += tag[1] === '/' ? -1 : 1
+      if (depth === 0) return html.slice(start, start + tag.index + 10)
+    }
+
+    throw new Error(`unbalanced services section in ${route}`)
+  }
+
+  for (const route of ['/es', '/en'] as const) {
+    const locale = route === '/en' ? 'en' : 'es'
+
+    it(`should render both compositions in their own locale when the page is ${route}`, () => {
+      /* Each name/brief appears **twice** — once per composition — and
+         exactly one is `hidden` at any width (spec FR-002 analogue), so only
+         one is ever announced. */
+      const section = servicesSection(route)
+      const copy = SERVICE_COPY[locale]
+
+      expect(section, route).toContain(copy.eyebrow)
+      for (const name of copy.names) {
+        /* The rendered HTML escapes `&` to `&amp;`; the fixture above is the
+           plain-text copy, so the search string is escaped the same way. */
+        const rendered = name.replaceAll('&', '&amp;')
+        expect(section.split(rendered).length - 1, `${route} · ${name}`).toBe(2)
+      }
+      expect(section.split(copy.delivery).length - 1, route).toBe(2)
+    })
+
+    it(`should render no card surface and no destination when the page is ${route}`, () => {
+      /* `services.md`: "sin tarjetas." The five areas are not clickable
+         (`ui-map.md` § 5). */
+      const section = servicesSection(route)
+
+      expect(section, route).not.toContain('<article')
+      expect(section, route).not.toContain('<a ')
+      expect(section, route).not.toContain('cursor-pointer')
+    })
+
+    it(`should ship the timeline's no-JS state when the page is ${route}`, () => {
+      /* `ui-map.md` § 10: without scripting every item is at 100%, never
+         dimmed by default. */
+      const section = servicesSection(route)
+
+      expect(section, route).not.toContain('data-lyrics')
+    })
+  }
+
+  it('should close the shell dangling anchor on every landing document', () => {
+    /* The footer's *Navegación* column and the mobile menu already emit a
+       link at this anchor (`rules.md` § R50); the shell resolves the
+       fragment against the locale's home. */
+    for (const route of ['/es', '/en'] as const) {
+      expect(documentFor(route), route).toContain('<section id="servicios"')
+      expect(documentFor(route), route).toContain(`href="${route}#servicios"`)
+    }
+  })
+
+  it('should contribute the two glows without breaking the paint order', () => {
+    for (const route of ['/es', '/en'] as const) {
+      const section = servicesSection(route)
+      const root = section.match(/<section id="servicios" class="([^"]*)"/)?.[1]
+
+      expect(root?.split(' '), route).toContain('relative')
+      expect(root?.split(' '), route).toContain('pt-services-top')
+      expect(
+        root?.split(' ').some(name => name.startsWith('bg-')),
+        route
+      ).toBe(false)
+      expect(
+        root
+          ?.split(' ')
+          .some(name =>
+            /^(transform|translate|scale|rotate|filter|backdrop-|opacity-|isolate|will-change|contain-|fixed|sticky|overflow-)/.test(
+              name
+            )
+          ),
+        route
+      ).toBe(false)
+
+      expect(section, route).toContain('size-glow-900-520')
+      expect(section, route).toContain('size-glow-860-480')
+    }
+  })
+
+  it('should emit every services token and the connector geometry when generated', () => {
+    const css = emittedCss()
+
+    expect(css).toMatch(
+      /\.pt-services-top\{padding-top:clamp\(3\.4375rem,2\.3696rem \+ 4\.381vw,6\.3125rem\)\}/
+    )
+    for (const anchor of [
+      /\.top-services-glow-a-y\{top:clamp\(/,
+      /\.top-services-glow-b-y\{top:clamp\(/,
+      /\.left-services-glow-a-x\{left:clamp\(/,
+      /\.left-services-glow-b-x\{left:clamp\(/,
+    ]) {
+      expect(css, String(anchor)).toMatch(anchor)
+    }
+
+    /* Every `:root` token the hand-written CSS names has to be reachable, or
+       the declaration resolves to nothing in silence (`findings.md` § R46). */
+    for (const token of [
+      '--services-node-1-x:',
+      '--services-node-5-y:',
+      '--services-text-offset-x:',
+      '--services-canvas-h:',
+      '--services-link-color:',
+      '--services-timeline-item-1-top:',
+      '--services-timeline-item-step:',
+      '--services-spine-x:',
+      '--duration-services-lyrics:',
+    ]) {
+      expect(css, token).toContain(token)
+    }
+
+    const document = documentFor('/es')
+
+    /* The connectors' generated geometry: `x1`/`y1`/`x2`/`y2` are SVG
+       attributes, not CSS properties — Biome's `noUnknownProperty` correctly
+       rejects them as CSS declarations, so each `<line>` is bound from
+       `connectorEndpoints` over the five confirmed centres instead
+       (FR-008). Each pair matches its neighbour exactly. */
+    expect(document).toContain('<line x1="150" y1="330" x2="430" y2="200"')
+    expect(document).toContain('<line x1="950" y1="250" x2="1150" y2="480"')
+    /* The mobile timeline's one relation (FR-011). */
+    expect(document).toContain(
+      'top:calc(var(--services-timeline-item-1-top) + var(--i)*var(--services-timeline-item-step))'
+    )
+  })
+
+  it('should add no token to the closed glow namespace when generated', () => {
+    /* `rules.md` § R36 — the guard stated where this feature can see it. */
+    const glowTokens = [
+      ...emittedCss().matchAll(/--(?:color|spacing)-glow-[\w-]+(?=\s*:)/g),
+    ].map(([token]) => token)
+
+    expect(glowTokens.filter(token => token.includes('services'))).toEqual([])
+  })
+})
+
 describe('static output · the brand type is self-hosted', () => {
   /*
    * Feature 006, FR-015 / SC-007. `@nuxt/fonts` resolves the families from
