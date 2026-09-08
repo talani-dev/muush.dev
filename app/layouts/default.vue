@@ -105,6 +105,21 @@ const { t } = useI18n()
 const { isOpen } = useMobileMenu()
 
 /*
+ * The language toggle's accessible name (spec FR-018, feature 21), resolved
+ * here rather than inside `LanguageToggle.vue` itself: that component lives
+ * in `ui/` and calls no Nuxt composable (`rules.md` § R23), so the string is
+ * computed where every other nav label already is and threaded down as a
+ * prop through `SiteNav`/`MobileMenu`. Reads `useShellNavigation()`'s own
+ * `locale` above (the active one `LanguageToggle` also receives) rather than
+ * a second call to `useI18n()`'s own locale ref, so there is exactly one
+ * source of "which locale is active" in this file. Only the two flat keys
+ * the switch picks between are new (`research.md` R-3).
+ */
+const localeSwitchLabel = computed(() =>
+  locale.value === 'en' ? t('shell.nav.switchToEs') : t('shell.nav.switchToEn')
+)
+
+/*
  * The pointer tracking. The ref is this root element, which is both where the
  * coordinates are published and the origin they are measured against — the
  * host contract in `contracts/components.md` § 1. Every listener, every media
@@ -159,6 +174,7 @@ useHead(useLocaleHead())
       :home="home"
       :locale="locale"
       :locale-switch-href="localeSwitchHref"
+      :locale-switch-label="localeSwitchLabel"
       :menu-items="menuItems"
       :socials="socials"
       :nav-label="t('shell.nav.label')"

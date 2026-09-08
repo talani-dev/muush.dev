@@ -38,6 +38,7 @@ const props = {
   home: '/es',
   locale: 'es' as const,
   localeSwitchHref: '/en',
+  localeSwitchLabel: 'Cambiar a inglés',
   label: 'Menú',
   closeLabel: 'Cerrar menú',
 }
