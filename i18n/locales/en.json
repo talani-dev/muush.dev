@@ -251,7 +251,6 @@
         "title": "Navigation",
         "purpose": "Purpose",
         "services": "Services",
-        "projects": "Projects",
         "about": "About us"
       },
       "contact": {
@@ -262,9 +261,7 @@
       },
       "muush": {
         "title": "muush",
-        "work": "Work with muush",
-        "faq": "FAQ",
-        "blog": "Blog · coming soon"
+        "work": "Work with muush"
       },
       "social": {
         "title": "Social"

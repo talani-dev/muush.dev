@@ -4,10 +4,14 @@ import { describe, expect, it } from 'vitest'
 
 /**
  * The shell's copy is fixed by `design-extract.md` § 9.bis and
- * `ui-map.md` § 8, and three of its entries are easy to "fix" by mistake:
- * `Work with muush` and `FAQ` are proper nouns carrying the same value in
- * both locales, the blog item keeps its separator inside the string, and the
- * support address has to survive the message compiler.
+ * `ui-map.md` § 8, and two of its entries are easy to "fix" by mistake:
+ * `Work with muush` is a proper noun carrying the same value in both
+ * locales, and the support address has to survive the message compiler.
+ *
+ * `FAQ` and `Blog · próximamente` were pinned here too until feature 23
+ * (2026-09-08) removed both from `FOOTER_COLUMNS` entirely, per Roberto's
+ * explicit call — the keys came out of the locale files alongside them
+ * rather than being left as unreferenced dead copy.
  *
  * Read from disk, not imported: Nuxt's i18n Vite transform compiles a locale
  * JSON into a message AST, which none of these assertions could see through
@@ -19,7 +23,7 @@ interface ShellCopy {
       category: string
       whatsappMessage: string
       contact: { email: string }
-      muush: { work: string; faq: string; blog: string }
+      muush: { work: string }
     }
   }
 }
@@ -47,13 +51,7 @@ describe('shell copy', () => {
   it('should leave the proper nouns untranslated in both locales', () => {
     /* Parity is satisfied by presence, not by difference. */
     expect(en.shell.footer.muush.work).toBe(es.shell.footer.muush.work)
-    expect(en.shell.footer.muush.faq).toBe(es.shell.footer.muush.faq)
     expect(en.shell.footer.category).toBe(es.shell.footer.category)
-  })
-
-  it('should keep the separator inside the blog item in both locales', () => {
-    expect(es.shell.footer.muush.blog).toBe('Blog · próximamente')
-    expect(en.shell.footer.muush.blog).toBe('Blog · coming soon')
   })
 
   it('should escape the at sign of the support address for the compiler', () => {
