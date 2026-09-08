@@ -9,6 +9,15 @@
       "work": "Work with muush"
     }
   },
+  "landing": {
+    "hero": {
+      "eyebrow": "Technology solution studio",
+      "headline": "Hablamos negocio y código.",
+      "subhead": "Diseñamos y construimos soluciones digitales alrededor de tu negocio.",
+      "ctaPrimary": "Cuéntanos tu proyecto",
+      "ctaSecondary": "Agenda una llamada"
+    }
+  },
   "shell": {
     "nav": {
       "label": "Navegación principal",

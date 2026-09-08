@@ -18,6 +18,12 @@ import SiteNav from './SiteNav.vue'
  * at all, which is exactly why it renders here with no router, no i18n
  * instance and no Nuxt runtime (spec FR-008). A component that cheated would
  * fail to render on this page rather than in production.
+ *
+ * `showCta` is the state feature 009 added (`ui-map.md` § 2): on the landing
+ * the button is hidden while the Hero is on screen, because the Hero already
+ * offers it. Compare *Spanish* with *Call to action hidden* — the nav itself
+ * is byte-identical between them, which is the requirement. Only the button's
+ * `opacity` and `visibility` differ.
  */
 const meta = {
   title: 'Shell/SiteNav',
@@ -73,6 +79,7 @@ export const Spanish: Story = {
   args: {
     items: spanishItems,
     cta: { label: 'Cuéntanos tu proyecto', href: '/es#contacto' },
+    showCta: true,
     home: '/es',
     locale: 'es',
     localeSwitchHref: '/en',
@@ -91,6 +98,7 @@ export const English: Story = {
   args: {
     items: englishItems,
     cta: { label: 'Tell us about your project', href: '/en#contacto' },
+    showCta: true,
     home: '/en',
     locale: 'en',
     localeSwitchHref: '/es',
@@ -116,7 +124,20 @@ export const OnTheAboutPage: Story = {
   },
 }
 
-/** The arrangement below `lg`: lockup, toggle and hamburger. */
+/**
+ * The landing at scroll 0, with the Hero on screen: the button is not there,
+ * because the Hero offers the same control two steps below (`ui-map.md` § 2).
+ *
+ * The nav's own row is **identical** to *Spanish* above — same height, same
+ * background, same everything. Only the button's `opacity` and `visibility`
+ * differ, and the fade between the two states is the whole animation.
+ */
+export const CallToActionHidden: Story = {
+  args: { ...Spanish.args, showCta: false },
+}
+
+/** The arrangement below `lg`: lockup, toggle and hamburger. There is no CTA
+ *  at this width at all, so the reveal has nothing to show or hide. */
 export const Mobile: Story = {
   args: Spanish.args,
   globals: { viewport: { value: 'mobile' } },

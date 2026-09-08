@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 
 /**
  * The deployed artefact, asserted directly.
@@ -293,23 +294,251 @@ describe('static output · the layout wraps every page', () => {
      *   mean SC-003 was broken.
      * - **The active-page marking**, which is announced to assistive
      *   technology and deliberately not drawn (spec A-04).
+     * - **The call to action's visibility pair** — added by feature 009. The
+     *   landing suppresses the nav CTA because its Hero already offers the
+     *   same control (`ui-map.md` § 2, Roberto, 2026-09-07), so the two
+     *   documents now differ by exactly `invisible opacity-0` against
+     *   `visible opacity-100`. That difference is the feature; the assertion
+     *   below is what proves it is the **only** one, which is spec SC-017.
      *
      * What is compared is everything else: the elements, the controls and
      * every class. That is what would change if a per-page variant crept in.
+     *
+     * The pattern is **anchored on the CTA wrapper's own class** with a
+     * lookahead rather than matching the pair anywhere in the nav. Without the
+     * anchor, any other nav element that happened to gain literally
+     * `invisible opacity-0 ` would be stripped too and the comparison would
+     * stop seeing it — the one hole a mutation test found in this exclusion
+     * (reviewer, 2026-09-07). It costs nothing: there is one match per
+     * document and it is the wrapper.
      */
+    const CTA_STATE = /(in)?visible opacity-(0|100) (?=site-nav__cta)/g
+
     const navMarkup = (route: RoutePath) =>
       documentFor(route)
         .match(/<nav[\s\S]*?<\/nav>/)?.[0]
         .replaceAll(/ href="[^"]*"/g, '')
         .replaceAll(' aria-current="page"', '')
         .replaceAll(/ ?router-link-(exact-)?active/g, '')
-        /* Collapse the whitespace the two strips above leave behind. */
+        .replaceAll(CTA_STATE, '')
+        /* Collapse the whitespace the strips above leave behind. */
         .replaceAll(/class="\s+/g, 'class="')
 
     const landingNav = navMarkup('/es')
 
     expect(landingNav).toBeDefined()
     expect(navMarkup('/es/nosotros')).toBe(landingNav)
+  })
+
+  it('should differ between the landing and About in the call to action alone', () => {
+    /*
+     * Feature 009, SC-014 and SC-017. The complement of the assertion above,
+     * and the half that would otherwise be untested: the landing ships the
+     * button **hidden in the HTML** — not hidden on mount, which is the flash
+     * spec FR-045 forbids — and every route without a Hero ships it visible,
+     * so there is nothing for a transition to run from on load (FR-044).
+     */
+    const ctaState = (route: RoutePath) =>
+      documentFor(route).match(/class="([^"]*site-nav__cta[^"]*)"/)?.[1]
+
+    expect(ctaState('/es')).toContain('invisible opacity-0')
+    expect(ctaState('/en')).toContain('invisible opacity-0')
+    expect(ctaState('/es/nosotros')).toContain('visible opacity-100')
+    expect(ctaState('/en/about')).toContain('visible opacity-100')
+
+    for (const route of ROUTES) {
+      expect(ctaState(route), route).toContain('lg:block')
+    }
+  })
+
+  it('should ship the no-scripting override for the call to action on every page', () => {
+    /* The only mechanism that satisfies FR-045 and FR-046 together. Without
+       it the landing's button would stay hidden forever for a visitor with
+       scripting off, because the observer that reveals it never runs. */
+    for (const route of ROUTES) {
+      expect(documentFor(route), route).toMatch(
+        /<noscript[^>]*><style>\.site-nav__cta\.site-nav__cta\{opacity:1;visibility:visible\}<\/style><\/noscript>/
+      )
+    }
+  })
+
+  it('should send the footer call booking to the booking page on every route', () => {
+    /*
+     * `decisions-open.md` § Decisión 2 scopes the URL to the hero, the final
+     * CTA and the footer. The footer renders on all four documents, so this is
+     * where a silent return to `kind: 'none'` would be widest — and it would
+     * look like nothing more than a slightly greyer line in a column.
+     */
+    for (const route of ROUTES) {
+      const footer = documentFor(route).match(/<footer[\s\S]*<\/footer>/)?.[0]
+      const booking = footer?.match(
+        new RegExp(`<a href="${CALL_BOOKING_URL}"[^>]*>`)
+      )?.[0]
+
+      expect(footer, route).toBeDefined()
+      expect(booking, route).toBeDefined()
+      expect(booking, route).toContain('target="_blank"')
+      expect(booking, route).toContain('rel="noopener noreferrer"')
+    }
+  })
+
+  it('should offer a pointer on every clickable control it ships', () => {
+    /*
+     * Nothing in the emitted stylesheet declared a cursor before this change,
+     * so a native `<button>` kept the user agent's `default` and only anchors
+     * looked right — by accident (`findings.md` § R56). The nav CTA is the one
+     * control here that renders as a link and would have passed anyway; it is
+     * included so the class is asserted rather than the element type.
+     *
+     * The hamburger and the close control cannot be asserted here: both are
+     * behind `isScriptingAvailable` / the open flag and never reach a
+     * prerendered document. Their component tests cover them.
+     */
+    for (const route of ROUTES) {
+      const nav = documentFor(route).match(/<nav[\s\S]*?<\/nav>/)?.[0]
+      const cta = nav?.match(
+        /<a href="[^"]*#contacto"[^>]*class="([^"]*)"/
+      )?.[1]
+
+      expect(cta?.split(' '), route).toContain('cursor-pointer')
+    }
+  })
+
+  it('should pin the nav without changing anything else about it', () => {
+    /* `sticky`, not `fixed`: the nav stays in normal flow, so `<main>` needs no
+       compensating top padding and every section's top padding stays
+       `design y − nav height` (spec A-13, `rules.md` § R49). */
+    for (const route of ROUTES) {
+      const navClasses = documentFor(route)
+        .match(/<nav [^>]*class="([^"]*)"/)?.[1]
+        ?.split(' ')
+
+      expect(navClasses, route).toContain('sticky')
+      expect(navClasses, route).toContain('top-0')
+      /* No background, no height and no opacity of its own — FR-042, and the
+         reason spec D-07 is reported rather than fixed here. */
+      expect(
+        navClasses?.some(name => /^(bg-|h-|opacity-|backdrop-)/.test(name)),
+        route
+      ).toBe(false)
+    }
+  })
+})
+
+describe('static output · the landing hero', () => {
+  /*
+   * Feature 009. Three claims that only the artefact can settle: that the
+   * Hero's copy reaches the prerendered HTML in each locale, that the eyebrow
+   * is deliberately *not* translated, and that the primary CTA emits no
+   * destination while section 05 does not exist.
+   *
+   * The Hero costs zero JavaScript, so a browser with scripting disabled
+   * renders exactly these documents — asserting on them is how the no-JS case
+   * is verified at all (the discipline of `rules.md` §§ R25, R31).
+   */
+  const HERO_COPY = {
+    es: {
+      headline: 'Hablamos negocio y código.',
+      subhead:
+        'Diseñamos y construimos soluciones digitales alrededor de tu negocio.',
+      ctaPrimary: 'Cuéntanos tu proyecto',
+      ctaSecondary: 'Agenda una llamada',
+    },
+    en: {
+      headline: 'We speak business and code.',
+      subhead: 'We design and build digital solutions around your business.',
+      ctaPrimary: 'Tell us about your project',
+      ctaSecondary: 'Book a call',
+    },
+  } as const
+
+  /** Identical in both locales, on purpose — verified in all four frames. */
+  const EYEBROW = 'Technology solution studio'
+
+  /** The rendered `<section>`, found by the one class only the Hero carries. */
+  function heroSection(route: RoutePath): string | undefined {
+    return documentFor(route).match(
+      /<section class="[^"]*pt-hero-top[^"]*"[\s\S]*?<\/section>/
+    )?.[0]
+  }
+
+  for (const route of ['/es', '/en'] as const) {
+    const locale = route === '/en' ? 'en' : 'es'
+
+    it(`should render the hero in its own locale when the page is ${route}`, () => {
+      const hero = heroSection(route)
+
+      expect(hero, route).toBeDefined()
+      expect(hero, route).toContain(EYEBROW)
+      for (const copy of Object.values(HERO_COPY[locale])) {
+        expect(hero, `${route} · ${copy}`).toContain(copy)
+      }
+    })
+
+    it(`should render the headline as the page's only h1 when the page is ${route}`, () => {
+      const headings = [...documentFor(route).matchAll(/<h1[\s>]/g)]
+
+      expect(headings, route).toHaveLength(1)
+      expect(heroSection(route), route).toContain('<h1')
+    })
+
+    it(`should emit no destination from the primary hero control when the page is ${route}`, () => {
+      /*
+       * Section 05 does not exist, so the primary CTA renders its absence
+       * rather than inventing a substitute (spec FR-012, FR-014): a real
+       * `<button type="button">` that emits no fragment — stricter than the
+       * shell, whose five links to sections that do not exist yet are a
+       * recorded inconsistency (spec D-03, Roberto's).
+       *
+       * It also carries **no pointer cursor**, because it does nothing when
+       * clicked. `ui-map.md` § 6 rules on that shape for the Proyectos slots:
+       * a reserved control that looks clickable and leads nowhere reads as a
+       * broken site.
+       */
+      const hero = heroSection(route)
+
+      expect(hero, route).toContain('<button type="button"')
+      expect(hero, route).not.toContain('#contacto')
+
+      const primary = hero?.match(/<button type="button" class="([^"]*)"/)?.[1]
+
+      expect(primary, route).toBeDefined()
+      expect(primary?.split(' '), route).not.toContain('cursor-pointer')
+    })
+
+    it(`should send the secondary hero control to the booking page when the page is ${route}`, () => {
+      /*
+       * `decisions-open.md` #2 resolved on 2026-09-07. The guard against a
+       * silent return to the inert branch, asserted on the artefact a visitor
+       * actually receives: the Hero costs zero JavaScript, so this document is
+       * also what a browser with scripting disabled renders.
+       *
+       * The arrow is `LinkArrow`'s and never the copy's, so it is asserted
+       * inside the anchor rather than in the locale files, which are held free
+       * of it by `tests/landing-copy.test.ts`.
+       */
+      const hero = heroSection(route)
+      const locale = route === '/en' ? 'en' : 'es'
+      const secondary = hero?.match(/<a href="([^"]*)"[^>]*>[\s\S]*?<\/a>/)?.[0]
+
+      expect(secondary, route).toBeDefined()
+      expect(secondary, route).toContain(CALL_BOOKING_URL)
+      expect(secondary, route).toContain('target="_blank"')
+      expect(secondary, route).toContain('rel="noopener noreferrer"')
+      expect(secondary, route).toContain('text-bone-100')
+      expect(secondary, route).toContain(HERO_COPY[locale].ctaSecondary)
+      expect(secondary, route).toContain('→')
+      expect(hero, route).not.toContain('text-ink-300')
+    })
+  }
+
+  it('should carry the identical eyebrow in all four documents', () => {
+    /* ⚠️ Not a missing translation (spec FR-009). It is English inside the
+       Spanish page by design, and the About page inherits it through the
+       footer's `Categoría` item, which is the same string. */
+    for (const route of ROUTES) {
+      expect(documentFor(route), route).toContain(EYEBROW)
+    }
   })
 })
 
