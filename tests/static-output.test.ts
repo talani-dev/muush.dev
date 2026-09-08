@@ -233,6 +233,55 @@ describe('static output · the layout wraps every page', () => {
     })
   }
 
+  for (const route of ROUTES) {
+    it(`should ship no cursor spotlight markup when the page is ${route}`, () => {
+      /*
+       * Feature 008, FR-012 / SC-003. The spotlight is the one background
+       * layer that depends on JavaScript, and `ui-map.md` § 10 specifies its
+       * absence as a complete state — "fondo normal, sin glow — no se pierde
+       * contenido". That absence is mechanical rather than promised:
+       * `useCursorSpotlight` returns `isActive: false` on the server and until
+       * the first mouse event, so the element cannot reach the artefact.
+       *
+       * This is also how the no-JS fallback is verified at all. A browser with
+       * scripting disabled renders exactly this document, so proving the
+       * markup is not here proves the fallback — the same discipline
+       * `rules.md` §§ R25 and R31 apply to everything else about `.output`.
+       *
+       * ⚠️ **The body, not the document.** Nuxt inlines a component's scoped
+       * CSS into every prerendered page in the route's module graph, whether
+       * or not the component ever renders — so `cursor-spotlight` *does*
+       * appear in the `<head>` of all four documents, inside a `<style>` tag,
+       * with `<!---->` where the `v-if` declined to render. A grep over the
+       * whole document cannot tell markup from stylesheet and would fail this
+       * feature for shipping exactly what it is supposed to ship
+       * (`rules.md` § R40).
+       */
+      const body = documentFor(route).match(/<body[\s\S]*<\/body>/)?.[0]
+
+      expect(body, route).toBeDefined()
+      expect(body, route).not.toContain('cursor-spotlight')
+    })
+  }
+
+  it('should still ship the spotlight stylesheet when the site is generated', () => {
+    /* The complement of the assertion above, and the reason it is not simply
+       "the feature is missing": the styles are in the artefact and only the
+       element waits for a mouse. The tokens live in the emitted stylesheet;
+       the layer's own rules are inlined per document. */
+    const css = emittedCss()
+
+    for (const token of [
+      '--layer-spotlight:',
+      '--spotlight-outer-size:',
+      '--dot-paper-lit-color:',
+    ]) {
+      expect(css, token).toContain(token)
+    }
+
+    expect(documentFor('/es')).toContain('.cursor-spotlight')
+  })
+
   it('should render the same nav markup on the landing and on About', () => {
     /*
      * § 9.bis verified the two pages' chrome is byte-identical, which is why
