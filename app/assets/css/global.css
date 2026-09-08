@@ -45,6 +45,41 @@
    * fase y produzcan un pulso conjunto no buscado.
    */
   --duration-radar-ping: 2.4s;
+
+  /*
+   * Papel punteado (design-extract.md § 10 · DottedPaper): puntos de 2.5px en
+   * una retícula de 24px, `#D9D9D91F`. `#D9D9D9` ES exactamente ink-100 y
+   * `0x1F ÷ 255 = 12.16%`, así que se compone desde la rampa al 12% en vez de
+   * escribir el hex suelto (mismo criterio que rules.md §§ R2 y R11).
+   *
+   * El radio es la mitad del diámetro: 2.5 ÷ 2 = 1.25px = 0.078125rem. En rem
+   * y no en px porque el resto del archivo está en rem y así la textura crece
+   * junto con el tipo si el visitante agranda la letra.
+   *
+   * ⚠️ El archivo de diseño dibuja un `Dot tile` de 288×288 con 144 elipses e
+   * instancia el tile 90 veces sobre la página de 1440×5060 (12 × 24 = 288;
+   * 5 columnas × 18 renglones = 90). Eso es cómo Pencil dibuja un repetido, no
+   * la implementación: en el navegador son dos declaraciones sobre un solo
+   * elemento. Ni el 288 ni el 90 tienen token, a propósito — ver DotGrid.vue.
+   */
+  --dot-paper-color: color-mix(in srgb, var(--ink-100) 12%, transparent);
+  --dot-paper-radius: 0.078125rem;
+  --dot-paper-step: 1.5rem;
+
+  /*
+   * Los dos niveles negativos del fondo (rules.md § R28). El layout es el
+   * único contexto de apilamiento de la página y pinta la base ink-500; dentro
+   * de él los glows de cada sección van en -2 y la hoja de puntos, que es de
+   * página completa, en -1. Ambos quedan por debajo de todo el flujo normal.
+   *
+   * ⚠️ Tienen que ser DISTINTOS. Si compartieran nivel, el desempate sería el
+   * orden del documento y los glows —que se escriben dentro de las secciones,
+   * después de la hoja— quedarían encima de los puntos, invirtiendo el diseño.
+   * Son tokens y no literales justamente porque lo que importa es la relación
+   * entre los dos, y vive en dos archivos distintos.
+   */
+  --layer-glow: -2;
+  --layer-dots: -1;
 }
 
 @theme inline {
