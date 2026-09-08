@@ -5,8 +5,14 @@
   "pages": {
     "about": {
       "title": "Nosotros · muush",
-      "heading": "Nosotros",
       "work": "Work with muush"
+    }
+  },
+  "about": {
+    "hero": {
+      "eyebrow": "Nosotros",
+      "headline": "El equipo se arma alrededor del proyecto.",
+      "intro": "Reunimos al talento indicado para cada proyecto y le damos libertad de elegir en qué proyectos entra y desde dónde trabaja. Esa flexibilidad es lo que sostiene nuestro talent pool, y lo que nos permite entregar sin cargar una estructura pesada."
     }
   },
   "landing": {

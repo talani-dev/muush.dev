@@ -1383,6 +1383,99 @@ html {
   --spacing-contact-glow-cierre-y: clamp(20rem, 26.8571rem - 7.619vw, 25rem);
 
   /*
+   * ═══ About · `01 Hero` de Nosotros (feature 017) ═══
+   *
+   * Frames leídos por el líder del `.pen` el 2026-09-08 (rules.md § R32):
+   * escritorio `m3cbXr` (960×376, layout vertical, gap 32), móvil `Pkv8h`
+   * (342×349, gap 22). Tres hijos únicamente — Pill, headline, intro — sin
+   * fila de CTA, la única diferencia estructural frente al Hero de la
+   * landing. El componente comparte base con él vía `HeroStack.vue`
+   * (`app/shared/ui/`); estos tokens son los que ese Hero NO reutiliza,
+   * porque el ancho de la pila y el ancho del párrafo de intro son propios de
+   * este frame (960/700 aquí, 900/600 en Landing).
+   *
+   * Consumidos como UTILIDAD (`pt-*`, `top-*`, `left-*`, `max-w-*`, `gap-*`),
+   * per `findings.md` § R47. Ninguno se llama `--spacing-glow-*` /
+   * `--color-glow-*` (rules.md § R36) — los tres glows de abajo reutilizan
+   * los pares color+opacidad+tamaño que YA existen en este archivo desde la
+   * feature 009 (`--color-glow-red-400-60`, `--color-glow-wine-300-37`,
+   * `--color-glow-wine-400-28`, `--spacing-glow-1400-700`,
+   * `--spacing-glow-1000-520`, `--spacing-glow-860-520`), así que no se
+   * agrega ningún token de color/tamaño nuevo para ellos.
+   *
+   * ⚠️ Opacidades: el `.pen` dibuja el frame móvil a 65/40/30, pero Roberto lo
+   * revisó el 2026-09-08 y lo declaró error del archivo — se implementan
+   * 60/37/28 en AMBOS viewports, igual que escritorio. No se "corrige" el
+   * componente para igualar el archivo: la corrección ya ocurrió, en el otro
+   * sentido.
+   */
+
+  /* ⚠️ UNVERIFIED — dueño: líder/Clau. El frame da el tamaño de la pila
+     (960×376 / 342×349), no su posición en la página, y ningún centro de
+     glow permite derivarla (rules.md § R48 — no se deriva un extremo del
+     otro). Sembrado con el mismo par que --spacing-hero-top: ambos Heros son
+     la primera sección tras el nav, y es la relación más cercana disponible.
+     Pendiente de confirmar contra el frame real. */
+  --spacing-about-hero-top: clamp(4.625rem, 1.5375rem + 12.6667vw, 12.9375rem);
+  /* 22 → 32, el gap de la pila de tres hijos (frame `Pkv8h` / `m3cbXr`). */
+  --spacing-about-hero-gap: clamp(1.375rem, 1.1429rem + 0.9524vw, 2rem);
+  /* 960 de escritorio (ancho del frame `m3cbXr`); inerte a 390, donde la
+     columna mide 342 por el margen de página, igual que --spacing-hero-body. */
+  --spacing-about-hero-body: 60rem;
+  /* 700 de escritorio, el ancho del párrafo de intro que dio el líder;
+     inerte a 390 por la misma razón que --spacing-hero-measure. */
+  --spacing-about-hero-measure: 43.75rem;
+
+  /*
+   * Anclas de los tres glows — seis tokens (rules.md § R48), del centro de
+   * página que dio el líder: foco 1260,180 (D) · 410,50 (M); wine 80,240 (D)
+   * · 40,140 (M); cierre 1410,770 (D) · 440,500 (M).
+   *
+   * Horizontal: `x − 80` (D) / `x − 24` (M), el margen de página que resta
+   * toda sección anterior. Vertical: `y − 103` (D) / `y − 76` (M), el borde
+   * inferior del nav — CONFIRMADO compartido entre Landing y Nosotros
+   * (design-extract.md § 9.bis: "Nav y Footer son byte-idénticos"), el mismo
+   * origen que ya usa --spacing-hero-glow-*.
+   *
+   * ⚠️ Solo los dos extremos son diseño; la interpolación 390↔1440 es
+   * suavizado, igual que el resto de la escala.
+   */
+  /* Foco — sección 386,−26 (M) → 1180,77 (D). */
+  --spacing-about-hero-glow-foco-x: clamp(
+    24.125rem,
+    5.6929rem +
+    75.619vw,
+    73.75rem
+  );
+  --spacing-about-hero-glow-foco-y: clamp(
+    -1.625rem,
+    -4.0161rem +
+    9.8095vw,
+    4.8125rem
+  );
+  /* Wine — sección 16,64 (M) → 0,137 (D). `x` DECRECE con el ancho. */
+  --spacing-about-hero-glow-wine-x: clamp(0rem, 1.3714rem - 1.5238vw, 1rem);
+  --spacing-about-hero-glow-wine-y: clamp(
+    4rem,
+    2.3054rem +
+    6.9524vw,
+    8.5625rem
+  );
+  /* Cierre — sección 416,424 (M) → 1330,667 (D). */
+  --spacing-about-hero-glow-cierre-x: clamp(
+    26rem,
+    4.7821rem +
+    87.0476vw,
+    83.125rem
+  );
+  --spacing-about-hero-glow-cierre-y: clamp(
+    26.5rem,
+    20.8589rem +
+    23.1429vw,
+    41.6875rem
+  );
+
+  /*
    * FormField (design-extract.md § FormField): label→control gap 8 (D) / 7
    * (M); control's own padding [14,16], fixed — the design gives one pair,
    * not two frames, unlike the fluid tokens above.
