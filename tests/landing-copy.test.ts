@@ -22,6 +22,11 @@ interface PurposeBlock {
   copy: string
 }
 
+interface ServiceBlock {
+  name: string
+  brief: string
+}
+
 interface LandingCopy {
   landing: {
     hero: {
@@ -37,6 +42,15 @@ interface LandingCopy {
       why: PurposeBlock
       how: PurposeBlock
       what: PurposeBlock
+    }
+    services: {
+      eyebrow: string
+      consulting: ServiceBlock
+      software: ServiceBlock
+      cloud: ServiceBlock
+      automation: ServiceBlock
+      product: ServiceBlock
+      delivery: { label: string; copy: string }
     }
   }
 }
@@ -191,6 +205,114 @@ describe('landing copy · Propósito', () => {
        eyebrow. */
     for (const locale of [spanish, english]) {
       expect(locale.purpose.carouselLabel).toBe(locale.purpose.eyebrow)
+    }
+  })
+})
+
+describe('landing copy · Servicios', () => {
+  const AREAS = [
+    'consulting',
+    'software',
+    'cloud',
+    'automation',
+    'product',
+  ] as const
+
+  it('should hold the twelve keys in both locales', () => {
+    for (const locale of [spanish, english]) {
+      expect(locale.services.eyebrow).not.toBe('')
+      expect(locale.services.delivery.label).not.toBe('')
+      expect(locale.services.delivery.copy).not.toBe('')
+      for (const area of AREAS) {
+        expect(locale.services[area].name, area).not.toBe('')
+        expect(locale.services[area].brief, area).not.toBe('')
+      }
+    }
+  })
+
+  it('should hold the identical five names in both locales — ⚠️ O-01, not a missing translation', () => {
+    /*
+     * Roberto's 2026-09-08 instruction is that the five area names DO
+     * translate for this feature (unlike `services.md`'s "kept English on
+     * purpose" rule for the rest of the site) — but without the Spanish
+     * names supplied yet. English ships as the placeholder in both locales
+     * so the gap is visible rather than silently wrong. The day a Spanish
+     * name lands, this assertion is what forces the update instead of
+     * letting the two files drift apart unnoticed.
+     */
+    for (const area of AREAS) {
+      expect(english.services[area].name, area).toBe(
+        spanish.services[area].name
+      )
+    }
+
+    expect(AREAS.map(area => spanish.services[area].name)).toEqual([
+      'Technology Consulting & Strategy',
+      'Software & Digital Solutions',
+      'Cloud, Infrastructure & DevOps',
+      'Automation, Data & AI',
+      'Product, UI/UX & Experience',
+    ])
+  })
+
+  it('should translate every brief and the delivery copy between the locales', () => {
+    for (const area of AREAS) {
+      expect(english.services[area].brief, area).not.toBe(
+        spanish.services[area].brief
+      )
+    }
+
+    expect(english.services.delivery.copy).not.toBe(
+      spanish.services.delivery.copy
+    )
+    expect(english.services.eyebrow).not.toBe(spanish.services.eyebrow)
+  })
+
+  it('should carry the approved services.md briefs verbatim in each locale', () => {
+    expect(spanish.services.consulting.brief).toBe(
+      'Diagnosticamos tu situación real, diseñamos la solución y te decimos qué conviene hacer, incluso cuando la respuesta es hacer menos.'
+    )
+    expect(english.services.consulting.brief).toBe(
+      "We diagnose your actual situation, design the solution, and tell you what's worth doing, even when the answer is to do less."
+    )
+    expect(spanish.services.software.brief).toBe(
+      'Plataformas, sistemas internos, portales e integraciones construidos alrededor de cómo opera tu negocio, no al revés.'
+    )
+    expect(english.services.software.brief).toBe(
+      'Platforms, internal systems, portals, and integrations built around how your business actually works, not the other way around.'
+    )
+    expect(spanish.services.cloud.brief).toBe(
+      'Lo que sostiene todo una vez que está en producción: infraestructura, despliegues automatizados, monitoreo y seguridad. La parte que nadie nota hasta que hace falta.'
+    )
+    expect(english.services.cloud.brief).toBe(
+      "What holds everything up once it's live: infrastructure, automated deploys, monitoring and security. The part nobody notices until it's needed."
+    )
+    expect(spanish.services.automation.brief).toBe(
+      'Automatizamos lo repetitivo y convertimos tus datos en decisiones. AI donde sume, no solamente donde suene bien.'
+    )
+    expect(english.services.automation.brief).toBe(
+      'We automate the repetitive and turn your data into decisions. AI where it adds value, not where it sounds good.'
+    )
+    expect(spanish.services.product.brief).toBe(
+      'Convertimos tecnología compleja en algo que se usa sin manual. Producto y experiencia, de investigación a prototipo.'
+    )
+    expect(english.services.product.brief).toBe(
+      'We turn complex technology into something people use without a manual. Product and experience, from research to prototype.'
+    )
+    expect(spanish.services.delivery.copy).toBe(
+      'Y una capacidad que atraviesa las cinco: llevamos el proyecto de principio a fin, con alcance, tiempos, calidad y lanzamiento a nuestro cargo.'
+    )
+    expect(english.services.delivery.copy).toBe(
+      'And one capability runs through all five: we carry the project from start to finish, including scope, timelines, quality and launch.'
+    )
+  })
+
+  it('should give the delivery closer its own Pill label, distinct from the eyebrow', () => {
+    /* `design-extract.md` § 3 lists `Delivery` among the landing's Pill
+       instances — separate from `Servicios`/`Services`. */
+    for (const locale of [spanish, english]) {
+      expect(locale.services.delivery.label).toBe('Delivery')
+      expect(locale.services.delivery.label).not.toBe(locale.services.eyebrow)
     }
   })
 })

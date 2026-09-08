@@ -32,6 +32,33 @@
         "label": "What",
         "copy": "We design and build digital solutions around your business."
       }
+    },
+    "services": {
+      "eyebrow": "Services",
+      "consulting": {
+        "name": "Technology Consulting & Strategy",
+        "brief": "We diagnose your actual situation, design the solution, and tell you what's worth doing, even when the answer is to do less."
+      },
+      "software": {
+        "name": "Software & Digital Solutions",
+        "brief": "Platforms, internal systems, portals, and integrations built around how your business actually works, not the other way around."
+      },
+      "cloud": {
+        "name": "Cloud, Infrastructure & DevOps",
+        "brief": "What holds everything up once it's live: infrastructure, automated deploys, monitoring and security. The part nobody notices until it's needed."
+      },
+      "automation": {
+        "name": "Automation, Data & AI",
+        "brief": "We automate the repetitive and turn your data into decisions. AI where it adds value, not where it sounds good."
+      },
+      "product": {
+        "name": "Product, UI/UX & Experience",
+        "brief": "We turn complex technology into something people use without a manual. Product and experience, from research to prototype."
+      },
+      "delivery": {
+        "label": "Delivery",
+        "copy": "And one capability runs through all five: we carry the project from start to finish, including scope, timelines, quality and launch."
+      }
     }
   },
   "shell": {

@@ -2,8 +2,10 @@
 import {
   HeroSection,
   PurposeSection,
+  ServicesSection,
   useHeroContent,
   usePurposeContent,
+  useServicesContent,
 } from '@/features/landing'
 
 /**
@@ -17,6 +19,7 @@ import {
 const { t } = useI18n()
 const hero = useHeroContent()
 const purpose = usePurposeContent()
+const services = useServicesContent()
 
 useHead({ title: t('site.title') })
 </script>
@@ -24,4 +27,5 @@ useHead({ title: t('site.title') })
 <template>
   <HeroSection v-bind="hero" />
   <PurposeSection v-bind="purpose" />
+  <ServicesSection v-bind="services" />
 </template>
