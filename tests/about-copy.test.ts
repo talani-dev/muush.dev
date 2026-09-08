@@ -23,6 +23,11 @@ interface AboutCopy {
       headline: string
       intro: string
     }
+    work: {
+      eyebrow: string
+      headline: string
+      body: string
+    }
   }
 }
 
@@ -62,5 +67,39 @@ describe('about copy', () => {
     expect(en.intro).toBe(
       'We bring together the right talent for each project and give them freedom to choose which projects they join and where they work from. That flexibility is what holds our talent pool together, and what lets us deliver without carrying a heavy structure.'
     )
+  })
+})
+
+/**
+ * `about.work.*` — the Work with muush section's own three keys
+ * (feature 020). Unlike the Hero block above, only the **headline** arrived
+ * verbatim-approved in this session's launch brief; the body is this
+ * implementation's best-effort completion of a fragment `data-model.md` § 10
+ * preserves ("Si trabajas en tecnología...") — flagged here, not presented as
+ * a second confirmed string, and reported in the implementation summary for
+ * Clau/Roberto to confirm or replace.
+ */
+describe('about copy · about.work', () => {
+  const es = readLocale('es').about.work
+  const en = readLocale('en').about.work
+
+  it('should reuse the untranslated "Work with muush" eyebrow, identical to the footer item', () => {
+    expect(es.eyebrow).toBe('Work with muush')
+    expect(en.eyebrow).toBe('Work with muush')
+  })
+
+  it('should carry the approved headline verbatim in each locale', () => {
+    expect(es.headline).toBe(
+      'Tú eliges en qué proyectos entras, con quién y desde dónde.'
+    )
+    expect(en.headline).toBe(
+      'You choose which projects you join, who you work with, and where from.'
+    )
+  })
+
+  it('should hold a non-empty, translated body in each locale', () => {
+    expect(es.body).not.toBe('')
+    expect(en.body).not.toBe('')
+    expect(en.body).not.toBe(es.body)
   })
 })

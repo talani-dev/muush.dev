@@ -4,8 +4,7 @@
   },
   "pages": {
     "about": {
-      "title": "Nosotros · muush",
-      "work": "Work with muush"
+      "title": "Nosotros · muush"
     }
   },
   "about": {
@@ -13,6 +12,11 @@
       "eyebrow": "Nosotros",
       "headline": "El equipo se arma alrededor del proyecto.",
       "intro": "Reunimos al talento indicado para cada proyecto y le damos libertad de elegir en qué proyectos entra y desde dónde trabaja. Esa flexibilidad es lo que sostiene nuestro talent pool, y lo que nos permite entregar sin cargar una estructura pesada."
+    },
+    "work": {
+      "eyebrow": "Work with muush",
+      "headline": "Tú eliges en qué proyectos entras, con quién y desde dónde.",
+      "body": "Si trabajas en tecnología, diseño o producción y quieres sumarte a nuestro talent pool, cuéntanos qué haces. Te escribimos cuando haya un proyecto donde encajes."
     }
   },
   "landing": {
@@ -121,6 +125,90 @@
       "sending": "Enviando…",
       "success": {
         "title": "Listo, ya lo recibimos. Te respondemos por [correo/WhatsApp] en menos de 24 horas hábiles."
+      },
+      "error": {
+        "title": "No pudimos enviarlo. Escríbenos a support{'@'}muush.dev o por WhatsApp y lo resolvemos.",
+        "fallback": "support{'@'}muush.dev"
+      }
+    },
+    "application": {
+      "fields": {
+        "name": {
+          "label": "Nombre",
+          "errorRequired": "Escribe tu nombre"
+        },
+        "email": {
+          "label": "Correo",
+          "errorRequired": "Escribe tu correo",
+          "errorFormat": "Formato de correo inválido"
+        },
+        "areaRole": {
+          "label": "Área y rol",
+          "placeholder": "Área y rol",
+          "errorRequired": "Elige un área y un rol",
+          "areas": {
+            "it": "IT",
+            "product": "Product",
+            "projectManagement": "Project management",
+            "sales": "Sales",
+            "marketing": "Marketing",
+            "creative": "Creative"
+          },
+          "roles": {
+            "it": {
+              "placeholder": "Rol por confirmar"
+            },
+            "product": {
+              "placeholder": "Rol por confirmar"
+            },
+            "projectManagement": {
+              "placeholder": "Rol por confirmar"
+            },
+            "sales": {
+              "placeholder": "Rol por confirmar"
+            },
+            "marketing": {
+              "placeholder": "Rol por confirmar"
+            },
+            "creative": {
+              "placeholder": "Rol por confirmar"
+            }
+          }
+        },
+        "portfolio": {
+          "label": "Portafolio",
+          "placeholder": "https://tu-portafolio.com",
+          "errorFormat": "Ingresa una URL válida"
+        },
+        "linkedin": {
+          "label": "LinkedIn",
+          "placeholder": "https://linkedin.com/in/tu-usuario",
+          "errorFormat": "Ingresa una URL válida"
+        },
+        "cv": {
+          "label": "CV",
+          "placeholder": "Adjuntar CV · PDF",
+          "errorFormat": "Solo se aceptan archivos PDF",
+          "errorSize": "El archivo debe pesar máximo 5MB",
+          "errorRequired": "Adjunta tu CV"
+        },
+        "contactPreference": {
+          "label": "¿Cómo prefieres que te contactemos?",
+          "options": {
+            "email": "Correo",
+            "whatsapp": "WhatsApp"
+          }
+        },
+        "whatsapp": {
+          "label": "Número de WhatsApp",
+          "errorRequired": "Escribe tu número",
+          "errorDigits": "Deben ser 10 dígitos"
+        }
+      },
+      "submit": "Enviar",
+      "sending": "Enviando…",
+      "success": {
+        "title": "Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes."
       },
       "error": {
         "title": "No pudimos enviarlo. Escríbenos a support{'@'}muush.dev o por WhatsApp y lo resolvemos.",
