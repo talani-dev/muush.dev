@@ -681,3 +681,189 @@ precargado a una ruta, un ancla o un ítem sin destino.
   la ronda 1 y aprobación de la ronda 2, ambas intactas):
   `docs/harness/progress/review_site_shell.md`.
 - `feature_list.json`: feature id 3 status `reviewing` → `done`.
+
+---
+
+## 2026-09-07 — Feature 6: site_background_and_brand_chrome (done)
+
+`sdd: true`. Ciclo SDD completo en
+`specs/006-site-background-and-brand-chrome/` (spec, plan, research,
+data-model, contracts, quickstart, 29 tasks). **Tres fundaciones de chrome que
+ninguna feature era dueña**, agrupadas porque comparten un solo ciclo de
+review: el fondo del sitio, la tipografía de marca y el favicon. Cierra el flag
+de alcance **A-03** que la feature 3 había dejado abierto.
+
+### Lo que shippeó
+
+- **Fondo · 4 capas** en el orden del frame `SdEJx`: base `ink-500` → glows de
+  sección (`--layer-glow: -2`) → papel punteado de página completa
+  (`--layer-dots: -1`) → contenido. `DotGrid.vue` es **un solo elemento con un
+  `radial-gradient` repetido**; el `Dot tile` de 288px y sus 90 instancias del
+  archivo de diseño son artefacto de autoría de Pencil y no aparecen en el
+  código ni tienen token. `SectionBackdrop.vue` es el contenedor por sección, y
+  su comentario de doc carga el contrato de sección completo.
+- **El layout es el único contexto de apilamiento de la página**
+  (`relative isolate overflow-x-clip`) y renderiza `<DotGrid />` una vez. Con
+  eso, **un glow escrito dentro de una sección se pinta debajo de una hoja
+  declarada en el layout**: sin registro, sin lista central de los 21, sin
+  estado de cliente, sin JavaScript. Era el requisito explícito de Roberto del
+  2026-09-07.
+- **Tipografía**: `@nuxt/fonts` 0.14.0 con Poppins 600 e Instrument Sans
+  400/500/600, `throwOnError: true`, binarios descargados en build y servidos
+  desde `/_fonts`. Se borraron los cuatro `@font-face` escritos a mano (que
+  declaraban pesos que el diseño no usa y apuntaban a archivos inexistentes),
+  el TODO y `public/fonts/`. **El sitio se ve por primera vez en su propia
+  tipografía**; todo lo revisado hasta ahora se había revisado en la fuente de
+  sistema.
+- **Marca**: `public/favicon.svg` es el isotipo en el encuadre cuadrado que
+  `branding.md` ya documentaba (`0 0 100 100` + `translate(3,-8)`), adaptativo
+  por `prefers-color-scheme`; `favicon.ico` borrado; el ícono declarado en
+  `app.head.link` para toda página en ambos idiomas.
+- `./init.sh` exit 0 · **242 tests en 22 archivos** (216 → 242) · 3 entradas
+  nuevas en el catálogo · 5 tokens nuevos, **cero ediciones a tokens
+  existentes**.
+- **`SectionGlow.vue`: cero líneas cambiadas.** Se consume tal como lo dejó la
+  feature 5.
+
+### D-01 y la regla que salió de revertirlo — R32
+
+A media especificación apareció una discrepancia: el frame `SdEJx` tiene
+**once** glows en Landing y `design-extract.md` § 10 documenta **doce**. La
+primera pasada de la spec la resolvió **a favor del documento**.
+
+**Roberto la revirtió el 2026-09-07**, y esa reversión es más importante que la
+discrepancia: **el `.pen` es el artefacto más actualizado y la fuente de verdad
+de todo lo visual; `docs/business/` es derivado y puede quedarse atrás. Cuando
+se contradicen, gana el `.pen` y lo que se corrige es el documento** — nunca al
+revés, y nunca "se registra la discrepancia y se sigue con el documento", que
+deja el error vivo en el archivo que todos leen.
+
+Con eso: Landing tiene **once** glows, el total del sitio es **21 y no 22**, y
+`Glow origen` es documentación vieja, no un nodo que falte encontrar.
+Corregir § 10 es de Clau.
+
+La segunda mitad de R32 es la operativa y la que muerde: **el puente MCP de
+Pencil solo existe en la sesión interactiva principal.** Un subagente no puede
+verificar la fuente de verdad por su cuenta — no es disciplina, la herramienta
+no responde. **Extraer valores del `.pen` es responsabilidad del líder**, que
+los pasa hacia abajo en el prompt; y **si a un subagente le falta un valor, lo
+pide**, no cae al documento.
+
+### Los tres hallazgos de implementación — R33, R34, R35
+
+**R33 · Storybook llevaba desde `6d50ad8` pisando su propio documento de
+manager, por dos rutas a la vez.** `storybook-static/index.html` **no era el
+catálogo**: eran los 1480 bytes del `public/index.html` del sitio, el
+`<meta http-equiv="refresh" content="0; url=/es">` de R25. El catálogo
+construido redirigía desde su propia raíz a una página que no existe dentro de
+él, y `public/favicon.svg` pisaba al ícono de Storybook por la misma vía —
+que es por qué la pestaña del catálogo venía mostrando el logo de Nuxt. Hay que
+apagar **dos** copias: `staticDirs` (ahora mapeado a `/brand`) y **el
+`publicDir` de Vite**, que por defecto vale `<root>/public`, el mismo
+directorio, y lo copiaba de nuevo desde el build del preview (ahora `false`).
+Sobrevivió meses porque **`pnpm storybook:build` sale con código 0**:
+sobreescribir el documento de entrada no es un error de build. El reviewer lo
+reprodujo reconstruyendo Storybook desde `git show HEAD:.storybook/main.ts` y
+confirmó el stub de 1480 bytes.
+
+**R34 · Una captura headless no sirve como evidencia de layout a un ancho
+dado.** A `--window-size=390,844` las capturas salían con el texto cortado en
+el borde derecho: se veía idéntico a `overflow-x: clip` recortando contenido,
+que es justo lo que la spec prohíbe. **Era falso.** Chrome renderiza con un
+viewport más ancho que el `--window-size` pedido y **recorta la imagen**.
+Medido dentro de la página no hay un solo elemento que rebase el viewport, ni
+con el clip puesto ni quitándolo en caliente. La salida: cargar la página en un
+`<iframe>` del ancho exacto dentro de una página contenedora — el `<iframe>` sí
+fija el viewport de layout. El reviewer volvió a medirlo en **11 anchos sobre
+las 4 rutas**. Es la disciplina de R25 aplicada a los píxeles: la pregunta es
+"¿qué mide el documento?", no "¿qué parece la foto?".
+
+**R35 · `@nuxt/fonts` no necesitó `global: true`.** La inyección por detección
+de uso emitió las caras sola; el fallback documentado en `research.md` § R4
+quedó sin usar. Y los binarios **no son uno por peso**: Google sirve Instrument
+Sans como fuente variable, así que 400/500/600 comparten archivo por subset —
+4 binarios, 10 declaraciones `@font-face` (8 caras + 2 fallbacks métricos).
+Cualquier verificación que cuente archivos esperando uno por peso falla.
+
+### La trampa del build lock — para el siguiente agente
+
+El **primer** `./init.sh` del reviewer salió 1. La causa no tenía nada que ver
+con la feature: **un `pnpm dev` muerto había dejado un lock de build de Nuxt**
+(PID 60879), y como `tests/global-setup.ts` invoca `pnpm generate`, la suite
+entera se cayó con un error que no nombra nada relevante. Una corrida limpia
+salió 0. **Costó una pasada completa en rojo falso.** Si `pnpm test` o
+`pnpm generate` fallan con algo que no se parece a ningún cambio hecho, lo
+primero es buscar un `pnpm dev` huérfano.
+
+### La verificación, y su límite declarado
+
+`happy-dom` no pinta, así que **ninguna prueba de este repo puede afirmar que
+un glow se renderizó debajo de un punto** (`research.md` § R7). Se verificó en
+tres niveles, cada uno haciendo solo lo que puede: pruebas de componente
+(tokens, inercia, un solo elemento), aserciones sobre `.output/public` (las
+capas en el HTML prerenderizado de las 4 rutas, las caras de fuente
+same-origin, cero `gstatic`/`googleapis`, el ícono por ruta) y **ojos sobre el
+catálogo construido**, que es donde el orden de pintado se ve: los puntos
+continúan **a través** del bloom rojo, con el texto encima.
+
+**A-08 quedó cerrado a medias, y así se reportó.** Chrome **sí** honra
+`prefers-color-scheme` dentro del SVG del favicon — verificado renderizando el
+archivo real a 16/32/64/128px bajo ambos esquemas, con
+`--blink-settings=preferredColorScheme`. Lo que **no** se pudo ver es la
+pestaña del navegador: la captura de pantalla no está permitida para esa shell
+y Chrome headless no tiene UI de pestaña. **Se declaró el límite en vez de
+fabricar la evidencia**, y el reviewer lo aceptó como no bloqueante porque la
+mitigación es estructural: los colores del esquema claro son el valor por
+defecto incondicional del archivo, así que un navegador que ignore la consulta
+igual muestra una marca correcta. **Una mirada de Roberto a una pestaña lo
+cierra.**
+
+### Lo que sigue abierto
+
+- 🔴 **A-10 · no hay ni un glow colocado en una página real.** Lo que shippeó
+  son las dos capas de página completa más el mecanismo, demostrado en el
+  catálogo con el tríptico real del Hero. **Hasta que aterrice la primera
+  sección, el sitio muestra base + puntos y ningún glow. Eso es correcto.**
+- 🔴 **El modo de falla de R28 es silencioso.** Si una sección futura crea un
+  contexto de apilamiento (`transform`, `filter`, `opacity < 1`, `isolation`,
+  `contain: paint`, `sticky`/`fixed` con `z-index`) o se pinta un fondo opaco,
+  sus glows saltan **encima** de los puntos sin que nada falle. La regla vive
+  en tres lugares: el comentario de `SectionBackdrop.vue`, el `quickstart.md`
+  de la feature y `rules.md` § R28.
+- 🟡 **`SectionGlow.vue` carga código muerto que esta feature no tocó a
+  propósito**: su comentario repite el "22 / 12 en Landing" viejo, y su
+  variante `'920'` con el token `--spacing-glow-920` existía solo para
+  `Glow origen`. FR-011 y SC-006 lo dejaron intacto. Ojo al programarlo:
+  `SectionGlow.test.ts` afirma que **todo** token declarado es alcanzable, así
+  que quitar el token obliga a tocar esa prueba. **De Roberto.**
+- 🟡 **`design-extract.md` § 10 sigue con el doceavo glow y el total de 22.**
+  La fila, el total y el bullet de "Observaciones". **De Clau.**
+- 🟡 **El catálogo pide las fuentes al CDN de Google** (A-05). Es tooling local
+  y nunca se despliega; el artefacto del sitio sigue autocontenido. Revertirlo
+  cuesta un archivo.
+- 🟡 **`pnpm generate` ahora tiene una dependencia de red en tiempo de build**
+  (A-09), aprobada por Roberto. Un build en frío y sin red produce un sitio sin
+  caras embebidas — por eso `throwOnError: true`, para que falle en vez de
+  publicar tipografía de respaldo en silencio.
+- 🟡 **`<body>` no fija familia tipográfica.** Cada elemento nombra
+  `font-instrument` o `font-poppins`, que es la convención vigente y funciona,
+  pero un nodo de texto suelto futuro caería en la pila del sistema.
+- 🟡 **Desbordamiento vertical de los glows.** `overflow-x: clip` resuelve el
+  eje horizontal, que es lo que piden los glows en x negativa del diseño. Un
+  glow que se extienda por **debajo** del final de la página sí agregaría
+  altura de scroll. Es de quien coloque el primero.
+- Siguen abiertos de ciclos anteriores: A-01/A-02 (breakpoint 1024 y tope 1440
+  sin fuente de diseño), decisiones #2 (link de Google Calendar) y #3 (FAQ), el
+  footer de escritorio que se pasa 52px en el `.pen`, el filete fuera de paleta
+  (R11) y la forma de la URL de LinkedIn (R13). **De Clau**, salvo la
+  reescritura de documento índice en CloudFront (R21), que es **de Roberto**.
+
+- Resumen completo del implementer:
+  `docs/harness/progress/impl_site_background_and_brand_chrome.md`. Verdict del
+  reviewer: `docs/harness/progress/review_site_background_and_brand_chrome.md`
+  — **aprobado**, con cada afirmación reverificada contra artefactos y no
+  contra el reporte (diff vacío de `SectionGlow.vue`, conteos 21/11 en todo lo
+  nuevo, cero glows en los 4 documentos prerenderizados, orden de pintado
+  medido en el catálogo construido, cero `gstatic`/`googleapis` en
+  `.output/public`, y la aritmética de la fuente variable confirmada).
+- `feature_list.json`: feature id 6 status `reviewing` → `done`.
