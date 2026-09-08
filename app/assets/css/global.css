@@ -419,6 +419,19 @@
      § 2.3) — not an invented number. */
   --services-canvas-h: 56.875rem;
 
+  /*
+   * Feature 23, item 4 (round 3). The leader read the real `.pen` node
+   * (`GiLTU`, 1440×1020, under `Landing ES · v4 (radiales)`) directly:
+   * the canvas's own coordinate space is the FULL 1440px frame, not the
+   * 1280px `--services-closer-w` box (`vUMC8`) nested 80px in from each
+   * edge inside it — two different boxes in the design, previously
+   * conflated into one token. Every node/Pill/closer offset (`--services-
+   * node-*-x/-y`, `--services-pill-x/-y`, `--services-closer-x/-y/-w`) was
+   * already authored relative to THIS frame's own origin and is
+   * unaffected; only `.canvas` itself needed its own width.
+   */
+  --services-canvas-w: 90rem;
+
   /* ⚠️ O-02, owner Clau. Seeded with the same hairline family as Propósito's
      connector lines (bone-100 @24%, 1px) pending a real stroke colour/width. */
   --services-link-color: color-mix(in srgb, var(--bone-100) 24%, transparent);

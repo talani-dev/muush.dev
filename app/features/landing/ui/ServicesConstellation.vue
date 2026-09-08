@@ -14,8 +14,10 @@ import ServiceItem from './ServiceItem.vue'
  * be one (`services.md`: "colocados a mano"). Unlike Propósito's columnar
  * layout, there is no percentage geometry here: the design supplies exactly
  * one desktop frame and the five positions are non-linear on both axes, so
- * this whole canvas is one `position: relative` box at fixed pixels, centred
- * within the content box (`data-model.md` § 2).
+ * this whole canvas is one `position: relative` box at fixed pixels, anchored
+ * to `<main>`'s own border box — a documented full-bleed exception, see the
+ * `<style scoped>` note on `.canvas` — rather than to its padded content box
+ * (`data-model.md` § 2).
  *
  * Every node's radar centre and its text block are generated from the same
  * five `--services-node-{n}-x/-y` token pairs (CSS). The four connectors read
@@ -27,9 +29,10 @@ import ServiceItem from './ServiceItem.vue'
  * directly onto each `<line>`. Either way there are no four independent
  * shapes, only one relation over five known points (spec FR-008).
  *
- * The `<svg>`'s `viewBox` is the canvas's own fixed content box (1280×910),
- * so a raw attribute number and the `rem`-token position of the same node
- * agree pixel-for-pixel — both ultimately come from the same confirmed centre
+ * The `<svg>`'s `viewBox` is the canvas's own fixed frame (1440×910, feature
+ * 23 round 3 — see the `<style scoped>` note on `.canvas`), so a raw
+ * attribute number and the `rem`-token position of the same node agree
+ * pixel-for-pixel — both ultimately come from the same confirmed centre
  * (`data-model.md` § 2.1), just read through two different consumption paths.
  *
  * No hover-reveal state exists here at all — every node is always visible, so
@@ -77,7 +80,7 @@ const connectors = connectorEndpoints(SERVICE_NODE_CENTRES)
     -->
     <svg
       aria-hidden="true"
-      viewBox="0 0 1280 910"
+      viewBox="0 0 1440 910"
       class="connectors pointer-events-none absolute inset-0 size-full"
     >
       <line
@@ -91,7 +94,16 @@ const connectors = connectorEndpoints(SERVICE_NODE_CENTRES)
       />
     </svg>
 
-    <div class="closer absolute flex flex-col gap-services-item-gap">
+    <!--
+      Pill-then-copy on ONE row (feature 23, item 5 — `.pen` frame `Giamn`
+      draws `Pill delivery` and `Copy` at the same y). `items-start` matters
+      as much as `flex-row`: without it the row's `align-items` default
+      (`stretch`) is what was making the Pill fill the whole 1280px closer
+      instead of sizing to its own content.
+    -->
+    <div
+      class="closer absolute flex flex-row items-start gap-services-item-gap"
+    >
       <Pill :label="deliveryLabel" />
       <p class="font-instrument text-copy text-bone-100">{{ deliveryCopy }}</p>
     </div>
@@ -99,10 +111,49 @@ const connectors = connectorEndpoints(SERVICE_NODE_CENTRES)
 </template>
 
 <style scoped>
+/*
+ * Feature 23, item 4 — round 3, the real fix. The leader read the `.pen`
+ * node directly (`GiLTU`, 1440×1020, `Landing ES · v4 (radiales)`, confirmed
+ * — not the `DEMO spotlight cursor` copy): the canvas's own coordinate space
+ * is the FULL 1440px frame, not the 1280px `--services-closer-w` box nested
+ * 80px in from each edge inside it. Rounds 1 and 2 both reused
+ * `--services-closer-w` for `.canvas` itself — conflating two different
+ * boxes in the design — and centred that 1280px (or fluid-shrunk) box
+ * inside `<main>`'s *padded* content box. That is 80px narrower than the
+ * frame, which is exactly why node 5's confirmed text (`--services-node-5-x`
+ * + `--spacing-services-text-w`, both correct and untouched) rendered 18px
+ * past the viewport at 1440: it was positioned correctly relative to the
+ * 1440px frame, inside a canvas that was itself wrongly anchored 80px too
+ * far right.
+ *
+ * The fix breaks `.canvas` out of `<main>`'s `--spacing-page` padding —
+ * approved by Roberto as a documented, one-section exception to the
+ * "no horizontal padding, inherits `<main>`'s `px-page`" contract feature 14
+ * already reviewed. `calc(100% + 2 * var(--spacing-page))` re-adds the
+ * padding this element's own containing block (this section's content box,
+ * itself `<main>`'s content box — the section carries no padding of its
+ * own) had already subtracted, yielding `<main>`'s own BORDER box width at
+ * any viewport; `min()` against the fixed 1440px frame width caps it there
+ * once `<main>` is itself capped by `max-w-shell-max`. The matching
+ * `margin-inline: calc(-1 * var(--spacing-page))` shifts the box left/right
+ * by exactly the padding this formula added back, landing its rendered edges
+ * on `<main>`'s own border box — not its content box — at every width:
+ *
+ * | Viewport | `<main>` border box | `.canvas` (this formula) |
+ * |---|---|---|
+ * | 1024 (uncapped) | 0 → 1024 | 0 → 1024 (full-bleed, matches) |
+ * | 1440 (frame) | 0 → 1440 | 0 → 1440 (matches the `.pen` exactly) |
+ * | 1536/1600/1920 (capped, centred) | e.g. 48 → 1488 | 48 → 1488 (matches) |
+ *
+ * Every node/Pill/closer offset keeps reading the SAME tokens as before
+ * (`--services-node-*-x/-y`, `--services-pill-x/-y`, `--services-closer-*`)
+ * — they were already authored relative to the 1440px frame's own origin,
+ * which is now exactly where `.canvas`'s local (0,0) lands.
+ */
 .canvas {
-  width: var(--services-closer-w);
+  width: min(var(--services-canvas-w), calc(100% + 2 * var(--spacing-page)));
   height: var(--services-canvas-h);
-  margin-inline: auto;
+  margin-inline: calc(-1 * var(--spacing-page));
 }
 
 .eyebrow {
