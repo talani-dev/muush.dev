@@ -6,20 +6,36 @@ import chevronDown from '@/assets/icons/chevron-down.svg?raw'
  * `TextField`, plus the `chevron-down` affordance
  * (`docs/business/landing/design-extract.md` § FormField).
  *
- * A native `<select>`, not a custom listbox: the seven-field form needs no
- * custom option rendering, and a native control keeps keyboard and
- * assistive-technology behaviour for free.
+ * A native `<select>`, not a custom listbox: a custom control needs no
+ * bespoke option rendering, and a native control keeps keyboard and
+ * assistive-technology behaviour for free — the same reasoning feature 20's
+ * "Área y rol" grouped select relies on (plan.md D-4) rather than
+ * reproducing the `.pen`'s two-column popover, which no browser can draw
+ * from a native `<optgroup>` anyway.
+ *
+ * `groups` is additive to the existing flat `options` shape: exactly one of
+ * the two is supplied per call site. `ContactForm`'s "¿cómo te identificas?"
+ * field keeps passing `options` with zero changes to its own call site.
  */
 interface Option {
   value: string
   label: string
 }
 
+interface OptionGroup {
+  label: string
+  options: Option[]
+}
+
 interface Props {
   id: string
   label: string
   modelValue: string
-  options: Option[]
+  /** Existing flat shape — untouched. */
+  options?: Option[]
+  /** NEW — when supplied, renders `<optgroup>` per group instead of flat
+   * `<option>`s (data-model.md § 7). */
+  groups?: OptionGroup[]
   /** The unselected placeholder option's label. */
   placeholder: string
   error?: string
@@ -32,6 +48,7 @@ const {
   label,
   modelValue,
   options,
+  groups,
   placeholder,
   error,
   required = false,
@@ -59,13 +76,30 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
         @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
       >
         <option value="" disabled hidden>{{ placeholder }}</option>
-        <option
-          v-for="option in options"
-          :key="option.value"
-          :value="option.value"
-        >
-          {{ option.label }}
-        </option>
+        <template v-if="groups">
+          <optgroup
+            v-for="group in groups"
+            :key="group.label"
+            :label="group.label"
+          >
+            <option
+              v-for="option in group.options"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </optgroup>
+        </template>
+        <template v-else>
+          <option
+            v-for="option in options"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </template>
       </select>
       <span
         aria-hidden="true"
