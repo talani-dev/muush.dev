@@ -1,9 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128">
-    <path d="M50.4 78.5a75.1 75.1 0 0 0-28.5 6.9l24.2-65.7c.7-2 1.9-3.2 3.4-3.2h29c1.5 0 2.7 1.2 3.4 3.2l24.2 65.7s-11.6-7-28.5-7L67 45.5c-.4-1.7-1.6-2.8-2.9-2.8-1.3 0-2.5 1.1-2.9 2.7L50.4 78.5Zm-1.1 28.2Zm-4.2-20.2c-2 6.6-.6 15.8 4.2 20.2a17.5 17.5 0 0 1 .2-.7 5.5 5.5 0 0 1 5.7-4.5c2.8.1 4.3 1.5 4.7 4.7.2 1.1.2 2.3.2 3.5v.4c0 2.7.7 5.2 2.2 7.4a13 13 0 0 0 5.7 4.9v-.3l-.2-.3c-1.8-5.6-.5-9.5 4.4-12.8l1.5-1a73 73 0 0 0 3.2-2.2 16 16 0 0 0 6.8-11.4c.3-2 .1-4-.6-6l-.8.6-1.6 1a37 37 0 0 1-22.4 2.7c-5-.7-9.7-2-13.2-6.2Z" />
-    <style>
-        path { fill: #000; }
-        @media (prefers-color-scheme: dark) {
-            path { fill: #FFF; }
-        }
-    </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <title>muush</title>
+  <!--
+    The muush isotipo (lockup C — isotipo only), as the site's one and only
+    icon. Geometry from app/assets/logo/README.md and docs/business/branding.md
+    § Isotipo; the three brand SVGs in app/assets/logo/ carry exactly the same
+    circle, path, stroke-width and linecap.
+
+    ## Why a 0 0 100 100 viewBox and a translate
+
+    The brand artboard is 70.5 × 39.5 (`viewBox="14.5 38.5 70.5 39.5"`), and a
+    favicon is square. Stretching a 70.5 × 39.5 artboard to fill a square is
+    the failure this framing exists to avoid, so the mark is *placed* in a
+    square instead of scaled into one. The framing is not invented here:
+    branding.md § Isotipo already records it as "viewBox avatar/favicon:
+    0 0 100 100 con transform translate(3,-8)".
+
+    Check, with stroke-width 12 (the stroke extends 6 either side of the path):
+    the art spans x 15→85 and y 38.5→78; after translate(3, -8) that is
+    x 18→88 and y 30.5→70 inside a 100 × 100 box — centred to within half a
+    unit, undistorted, with the round terminals intact.
+
+    ## Why literal hex is correct in this file, and only in this file
+
+    A standalone document in public/ is outside the app's CSS and cannot read a
+    custom property, which is why the three brand SVGs in app/assets/logo/
+    carry literals too. The values are quoted from branding.md:
+    ink-500 #262626, bone-100 #FBF8F6, red-400 #CF3147.
+
+    ## Why the light scheme is the default rather than a media query branch
+
+    Support for prefers-color-scheme inside an SVG favicon varies, and Safari
+    does not use SVG favicons at all. Making the light-chrome colours the
+    unconditional declaration means a browser that ignores the query still
+    renders a correct, legible mark rather than nothing or the wrong one
+    (spec A-08). The dot stays red-400 in both schemes — branding.md
+    § Sobre qué fondo va qué trazo.
+  -->
+  <style>
+    .stroke { stroke: #262626; }
+    @media (prefers-color-scheme: dark) {
+      .stroke { stroke: #FBF8F6; }
+    }
+  </style>
+  <g transform="translate(3, -8)">
+    <circle cx="21" cy="45" r="6.5" fill="#CF3147" />
+    <path
+      class="stroke"
+      stroke-linecap="round"
+      stroke-width="12"
+      d="M21 72a17 17 0 0 1 34 0 12 12 0 0 1 24 0"
+    />
+  </g>
 </svg>
