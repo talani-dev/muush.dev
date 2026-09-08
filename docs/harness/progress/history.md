@@ -867,3 +867,159 @@ cierra.**
   medido en el catálogo construido, cero `gstatic`/`googleapis` en
   `.output/public`, y la aritmética de la fuente variable confirmada).
 - `feature_list.json`: feature id 6 status `reviewing` → `done`.
+
+---
+
+## 2026-09-07 — Feature 8: cursor_spotlight (done)
+
+**Ciclo SDD completo**: `spec_ready` → ⏸ aprobación de Roberto → `in_progress`
+→ `implementer` (29 tareas, 7 fases) → `reviewing` → `reviewer` **RECHAZA** →
+`in_progress` → corrección → `reviewing` → `reviewer` **APRUEBA** → `done`.
+
+La luz roja que sigue al puntero por toda la página, más el brillo que le da al
+papel punteado por debajo (`ui-map.md` § 10, fila 1; frame `gViAx`). Compone
+sobre la feature 6 sin tocarla: `DotGrid.vue`, `SectionBackdrop.vue`,
+`SectionGlow.vue`, `SectionGlow.stories.ts`, `SectionGlow.test.ts` e `i18n/`
+tienen **cero líneas cambiadas**, verificado con `git diff` por el implementer
+y de nuevo por el reviewer.
+
+- **Entregado**: `app/shared/ui/CursorSpotlight.vue` (raíz → beam → window →
+  lit; sin props, sin imports), `app/shared/logic/useCursorSpotlight.ts`
+  (primer habitante real de esa carpeta), sus dos suites, dos stories
+  (`Pinned` + `Live`), **9 tokens nuevos**, el layout cableado, el `include` de
+  `vitest.config.ts` extendido y aserciones **aditivas** sobre el artefacto.
+- **Gates**: 102 archivos en Biome, **24 archivos / 276 pruebas** (desde
+  22/242), `generate`, `storybook:build`, `./init.sh` **exit 0**. Ninguna
+  prueba existente modificada, debilitada ni borrada.
+- **§ R28 enmendada a tres niveles negativos** (§ R37): `--layer-glow` → −3,
+  `--layer-dots` → −2, nuevo `--layer-spotlight` → −1. Los dos tokens
+  existentes conservan su **nombre**, que es exactamente por qué ningún
+  consumidor cambió.
+
+### El rechazo de la ronda 1, dicho en claro
+
+El reviewer rechazó por **un comentario que afirmaba un hecho falso sobre CSS**.
+El código era correcto; la razón registrada no. Yo había escrito que un
+fallback `50%` dentro de `mod()` *"invalidaría silenciosamente la declaración"*
+— lo **deduje** del aviso de `research.md` § R3 en vez de medirlo, y es falso:
+`CSS.supports(...)` devuelve `true` y `mod()` acepta un porcentaje.
+
+Vale la pena dejarlo escrito tal cual: **es el defecto más barato de corregir y
+el más caro de dejar**, porque el siguiente agente razona a partir de él y no
+tiene forma de saber que nadie lo midió. El gate lo atrapó; el arnés funcionó.
+
+La razón verdadera **sí** verificada: *un porcentaje se resuelve contra la caja
+de cada elemento*. El beam mide 660px y la hoja iluminada 756px, así que el
+mismo `50%` vale 330 donde lo usa la luz y 378 donde lo usa el registro, y las
+dos mitades dejan de coincidir.
+
+- **La coincidencia del `50%`**, que es lo que hace este caso instructivo: a ese
+  valor **ninguna de las dos hipótesis es falsable**, porque 378 − 330 = 48 son
+  exactamente dos pasos de retícula y el `mod()` cancela la discrepancia. Tanto
+  mi afirmación original como la evidencia de la ronda 1 del reviewer eran
+  indistinguibles ahí. **55%** discrimina (medido −13.8; caja propia predice
+  −13.8, caja declarante −9) y el reviewer agregó **70%** como segundo
+  discriminador independiente (medido −7.2; caja propia −7.2, declarante −12.0).
+  Dos valores independientes, misma conclusión.
+
+### Reglas nuevas — **R40–R45**
+
+R36–R39 se reverificaron una por una y **quedan vigentes**; se levantó el
+aviso de "aún no vigente" de la § R37, que ya está en el árbol.
+
+- **R40** · Nuxt inlinea el CSS con scope de un componente en cada documento
+  prerenderizado de la ruta **aunque el `v-if` no lo renderice**. Una aserción
+  de ausencia tiene que acotarse al `<body>`; sobre el documento completo
+  reprueba a la feature por enviar justo lo que debe.
+- **R41** · Leer `window.scrollX` dentro de un `requestAnimationFrame` fuerza
+  estilo **aunque sea lo primero del callback**: el rAF corre antes del pase de
+  estilo del cuadro. Corrige al `research.md` § R2 de esta feature, que pedía
+  leer-primero-escribir-después. Medido: **≈609 actualizaciones forzadas por 5s**
+  con el orden que pedía la spec, contra **≈0** con el offset cacheado que se
+  publicó. El reviewer lo reprodujo por su cuenta (609 vs mi ≈600, 2%).
+- **R42** · `mask-repeat` vale `repeat` por defecto: un degradado de máscara se
+  tesela. No molestó hasta ahora porque la única máscara previa
+  (`BotonPrimario.vue`) es uniforme.
+- **R43** · Una composable con listeners de `window` se **filtra entre pruebas
+  del mismo archivo** — `happy-dom` da un solo `window` por archivo. Produjo un
+  rojo falso que señalaba al sujeto y no al arnés.
+- **R44** · La contrapartida que le faltaba a la § R34: el viewport **sí** se
+  fija con `Emulation.setDeviceMetricsOverride` del protocolo de DevTools, y de
+  una captura **sí** se puede medir color (nunca layout). Node 22+ trae
+  `WebSocket` global, así que el cliente son ~80 líneas y **cero dependencias**.
+- **R45** · Lo que este repositorio verifica es **Chrome**. `mod()`,
+  `mask-image` y `overflow: clip` no están verificados fuera de él. Donde
+  `mod()` no exista, **la declaración `transform` completa se invalida y se ven
+  puntos dobles**. Se aceptó publicar así —el efecto es decorativo, solo de
+  escritorio, no se pierde contenido ni se rompe interacción— pero es **lo más
+  probable que sorprenda a alguien que abra Safari**, y el fallback ya está
+  escrito y costeado en `research.md` § R3.
+
+### Medido, no supuesto
+
+Todo contra `.output/public` de un `pnpm generate` real, servido por HTTP,
+desde dentro de la página. Nada se juzgó por una captura.
+
+- Orden de pintado `−3 / −2 / −1 / auto`; beam centrado exactamente en el
+  puntero; máscara de radio 330px, el mismo de la luz.
+- **SC-002 en píxeles**: dentro del radio los puntos miden luma **84** sobre
+  papel **55** (separación **29**); fuera, **60** sobre **38** (separación
+  **22**) — más brillantes **y** más nítidos. La derivación de la § R38 salió
+  **exacta**: predecía ≈133 R y el píxel central de un punto iluminado mide
+  `rgb(133, 43, 56)`. El reviewer midió en otra posición y obtuvo separación
+  29.3 contra mi 29.0.
+- **SC-005**: 2147 eventos de puntero → **301 actualizaciones** en 5s,
+  `Layout: 0`, `Paint: 0` en todas las trazas.
+- Registro de los puntos iluminados exacto a ±1px en 21 celdas consecutivas
+  cruzando el borde del radio; los tres estados apagados sin elemento ni
+  listener; el cambio de `prefers-reduced-motion` **sin recargar**.
+
+### Excepción registrada al Artículo V
+
+`CursorSpotlight.vue` mide **286 líneas** (`wc -l`; 277 no vacías) contra el
+límite de 200, de las cuales **110 son código**. **No se reestructuró**: partir
+root → beam → window → lit rompe la cadena de herencia de `--spotlight-beam-*`
+y cambiaría un archivo documentado por uno roto. Queda registrada en dos
+lugares — arriba del propio archivo, donde alguien que lea el Artículo V contra
+él se la va a encontrar, y como cuarta fila de la tabla *Complexity Tracking*
+de `plan.md`, que es donde la Constitución (§ *Compliance Review*) exige que
+viva una justificación. La fila **cita y corrige** el "~90 lines" de
+`plan.md:111` en vez de reescribirlo, para no destruir la evidencia de que la
+estimación estaba mal ni romper el C7.
+
+> ⚠️ El número crudo **se queda viejo cada vez que se edita un comentario, y ya
+> pasó una vez**: se escribió "~265" midiendo *antes* de agregar la propia nota
+> de excepción. Mismo error que el "~90" que corrige. Solo el **110** es
+> estable, y es la cifra que le importa a la cláusula de remedio del Artículo V.
+
+### Límites declarados (no bloqueantes, se cierran solos)
+
+- **`z-index: -3` se midió en el catálogo, no en el sitio**: ninguna página
+  renderiza todavía un `SectionBackdrop`. Lo cierra la primera feature de
+  sección.
+- **El scroll necesitó un espaciador inyectado**: las dos páginas stub miden un
+  viewport de alto. Lo que se midió es el mecanismo.
+- **Un solo navegador** — ver § R45.
+
+### Pendientes de **Clau**
+
+- 🟡 `--dot-paper-lit-color` (**A-03**, § R38) — **UNVERIFIED**. Ningún mockup
+  estático puede dibujar un brillo que responde al puntero. Derivado como la
+  receta base pintada dos veces (`1 − (1 − 0.12)² = 22.6%`) y **medido exacto**.
+  Token delante: cambiarlo cuesta una línea.
+- 🟡 `--duration-spotlight-fade` (**A-08**) — **UNVERIFIED**, `0.2s`, mismo
+  trato que los 2.4s del ping del radar.
+- 🟡 **D-01** — `ui-map.md:270` omite la parada intermedia del degradado que el
+  frame sí dibuja. `ui-map.md` **no se editó**: fuera del alcance de escritura
+  de este ciclo.
+- 🟡 La curva de la máscara de la hoja iluminada (desviación 3): cumple la
+  FR-008 en radio y en dónde termina, no en la forma de la caída. Viaja con
+  A-03.
+
+- Resumen del implementer: `docs/harness/progress/impl_cursor_spotlight.md`.
+  Verdicts del reviewer: `review_cursor_spotlight.md` (ronda 1, **rechazo**) y
+  `review_cursor_spotlight_round2.md` (ronda 2, **aprobado**, con el código
+  verificado sin cambios por cuatro vías: contenido sin comentarios idéntico,
+  `git diff --stat` por archivo, md5 de `useCursorSpotlight.ts` intacto y
+  estilos computados en el navegador iguales).
+- `feature_list.json`: feature id 8 status `reviewing` → `done`.

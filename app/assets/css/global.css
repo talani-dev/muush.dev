@@ -67,19 +67,100 @@
   --dot-paper-step: 1.5rem;
 
   /*
-   * Los dos niveles negativos del fondo (rules.md § R28). El layout es el
-   * único contexto de apilamiento de la página y pinta la base ink-500; dentro
-   * de él los glows de cada sección van en -2 y la hoja de puntos, que es de
-   * página completa, en -1. Ambos quedan por debajo de todo el flujo normal.
+   * Spotlight del cursor (feature 008, frame `gViAx` "DEMO spotlight cursor"
+   * leído por el líder — rules.md § R32 — y contrastado con ui-map.md § 10).
    *
-   * ⚠️ Tienen que ser DISTINTOS. Si compartieran nivel, el desempate sería el
-   * orden del documento y los glows —que se escriben dentro de las secciones,
-   * después de la hoja— quedarían encima de los puntos, invirtiendo el diseño.
-   * Son tokens y no literales justamente porque lo que importa es la relación
-   * entre los dos, y vive en dos archivos distintos.
+   * ⚠️ NO se llaman `--color-spotlight-*` ni `--spacing-spotlight-*`, y sobre
+   * todo NO `--color-glow-*` ni `--spacing-glow-*`: ese namespace es cerrado y
+   * pertenece a SectionGlow, cuya prueba escanea global.css con
+   * `--(?:color|spacing)-glow-[\w-]+` y falla si un token con ese prefijo no es
+   * alcanzable desde sus props (rules.md § R36). Van en :root y no en
+   * `@theme inline` porque los lee CSS escrito a mano (§ R18).
+   *
+   * Los tres colores son el mismo red-400 del frame (#CF3147) a tres alfas,
+   * cada una derivada del hex de 8 dígitos que dibuja el diseño:
+   *   #CF31476B → 0x6B = 107 ÷ 255 = 41.96% → 42%  (confirmado por ui-map:270)
+   *   #CF31472B → 0x2B =  43 ÷ 255 = 16.86% → 17%  (solo el frame — ver D-01)
+   *   #CF31475E → 0x5E =  94 ÷ 255 = 36.86% → 37%  (confirmado por ui-map:270)
    */
-  --layer-glow: -2;
-  --layer-dots: -1;
+  --spotlight-red-400-42: color-mix(in srgb, var(--red-400) 42%, transparent);
+  --spotlight-red-400-17: color-mix(in srgb, var(--red-400) 17%, transparent);
+  --spotlight-red-400-37: color-mix(in srgb, var(--red-400) 37%, transparent);
+
+  /*
+   * ⚠️ POSICIÓN de la parada intermedia del campo exterior, no una opacidad.
+   * El frame la coloca en 0.42 y la opacidad del centro vale 42%: son dos
+   * números sin relación que comparten dígitos (spec § D-01). Tratarlos como
+   * uno solo es un error, y por eso son dos tokens con dos comentarios.
+   */
+  --spotlight-stop-mid: 42%;
+
+  /*
+   * Diámetros del frame: 660×660 el campo exterior y 180×180 el núcleo.
+   * 660 ÷ 16 = 41.25 y 180 ÷ 16 = 11.25. ui-map.md:270 los confirma por su
+   * radio (~330 y ~90, que son justo la mitad de cada uno).
+   *
+   * En rem y no en px por lo mismo que el papel punteado (feature 006, su
+   * A-03): la hoja iluminada tiene que seguir a la retícula exactamente, así
+   * que si el visitante agranda la letra las dos crecen juntas (spec A-10).
+   */
+  --spotlight-outer-size: 41.25rem;
+  --spotlight-core-size: 11.25rem;
+
+  /*
+   * ⚠️ UNVERIFIED — dueño: Clau (spec A-03, rules.md § R38). Nadie documenta
+   * qué tan brillante queda un punto iluminado, y un mockup estático **no
+   * puede dibujarlo**: el frame `gViAx` muestra los dos círculos sobre un campo
+   * de puntos normal. No es documentación vieja (§ R32), es una imposibilidad
+   * estructural, y por eso se registra en vez de inventar un porcentaje.
+   *
+   * La capa del spotlight vuelve a pintar la MISMA receta, así que dentro del
+   * radio el punto queda en 1 − (1 − 0.12)² = 22.6% — un valor DERIVADO, no
+   * elegido. Este token existe para que el día que Clau dé una cifra cueste
+   * una línea.
+   */
+  --dot-paper-lit-color: var(--dot-paper-color);
+
+  /*
+   * ⚠️ UNVERIFIED — dueño: Clau (spec A-08). El diseño no especifica timing
+   * para el fundido de entrada y salida del spotlight, igual que no lo
+   * especificaba para el ping del radar, cuyos 2.4s ui-map.md registra como
+   * elección de implementación pendiente de visto bueno. Mismo trato y misma
+   * forma de respuesta: un token.
+   */
+  --duration-spotlight-fade: 0.2s;
+
+  /*
+   * Los TRES niveles negativos del fondo (rules.md §§ R28 y R37). El layout es
+   * el único contexto de apilamiento de la página y pinta la base ink-500;
+   * dentro de él:
+   *
+   * | Nivel                    | Qué                          | Dónde se escribe   |
+   * |--------------------------|------------------------------|--------------------|
+   * | fondo del elemento raíz  | base ink-500                 | el layout          |
+   * | --layer-glow    (-3)     | glows de cada sección        | dentro de cada una |
+   * | --layer-dots    (-2)     | papel punteado, página entera| el layout, una vez |
+   * | --layer-spotlight (-1)   | spotlight: luz + puntos vivos| el layout, al montar |
+   * | flujo normal             | nav, contenido, footer       | en todas partes    |
+   *
+   * **La relación es el contrato, no los números.** Glows debajo de puntos
+   * debajo de contenido. Los dos tokens que ya existían conservan su NOMBRE,
+   * así que DotGrid.vue y SectionBackdrop.vue —que nombran el token y nunca el
+   * número— no cambian una sola línea (spec FR-018).
+   *
+   * Se renumeró en vez de agregar un nivel libre porque el spotlight tiene que
+   * pintar ENCIMA de los puntos para poder iluminarlos (ui-map.md:271) y **no
+   * existe un entero entre -1 y 0**.
+   *
+   * ⚠️ Tienen que ser DISTINTOS. Si dos compartieran nivel, el desempate sería
+   * el orden del documento y los glows —que se escriben dentro de las
+   * secciones, después de la hoja— quedarían encima de los puntos, invirtiendo
+   * el diseño. Son tokens y no literales justamente porque lo que importa es la
+   * relación entre ellos, y vive en tres archivos distintos.
+   */
+  --layer-glow: -3;
+  --layer-dots: -2;
+  --layer-spotlight: -1;
 }
 
 @theme inline {

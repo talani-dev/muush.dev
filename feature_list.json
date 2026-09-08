@@ -160,6 +160,31 @@
       "sdd": false,
       "status": "pending",
       "depends_on": [6]
+    },
+    {
+      "id": 8,
+      "name": "cursor_spotlight",
+      "title": "Cursor spotlight — the pointer-following glow across the whole landing",
+      "description": "The one genuinely interactive background effect: a radial glow that follows the pointer across the entire page. It is the first row of ui-map.md § 10 'Efectos que dependen de JavaScript (con fallback sin JS)', so JavaScript is anticipated by the design rather than a departure from it, and Constitution Article V permits it as opt-in local interactivity provided the no-JS fallback holds. Explicitly deferred out of feature 6's scope as 'a JavaScript effect over this background, and a separate decision'; feature 6 built the layers it composes over. Recipe extracted by the leader from the .pen frame gViAx 'DEMO spotlight cursor' on 2026-09-07 (rules.md § R32) and cross-checked against ui-map.md § 10 — the two sources agree to the percent, unlike D-01. The frame's own legend reads 'el seguimiento lo programa Roberto', so the design defers the tracking to code by intent and draws three static positions instead. The hard part is not the glow: ui-map.md:271 requires that the dotted-paper dots inside the radius brighten, which no static mockup can show and which the R28 layer contract does not currently allow for.",
+      "acceptance": [
+        "The spotlight is two concentric radial gradients centred on the pointer, per frame gViAx verified across its three states: an outer 660px circle (red-400 42% at centre → red-400 17% at stop 0.42 → transparent) and an inner 180px core (red-400 37% → transparent)",
+        "The three opacities are new design tokens — global.css currently carries red-400 glows at 12/60/65% only, none of which are 42, 17 or 37",
+        "The dots of the DotGrid layer brighten inside the spotlight radius (ui-map.md:271). The spec must decide the mechanism and state why, since this crosses the R28 layer contract that feature 6 established",
+        "The effect tracks the pointer across the whole page, not per section, and stays correct while the page scrolls",
+        "Desktop only, per ui-map.md § 10 — it must not run on touch pointers",
+        "prefers-reduced-motion: reduce disables it completely and leaves the background exactly as feature 6 renders it (ui-map.md § Movimiento reducido lists the spotlight first)",
+        "With JavaScript disabled the page renders feature 6's background unchanged and loses no content — the fallback ui-map.md § 10 specifies",
+        "Pointer tracking is rAF-throttled and drives CSS custom properties rather than restyling on every event; no layout or paint work per mousemove beyond the compositor",
+        "It is decorative and inert: aria-hidden, pointer-events-none, never intercepts a pointer and never reaches assistive technology",
+        "Tracking logic lives in a composable under logic/, not inlined in the component (Constitution Article V)",
+        "Zero hardcoded hex or px; every value resolves through a design token (Constitution Article VII)",
+        "A Storybook story shows the effect, and a test covers the token mapping and the reduced-motion and touch-pointer opt-outs (Constitution Article X)",
+        "SectionGlow.vue, DotGrid.vue and SectionBackdrop.vue keep their existing contracts; this composes over feature 6 rather than reworking it",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+      ],
+      "sdd": true,
+      "status": "done",
+      "depends_on": [6]
     }
   ]
 }

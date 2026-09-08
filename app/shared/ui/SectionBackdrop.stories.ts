@@ -14,10 +14,13 @@ import SectionGlow from '@/shared/ui/SectionGlow.vue'
  * the layout provides.
  *
  * The mechanism, in one line: the layout is the page's only stacking context,
- * the dot sheet sits at `--layer-dots` (-1) and every backdrop at
- * `--layer-glow` (-2), so a glow written *inside* a section still paints
+ * the dot sheet sits at `--layer-dots` (-2) and every backdrop at
+ * `--layer-glow` (-3), so a glow written *inside* a section still paints
  * *beneath* a sheet written once in the layout. No registry, no route
- * metadata, no shared list of 21 (`docs/business/rules.md` § R28).
+ * metadata, no shared list of 21 (`docs/business/rules.md` § R28). Feature 008
+ * added a third negative level above the dots — `--layer-spotlight` (-1), the
+ * cursor spotlight — and the two values above shifted down to make room; the
+ * relation the rule protects is unchanged (`rules.md` § R37).
  */
 const meta = {
   title: 'Shared/UI/SectionBackdrop',

@@ -813,3 +813,276 @@ caras cargan (`document.fonts.check` en verde para Poppins 600 e Instrument
 Sans 400/500/600), y el ancho medido del mismo texto difiere entre los tres
 pesos de Instrument Sans (289.92 / 293.72 / 297.53 px) y contra la familia de
 respaldo (288.16 px). Es decir: hay tres caras reales, no una sintetizada.
+
+---
+
+## Feature 008 · Spotlight del cursor — especificación (2026-09-07)
+
+> Las cuatro reglas de abajo salieron al **especificar y planear** la feature
+> 008 (`cursor_spotlight`). Se agregan al final; nada de lo anterior se toca.
+> Las que salgan al implementarla se agregan después, en su propia sección,
+> igual que hicieron R33–R35 con la feature 006.
+>
+> ⚠️ **R37 modifica la § R28, y ya está vigente.** La feature 008 se implementó
+> el 2026-09-07: `global.css` declara los tres niveles negativos y el árbol
+> corresponde a la tabla de la § R37, no a la de la § R28. Verificado en el
+> navegador contra el artefacto generado: el backdrop de sección computa
+> `z-index: -3`, la hoja de puntos `-2`, la raíz del spotlight `-1` y el
+> contenido `auto`.
+
+### R36 · `--color-glow-*` y `--spacing-glow-*` son un namespace cerrado de `SectionGlow`
+
+`app/shared/ui/SectionGlow.test.ts` construye
+
+```ts
+globalCss.matchAll(/--(?:color|spacing)-glow-[\w-]+(?=\s*:)/g)
+```
+
+y luego afirma **en las dos direcciones**: que toda combinación de props
+alcanza un token declarado, y que **todo token declarado con ese prefijo es
+alcanzable desde las props**. Es una prueba correcta — es lo que mantiene
+honestos los 12 pares afinados a mano — y tiene una consecuencia que no es
+obvia: **cualquier feature que agregue un token llamado `--color-glow-…` o
+`--spacing-glow-…` rompe esa suite sin tocar una línea de `SectionGlow.vue`.**
+
+El mensaje sería `should leave no glow token in global.css unreachable …` en un
+archivo que la feature nueva nunca abrió, y el instinto sería relajar la
+prueba. **No se relaja.** La lectura correcta es que `glow` es un namespace
+cerrado: un fondo radial nuevo usa su propia familia
+(la feature 008 usa `--spotlight-*`).
+
+Corolario del mismo hallazgo: tampoco se resuelve *ampliando* las uniones de
+opacidad de `SectionGlow`. Serían tres tokens más en ese namespace **y** un
+cambio a un contrato `done`.
+
+### R37 · La § R28 pasa a **tres** niveles negativos
+
+El orden de pintado del fondo queda así, y **la relación es el contrato, no
+los números**:
+
+| Nivel | Qué | Dónde se escribe |
+|---|---|---|
+| fondo del elemento raíz | base `ink-500` | el layout |
+| `--layer-glow` (**−3**) | los glows de cada sección | dentro de la sección |
+| `--layer-dots` (**−2**) | el papel punteado, de página completa | el layout |
+| `--layer-spotlight` (**−1**) | el spotlight del cursor: la luz y los puntos iluminados | el layout, tras montar |
+| flujo normal | nav, contenido, footer | en todas partes |
+
+**Por qué se renumera en vez de agregar un nivel libre:** el spotlight tiene
+que pintar **encima** de los puntos para poder iluminarlos
+(`ui-map.md:271`), y **no existe un entero entre `−1` y `0`**.
+
+**Los dos tokens conservan su nombre**, así que `DotGrid.vue` y
+`SectionBackdrop.vue` —que nombran el token y nunca el número— no cambian.
+Todo lo que la § R28 exige de una sección sigue idéntico: el spotlight es
+hermano de la hoja de puntos, nunca ancestro de una sección.
+
+**Descartado, con razones.** Compartir `--layer-dots` y confiar en el orden
+del documento es exactamente la fragilidad que la § R28 existe para prohibir;
+aceptarla una vez la erosiona para las cinco features de sección que faltan.
+Poner el spotlight **debajo** de los puntos no exige enmienda alguna y sí
+funciona para los puntos —dos hojas del mismo color en las mismas posiciones
+dan el mismo píxel en cualquier orden, porque `1−(1−a)(1−b)` es simétrico—
+pero entierra **la luz** bajo glows de sección de hasta 65% justo donde la
+página es más brillante, contra un frame que dibuja los círculos encima.
+
+**Efecto secundario que hay que pagar en el mismo cambio:**
+`DotGrid.stories.ts` y `SectionBackdrop.stories.ts` imprimen los números
+viejos en un comentario. Se corrigen junto con la renumeración, nunca después:
+un comentario que contradice la hoja de estilos es justo la deuda que la
+feature 7 existe para saldar.
+
+### R38 · Hay valores que el archivo de diseño **no puede** contener, y ese hueco se registra, no se inventa
+
+`ui-map.md:271` pide que los puntos del papel dentro del radio del spotlight
+suban de brillo. El frame `gViAx` dibuja tres posiciones estáticas con los dos
+círculos sobre un campo de puntos **normal**: un mockup estático no puede
+dibujar una respuesta al puntero. **No es documentación vieja (§ R32), es una
+imposibilidad estructural**, y las dos se tratan distinto: la vieja se
+corrige, esta se registra.
+
+La salida adoptada no inventa un porcentaje: la capa del spotlight vuelve a
+pintar **la misma receta** `--dot-paper-*`, así que dentro del radio el punto
+queda al `1 − (1 − 0.12)² = 22.6%` — un valor **derivado**, no elegido. Un
+token (`--dot-paper-lit-color`) queda delante para que el día que Clau dé una
+cifra cueste una línea. **Pendiente de Clau.**
+
+**Generaliza:** cuando el diseño pide un comportamiento que ningún frame puede
+dibujar, la spec (1) lo marca `UNVERIFIED` con dueño, (2) elige una derivación
+aritmética a partir de valores que **sí** están confirmados, y (3) deja un
+token delante. Presentar la derivación como si fuera una medida del diseño es
+el error que la § R32 cierra.
+
+### R39 · Una prueba en una carpeta que `vitest.config.ts` no incluye reporta verde por no existir
+
+El `include` de `vitest.config.ts` lista `tests/**`,
+`app/shared/ui/**/*.test.ts` y `app/features/**/*.test.ts`. **No incluye
+`app/shared/logic/**`**, que es donde la Constitución (Artículo I) pone las
+composables transversales. Un archivo de pruebas ahí **corre cero veces**, la
+suite sale en verde, y el conteo de archivos sube en cero sin que nadie mire.
+
+La § R16 ya lo anticipaba en una línea ("cualquier feature futura que agregue
+tests de componente extiende ese `include`"); esto lo vuelve explícito y le
+agrega el procedimiento:
+
+**Regla:** al agregar pruebas en una ruta nueva, se extiende el `include`
+**y se demuestra** con una aserción que falle a propósito —hay que *ver* el
+archivo en rojo— antes de escribir las aserciones reales. Un archivo de
+pruebas que nunca se ha visto fallar no se ha demostrado que corra. Un
+proyecto de Vitest aparte no es opción: `defineVitestConfig` lanza error sobre
+`projects` (§ R16).
+
+---
+
+## Feature 008 · Spotlight del cursor — hallazgos de implementación (2026-09-07)
+
+> Las reglas R36–R39 salieron del ciclo de **especificación** de esta misma
+> feature. Se verificaron una por una al implementarla y **las cuatro quedan
+> vigentes**: el namespace cerrado de la § R36 se respetó y `SectionGlow.test.ts`
+> pasa sin modificarse; la § R37 ya está en el árbol (ver el aviso de arriba);
+> la § R38 se cumplió tal cual y su derivación resultó **exacta al medirla**
+> (abajo); y la § R39 se demostró con un rojo deliberado antes de escribir una
+> sola aserción real. Las cinco de abajo salieron al implementar y ninguna
+> estaba anticipada. Se agregan al final; nada de lo anterior se toca.
+
+### R40 · Nuxt inlinea el CSS con scope de un componente aunque el componente no se renderice
+
+La feature 008 tiene que estar **ausente** del HTML prerenderizado (su spec
+FR-012: ese es el fallback sin JavaScript). La aserción obvia —que la cadena
+`cursor-spotlight` no aparezca en el documento— **falla en las cuatro rutas**, y
+no porque el elemento esté ahí:
+
+```
+<div ... class="dot-grid ..."></div><!---->     ← el v-if no renderizó nada
+<style>.cursor-spotlight[data-v-…]{ … }</style> ← pero su CSS sí está, en el <head>
+```
+
+Nuxt recolecta los estilos de **todos** los componentes del grafo de módulos de
+la ruta y los inlinea en cada documento. Que el `v-if` haya dicho que no es
+irrelevante: el componente está importado por el layout, así que su hoja viaja.
+
+**Regla:** una aserción de "esto no está en el artefacto" que busque un nombre
+de clase tiene que acotarse al `<body>`, nunca al documento completo. Un grep
+sobre todo el HTML no distingue marcado de hoja de estilos y reprueba a la
+feature justo por enviar lo que debe enviar (los estilos viajan, el elemento
+espera al ratón). Ya está aplicado en `tests/static-output.test.ts`, que además
+afirma lo contrario en positivo: el CSS **sí** tiene que estar.
+
+### R41 · Leer `window.scrollX` dentro de un `requestAnimationFrame` fuerza estilo, aunque sea lo primero que hace
+
+Corrección medida al `research.md` § R2 de esta feature, que pedía leer el
+scroll **primero** y escribir después, con el argumento de que el orden inverso
+fuerza un layout sincrónico. **El orden no basta.** El callback de rAF corre
+*antes* del pase de estilo del cuadro, así que un `window.scrollX` ahí dentro
+tiene que vaciar lo que invalidó la escritura de propiedades del cuadro
+anterior, vaya donde vaya en el callback.
+
+Medido con dos trazas de 5s de movimiento continuo del puntero contra un
+control con el efecto apagado (`prefers-reduced-motion: reduce`):
+
+| | Con el efecto | Control (apagado) | Atribuible |
+|---|---|---|---|
+| `Blink.ForcedStyleAndLayout` — leyendo en el rAF | 2723 | 2169 | **≈ 600** (2 por cuadro: una por eje) |
+| `Blink.ForcedStyleAndLayout` — con el scroll cacheado | 2147 | 2148 | **0** |
+
+La línea base de ambas columnas es el número de eventos de puntero: Chrome
+hace un hit test por cada `mousemove` para actualizar `:hover` y el cursor, y
+eso pasa con el efecto puesto o quitado.
+
+**Regla:** el camino caliente de un efecto por cuadro no lee geometría. El
+offset de scroll se toma en el handler de `scroll` —donde ya está vigente— y en
+la activación; el cuadro hace aritmética y escribe. Vale igual para
+`scrollY`, `getBoundingClientRect`, `offsetTop` y `getComputedStyle`.
+
+### R42 · `mask-repeat` vale `repeat` por defecto, y un degradado de máscara se tesela
+
+Una `mask-image: radial-gradient(...)` sin `mask-repeat: no-repeat` **se repite
+en mosaico** sobre la caja del elemento. En una máscara de recorte circular eso
+no da un círculo: da una retícula de círculos, y lo que sobresale de la caja
+queda visible en vez de recortado.
+
+No es teórico: el CSS emitido de `BotonPrimario.vue` lleva
+`mask-repeat: repeat, repeat`. Ahí no molesta porque su máscara es
+`linear-gradient(black 0 0)`, uniforme, así que teselarla es idéntico a no
+hacerlo. La primera máscara **no uniforme** del repositorio es la de
+`CursorSpotlight.vue`, y ahí sí importa.
+
+**Regla:** toda `mask-image` que no sea uniforme declara `mask-repeat: no-repeat`
+(y su par `-webkit-`) en la misma regla. De paso es lo que convierte a la
+máscara en el recorte del desbordamiento deliberado de sus hijos.
+
+### R43 · Una composable con listeners de `window` se filtra entre pruebas del mismo archivo
+
+`happy-dom` da **un solo** `window` por archivo de pruebas. Una composable que
+hace `window.addEventListener` en `onMounted` y solo limpia en
+`onScopeDispose` sigue escuchando después de que la prueba terminó, porque
+nadie desmontó el componente.
+
+El síntoma no señala a la causa: la prueba de coalescencia de
+`useCursorSpotlight` esperaba **un** cuadro pedido tras 20 eventos y contó
+**cinco** — uno por cada instancia viva de las pruebas anteriores del mismo
+archivo. Se lee como un fallo del sujeto, no del arnés.
+
+**Regla:** un archivo de pruebas que monta componentes con listeners globales
+lleva un registro de lo montado y lo desmonta en `afterEach`. Es el Artículo X
+("ninguna prueba depende del estado de otra") aplicado a algo que no parece
+estado.
+
+### R44 · La contrapartida de la § R34 — cómo **sí** se mide un ancho, y qué se puede medir de una captura
+
+La § R34 prohíbe la captura headless como evidencia de layout, y tiene razón,
+pero deja al siguiente agente sin método. El que funcionó aquí, contra el
+artefacto generado y servido desde `.output/public`:
+
+- **El viewport se fija con `Emulation.setDeviceMetricsOverride` del protocolo
+  de DevTools, no con `--window-size`.** A diferencia de la bandera, esta sí fija
+  el viewport de layout: el documento reflowea al ancho pedido y `scrollWidth`,
+  `getBoundingClientRect()` y las media queries responden a él. Es el equivalente
+  programático del `<iframe>` de ancho exacto que la § R34 recomienda, y permite
+  además mover el puntero (`Input.dispatchMouseEvent`), emular preferencias
+  (`Emulation.setEmulatedMedia`), apagar el scripting
+  (`Emulation.setScriptExecutionDisabled`) y grabar una traza (`Tracing.*`).
+  Node 22+ trae `WebSocket` global, así que el cliente son ~80 líneas y **cero
+  dependencias nuevas** — Playwright sigue fuera de alcance (Artículo X).
+- **De una captura sí se puede medir color, nunca layout.** Con el viewport
+  fijado y las coordenadas conocidas de antemano, decodificar el PNG y leer
+  píxeles es una medición legítima: se compara un valor contra una aritmética
+  que la spec ya escribió. Lo que la § R34 prohíbe es deducir posiciones o
+  desbordamientos *de la foto*, y eso sigue prohibido.
+
+Así se verificó la § R38 de esta feature, cuya derivación decía que un punto
+iluminado debía quedar en ≈133 R sobre un fondo de ≈109: **medido, el centro
+del punto da exactamente `rgb(133, 43, 56)`**. Y la mitad que ninguna prueba de
+este repositorio alcanza (SC-002) quedó en números: dentro del radio los puntos
+miden luma 84 sobre papel 55 (separación **29**), fuera miden 60 sobre 38
+(separación **22**) — más brillantes **y** más nítidos, que son las dos mitades
+que pide `ui-map.md:271`.
+
+### R45 · Lo que este repositorio verifica es Chrome, y hay tres piezas de CSS moderno que dependen de eso
+
+La feature 008 se midió a fondo (§ R44) **en un solo navegador**: Chrome en
+macOS. No existe arnés multi-navegador y el Artículo X deja E2E fuera de
+alcance, así que no lo habrá pronto. Eso no es un problema mientras se sepa
+qué queda descubierto.
+
+Tres declaraciones del efecto no están verificadas fuera de Chrome:
+
+| Declaración | Dónde | Si el motor no la soporta |
+|---|---|---|
+| `mod()` | `CursorSpotlight.vue`, el contra-desplazamiento de la hoja iluminada | **La declaración `transform` completa se invalida.** La hoja deja de registrarse contra la retícula base y se ven **puntos dobles** |
+| `mask-image` + `mask-repeat` | el recorte circular de la hoja iluminada | los puntos iluminados no se recortan al radio: canto duro, o mosaico si además falta `no-repeat` (§ R42) |
+| `overflow: clip` | la raíz del spotlight | la página **crece** al acercar el puntero al footer (SC-006) |
+
+Las tres son baseline en Safari 15.4+ y Firefox 118+ según el
+`research.md` § R3 de la feature, y el modo de falla de la peor de ellas es
+**cosmético**: el efecto es decorativo, solo de escritorio, y no se pierde
+contenido ni se rompe ninguna interacción. Por eso se aceptó publicar así.
+
+**Regla, y es de proceso más que de CSS:** cuando una feature dependa de CSS
+reciente, (1) se nombra la declaración, (2) se dice qué pasa donde no exista y
+(3) se deja escrito **aquí**, no solo en el reporte de la sesión — un reporte
+de progreso es justo donde el siguiente agente no va a mirar. Si alguna vez
+llegan puntos dobles reportados desde Safari o Firefox, la respuesta ya está
+escrita y costeada en `research.md` § R3 de la feature 008: la composable
+publica el offset reducido en vez de dejárselo a `mod()`, al precio de leer el
+paso de la retícula una vez del estilo computado.
