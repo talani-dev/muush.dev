@@ -50,8 +50,14 @@ export interface HeroDestinations {
   contactHash?: string
 }
 
+/**
+ * `contactHash` fills 2026-09-08 (feature 016): `06 CTA final` exists now,
+ * with `id="contacto"`. One key, no markup touched anywhere in `HeroSection.vue`
+ * — exactly the property `callUrl` demonstrated when it landed (feature 11).
+ */
 export const HERO_DESTINATIONS: HeroDestinations = {
   callUrl: CALL_BOOKING_URL,
+  contactHash: '#contacto',
 }
 
 /**

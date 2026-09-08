@@ -462,6 +462,46 @@
   /* ⚠️ O-04, owner Clau. No frame can draw a scroll-driven transition; seeded
      close to Propósito's own 0.2s reveal so page timings stay coherent. */
   --duration-services-lyrics: 0.3s;
+
+  /*
+   * Contacto · CTA final (feature 016). Read by hand-written CSS (the
+   * WhatsApp field's `<Transition>` in `ContactForm.vue`), so it goes in
+   * `:root` and NOT in `@theme inline` — Tailwind v4 has no theme namespace
+   * for `transition-duration` (rules.md § R18, findings.md § R52).
+   *
+   * ⚠️ UNVERIFIED — dueño Clau. `ui-map.md` § 7 pide "transición de alto y
+   * opacidad" y no da timing; ningún frame estático puede dibujar una
+   * transición. Sembrado en los mismos 0.2s que --duration-purpose-reveal y
+   * --duration-nav-cta-fade para que los fundidos de la página sigan siendo
+   * coherentes (mismo caso que R38).
+   */
+  --duration-contact-whatsapp-toggle: 0.2s;
+
+  /*
+   * Form/left-block frame widths, read by `ContactSection.vue`'s
+   * `<style scoped>` grid (hand-written CSS, so `:root` and not
+   * `@theme inline` — rules.md § R18). 342 → 660 (form) is CONFIRMED
+   * (design-extract.md § 10, frames `Xrs80`/`r3PHqc`).
+   *
+   * ⚠️ `--contact-left-w`'s desktop value is UNVERIFIED — the leader's brief
+   * gave only the mobile left-block width (342, inert above `lg` since the
+   * mobile frame is single-column). Derived, not confirmed: `1440 − 80×2 −
+   * 660(form) − 64(gap, seeded from the footer's own column gap,
+   * rules.md § R24)` = 556. Flagged for the leader/reviewer to confirm
+   * against the real frame (rules.md § R32 point 4).
+   */
+  --contact-form-w: clamp(21.375rem, 13.9929rem + 30.2857vw, 41.25rem);
+  --contact-left-w: clamp(21.375rem, 16.4071rem + 20.381vw, 34.75rem);
+  /* ⚠️ UNVERIFIED — dueño Clau. The gap between the two desktop columns; no
+     internal measurement for this section's left block reached this
+     implementation beyond the two frame widths. Seeded from the footer's own
+     column gap (rules.md § R24) for the same reason `--contact-left-w` was. */
+  --contact-col-gap: 4rem;
+  /* ⚠️ UNVERIFIED — dueño Clau. The left block's own internal stack gap
+     (Pill → heading → body → alt route). Seeded near `--spacing-hero-gap`'s
+     24 → 34 range at its desktop value, since no measurement for this
+     section's own left block reached this implementation. */
+  --contact-left-gap: 1.5rem;
 }
 
 /*
@@ -556,6 +596,33 @@ html {
   );
   --color-glass-dark: color-mix(in srgb, var(--dark-glass) 65%, transparent);
   --color-glass-dark-line: color-mix(in srgb, var(--bone-100) 23%, transparent);
+  /*
+   * Feature 016 (`06 CTA final`), plan.md D-3. `--color-glass-dark` at 65%
+   * does not clear 4.5:1 for `--text-input-value` in the worst case this
+   * section's own glows light up behind it. The fix is a second opacity step
+   * on the SAME recipe — darker, still translucent — never a new opaque
+   * layer (keeps `rules.md` §§ R28/R37 intact) and never an edit to
+   * `GlassPanel.vue`'s own `dark` variant, which is a `done` contract.
+   *
+   * Consumed as a Tailwind utility (`bg-glass-dark-contact`) on the form's
+   * own outer surface, built by hand from the same border/blur/radius
+   * utilities `GlassPanel variant="dark"` already uses — not through that
+   * component, since its variant union is closed (component-contracts.md §
+   * *Deliberately NOT in this contract*).
+   *
+   * Ratio computed against a modelled worst case (dark-glass over the
+   * brightest plausible overlap this section's own glows produce — red-400
+   * at its own 60% opacity blended over `ink-500`), not measured live in a
+   * browser: `≈11.9:1` at 80%, comfortably above the 4.5:1 floor.
+   * ⚠️ Flagged for confirmation against the real artefact with the
+   * `Emulation.setDeviceMetricsOverride` method (`findings.md` § R44) — this
+   * implementation session had no live browser to measure pixels with.
+   */
+  --color-glass-dark-contact: color-mix(
+    in srgb,
+    var(--dark-glass) 80%,
+    transparent
+  );
 
   /*
    * Reglas de 1px del shell (design-extract.md § 9.bis).
@@ -1227,6 +1294,138 @@ html {
   --spacing-services-row-gap-m: 0.875rem;
   /* Mobile closer width, 342 — the mobile content box (design-extract.md § 9). */
   --spacing-services-closer-m-w: 21.375rem;
+
+  /*
+   * ═══ Contacto · `06 CTA final` (feature 016) ═══
+   *
+   * Consumed as UTILITY (`pt-*`, `top-*`, `left-*`, `w-*`, `h-*`, `gap-*`,
+   * `py-*`, `px-*`, `size-*`), per `findings.md` § R47. Hand-written-CSS
+   * tokens (the WhatsApp toggle's duration, the contrast colour) live above,
+   * in `:root`.
+   *
+   * ⚠️ None is named `--spacing-glow-*` / `--color-glow-*` (rules.md § R36).
+   */
+
+  /*
+   * ⚠️ UNVERIFIED — dueño: leader/Clau. `05 Proyectos` (feature 15) is
+   * `blocked` indefinitely, so this section renders directly after Servicios
+   * on the real page instead of after Proyectos as the full design draws.
+   * Seeded from Servicios' own documented 110px desktop remainder
+   * (`ServicesSection.vue`'s doc comment) — the same "leftover belongs to
+   * whatever renders next" rule R49 already established — with the mobile
+   * value estimated by continuing the shrinking pattern the prior three
+   * sections show (Hero 74→207, Propósito 90→254, Servicios 55→101).
+   */
+  --spacing-contact-top: clamp(3.125rem, 1.7321rem + 5.7143vw, 6.875rem);
+  /* ⚠️ UNVERIFIED — dueño Clau. The left block's own internal stack gap
+     (Pill → heading → body); no measurement reached this implementation
+     beyond the two frame widths. Seeded from `--spacing-hero-gap`'s own
+     24 → 34 range — the closest analogous stack in the design (spec A-01
+     notes the copy itself is placeholder for the same reason). One token per
+     role, per this file's own convention, even though the range coincides. */
+  --spacing-contact-text-gap: clamp(1.5rem, 1.2679rem + 0.9524vw, 2.125rem);
+
+  /* Form/left-block frame widths, 342 → 660 and 342 → 556. Declared in
+     `:root` as `--contact-form-w` / `--contact-left-w`, not here: the
+     two-column desktop layout is CSS Grid in `ContactSection.vue`'s
+     `<style scoped>` (hand-written, R18) and needs no `w-*` utility of its
+     own — the grid track sizes the child. */
+
+  /*
+   * Anclas de los tres glows de la sección — seis tokens (rules.md § R48).
+   * Page-absolute centres from the leader's 2026-09-08 reading of `Xrs80` /
+   * `r3PHqc` (`feature_list.json` #16): foco 1170,4310 (D) · 410,3560 (M);
+   * wine 1580,4520 (D) · 480,3840 (M); cierre 190,4630 (D) · 80,3960 (M).
+   *
+   * Horizontal is CONFIRMED: `x − 80` (D) / `x − 24` (M), the same page
+   * margin every prior section subtracts.
+   *
+   * ⚠️ Vertical is NOT fully confirmed. Section `06 CTA final` sits after
+   * `05 Proyectos` in the full design, and Proyectos (feature 15) is
+   * `blocked` — deferred indefinitely, not merely unbuilt — so this section
+   * renders directly after Servicios on the real page. Converting the design's
+   * page-absolute `y` requires the page-absolute `y` of this section's own top
+   * edge in the FULL stitched design (with Proyectos present), which only the
+   * `.pen` can supply and which this implementation session was not given.
+   * What IS confirmed are the three glows' relative vertical spread —
+   * `wine − foco` and `cierre − foco`, arithmetic over given values, true
+   * regardless of the unknown origin. The baseline below anchors `foco` at
+   * the section's own top edge (`0`) as a documented placeholder, not a
+   * measurement; `wine`/`cierre` are that baseline plus the confirmed deltas.
+   * Flagged for leader confirmation (rules.md § R32 point 4) rather than
+   * silently presented as a design value.
+   */
+  --spacing-contact-glow-foco-x: clamp(
+    24.125rem,
+    7.7821rem +
+    67.0476vw,
+    68.125rem
+  );
+  --spacing-contact-glow-foco-y: 0rem;
+  --spacing-contact-glow-wine-x: clamp(
+    28.5rem,
+    4.2643rem +
+    99.4286vw,
+    93.75rem
+  );
+  --spacing-contact-glow-wine-y: clamp(
+    13.125rem,
+    19.125rem -
+    6.6667vw,
+    17.5rem
+  );
+  --spacing-contact-glow-cierre-x: clamp(
+    3.5rem,
+    2.2464rem +
+    5.1429vw,
+    6.875rem
+  );
+  --spacing-contact-glow-cierre-y: clamp(20rem, 26.8571rem - 7.619vw, 25rem);
+
+  /*
+   * FormField (design-extract.md § FormField): label→control gap 8 (D) / 7
+   * (M); control's own padding [14,16], fixed — the design gives one pair,
+   * not two frames, unlike the fluid tokens above.
+   */
+  --spacing-field-label-gap: clamp(0.4375rem, 0.4143rem + 0.0952vw, 0.5rem);
+  --spacing-field-y: 0.875rem;
+  --spacing-field-x: 1rem;
+  /* select's chevron-down, 16×16 (design-extract.md § FormField). */
+  --spacing-field-icon: 1rem;
+  /* textarea variant: fixed height 92 (design-extract.md § FormField). */
+  --spacing-contact-textarea-h: 5.75rem;
+  /*
+   * The WhatsApp field's own mounted height, for the `<Transition>`'s
+   * `max-height` (data-model.md § 5.2). A component-internal estimate — label
+   * line-height (16.8) + label→control gap (8, desktop) + control (padding
+   * 14×2 + input line-height 21) — not a design measurement, since the design
+   * draws no intermediate transition frame.
+   */
+  --spacing-contact-whatsapp-h: 4.625rem;
+
+  /* RadioPill (design-extract.md § RadioPill): gap 9, padding [11,18], dot 8. */
+  --spacing-radio-gap: 0.5625rem;
+  --spacing-radio-y: 0.6875rem;
+  --spacing-radio-x: 1.125rem;
+  --spacing-radio-dot: 0.5rem;
+  /*
+   * Active fill `#FBF8F624` (14.1%) / stroke `#FBF8F65C` (36.1%) — neither is
+   * close enough to an existing glass step to reuse (closest are 10%/16%,
+   * both off by several points). Inactive fill/stroke/dot ARE close enough to
+   * reuse: `--color-glass-bone-faint` (4% vs. the design's 3.9%),
+   * `--color-glass-line-faint` (16% vs. 16.1%) and `--color-glass-dark-line`
+   * (23% vs. 23.9%) — same tolerance R2/R11 already accepted.
+   */
+  --color-radio-active-fill: color-mix(
+    in srgb,
+    var(--bone-100) 14%,
+    transparent
+  );
+  --color-radio-active-line: color-mix(
+    in srgb,
+    var(--bone-100) 36%,
+    transparent
+  );
 
   /* Radios: los paneles son fluidos, los controles fijos.
      La cápsula del Pill usa rounded-full, no un token propio — y desde la

@@ -560,28 +560,23 @@ describe('static output · the landing hero', () => {
       expect(heroSection(route), route).toContain('<h1')
     })
 
-    it(`should emit no destination from the primary hero control when the page is ${route}`, () => {
+    it(`should send the primary hero control to the contact section when the page is ${route}`, () => {
       /*
-       * Section 05 does not exist, so the primary CTA renders its absence
-       * rather than inventing a substitute (spec FR-012, FR-014): a real
-       * `<button type="button">` that emits no fragment — stricter than the
-       * shell, whose five links to sections that do not exist yet are a
-       * recorded inconsistency (spec D-03, Roberto's).
-       *
-       * It also carries **no pointer cursor**, because it does nothing when
-       * clicked. `ui-map.md` § 6 rules on that shape for the Proyectos slots:
-       * a reserved control that looks clickable and leads nowhere reads as a
-       * broken site.
+       * Feature 016 fills `HERO_DESTINATIONS.contactHash`: section `06 CTA
+       * final` exists now, so the primary CTA turns from a `<button
+       * type="button">` into a real link — no substitute destination, the
+       * section this key was always reserved for (spec FR-002). It carries a
+       * pointer cursor because it now does something when clicked
+       * (`BotonPrimario.vue`'s `isClickable`).
        */
       const hero = heroSection(route)
+      const primary = hero?.match(
+        new RegExp(`<a href="${route}#contacto"[^>]*class="([^"]*)"`)
+      )
 
-      expect(hero, route).toContain('<button type="button"')
-      expect(hero, route).not.toContain('#contacto')
-
-      const primary = hero?.match(/<button type="button" class="([^"]*)"/)?.[1]
-
-      expect(primary, route).toBeDefined()
-      expect(primary?.split(' '), route).not.toContain('cursor-pointer')
+      expect(hero, route).not.toContain('<button type="button"')
+      expect(primary, route).toBeTruthy()
+      expect(primary?.[1]?.split(' '), route).toContain('cursor-pointer')
     })
 
     it(`should send the secondary hero control to the booking page when the page is ${route}`, () => {
@@ -591,13 +586,15 @@ describe('static output · the landing hero', () => {
        * actually receives: the Hero costs zero JavaScript, so this document is
        * also what a browser with scripting disabled renders.
        *
-       * The arrow is `LinkArrow`'s and never the copy's, so it is asserted
-       * inside the anchor rather than in the locale files, which are held free
-       * of it by `tests/landing-copy.test.ts`.
+       * Anchored on `CALL_BOOKING_URL` rather than "the first `<a>`": the
+       * primary CTA is a real anchor too now that `#contacto` exists, and it
+       * renders first in document order.
        */
       const hero = heroSection(route)
       const locale = route === '/en' ? 'en' : 'es'
-      const secondary = hero?.match(/<a href="([^"]*)"[^>]*>[\s\S]*?<\/a>/)?.[0]
+      const secondary = hero?.match(
+        new RegExp(`<a href="${CALL_BOOKING_URL}"[^>]*>[\\s\\S]*?</a>`)
+      )?.[0]
 
       expect(secondary, route).toBeDefined()
       expect(secondary, route).toContain(CALL_BOOKING_URL)
@@ -1111,6 +1108,111 @@ describe('static output · the landing services section', () => {
     ].map(([token]) => token)
 
     expect(glowTokens.filter(token => token.includes('services'))).toEqual([])
+  })
+})
+
+describe('static output · the landing contact section', () => {
+  /*
+   * Feature 016. Claims only the artefact can settle: both dangling CTAs
+   * resolve to a real, existing section, the form ships `novalidate` and a
+   * native submit with no `action`, and no code path in the compiled bundle
+   * reaches a network call from the form's submit handler (SC-002, SC-004).
+   */
+  function contactSection(route: RoutePath): string {
+    const html = documentFor(route)
+    const start = html.indexOf('<section id="contacto"')
+
+    expect(start, route).toBeGreaterThan(-1)
+
+    let depth = 0
+    for (const tag of html.slice(start).matchAll(/<(\/?)section[\s>]/g)) {
+      depth += tag[1] === '/' ? -1 : 1
+      if (depth === 0) return html.slice(start, start + tag.index + 10)
+    }
+
+    throw new Error(`unbalanced contact section in ${route}`)
+  }
+
+  it('should carry id="contacto" and hold both dangling CTAs on every landing document', () => {
+    /*
+     * The Hero's primary CTA and the nav's CTA both point at `#contacto`
+     * (`rules.md` § R50); this is the section that gives it a real target.
+     */
+    for (const route of ['/es', '/en'] as const) {
+      expect(documentFor(route), route).toContain('<section id="contacto"')
+      expect(documentFor(route), route).toContain(`href="${route}#contacto"`)
+    }
+  })
+
+  it('should render a native, unactioned form with no destination when generated', () => {
+    for (const route of ['/es', '/en'] as const) {
+      const section = contactSection(route)
+      const form = section.match(/<form[^>]*>/)?.[0]
+
+      expect(form, route).toBeDefined()
+      expect(form, route).toContain('novalidate')
+      expect(form, route).not.toMatch(/\baction="/)
+      expect(section, route).toContain('type="submit"')
+    }
+  })
+
+  it('should contribute the three glows without breaking the paint order', () => {
+    for (const route of ['/es', '/en'] as const) {
+      const section = contactSection(route)
+      const root = section.match(/<section id="contacto" class="([^"]*)"/)?.[1]
+
+      expect(root?.split(' '), route).toContain('relative')
+      expect(root?.split(' '), route).toContain('pt-contact-top')
+      expect(
+        root?.split(' ').some(name => name.startsWith('bg-')),
+        route
+      ).toBe(false)
+      expect(
+        root
+          ?.split(' ')
+          .some(name =>
+            /^(transform|translate|scale|rotate|filter|backdrop-|opacity-|isolate|will-change|contain-|fixed|sticky|overflow-)/.test(
+              name
+            )
+          ),
+        route
+      ).toBe(false)
+
+      expect(section, route).toContain('size-glow-1500-760')
+      expect(section, route).toContain('size-glow-1000-560')
+      expect(section, route).toContain('size-glow-900-520')
+    }
+  })
+
+  it('should add no token to the closed glow namespace when generated', () => {
+    /* `rules.md` § R36 — the guard stated where this feature can see it. */
+    const glowTokens = [
+      ...emittedCss().matchAll(/--(?:color|spacing)-glow-[\w-]+(?=\s*:)/g),
+    ].map(([token]) => token)
+
+    expect(glowTokens.filter(token => token.includes('contact'))).toEqual([])
+  })
+
+  it('should reach no network call from the compiled form chunk', () => {
+    /*
+     * FR-014, this feature's central guarantee, checked on the shipped
+     * JavaScript rather than only on the composable's source: the built
+     * chunk containing `useContactForm`'s compiled code carries no
+     * `fetch(`, `XMLHttpRequest` or literal endpoint URL.
+     */
+    const scripts = everyEmittedFile(join(OUTPUT, '_nuxt'))
+      .filter(path => path.endsWith('.js'))
+      .map(path => readFileSync(path, 'utf8'))
+      .filter(
+        source =>
+          source.includes('ContactForm') || source.includes('useContactForm')
+      )
+
+    expect(scripts.length).toBeGreaterThan(0)
+    for (const source of scripts) {
+      expect(source).not.toMatch(/fetch\(/)
+      expect(source).not.toContain('XMLHttpRequest')
+    }
   })
 })
 

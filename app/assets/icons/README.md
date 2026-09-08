@@ -42,3 +42,15 @@ lucide `x` at 18×18 in `$bone-100`
 The stroke presentation attributes (`stroke-width`, `stroke-linecap`,
 `stroke-linejoin`) are lucide's own and are kept: they are the glyph's
 geometry, not a design value this repository owns.
+
+### `chevron-down.svg`
+
+| | |
+|---|---|
+| Source | lucide `chevron-down` (ISC licence) |
+| Original viewBox | `0 0 24 24` — already square, unchanged |
+| Transform applied | none |
+| Stripped | `width="24"`, `height="24"` |
+
+Used by `SelectField.vue` (feature 016, `app/features/forms/`) as the select
+control's affordance glyph. Same stroke-attribute convention as `x.svg`.

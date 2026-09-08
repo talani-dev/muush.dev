@@ -59,6 +59,67 @@
         "label": "Delivery",
         "copy": "Y una capacidad que atraviesa las cinco: llevamos el proyecto de principio a fin, con alcance, tiempos, calidad y lanzamiento a nuestro cargo."
       }
+    },
+    "contact": {
+      "eyebrow": "Contacto",
+      "heading": "Cuéntanos tu proyecto.",
+      "body": "Cuéntanos qué necesitas y te respondemos en menos de 24 horas hábiles.",
+      "ctaSecondary": "Agenda una llamada"
+    }
+  },
+  "forms": {
+    "contact": {
+      "fields": {
+        "name": {
+          "label": "Nombre",
+          "errorRequired": "Escribe tu nombre"
+        },
+        "email": {
+          "label": "Correo",
+          "errorRequired": "Escribe tu correo",
+          "errorFormat": "Formato de correo inválido"
+        },
+        "company": {
+          "label": "Empresa o proyecto"
+        },
+        "identity": {
+          "label": "¿Cómo te identificas?",
+          "errorRequired": "Elige una opción",
+          "options": {
+            "company": "Empresa",
+            "independent": "Emprendedor o persona física",
+            "startup": "Startup",
+            "creator": "Creador de contenido o marca personal",
+            "other": "Otro"
+          }
+        },
+        "need": {
+          "label": "¿Qué necesitas?",
+          "errorRequired": "Cuéntanos qué necesitas",
+          "errorLength": "Cuéntanos un poco más"
+        },
+        "contactPreference": {
+          "label": "¿Cómo prefieres que te contactemos?",
+          "options": {
+            "email": "Correo",
+            "whatsapp": "WhatsApp"
+          }
+        },
+        "whatsapp": {
+          "label": "Número de WhatsApp",
+          "errorRequired": "Escribe tu número",
+          "errorDigits": "Deben ser 10 dígitos"
+        }
+      },
+      "submit": "Enviar",
+      "sending": "Enviando…",
+      "success": {
+        "title": "Listo, ya lo recibimos. Te respondemos por [correo/WhatsApp] en menos de 24 horas hábiles."
+      },
+      "error": {
+        "title": "No pudimos enviarlo. Escríbenos a support{'@'}muush.dev o por WhatsApp y lo resolvemos.",
+        "fallback": "support{'@'}muush.dev"
+      }
     }
   },
   "shell": {

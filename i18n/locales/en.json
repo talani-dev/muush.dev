@@ -59,6 +59,67 @@
         "label": "Delivery",
         "copy": "And one capability runs through all five: we carry the project from start to finish, including scope, timelines, quality and launch."
       }
+    },
+    "contact": {
+      "eyebrow": "Contact",
+      "heading": "Tell us about your project.",
+      "body": "Tell us what you need and we'll get back to you within one business day.",
+      "ctaSecondary": "Book a call"
+    }
+  },
+  "forms": {
+    "contact": {
+      "fields": {
+        "name": {
+          "label": "Name",
+          "errorRequired": "Enter your name"
+        },
+        "email": {
+          "label": "Email",
+          "errorRequired": "Enter your email",
+          "errorFormat": "Invalid email format"
+        },
+        "company": {
+          "label": "Company or project"
+        },
+        "identity": {
+          "label": "How do you identify?",
+          "errorRequired": "Choose an option",
+          "options": {
+            "company": "Company",
+            "independent": "Independent or sole proprietor",
+            "startup": "Startup",
+            "creator": "Creator or personal brand",
+            "other": "Other"
+          }
+        },
+        "need": {
+          "label": "What do you need?",
+          "errorRequired": "Tell us what you need",
+          "errorLength": "Tell us a bit more"
+        },
+        "contactPreference": {
+          "label": "How do you prefer we contact you?",
+          "options": {
+            "email": "Email",
+            "whatsapp": "WhatsApp"
+          }
+        },
+        "whatsapp": {
+          "label": "WhatsApp number",
+          "errorRequired": "Enter your number",
+          "errorDigits": "Must be 10 digits"
+        }
+      },
+      "submit": "Send",
+      "sending": "Sending…",
+      "success": {
+        "title": "Got it. We'll get back to you by [email/WhatsApp] within one business day."
+      },
+      "error": {
+        "title": "We couldn't send it. Write to support{'@'}muush.dev or reach us on WhatsApp and we'll sort it out.",
+        "fallback": "support{'@'}muush.dev"
+      }
     }
   },
   "shell": {
