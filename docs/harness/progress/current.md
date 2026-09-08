@@ -1,35 +1,43 @@
 # Current session
 
-- **Última feature cerrada:** 17 · `about_hero_section` → **`done`** (2026-09-08)
-- **Rama:** `feat/about-hero-section`
-- **Sin commitear:** el trabajo de la feature 17 sigue en el árbol; commitea el líder
+- **Última feature cerrada:** 20 · `work_with_muush_section` → **`done`** (2026-09-08)
+- **Rama:** `feat/work-with-muush-section`
+- **Sin commitear:** el trabajo de la feature 20 sigue en el árbol; commitea el líder
 
 ## Estado
 
-La feature 17 pasó el ciclo `⏸ humano → in_progress → reviewing → done` (sin
-spec package, `sdd: false`) con revisión real del `reviewer` contra el arreglo
-`acceptance` de `feature_list.json`. Confirmó que `HeroStack.vue`
-(`app/shared/ui/`) es una extracción segura — verificada, no asumida: el test
-existente de `HeroSection.vue` quedó intacto y el HTML generado de la landing
-salió byte-idéntico antes y después del refactor — y que la variante `about`
-omite correctamente la fila de CTA. Mobile glow opacities 60/37/28 en ambos
-viewports, confirmado en el CSS generado (el 65/40/30 dibujado por el `.pen`
-es un error del archivo, no intención — Roberto lo resolvió el 2026-09-08).
-`--spacing-about-hero-top` queda UNVERIFIED con dueño marcado. R39 reproducido
-(regresión deliberada, capturada). `./init.sh` exit 0 — **52 archivos / 605
-pruebas** (baseline 49/582).
+La feature 20 pasó el ciclo `spec_ready → ⏸ humano → in_progress → reviewing
+→ done` con dos rondas de revisión. La ronda 1 **rechazó** por dos motivos
+que el implementer no pudo verificar en su propio entorno (sin navegador):
+`ApplicationForm.vue` a 249 líneas (Artículo V) — con la propia compuerta
+Fase -1 de `plan.md` certificando "Sí" en falso, sin haberse corrido de
+verdad contra el archivo — y un desalineamiento vertical real de 30px entre
+la columna de texto y el formulario en escritorio, que `plan.md` D-3 ya
+registraba (Left y130 vs formulario y100) y el grid construido no tenía. El
+`reviewer` completó los checks de CDP en vivo que al implementer le
+faltaron (T051/T052/T054–T058) y encontró los dos defectos midiendo, no
+leyendo. La ronda 2 confirmó ambos arreglos con medición en vivo —
+extracción real de `ApplicationWhatsappField.vue` (198+89 líneas, toggle
+reproducido sin cambios) y el offset de -30px medido exacto vía CDP, con
+móvil confirmado intacto. `ContactForm`/`useContactForm`/`contactFields`/
+`ContactSection` de la feature 16 quedaron byte-idénticos en ambas rondas.
+`./init.sh` exit 0 — **58 archivos / 688 pruebas** (baseline 52/605).
 
 ## Next step
 
-Feature **20** es la siguiente en `feature_list.json` — no la trabajó este
-agente. La feature **15** (`projects_section`) sigue `blocked` por decisión
-explícita de Roberto (esperando más colaboradores/proyectos/red, no una
-dependencia técnica).
+Con la 20 cerrada, solo quedan **pendientes** en `feature_list.json`:
 
-Queda **abierto para Roberto y Clau**, sin bloquear nada: la copy propia de
-encabezado/cuerpo de la sección de contacto (spec § A-01, feature 16); la
-tangencia de los arcos de Propósito y O-01/O-06 (feature 13); las cinco
-traducciones al español de los nombres de servicio (O-01), el trazo del
-conector (O-02), el timing del efecto lyrics (O-04), y el padding superior
-móvil de Servicios (O-03, bloqueado en el O-05 de Propósito, feature 14); y
-confirmar `--spacing-about-hero-top` contra el frame real (feature 17).
+- **Feature 21** (`floating_nav_redesign`) — la siguiente feature real de
+  contenido; nadie la ha trabajado todavía.
+- **Features 15, 18, 19** (`projects_section`, `team_section`,
+  `network_section`) — las tres siguen `blocked` por decisión explícita de
+  Roberto (esperando más colaboradores/proyectos/red, no una dependencia
+  técnica).
+
+Queda **abierto para Roberto y Clau**, sin bloquear nada: el body copy de
+`about.work.*` — el implementer completó un fragmento truncado que traía el
+brief ("Si trabajas en tecnología...") en vez de la copy verbatim que se
+prometió, y lo marcó explícitamente como pendiente de confirmación; el
+decisión #7 de `decisions-open.md` (si el CV es obligatorio,
+`CV_REQUIRED = false` hoy); y el catálogo real de roles por área bajo
+"Área y rol" (`ROLE_CATALOG`, un placeholder por área hoy, dueño Clau).

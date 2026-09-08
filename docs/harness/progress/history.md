@@ -1935,3 +1935,65 @@ the landing Hero. Reviewer **APPROVED**.
   Reviewer's verdict: `docs/harness/progress/review_about_hero_section.md`.
 - `./init.sh` exit 0 · **52 files / 605 tests** (baseline 49/582).
 - `feature_list.json`: feature id 17 status `reviewing` → `done`.
+
+## 2026-09-08 — Feature 20 `work_with_muush_section` — Work with muush, the About page's application form (done)
+
+Built `forms/`'s second field module (`ApplicationForm.vue`, its own
+`useApplicationForm`/data/content) plus `about/`'s second section
+(`WorkWithMuushSection.vue`), reusing feature 16's field vocabulary through
+the barrel exactly as Article I anticipated. **Rejected on round 1, approved
+on round 2** — the rejection is the entry worth reading closely.
+
+- **What the round-1 rejection actually demonstrates.** The implementer's
+  environment had no browser, so Phase 6's CDP-based checks (T051/T052/
+  T054–T058) were left unchecked and substituted with build-artifact grep —
+  a real limitation, honestly flagged, not hidden. The reviewer's environment
+  *did* have Chrome, drove it headless over raw CDP against `pnpm generate`'s
+  own output, and completed exactly those tasks — finding two real defects
+  neither grep nor a self-reading could have caught: `ApplicationForm.vue`
+  shipped at **249 lines**, over Article V's 200-line limit, with `plan.md`'s
+  own Phase -1 gate self-certifying "Under 200 lines each? → Yes" for that
+  exact file without the gate ever having been re-run against the file as
+  built; and a genuine **30px vertical misalignment** between the desktop
+  text column and the form column — `plan.md` D-3 itself records the text
+  block at local y130 and the form at local y100, but the shipped grid put
+  both at the same computed y (818.7px, measured live). This is what an
+  independent review buys that a self-certified gate does not: the gate said
+  "Yes" and was simply wrong, and only a second pass that actually ran the
+  verification a spec calls for — rather than trusting the checkbox — caught
+  it.
+- **Both fixes verified by live measurement, not by re-reading source.** The
+  line-count fix extracted the WhatsApp field and its mount/unmount
+  transition into `ApplicationWhatsappField.vue` (198 + 89 lines); the
+  reviewer confirmed this was a real extraction rather than a moved problem
+  by measuring both files with `wc -l` and independently re-driving the
+  WhatsApp toggle over CDP — select, type, revert, reselect — to confirm the
+  behaviour survived unchanged. The alignment fix added a desktop-only
+  `--work-form-y-offset` token consumed as a negative `margin-top`; the
+  reviewer measured the actual computed `margin-top: -30px` and the delta
+  between the two columns' live tops at 1440×900 (`formTop − textTop =
+  −30px`, matching Left@y130/form@y100 exactly), confirmed mobile untouched
+  at 390×1000 (`margin-top: 0px`, stacked flow), and separately checked the
+  negative-margin mechanism itself for a clip/overlap regression rather than
+  accepting the one number on faith.
+- **Reuse held across both review passes.** No forked form components;
+  `SelectField`'s new `groups` prop stayed additive (`options` still
+  optional, `ContactForm`'s existing call site unchanged); `ContactForm.vue`/
+  `useContactForm.ts`/`contactFields.ts`/`ContactSection.vue` from feature 16
+  confirmed byte-unchanged by `git diff --stat` in both rounds.
+- **Two values shipped as visibly pending, not silently decided.**
+  `CV_REQUIRED = false`, isolated to one named constant, matching
+  `decisions-open.md` #7's own recorded recommendation rather than resolving
+  it — owner Roberto/Clau. `ROLE_CATALOG`'s six area headers are confirmed
+  from `ui-map.md` § 9; the specific roles per area are not documented
+  anywhere this project can read, so each area ships one explicit
+  `'placeholder'` role id — owner Clau.
+
+- Implementer's reports: `docs/harness/progress/impl_work_with_muush_section.md`.
+  Reviewer's verdicts (round 1 rejection, round 2 approval, both intact):
+  `docs/harness/progress/review_work_with_muush_section.md`.
+- `./init.sh` exit 0 · **58 files / 688 tests** (baseline 52/605).
+- `specs/020-work-with-muush-section/tasks.md`: all 65 tasks checked,
+  including the five Phase 6 CDP tasks (T051/T052/T056/T058, plus T057 —
+  the specific task the rejection was about) the reviewer completed live.
+- `feature_list.json`: feature id 20 status `reviewing` → `done`.
