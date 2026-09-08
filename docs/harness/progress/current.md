@@ -1,42 +1,31 @@
 # Current session
 
-- **Última feature cerrada:** 13 · `purpose_section` → **`done`** (2026-09-08)
-- **Siguiente:** 14 · `services_section` (`pending`, `sdd: true`) — **no empezada**
-- **Rama:** `feat/purpose-section`, creada desde `master` en `4fbc819`
-- **Sin commitear:** el trabajo de la feature 13 sigue en el árbol; commitea el líder
+- **Última feature cerrada:** 14 · `services_section` → **`done`** (2026-09-08)
+- **Actual:** 16 · `contact_section` (`in_progress`, `sdd: true`) — no es de este agente
+- **Rama:** `feat/services-section`
+- **Sin commitear:** el trabajo de la feature 14 sigue en el árbol; commitea el líder
 
 ## Estado
 
-Cero features en `in_progress` o `reviewing` (C2). La feature 13 pasó el ciclo
-completo `spec_ready → ⏸ humano → in_progress → reviewing → done` con corrida real
-del `reviewer`. `./init.sh` exit 0 — **35 archivos / 455 pruebas**.
+La feature 14 pasó el ciclo completo `spec_ready → ⏸ humano → in_progress →
+reviewing → done` con corrida real del `reviewer`, que mutation-testeó dos
+aserciones clave en vivo (una centro de conector corrompido, una guarda del
+efecto lyrics removida) y confirmó que las dos cazan el defecto correcto.
+`./init.sh` exit 0 — **41 archivos / 519 pruebas** (baseline 35 / 455).
 
-## ⚠️ La feature 12 está CANCELADA — este archivo describía su ciclo
-
-Lo que había aquí hasta hoy era el log del `spec_author` de la feature 12
-(`english_url_segments`) y ya no describe nada vigente. Corregido:
-
-- **Roberto la canceló** el 2026-09-08: se le hace caso al **Artículo VI**, que
-  manda **segmentos de ruta traducidos** (`/es/nosotros` ↔ `/en/about`). Traducir
-  el segmento a inglés era justo lo contrario.
-- Su directorio `specs/012-english-url-segments/` **se borró**, y su entrada ya no
-  está en `feature_list.json` (21 features, sin id 12).
-- Las features **16, 17, 20 y 21 ya no dependen de ella**.
-- Lo único que valía la pena de ese ciclo se rescató: el hallazgo de que ninguna
-  prueba detecta un `aria-current="page"` roto en el nav vive en
-  `docs/harness/findings.md` § R61, y el hueco **sigue abierto** sin feature que lo
-  reclame.
-- El incidente de pérdida de datos que aparecía aquí (un `git checkout` sobre
-  `feature_list.json` con cambios sin commitear, que destruyó las features 13–22)
-  está cerrado: las entradas se restauraron y el detalle queda en
-  `RECOVER-feature_list.md` y en `pending-decisions.md`. **Ningún agente corre
-  `git checkout`, `reset`, `restore`, `clean` ni `stash`.**
+`tasks.md` de la feature 14 quedó con sus 53 checkboxes marcados `[x]`,
+alineado con lo que el `reviewer` verificó — el `implementer` los había dejado
+sin marcar pese a que el trabajo existía y funcionaba.
 
 ## Next step
 
-El `leader` toma la feature **14** (`services_section`) desde `pending` y lanza
-`spec_author`. Antes de marcarla `in_progress` va el gate de aprobación humana.
+Feature **16** (`contact_section`) ya está `in_progress` — no es de este
+agente, quien la esté trabajando sigue su propio ciclo. La feature **15**
+(`projects_section`) sigue `blocked` por decisión explícita de Roberto
+(esperando más colaboradores/proyectos/red, no una dependencia técnica).
 
-Queda **abierto para Roberto y Clau**, sin bloquear la 14: la tangencia de los
-arcos de Propósito (ver la entrada de la feature 13 en `history.md`), más O-01 y
-O-06 todavía `UNVERIFIED`.
+Queda **abierto para Roberto y Clau**, sin bloquear nada: la tangencia de los
+arcos de Propósito y O-01/O-06 (feature 13); y de la feature 14, las cinco
+traducciones al español de los nombres de servicio (O-01), el trazo del
+conector (O-02), el timing del efecto lyrics (O-04), y el padding superior
+móvil de Servicios (O-03, bloqueado en el O-05 de Propósito).

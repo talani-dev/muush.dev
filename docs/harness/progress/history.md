@@ -1797,3 +1797,49 @@ T032 —«la raíz de la sección», el envoltorio de los arcos— vive en ese c
 - `feature_list.json`: feature id 13 status `reviewing` → `done`.
 - De paso: `.specify/feature.json` llegó fallando `biome check` y bloqueaba el gate;
   se corrigió su formato y su ruta a `013-purpose-section`.
+
+## 2026-09-08 — Feature 14 `services_section` — Servicios, the landing's third section
+
+Desktop scatter of five service nodes joined by four connector lines, mobile
+vertical timeline against a spine with a scroll-driven "lyrics" dimming effect.
+Reviewer **APPROVED**; two load-bearing claims mutation-tested live (a
+corrupted connector centre and a removed lyrics guard both correctly killed
+their assertions, then reverted).
+
+- **Connector lines are a generative relation, not four literal shapes.**
+  `connectorEndpoints(SERVICE_NODE_CENTRES)` is a pure function over the five
+  confirmed radar centres; measured in Chrome against `.output/public`, all
+  four rendered endpoints match the design to ≤1px — same discipline
+  Propósito's arc-tangency check used.
+- **A real bug caught only by measuring the built page, not by any test
+  written in advance.** `IntersectionObserver`'s first callback ties every
+  ratio at 0 before the visitor has scrolled anywhere near the section; without
+  a guard the tie-break picked item 1 as "active" and dimmed items 2–5 on page
+  load. This is exactly the class of defect a spec cannot anticipate — only
+  scripted scrolling against the real artefact surfaced it. Fixed with a
+  one-line no-op guard and a unit test that mutation-testing confirmed kills.
+- **One data-model deviation, confirmed necessary by the reviewer.**
+  `data-model.md` specified the four connectors as CSS custom properties on
+  `x1`/`y1`/`x2`/`y2`; Biome's `noUnknownProperty` rule correctly rejects those
+  as CSS declarations (independently reproduced by the reviewer with an
+  isolated probe). Switched to bound SVG attributes from the same pure
+  function — the "generated, never hardcoded" requirement holds either way.
+- **Two documents disagreed on the lyrics rest opacity** — `design-extract.md`
+  says 0.18, `ui-map.md` and `feature_list.json` both say 0.22. Shipped
+  **0.22**, the value two independent sources agree on.
+- **Four open values, all marked pending, none blocking**: the five Spanish
+  service names (English shipped as the placeholder in both locales), the
+  connector stroke colour/width, the lyrics effect's timing/thresholds, and
+  the mobile top padding (still blocked on Propósito's own open O-05).
+
+- Implementer's report: `docs/harness/progress/impl_services_section.md`.
+  Reviewer's verdict: `docs/harness/progress/review_services_section.md`.
+- `./init.sh` exit 0 · **41 files / 519 tests** (baseline 35/455), no
+  pre-existing test modified. `git diff --stat` confirmed zero changed lines
+  in `SectionGlow`/`SectionBackdrop`/`DotGrid`/`Radar`/`Pill`, `Purpose*`/
+  `Hero*`, `features/shell/`, `layouts/`.
+- `feature_list.json`: feature id 14 status `reviewing` → `done`.
+- Housekeeping: `tasks.md`'s 53 checkboxes were left unticked by the
+  implementer despite the work existing and passing review — a cosmetic gap,
+  not a rejection ground, but confusing next to a `done` feature. Checked off
+  to match what was actually built and verified.
