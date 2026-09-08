@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import { FOOTER_COLUMNS, SUPPORT_EMAIL, WHATSAPP_URL } from './footerColumns'
 import type { ShellDestination, ShellItem } from './types'
 
@@ -56,8 +57,15 @@ describe('footer columns', () => {
     expect(undecided).toEqual([])
   })
 
-  it('should leave the call booking without a destination while #2 is open', () => {
-    expect(itemFor('shell.footer.contact.call').destination.kind).toBe('none')
+  it('should point the call booking at the shared booking URL now that #2 is resolved', () => {
+    /* The guard against a silent return to the inert branch. `external` is
+       what earns it the new tab and the severed opener that
+       `decisions-open.md` § Decisión 2 asks for; `kind: 'none'` here would
+       put the phrase back to grey text with no test noticing otherwise. */
+    expect(itemFor('shell.footer.contact.call').destination).toEqual({
+      kind: 'external',
+      href: CALL_BOOKING_URL,
+    })
   })
 
   it('should leave the FAQ without a destination while #3 is open', () => {
@@ -68,18 +76,27 @@ describe('footer columns', () => {
     expect(itemFor('shell.footer.muush.blog').destination.kind).toBe('none')
   })
 
-  it('should treat the three undecided items identically', () => {
-    /* They must read as one consistent treatment, not as three states. */
-    const undecided = [
-      'shell.footer.contact.call',
+  it('should treat the two remaining undecided items identically', () => {
+    /* They must read as one consistent treatment, not as two states. The call
+       booking was a third until 2026-09-07 and left this group by changing one
+       key — the property `kind: 'none'` exists to give. */
+    const undecided = ['shell.footer.muush.faq', 'shell.footer.muush.blog'].map(
+      key => itemFor(key).destination
+    )
+
+    expect(undecided).toEqual([{ kind: 'none' }, { kind: 'none' }])
+  })
+
+  it('should hold no other item in the undecided state', () => {
+    /* The complement: if a future edit reverted the call booking, or dropped
+       another destination, this names it. */
+    const withoutDestination = everyItem
+      .filter(item => item.destination.kind === 'none')
+      .map(item => item.labelKey)
+
+    expect(withoutDestination).toEqual([
       'shell.footer.muush.faq',
       'shell.footer.muush.blog',
-    ].map(key => itemFor(key).destination)
-
-    expect(undecided).toEqual([
-      { kind: 'none' },
-      { kind: 'none' },
-      { kind: 'none' },
     ])
   })
 

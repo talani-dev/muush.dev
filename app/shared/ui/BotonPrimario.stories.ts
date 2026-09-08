@@ -13,6 +13,13 @@ import BotonPrimario, {
  *
  * The label is slot content in both locales below, to show that no copy is
  * baked into the component.
+ *
+ * **Hover the cursor, not just the ring.** `Nav`, `Hero` and `AsLink` differ in
+ * one more way than their padding: a `<button>` with no destination and no
+ * handler does nothing when clicked, so it deliberately keeps the default
+ * cursor, while a link and a form submit show a pointer. That is the rule
+ * `ui-map.md` § 6 states for reserved controls, and nothing in the stylesheet
+ * used to set a cursor at all (`docs/harness/findings.md` § R56).
  */
 const meta = {
   title: 'Shared/UI/BotonPrimario',

@@ -11,7 +11,7 @@
 | # | Decisión | De quién | Por qué bloquea |
 |---|---|---|---|
 | 1 | A dónde llegan los formularios: servicio externo (Formspree/Web3Forms), función serverless a support@muush.dev, o directo a CRM del Company OS | Roberto y Clau | Sin esto no hay formulario funcional |
-| 2 | Link real de Google Calendar para el CTA de llamada | Clau | Aparece en hero, CTA final y footer |
+| ~~2~~ | ~~Link real de Google Calendar para el CTA de llamada~~ | ~~Clau~~ | ✅ **RESUELTA 2026-09-07** — ver abajo |
 | 3 | Qué pasa con FAQ: escribirla, quitar el link del footer, o dejarla "próximamente" sin link | Clau | Hoy sería un 404 en el footer de todo el sitio |
 | ~~4~~ | ~~Estrategia de URL del idioma~~ | ~~Roberto~~ | ✅ **RESUELTA 2026-09-06** — ver abajo |
 
@@ -160,3 +160,28 @@ segmento y conservar el ancla (`/es/nosotros#work` → `/en/about#work`).
 **Regla de implementación:** ese mapeo vive en `src/i18n/`, nunca
 hardcodeado dentro del componente Nav. Si algún día se revierte a ES sin
 prefijo, debe ser un cambio de datos y no de componentes.
+
+---
+
+## ✅ Decisión 2 — RESUELTA 2026-09-07 · el link de la llamada
+
+**`https://cal.com/muush/intro-call`** — dado por Roberto el 2026-09-07.
+
+Nota: la decisión estaba redactada como *"link real de Google Calendar"*. La
+herramienta resultó ser **Cal.com, no Google Calendar**; el destino es lo que
+importa y la redacción anterior daba por hecha una herramienta que no se usó.
+
+**Dónde aplica** — los tres lugares que la decisión ya listaba:
+
+| Dónde | Qué cambia |
+|---|---|
+| Hero, CTA secundario | Deja de ser `<span>` gris inerte; pasa a `LinkArrow` real en `bone-100`, **con flecha** |
+| Footer, columna Contacto | Deja de ser `<span class="text-ink-300">`; pasa a link real |
+| CTA final | Aún no construido — nace ya con el link |
+
+**Comportamiento:** pestaña nueva con `rel="noopener"`, como pide
+`ui-map.md` § 3. `LinkArrow` ya acepta `external` y lo hace.
+
+Esto también resuelve dos síntomas que Roberto reportó al ver el Hero — texto
+gris en vez de blanco, y flecha ausente. Los dos eran la misma causa: sin
+`callHref`, `HeroSection.vue` cae a su rama inerte. No eran bugs de estilo.

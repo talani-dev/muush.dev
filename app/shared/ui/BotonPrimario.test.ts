@@ -64,6 +64,46 @@ describe('BotonPrimario', () => {
     })
   }
 
+  it('should offer a pointer when it renders as a link', () => {
+    /* The user agent would give an `<a href>` a pointer anyway; it is declared
+       so the two branches stop depending on which element they happen to be
+       (`findings.md` § R56). */
+    const wrapper = mount(BotonPrimario, { props: { href: '#contacto' } })
+
+    expect(wrapper.classes()).toContain('cursor-pointer')
+  })
+
+  it('should offer a pointer when it renders as a form submit', () => {
+    /* A submit always does something: submitting is native to the element. */
+    const wrapper = mount(BotonPrimario, { props: { variant: 'submit' } })
+
+    expect(wrapper.classes()).toContain('cursor-pointer')
+  })
+
+  for (const variant of ['nav', 'hero'] as const) {
+    it(`should offer no pointer when the ${variant} variant has no destination`, () => {
+      /* The state the Hero's primary CTA is in while section 05 does not
+         exist: a `<button type="button">` with no href and no handler, which
+         does nothing when clicked. `ui-map.md` § 6 rules on exactly this shape
+         — "un espacio reservado que parece clickeable y no lleva a nada se lee
+         como sitio roto". */
+      const wrapper = mount(BotonPrimario, { props: { variant } })
+
+      expect(wrapper.element.tagName).toBe('BUTTON')
+      expect(wrapper.classes()).not.toContain('cursor-pointer')
+    })
+  }
+
+  it('should offer no pointer when a submit variant is overridden to a plain button', () => {
+    /* The override makes it inert, so the cursor follows the resolved type and
+       not the variant name. */
+    const wrapper = mount(BotonPrimario, {
+      props: { variant: 'submit', type: 'button' },
+    })
+
+    expect(wrapper.classes()).not.toContain('cursor-pointer')
+  })
+
   it('should render the caller-supplied label when slot content is given', () => {
     const wrapper = mount(BotonPrimario, {
       slots: { default: 'Cuéntanos tu proyecto' },

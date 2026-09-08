@@ -1,3 +1,5 @@
+import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
+
 /**
  * The Hero's content model: the keys it renders, its two destinations, and the
  * shape `logic/` hands `ui/`.
@@ -25,18 +27,21 @@ export const HERO_KEYS = {
 } as const
 
 /**
- * Where the Hero's two controls point. Both are blocked today, and the record
- * is the same shape for both:
+ * Where the Hero's two controls point. One is now filled and one is still
+ * blocked, and the record is the same shape for both:
  *
- * - `callUrl` waits on `decisions-open.md` #2, the real booking link. While
- *   it is absent the secondary CTA renders as inert `ink-300` text with no
- *   arrow — the same treatment `FooterColumn.vue` gives that exact phrase.
+ * - `callUrl` **landed on 2026-09-07**. `decisions-open.md` #2 is resolved and
+ *   the destination is `CALL_BOOKING_URL`. The secondary CTA is therefore a
+ *   real `LinkArrow` in `bone-100`, with its arrow, opening in a new tab —
+ *   which is what `ui-map.md` § 3 has always specified for it. The white text
+ *   and the arrow arrived by construction with the href; neither was styled in.
  * - `contactHash` waits on section 05, which does not exist. While it is
  *   absent the primary CTA renders as a real button and emits no fragment
  *   into the generated HTML.
  *
  * Filling either is a one-key change **here**, with no component markup
- * touched. Neither may be filled
+ * touched. That was the claim the call link has now proven: the day the URL
+ * arrived, this file was the only one that had to say so. Neither may be filled
  * with a substitute destination: not the footer, not `mailto:`, not WhatsApp,
  * not a scroll to an arbitrary position (spec FR-014).
  */
@@ -45,7 +50,9 @@ export interface HeroDestinations {
   contactHash?: string
 }
 
-export const HERO_DESTINATIONS: HeroDestinations = {}
+export const HERO_DESTINATIONS: HeroDestinations = {
+  callUrl: CALL_BOOKING_URL,
+}
 
 /**
  * What `logic/` hands `ui/`: already translated, already resolved.

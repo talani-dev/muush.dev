@@ -111,11 +111,18 @@ function chooseItem(item: ResolvedShellItem) {
       <div class="flex items-center gap-nav-gap">
         <LanguageToggle :locale="locale" :href="localeSwitchHref" />
 
+        <!--
+          `cursor-pointer` for the same reason as the hamburger it replaces: a
+          native `<button>` gets `cursor: default` from the user agent, and
+          nothing in the stylesheet overrode it
+          (`docs/harness/findings.md` § R56). The panel only exists when
+          scripting is running, so this control always does something.
+        -->
         <button
           ref="closeControl"
           type="button"
           :aria-label="closeLabel"
-          class="inline-grid place-items-center rounded-icon border border-glass-line bg-glass-dark p-close-pad text-bone-100 focus-visible:outline-red-400"
+          class="inline-grid cursor-pointer place-items-center rounded-icon border border-glass-line bg-glass-dark p-close-pad text-bone-100 focus-visible:outline-red-400"
           @click="emit('closed')"
         >
           <span
