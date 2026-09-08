@@ -38,6 +38,14 @@ import ServicesTimeline from './ServicesTimeline.vue'
  * 4. **No bottom padding and no horizontal padding.** The gap to Proyectos
  *    belongs to Proyectos (`rules.md` § R49) — this section passes on a
  *    **110px** desktop remainder — and `<main>` already applies `px-page`.
+ *    ⚠️ **This section's own root still carries none.** The one documented
+ *    exception is one level down: `ServicesConstellation.vue`'s `.canvas`
+ *    breaks out of `<main>`'s `px-page` on its own (a negative
+ *    `margin-inline`), because the `.pen` frame it is built from is
+ *    1440px wide — `<main>`'s full border box, not its padded content box.
+ *    Roberto approved this as a one-section divergence from feature 14's
+ *    reviewed "no horizontal padding" contract (feature 23, item 4, round 3)
+ *    — see that component's own `.canvas` comment for the full derivation.
  *
  * The section carries no `aria-label`, matching the Hero's and Propósito's
  * precedent: the `id` is a scroll target, not a landmark (spec A-05). No

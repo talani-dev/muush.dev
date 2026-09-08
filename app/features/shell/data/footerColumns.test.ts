@@ -25,7 +25,12 @@ function hasRealDestination(destination: ShellDestination): boolean {
 /**
  * The audit `ui-map.md` § 8 asks for. A link to a page that does not exist is
  * "un 404 en el footer de **todas** las páginas del sitio", so every item has
- * to be provably in one of exactly two categories. There is no third.
+ * to carry a real destination.
+ *
+ * Feature 23 (2026-09-08) removed the three items that used to fail that
+ * audit for a different reason — `Proyectos`, `FAQ` and `Blog · próximamente`
+ * — entirely, rather than leaving them inert. `kind: 'none'` no longer
+ * appears anywhere in `FOOTER_COLUMNS`.
  */
 describe('footer columns', () => {
   it('should carry exactly four columns in the order the design fixes', () => {
@@ -37,24 +42,33 @@ describe('footer columns', () => {
     ])
   })
 
-  it('should order Navegación as decisions-open.md D4 settled it', () => {
-    /* `ui-map.md` § 8 lists Servicios first; D4 superseded it. */
+  it('should order Navegación as decisions-open.md D4 settled it, minus Proyectos', () => {
+    /* `ui-map.md` § 8 lists Servicios first; D4 superseded it. Feature 23
+       removes `Proyectos` entirely (Roberto, 2026-09-08) — same class of
+       decision as dropping it from the main nav in feature 21. */
     expect(FOOTER_COLUMNS[0]?.items.map(item => item.labelKey)).toEqual([
       'shell.footer.nav.purpose',
       'shell.footer.nav.services',
-      'shell.footer.nav.projects',
       'shell.footer.nav.about',
     ])
   })
 
-  it('should give every item either a real destination or none at all', () => {
+  it('should give every item a real destination', () => {
     const undecided = everyItem.filter(
-      item =>
-        item.destination.kind !== 'none' &&
-        !hasRealDestination(item.destination)
+      item => !hasRealDestination(item.destination)
     )
 
     expect(undecided).toEqual([])
+  })
+
+  it('should carry no item in the inert "none" state anymore', () => {
+    /* Feature 23: `Proyectos`, `FAQ` and `Blog · próximamente` are gone
+       entirely rather than rendered as inert text (Roberto, 2026-09-08). */
+    const withoutDestination = everyItem.filter(
+      item => item.destination.kind === 'none'
+    )
+
+    expect(withoutDestination).toEqual([])
   })
 
   it('should point the call booking at the shared booking URL now that #2 is resolved', () => {
@@ -68,45 +82,11 @@ describe('footer columns', () => {
     })
   })
 
-  it('should leave the FAQ without a destination while #3 is open', () => {
-    expect(itemFor('shell.footer.muush.faq').destination.kind).toBe('none')
-  })
-
-  it('should leave the blog without a destination as the design specifies', () => {
-    expect(itemFor('shell.footer.muush.blog').destination.kind).toBe('none')
-  })
-
-  it('should treat the two remaining undecided items identically', () => {
-    /* They must read as one consistent treatment, not as two states. The call
-       booking was a third until 2026-09-07 and left this group by changing one
-       key — the property `kind: 'none'` exists to give. */
-    const undecided = ['shell.footer.muush.faq', 'shell.footer.muush.blog'].map(
-      key => itemFor(key).destination
-    )
-
-    expect(undecided).toEqual([{ kind: 'none' }, { kind: 'none' }])
-  })
-
-  it('should hold no other item in the undecided state', () => {
-    /* The complement: if a future edit reverted the call booking, or dropped
-       another destination, this names it. */
-    const withoutDestination = everyItem
-      .filter(item => item.destination.kind === 'none')
-      .map(item => item.labelKey)
-
-    expect(withoutDestination).toEqual([
-      'shell.footer.muush.faq',
-      'shell.footer.muush.blog',
-    ])
-  })
-
-  it('should keep the blog separator inside one item rather than splitting it', () => {
-    /* `Blog · próximamente` is one string including its `·`. Splitting on the
-       separator would produce a phantom fourth item in this column. */
+  it('should carry only Work with muush in the muush column', () => {
+    /* FAQ and `Blog · próximamente` removed entirely (feature 23) — not left
+       inert, not present at all. */
     expect(FOOTER_COLUMNS[2]?.items.map(item => item.labelKey)).toEqual([
       'shell.footer.muush.work',
-      'shell.footer.muush.faq',
-      'shell.footer.muush.blog',
     ])
   })
 

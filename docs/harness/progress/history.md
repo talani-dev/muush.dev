@@ -2079,3 +2079,89 @@ shape as feature 20's rejection earlier tonight, closed the same way.
 - `specs/021-floating-nav-redesign/tasks.md`: all 25 tasks checked, including
   T016/T021/T022's live-CDP measurements, completed across both rounds.
 - `feature_list.json`: feature id 21 status `reviewing` → `done`.
+
+## 2026-09-08 — Feature 23 `visual_polish_round_1` — nav, section spacing, Servicios, Contacto, footer (done)
+
+Nine visual-QA items from Roberto's `pnpm dev` review, `sdd: false`. **Three
+review rounds, all on item 4 (the Services canvas), the other eight approved
+untouched since round 1.**
+
+- **Item 1 — nav CTA arrow order.** `SiteNav.vue`: `.pen` frames `Rm6Wu`/
+  `WGhSI` draw `Texto → Flecha`, text first, `gap: 9`. Swapped the markup
+  order, added `--spacing-nav-cta-arrow-gap` (9px, `ml-nav-cta-arrow-gap`).
+  Mutation-tested: reverting the order fails `SiteNav.test.ts`.
+- **Item 2 — nav link centring.** The desktop row was one flex group
+  (`justify-between` against the logo), so the links sat centred on the
+  leftover space next to the CTA, not on the pill. Restructured into three
+  independent zones (`nav-row` grid `1fr auto 1fr` at `lg` only, hand-written
+  CSS, no Tailwind arbitrary value) — logo / links / CTA+toggle. CDP-measured
+  at 1024/1440/1536, ES+EN: link-row centre vs. nav centre, Δ ≤ 0.008px.
+  Mobile flex/`justify-between` byte-identical (only 2 visible children,
+  links `hidden` there regardless of DOM position).
+- **Items 3/8 — section spacing.** No design value (`.pen` draws sections
+  flush); Roberto asked the implementer to calibrate. One new token,
+  `--spacing-section-gap` (clamp 32px→80px), applied via `mt-section-gap` on
+  every section after the first on both pages and before `<SiteFooter>` in
+  `default.vue` — never as a change to any section's own calibrated
+  `pt-*-top` (`rules.md` § R49).
+- **Item 4 — Services canvas, three rounds.** Round 1: `.canvas` reused
+  `--services-closer-w` (1280px) for its own width with `margin-inline:auto`;
+  below 1440px `<main>`'s padded content box is narrower than 1280px, forcing
+  the margins to 0 and pinning the canvas flush left with invisible
+  right-overflow — confirmed by CDP measurement, fixed with a fluid
+  `min(...,100%)` width. **Reviewer rejected round 1**: at exactly 1440px —
+  one of the four named acceptance widths — node 5's brief text still
+  clipped mid-word, found by measuring the node's own bounding box rather
+  than just the canvas box (the implementer's round-1 verification hadn't).
+  Round 2 (media-query gate, canvas exactly 1280px unconditional at ≥1440)
+  proved via measurement that the clipping was independent of the canvas
+  width formula entirely — canvas's rendered left edge doesn't move once its
+  width ≥ the available box, so no `.canvas`-width value could fix it — and
+  flagged the real cause instead of guessing at it. The leader then read the
+  actual `.pen` node (`GiLTU`, 1440×1020) directly: the canvas's coordinate
+  space is the FULL 1440px frame, not the 1280px `.closer` box (`vUMC8`)
+  nested 80px inside it — two different boxes, previously conflated into one
+  token. Round 3: new `--services-canvas-w` (1440px) token, `.canvas` full-
+  bleeds out of `<main>`'s `px-page` (`width: min(var(--services-canvas-w),
+  calc(100% + 2 * var(--spacing-page)))`, `margin-inline: calc(-1 *
+  var(--spacing-page))`), SVG `viewBox` updated `1280→1440`. No node/Pill/
+  closer offset token touched — all were already authored against the
+  frame's own origin. Roberto approved this as a documented one-section
+  exception to feature 14's reviewed "no horizontal padding" contract.
+  Reviewer re-measured at 1440 (node-5 text right edge 1378px, 62px from the
+  real viewport edge, matching the leader's `.pen` reading exactly, full
+  sentence intact) and at 1536/1600/1920/1024/mobile for regressions —
+  **approved round 3**.
+- **Item 5 — Delivery Pill stretched.** `.closer` was `flex-col` (no
+  `items-start`), so the Pill inherited `align-items:stretch` and filled the
+  full 1280px row. Changed to `flex-row items-start`. CDP-measured: Pill
+  118.125px wide (not 1280), same row/y as the copy.
+- **Items 6/7 — Contact copy + divider.** The shipped `body` copy was a
+  feature-16 placeholder (spec A-01, never resolved — the leader had read
+  the wrong `.pen` node, a demo copy inside `DEMO spotlight cursor`, not the
+  real landing node `bdyCz`/`nMffw`). Replaced with the real ES/EN copy, and
+  added a new `altQuestion` key (the alternate route's lead-in question,
+  which the section never rendered at all before). A hairline divider was
+  added above the alternate route reusing the footer's own
+  `border-hairline-footer`/`pt-footer-bar-gap` recipe — no rectangle exists
+  in the `.pen` for this at any viewport/locale; Roberto asked for one
+  anyway after seeing a design reference, and the implementer said so rather
+  than inventing a new colour or pretending it came from the design.
+- **Item 9 — footer removal.** `Proyectos`, `FAQ` and `Blog · próximamente`
+  removed entirely from `footerColumns.ts` (not left `kind:'none'`) plus
+  their now-dead i18n keys — same treatment `navigation.ts` already gives
+  `Proyectos` in the main nav (feature 21). Mutation-tested: restoring
+  `Proyectos` fails `footerColumns.test.ts`.
+- **Frozen primitives untouched across all three rounds.** `git diff --stat`
+  against `SectionGlow.vue`, `DotGrid.vue`, `SectionBackdrop.vue`,
+  `Radar.vue`, `Pill.vue`, `BotonPrimario.vue`: zero lines changed, confirmed
+  by both implementer and reviewer, every round.
+- Implementer's report (all three rounds):
+  `docs/harness/progress/impl_visual_polish_round_1.md`. Reviewer's verdict
+  (round 1 rejection + round 3 approval, one file):
+  `docs/harness/progress/review_visual_polish_round_1.md`.
+- `./init.sh` exit 0 · **58 files / 705 tests** (baseline 58/706 — net of
+  legitimate test consolidation once the `kind:'none'` state stopped
+  existing anywhere in `footerColumns.ts`, not a coverage regression; see the
+  reviewer's own count reconciliation).
+- `feature_list.json`: feature id 23 status `reviewing` → `done`.

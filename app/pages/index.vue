@@ -26,6 +26,12 @@ import {
  * `useContactFormContent` is imported from `forms`, not `landing`: the page
  * composes both modules' barrels, which Article III permits — only a
  * *feature* may not reach into another feature's internals.
+ *
+ * `mt-section-gap` on every section but the Hero (feature 23, items 3/8):
+ * the `.pen` draws sections flush against each other and each section's own
+ * `pt-*-top` is calibrated exactly against that (`rules.md` § R49), so the
+ * gap Roberto asked for is a margin added at this composition layer rather
+ * than a change to any of those calibrated paddings.
  */
 const { t } = useI18n()
 const hero = useHeroContent()
@@ -39,7 +45,11 @@ useHead({ title: t('site.title') })
 
 <template>
   <HeroSection v-bind="hero" />
-  <PurposeSection v-bind="purpose" />
-  <ServicesSection v-bind="services" />
-  <ContactSection v-bind="contact" :form-content="contactForm" />
+  <PurposeSection class="mt-section-gap" v-bind="purpose" />
+  <ServicesSection class="mt-section-gap" v-bind="services" />
+  <ContactSection
+    class="mt-section-gap"
+    v-bind="contact"
+    :form-content="contactForm"
+  />
 </template>

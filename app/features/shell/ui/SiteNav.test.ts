@@ -154,16 +154,17 @@ describe('SiteNav', () => {
     expect(button?.attributes('href')).toBe('/es#contacto')
   })
 
-  it('should carry the leading arrow as a separate aria-hidden element', async () => {
+  it('should carry a trailing arrow as a separate aria-hidden element', async () => {
     /* spec FR-012 — composed by this caller inside BotonPrimario's existing
        slot, never baked into the translated string (same discipline as
-       feature 9's `LinkArrow`, FR-010). */
+       feature 9's `LinkArrow`, FR-010). Feature 23 item 1: the `.pen`
+       (frames `Rm6Wu`/`WGhSI`) draws `Texto → Flecha`, text first. */
     const button = ctaLink(await mountNav())
     const arrow = button?.find('span[aria-hidden="true"]')
 
     expect(arrow?.exists()).toBe(true)
     expect(arrow?.text()).toBe('→')
-    expect(button?.text()).toBe(`→ ${props.cta.label}`)
+    expect(button?.text()).toBe(`${props.cta.label} →`)
   })
 
   it('should keep the call to action out of the mobile arrangement', async () => {

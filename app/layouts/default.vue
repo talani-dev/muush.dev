@@ -198,7 +198,16 @@ useHead(useLocaleHead())
         <slot />
       </main>
 
+      <!--
+        `mt-section-gap` (feature 23, items 3/8): the same perceptible gap
+        every section-to-section boundary now carries, applied once more
+        here between the last section of whichever page renders and the
+        footer's own `pt-footer-top`. Vue merges a `class` passed to a
+        component onto its single root element, so this lands on
+        `SiteFooter.vue`'s own `<footer>` without editing that file.
+      -->
       <SiteFooter
+        class="mt-section-gap"
         :columns="footerColumns"
         :home="home"
         :tagline="brand.tagline"

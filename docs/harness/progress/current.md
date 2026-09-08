@@ -1,44 +1,45 @@
 # Current session
 
-- **Última feature cerrada:** 21 · `floating_nav_redesign` → **`done`** (2026-09-08)
-- **Rama:** `feat/floating-nav-redesign`
-- **Sin commitear:** el trabajo de la feature 21 sigue en el árbol; commitea el líder
+- **Última feature cerrada:** 23 · `visual_polish_round_1` → **`done`** (2026-09-08)
+- **Rama:** `feat/visual-polish-round-1`
+- **Sin commitear:** el trabajo de la feature 23 sigue en el árbol; commitea el líder
 
 ## Estado
 
-La feature 21 pasó el ciclo `spec_ready → ⏸ humano → in_progress → reviewing
-→ done` con dos rondas de revisión. La ronda 1 **rechazó** por tres defectos
-de medida que el implementer no pudo verificar en su propio entorno (sin
-CDP): la píldora de escritorio a 1280×110 en vez de 1280×72
-(`--spacing-nav-y` nunca se ajustó para la píldora), el nav móvil a 88px en
-vez de los ~78px que `findings.md` § R55 ya registraba (el círculo de idioma
-de 44×44 pasó a ser el contenido más alto de la fila), y el CTA del nav a
-232.5×48 en vez de 221×48. El `reviewer` completó esas tres medidas en vivo
-por CDP contra `.output/public` y encontró los tres defectos midiendo, no
-leyendo. La ronda 2 confirmó los tres arreglos con medición en vivo —incluido
-un hallazgo a medio arreglo (`findings.md` § R64: el borde de 1px nuevo de la
-píldora suma a su alto automático bajo `border-box`, así que el primer
-intento midió 74px, no 72)— y el reviewer remidió las tres cifras de forma
-independiente contra un `pnpm generate` fresco.
+La feature 23 (nueve ítems de ajuste visual, `sdd: false`) pasó el ciclo
+`in_progress → reviewing → done` con tres rondas de revisión, todas sobre el
+mismo ítem (4 · la constelación de Servicios). Los otros ocho quedaron
+aprobados desde la ronda 1: flecha del CTA del nav (texto-primero, gap 9),
+centrado de los links del nav respecto al ancho total de la píldora, el
+token único de espaciado entre secciones (`--spacing-section-gap`), el Pill
+de Delivery sin estirarse, el copy real de Contacto + divisor hairline, y la
+eliminación completa de FAQ/Blog/Proyectos del footer.
 
-Un defecto real del paquete de spec se encontró y se resolvió, no solo se
-implementó alrededor: `LanguageToggle.vue` no podía conservar su contrato
-`{locale, href}` como decía `contracts/components.md` sin violar el
-Artículo VI (string sin traducir) o la convención de `rules.md` § R23 (cero
-`useI18n()` en `ui/`). Se agregó un prop, `switchLabel`, resuelto en
-`default.vue` y pasado por `SiteNav`/`MobileMenu` — el reviewer lo calificó
-de arreglo legítimo y proporcionado, no scope creep.
+El ítem 4 se resolvió en tres pasadas: la ronda 1 detectó y arregló el
+"hugging" del canvas de Servicios contra el borde izquierdo (hipótesis del
+padding confirmada por CDP), pero el reviewer la rechazó porque a 1440px —
+uno de los cuatro anchos nombrados en el criterio de aceptación — el texto
+del nodo 5 seguía recortándose a media palabra. La ronda 2 demostró, midiendo
+en vivo, que el recorte era independiente de la fórmula de ancho del canvas
+(el borde izquierdo renderizado no se mueve una vez que el ancho ≥ la caja
+disponible) y señaló la causa real en vez de adivinarla. El líder leyó
+entonces el nodo real del `.pen` (`GiLTU`, 1440×1020): el canvas es el marco
+completo de 1440px, no la caja de 1280px de `.closer` anidada adentro — dos
+conceptos del diseño que se habían confundido en un solo token. La ronda 3
+introdujo `--services-canvas-w` (1440px) y un full-bleed documentado que
+rompe el `px-page` de `<main>` solo para este canvas — excepción aprobada
+por Roberto al contrato ya revisado de la feature 14 — sin tocar ningún
+token de posición de nodo/Pill/closer. Reviewer remidió a 1440 (nodo 5 sin
+recorte, 62px de margen real, coincide exacto con la lectura del `.pen`) y
+confirmó que 1536/1600/1920/1024/móvil no se rompieron. **Aprobado.**
 
-Las dos divergencias respecto al `.pen` quedaron documentadas en código, no
-resueltas en silencio: `Proyectos` fuera del nav (instrucción de Roberto,
-feature 15 diferida) y `Servicios` dentro (el `.pen` gana por § R32, se
-reporta la contradicción con `content.md` para que la resuelva un humano).
-
-`./init.sh` exit 0 — **58 archivos / 706 pruebas** (baseline 58/688).
+`./init.sh` exit 0 — **58 archivos / 705 pruebas** (baseline 58/706, neta de
+consolidación legítima de pruebas una vez que el estado `kind:'none'` dejó
+de existir en `footerColumns.ts` — no es una regresión de cobertura).
 
 ## Next step
 
-Con la 21 cerrada, solo quedan **`blocked`** en `feature_list.json`:
+Con la 23 cerrada, solo quedan **`blocked`** en `feature_list.json`:
 
 - **Features 15, 18, 19** (`projects_section`, `team_section`,
   `network_section`) — las tres siguen diferidas indefinidamente por decisión
@@ -49,6 +50,9 @@ Sigue **abierto para Roberto y Clau**, sin bloquear nada (arrastrado de
 sesiones previas): el body copy de `about.work.*` pendiente de confirmación;
 la decisión #7 de `decisions-open.md` (si el CV es obligatorio,
 `CV_REQUIRED = false` hoy); el catálogo real de roles por área bajo "Área y
-rol" (`ROLE_CATALOG`, un placeholder por área hoy, dueño Clau); y ahora
-también la contradicción `content.md`/`.pen` sobre `Servicios` en el nav
-(feature 21) y la desactualización de `ui-map.md` § 2 por el mismo rediseño.
+rol" (`ROLE_CATALOG`, un placeholder por área hoy, dueño Clau); la
+contradicción `content.md`/`.pen` sobre `Servicios` en el nav (feature 21) y
+la desactualización de `ui-map.md` § 2 por el mismo rediseño; y ahora
+también el `--services-canvas-w`/full-bleed de la feature 23, que diverge a
+propósito del contrato "sin padding horizontal" que la feature 14 dejó
+revisado — documentado en el propio componente, no oculto.

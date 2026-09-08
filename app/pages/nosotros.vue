@@ -22,6 +22,9 @@ import { useApplicationFormContent } from '@/features/forms'
  * module reaches into the other beyond its barrel (Constitution Article III,
  * plan.md D-1) — the same pattern `index.vue` already uses for
  * `useContactFormContent`.
+ *
+ * `mt-section-gap` on `WorkWithMuushSection` (feature 23, items 3/8) —
+ * same reasoning as `index.vue`'s own comment on the same class.
  */
 const { t } = useI18n()
 const aboutHero = useAboutHeroContent()
@@ -33,5 +36,9 @@ useHead({ title: t('pages.about.title') })
 
 <template>
   <AboutHeroSection v-bind="aboutHero" />
-  <WorkWithMuushSection v-bind="work" :form-content="applicationFormContent" />
+  <WorkWithMuushSection
+    class="mt-section-gap"
+    v-bind="work"
+    :form-content="applicationFormContent"
+  />
 </template>

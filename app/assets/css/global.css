@@ -419,6 +419,19 @@
      § 2.3) — not an invented number. */
   --services-canvas-h: 56.875rem;
 
+  /*
+   * Feature 23, item 4 (round 3). The leader read the real `.pen` node
+   * (`GiLTU`, 1440×1020, under `Landing ES · v4 (radiales)`) directly:
+   * the canvas's own coordinate space is the FULL 1440px frame, not the
+   * 1280px `--services-closer-w` box (`vUMC8`) nested 80px in from each
+   * edge inside it — two different boxes in the design, previously
+   * conflated into one token. Every node/Pill/closer offset (`--services-
+   * node-*-x/-y`, `--services-pill-x/-y`, `--services-closer-x/-y/-w`) was
+   * already authored relative to THIS frame's own origin and is
+   * unaffected; only `.canvas` itself needed its own width.
+   */
+  --services-canvas-w: 90rem;
+
   /* ⚠️ O-02, owner Clau. Seeded with the same hairline family as Propósito's
      connector lines (bone-100 @24%, 1px) pending a real stroke colour/width. */
   --services-link-color: color-mix(in srgb, var(--bone-100) 24%, transparent);
@@ -1743,6 +1756,34 @@ html {
   /* Panel del menú móvil: blur 20 (§ 9.bis). Fijo — solo existe en un frame.
      Ninguno de los tres de arriba sirve: valen 16, 22 y 20→22. */
   --blur-menu-panel: 1.25rem;
+
+  /*
+   * ═══ Feature 23 · visual_polish_round_1 ═══
+   */
+
+  /*
+   * Ítem 1 — el gap entre la etiqueta del CTA del nav y su flecha, ahora
+   * que la flecha va DESPUÉS del texto (frames `Rm6Wu`/`WGhSI`, CONFIRMED,
+   * `gap: 9`). Fijo, no fluido: el propio diseño da un único valor de 9px
+   * en el frame de escritorio y el CTA del nav no existe en móvil
+   * (design-extract.md § 9.bis), así que no hay un segundo extremo que
+   * interpolar. Consumido como `ml-nav-cta-arrow-gap` en `SiteNav.vue`.
+   */
+  --spacing-nav-cta-arrow-gap: 0.5625rem;
+
+  /*
+   * Ítems 3 y 8 — el espacio perceptible entre secciones consecutivas, y
+   * entre la última sección y el footer. Sin valor de diseño que lo fije:
+   * el `.pen` dibuja las secciones a ras (una termina exactamente donde
+   * empieza la siguiente), y Roberto pidió calibrarlo. Un solo token,
+   * consumido como `mt-section-gap` en `app/pages/index.vue`,
+   * `app/pages/nosotros.vue` (entre secciones) y en el `<SiteFooter>` de
+   * `app/layouts/default.vue` (antes del footer) — nunca como padding
+   * dentro de una sección, para no tocar los `pt-*-top` ya calibrados
+   * contra el diseño (rules.md § R49). Escala fluida 32px → 80px, misma
+   * técnica clamp() que el resto del archivo (390 ↔ 1440).
+   */
+  --spacing-section-gap: clamp(2rem, 0.8857rem + 4.5714vw, 5rem);
 }
 
 /*

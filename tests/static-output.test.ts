@@ -473,31 +473,46 @@ describe('static output · the floating nav pill (feature 21)', () => {
     })
   }
 
-  it('should still list Proyectos in the footer Navegación column', () => {
+  it('should render no "Proyectos"/"Projects" text anywhere in the static document (feature 23, item 9)', () => {
     /*
-     * spec FR-008 — `FOOTER_COLUMNS` is out of scope for this feature and
-     * must show the same content as before. The mobile menu panel is not
-     * asserted here: it renders behind `v-if="open"`, so it is absent from
-     * the static document regardless of this feature — `MobileMenu.test.ts`
-     * already covers its "Proyectos" entry at the component level.
+     * Superseded by feature 23: `FOOTER_COLUMNS` dropped `Proyectos` entirely
+     * (Roberto, 2026-09-08), the same class of decision as dropping it from
+     * this nav in feature 21. The mobile menu panel is not asserted here —
+     * it renders behind `v-if="open"`, so it is absent from the static
+     * document regardless, and it still lists `Proyectos` on purpose
+     * (`MobileMenu.test.ts` covers it; the mobile scroll is much longer,
+     * `ui-map.md` § 2).
      */
     for (const route of ROUTES) {
       const html = documentFor(route)
       const locale = route.startsWith('/en') ? 'Projects' : 'Proyectos'
 
-      expect(html, route).toContain(locale)
+      expect(html, route).not.toContain(locale)
     }
   })
 
-  it('should carry the leading arrow on the nav CTA as a separate element, never inside the copy', () => {
+  it('should render no "FAQ"/"Blog" text anywhere in the static document (feature 23, item 9)', () => {
+    /* Same treatment as Proyectos above: removed entirely, not left inert. */
+    for (const route of ROUTES) {
+      const html = documentFor(route)
+
+      expect(html, route).not.toContain('FAQ')
+      expect(html, route).not.toContain('Blog')
+    }
+  })
+
+  it('should carry the arrow on the nav CTA as a separate element, after the label, never inside the copy', () => {
+    /* Feature 23, item 1 — `.pen` frames `Rm6Wu`/`WGhSI` draw `Texto → Flecha`,
+       text first, not the arrow-first order this file used to assert. */
     for (const route of ROUTES) {
       const cta = navMarkup(route)?.match(
-        /<a href="[^"]*#contacto"[^>]*>[\s\S]*?<\/a>/
-      )?.[0]
+        /<a href="[^"]*#contacto"[^>]*>([\s\S]*?)<\/a>/
+      )?.[1]
 
       expect(cta, route).toBeDefined()
       expect(cta, route).toContain('<span aria-hidden="true"')
       expect(cta, route).toContain('→')
+      expect(cta?.indexOf('<span aria-hidden="true"'), route).toBeGreaterThan(0)
     }
 
     const locales = ['es', 'en'] as const
