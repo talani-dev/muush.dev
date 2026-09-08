@@ -16,6 +16,22 @@
       "subhead": "Diseñamos y construimos soluciones digitales alrededor de tu negocio.",
       "ctaPrimary": "Cuéntanos tu proyecto",
       "ctaSecondary": "Agenda una llamada"
+    },
+    "purpose": {
+      "eyebrow": "Propósito",
+      "carouselLabel": "Propósito",
+      "why": {
+        "label": "Why",
+        "copy": "Construimos con el estándar de las aplicaciones que admiramos. Tu negocio merece estar a la misma altura."
+      },
+      "how": {
+        "label": "How",
+        "copy": "Con precisión: lo que tu negocio necesita, sin relleno. Un technology solution studio que responde como un solo equipo."
+      },
+      "what": {
+        "label": "What",
+        "copy": "Diseñamos y construimos soluciones digitales alrededor de tu negocio."
+      }
     }
   },
   "shell": {

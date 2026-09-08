@@ -17,6 +17,11 @@ import { describe, expect, it } from 'vitest'
  * `node:path` and `process.cwd()`, not `new URL` — the global environment is
  * `happy-dom`, whose `URL` `node:fs` rejects.
  */
+interface PurposeBlock {
+  label: string
+  copy: string
+}
+
 interface LandingCopy {
   landing: {
     hero: {
@@ -26,6 +31,13 @@ interface LandingCopy {
       ctaPrimary: string
       ctaSecondary: string
     }
+    purpose: {
+      eyebrow: string
+      carouselLabel: string
+      why: PurposeBlock
+      how: PurposeBlock
+      what: PurposeBlock
+    }
   }
 }
 
@@ -34,8 +46,11 @@ function readLocale(name: string): LandingCopy {
   return JSON.parse(readFileSync(file, 'utf8')) as LandingCopy
 }
 
-const es = readLocale('es').landing.hero
-const en = readLocale('en').landing.hero
+const spanish = readLocale('es').landing
+const english = readLocale('en').landing
+
+const es = spanish.hero
+const en = english.hero
 
 describe('landing copy', () => {
   it('should hold the identical eyebrow in both locales', () => {
@@ -83,5 +98,99 @@ describe('landing copy', () => {
     expect(en.ctaSecondary).toBe('Book a call')
     expect(es.ctaSecondary).not.toContain('→')
     expect(en.ctaSecondary).not.toContain('→')
+  })
+})
+
+describe('landing copy · Propósito', () => {
+  const BLOCKS = ['why', 'how', 'what'] as const
+
+  it('should hold all nine keys in both locales', () => {
+    for (const locale of [spanish, english]) {
+      expect(locale.purpose.eyebrow).not.toBe('')
+      expect(locale.purpose.carouselLabel).not.toBe('')
+      for (const block of BLOCKS) {
+        expect(locale.purpose[block].label, block).not.toBe('')
+        expect(locale.purpose[block].copy, block).not.toBe('')
+      }
+    }
+  })
+
+  it('should hold the identical three labels in both locales', () => {
+    /*
+     * ⚠️ **Not a missing translation.** Read from the design file on
+     * 2026-09-08: the ES and EN frames both draw `Why` / `How` / `What`. It is
+     * the same case as `landing.hero.eyebrow` and `shell.footer.category`,
+     * and it is exactly the kind of thing a well-meaning translation sweep
+     * "fixes". `content.md`'s block headings (`WHY · por qué existe muush`)
+     * are titles in a document, not the label the design draws.
+     */
+    for (const block of BLOCKS) {
+      expect(english.purpose[block].label, block).toBe(
+        spanish.purpose[block].label
+      )
+    }
+
+    expect(BLOCKS.map(block => spanish.purpose[block].label)).toEqual([
+      'Why',
+      'How',
+      'What',
+    ])
+  })
+
+  it('should translate every copy block between the locales', () => {
+    /* The complement of the assertion above: if the label check were passing
+       because the two files were copies of each other, this would fail. */
+    for (const block of BLOCKS) {
+      expect(english.purpose[block].copy, block).not.toBe(
+        spanish.purpose[block].copy
+      )
+    }
+
+    expect(english.purpose.eyebrow).not.toBe(spanish.purpose.eyebrow)
+  })
+
+  it('should carry the approved Golden Circle copy in each locale', () => {
+    /* Verbatim from `content.md` § *Propósito · Golden Circle ✅ aprobado*,
+       whose two-line blockquotes join into one paragraph. */
+    expect(spanish.purpose.why.copy).toBe(
+      'Construimos con el estándar de las aplicaciones que admiramos. Tu negocio merece estar a la misma altura.'
+    )
+    expect(english.purpose.why.copy).toBe(
+      'We build to the standard of the apps we admire. Your business deserves to be held to it.'
+    )
+    expect(spanish.purpose.how.copy).toBe(
+      'Con precisión: lo que tu negocio necesita, sin relleno. Un technology solution studio que responde como un solo equipo.'
+    )
+    expect(english.purpose.how.copy).toBe(
+      'With precision: what your business needs, nothing padded. A technology solution studio that answers as one team.'
+    )
+    expect(spanish.purpose.what.copy).toBe(
+      'Diseñamos y construimos soluciones digitales alrededor de tu negocio.'
+    )
+    expect(english.purpose.what.copy).toBe(
+      'We design and build digital solutions around your business.'
+    )
+  })
+
+  it('should keep the What block and the hero subhead the same sentence', () => {
+    /*
+     * ⚠️ Asserted rather than discovered later as a bug. Both are approved
+     * copy in `content.md` — the *WHAT* block and the Hero's subhead are
+     * literally the same sentence — so the feature ships it as written and
+     * reports the duplication instead of collapsing two keys into one, which
+     * would couple two sections. This test is what stops either drifting
+     * silently.
+     */
+    expect(spanish.purpose.what.copy).toBe(spanish.hero.subhead)
+    expect(english.purpose.what.copy).toBe(english.hero.subhead)
+  })
+
+  it('should reuse the eyebrow word for the carousel in both locales', () => {
+    /* Two keys, one value, two roles: the Pill's label and the mobile track's
+       accessible name. Kept apart so naming the track never edits the
+       eyebrow. */
+    for (const locale of [spanish, english]) {
+      expect(locale.purpose.carouselLabel).toBe(locale.purpose.eyebrow)
+    }
   })
 })
