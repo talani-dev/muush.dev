@@ -56,8 +56,9 @@ const formContent: ContactFormContent = {
 const props = {
   eyebrow: 'Contacto',
   heading: 'Cuéntanos tu proyecto.',
-  body: 'Cuéntanos qué necesitas y te respondemos en menos de 24 horas hábiles.',
+  body: 'Déjanos lo básico y te respondemos por donde prefieras. Si ya sabes qué necesitas, agenda una llamada directo con el equipo.',
   ctaSecondary: 'Agenda una llamada',
+  altQuestion: '¿Ya sabes qué necesitas?',
   callHref: CALL_BOOKING_URL,
   formContent,
 }
@@ -167,12 +168,33 @@ describe('ContactSection · viewport order (spec US4)', () => {
     expect(html.indexOf('<form')).toBeLessThan(html.indexOf(props.ctaSecondary))
   })
 
-  it('should give the alternate route its own desktop grid area class', () => {
-    const links = mountSection().findAll('a')
-    const link = links.find(anchor =>
-      anchor.text().includes(props.ctaSecondary)
-    )
+  it('should give the alternate route group its own desktop grid area class', () => {
+    /* The grid area lands on the wrapping div (feature 23), which also
+       carries the lead-in question and the hairline divider — not on the
+       `LinkArrow` itself. */
+    const wrapper = mountSection()
+    const group = wrapper.find('.contact-layout__alt')
 
-    expect(link?.classes()).toContain('contact-layout__alt')
+    expect(group.exists()).toBe(true)
+    expect(group.text()).toContain(props.ctaSecondary)
+  })
+})
+
+describe('ContactSection · the alternate route (feature 23, items 6/7)', () => {
+  it('should render the lead-in question above the call-booking link', () => {
+    const wrapper = mountSection()
+    const group = wrapper.find('.contact-layout__alt')
+
+    expect(group.text()).toContain(props.altQuestion)
+    expect(group.text().indexOf(props.altQuestion)).toBeLessThan(
+      group.text().indexOf(props.ctaSecondary)
+    )
+  })
+
+  it('should draw a hairline divider above the alternate route, reusing the footer token', () => {
+    const group = mountSection().find('.contact-layout__alt')
+
+    expect(group.classes()).toContain('border-t')
+    expect(group.classes()).toContain('border-hairline-footer')
   })
 })

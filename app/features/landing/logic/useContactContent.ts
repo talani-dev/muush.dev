@@ -23,6 +23,7 @@ export function useContactContent(): ComputedRef<ContactContent> {
     heading: t(CONTACT_KEYS.heading),
     body: t(CONTACT_KEYS.body),
     ctaSecondary: t(CONTACT_KEYS.ctaSecondary),
+    altQuestion: t(CONTACT_KEYS.altQuestion),
     callHref: CALL_BOOKING_URL,
   }))
 }

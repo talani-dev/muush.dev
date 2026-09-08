@@ -73,8 +73,9 @@
     "contact": {
       "eyebrow": "Contacto",
       "heading": "Cuéntanos tu proyecto.",
-      "body": "Cuéntanos qué necesitas y te respondemos en menos de 24 horas hábiles.",
-      "ctaSecondary": "Agenda una llamada"
+      "body": "Déjanos lo básico y te respondemos por donde prefieras. Si ya sabes qué necesitas, agenda una llamada directo con el equipo.",
+      "ctaSecondary": "Agenda una llamada",
+      "altQuestion": "¿Ya sabes qué necesitas?"
     }
   },
   "forms": {

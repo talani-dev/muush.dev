@@ -73,8 +73,9 @@
     "contact": {
       "eyebrow": "Contact",
       "heading": "Tell us about your project.",
-      "body": "Tell us what you need and we'll get back to you within one business day.",
-      "ctaSecondary": "Book a call"
+      "body": "Leave us the basics and we'll get back to you however you prefer. If you already know what you need, book a call directly with the team.",
+      "ctaSecondary": "Book a call",
+      "altQuestion": "Already know what you need?"
     }
   },
   "forms": {

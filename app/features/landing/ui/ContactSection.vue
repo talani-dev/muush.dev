@@ -41,25 +41,49 @@ import SectionGlow from '@/shared/ui/SectionGlow.vue'
  *
  * ## The one place this section's mobile order is not a rescale of desktop
  *
- * The alternate route (`LinkArrow`) is a **sibling** of `ContactForm` in the
- * DOM, never nested inside the left block: in normal flow (below `lg`) it
- * renders third, after the form. At `lg` and above the layout becomes a CSS
- * grid — Tailwind has no `grid-template-areas` utility, so this is the one
- * piece of hand-written CSS in the section — with two explicit column tracks
- * and the alt route's own grid area placed inside the left column, below the
- * body copy. No JavaScript reorders anything (spec US4).
+ * The alternate route (`.contact-layout__alt`, the divider + `altQuestion` +
+ * `LinkArrow` group) is a **sibling** of `ContactForm` in the DOM, never
+ * nested inside the left block: in normal flow (below `lg`) it renders
+ * third, after the form. At `lg` and above the layout becomes a CSS grid —
+ * Tailwind has no `grid-template-areas` utility, so this is the one piece of
+ * hand-written CSS in the section — with two explicit column tracks and the
+ * alt route's own grid area placed inside the left column, below the body
+ * copy. No JavaScript reorders anything (spec US4).
+ *
+ * ## The real copy, and the divider (feature 23, items 6/7)
+ *
+ * `body` and `altQuestion` are the real `.pen` copy (nodes `bdyCz` ES /
+ * `nMffw` EN), not the feature 16 placeholder that survived because that
+ * session read `tNN0K` — a copy of this composition living inside the
+ * unrelated `DEMO spotlight cursor` frame. `altQuestion` is new: the section
+ * shipped with only the `ctaSecondary` link and no lead-in question at all.
+ *
+ * The hairline above `.contact-layout__alt` exists in no frame the leader
+ * could find, in any viewport or locale (Roberto asked for one anyway after
+ * seeing a design reference) — it reuses `SiteFooter.vue`'s own
+ * `border-hairline-footer`/`pt-footer-bar-gap` recipe rather than inventing a
+ * new colour or gap.
  */
 interface Props {
   eyebrow: string
   heading: string
   body: string
   ctaSecondary: string
+  /** The alternate route's lead-in question, rendered above `ctaSecondary`. */
+  altQuestion: string
   callHref: string
   formContent: ContactFormContent
 }
 
-const { eyebrow, heading, body, ctaSecondary, callHref, formContent } =
-  defineProps<Props>()
+const {
+  eyebrow,
+  heading,
+  body,
+  ctaSecondary,
+  altQuestion,
+  callHref,
+  formContent,
+} = defineProps<Props>()
 </script>
 
 <template>
@@ -96,9 +120,14 @@ const { eyebrow, heading, body, ctaSecondary, callHref, formContent } =
 
       <ContactForm class="contact-layout__form" :content="formContent" />
 
-      <LinkArrow class="contact-layout__alt" :href="callHref" external>
-        {{ ctaSecondary }}
-      </LinkArrow>
+      <div
+        class="contact-layout__alt flex flex-col gap-contact-text-gap border-t border-hairline-footer pt-footer-bar-gap"
+      >
+        <p class="font-instrument text-body-sm text-ink-200">
+          {{ altQuestion }}
+        </p>
+        <LinkArrow :href="callHref" external>{{ ctaSecondary }}</LinkArrow>
+      </div>
     </div>
   </section>
 </template>
