@@ -52,7 +52,7 @@ const socials: ResolvedSocial[] = [
 ]
 
 const spanishItems: ResolvedShellItem[] = [
-  { label: 'Proyectos', href: '/es#proyectos' },
+  { label: 'Servicios', href: '/es#servicios' },
   { label: 'Nosotros', href: '/es/nosotros' },
 ]
 
@@ -64,7 +64,7 @@ const spanishMenuItems: ResolvedShellItem[] = [
 ]
 
 const englishItems: ResolvedShellItem[] = [
-  { label: 'Projects', href: '/en#proyectos' },
+  { label: 'Services', href: '/en#servicios' },
   { label: 'About us', href: '/en/about' },
 ]
 
@@ -83,6 +83,7 @@ export const Spanish: Story = {
     home: '/es',
     locale: 'es',
     localeSwitchHref: '/en',
+    localeSwitchLabel: 'Cambiar a inglés',
     menuItems: spanishMenuItems,
     socials,
     navLabel: 'Navegación principal',
@@ -102,6 +103,7 @@ export const English: Story = {
     home: '/en',
     locale: 'en',
     localeSwitchHref: '/es',
+    localeSwitchLabel: 'Switch to Spanish',
     menuItems: englishMenuItems,
     socials,
     navLabel: 'Main navigation',
@@ -118,7 +120,7 @@ export const OnTheAboutPage: Story = {
   args: {
     ...Spanish.args,
     items: [
-      { label: 'Proyectos', href: '/es#proyectos' },
+      { label: 'Servicios', href: '/es#servicios' },
       { label: 'Nosotros', href: '/es/nosotros', current: true },
     ],
   },

@@ -39,16 +39,34 @@ import MobileMenu from './MobileMenu.vue'
  * explicit level, because the Hero section is `position: relative` later in
  * the document — hence `--layer-nav`.
  *
- * ⚠️ **Known, and deliberately not fixed here.** The nav has **no background
- * of its own** — the ink base belongs to the layout root — so once the page
- * scrolls, content passes *underneath* the lockup and the links. `ui-map.md`
- * § 2 says the nav keeps "el mismo fondo", and its background today is none;
- * the compressed state that would have introduced `#1c1416a6` is what that
- * same decision dropped. This component implements what the document says and
- * does not invent a background. Reported as spec D-07 — **owner: Clau /
- * Roberto**. The fix, if they want one, is two utilities on the row
- * (`bg-glass-dark` and a blur), which is exactly what the dropped compressed
- * state would have supplied.
+ * ## ✅ D-07 resolved by feature 21 (2026-09-08)
+ *
+ * The paragraph below described the nav's *pre-redesign* state and is kept
+ * for history. Clau's floating-pill redesign gives the desktop row its own
+ * dark-glass surface (`bg-glass-dark` + `border-glass-line` + `rounded-full`,
+ * inset from the viewport by `--spacing-page`/`--spacing-nav-pill-y`), so
+ * scrolled content no longer shows through the lockup and the links at any
+ * scroll position. Nothing about *when* the pill is there changes — it is
+ * present at every scroll position, exactly like the old backgroundless bar
+ * was — only its own surface changed (spec FR-001–FR-004).
+ *
+ * Two divergences from the redesigned frame ship with it, both human
+ * decisions recorded where the data lives
+ * (`app/features/shell/data/navigation.ts`): `Proyectos` is deliberately
+ * dropped from this two-link row despite the frame drawing it (feature 15 is
+ * `blocked`), and `Servicios` is added despite `content.md` saying it is
+ * excluded (the frame postdates that document and wins,
+ * `docs/business/rules.md` § R32). Do not "fix" either by comparing this
+ * component against the `.pen` — read the comment on `NAV_ITEMS` first.
+ *
+ * ⚠️ **Historical, pre-redesign note (feature 9).** The nav had **no
+ * background of its own** — the ink base belonged to the layout root — so
+ * once the page scrolled, content passed *underneath* the lockup and the
+ * links. `ui-map.md` § 2 said the nav kept "el mismo fondo", and its
+ * background then was none; the compressed state that would have introduced
+ * `#1c1416a6` is what that same decision dropped. Reported as spec D-07 —
+ * **owner: Clau / Roberto** — and resolved above, not by inventing a
+ * background ahead of the design file arriving.
  */
 interface Props {
   /** Proyectos and Nosotros. */
@@ -67,6 +85,24 @@ interface Props {
   locale: ShellLocale
   /** The equivalent route in the other locale, without a fragment. */
   localeSwitchHref: string
+  /**
+   * Accessible name of the language toggle, naming the *destination* locale
+   * ("Switch to English") rather than echoing the two letters a sighted
+   * visitor reads (spec FR-018).
+   *
+   * Not in `contracts/components.md`'s `SiteNav.vue` table — added
+   * deliberately, the same way `MobileMenu.vue`'s own `label`/`closeLabel`
+   * already diverge from that file for the identical reason: the string is
+   * translated copy (Constitution Article VI forbids writing it inside a
+   * component), and resolving it with `useI18n()` from inside
+   * `LanguageToggle.vue` would make it the first `ui/` component in this
+   * repository to call a Nuxt composable — the exact thing
+   * `docs/business/rules.md` § R23's corollary and this feature's own
+   * `plan.md` rule out, and Storybook has no i18n plugin to catch it
+   * quietly if it slipped through. One resolved-string prop is the only way
+   * to satisfy FR-018 without either violation.
+   */
+  localeSwitchLabel: string
   /** The four destinations the mobile menu carries. */
   menuItems: ResolvedShellItem[]
   socials: ResolvedSocial[]
@@ -84,6 +120,7 @@ const {
   home,
   locale,
   localeSwitchHref,
+  localeSwitchLabel,
   menuItems,
   socials,
   navLabel,
@@ -136,14 +173,29 @@ watch(isOpen, opened => {
 </script>
 
 <template>
-  <nav :aria-label="navLabel" class="site-nav sticky top-0">
+  <nav :aria-label="navLabel" class="site-nav sticky top-0 lg:top-nav-pill-y">
     <!--
       Inert while the panel is up: the row underneath is covered visually, and
       without this it would still take focus and still be announced.
+
+      The `lg:` classes below are the floating pill (feature 21): a
+      dark-glass surface, inset from the viewport rather than full-bleed.
+      `max-w-nav-pill-w` (1280px) replaces `max-w-shell-max` (1440px) only at
+      `lg` and up, which is what narrows the row from the old full-bleed bar
+      to the pill's own width — the same "max-width + full-bleed padding"
+      technique `<main>`'s own `max-w-shell-max` already uses (plan.md § 1),
+      just capped one step earlier. `px-page` and the flex layout are
+      unchanged, so mobile (below `lg`) is byte-identical (spec FR-020).
+
+      `lg:py-nav-pill-py` overrides `py-nav-y` only at `lg`: the pill's own
+      72px target height (measured live via CDP after rejection round 1,
+      `docs/harness/findings.md` § R64) needs less vertical padding than the
+      old full-bleed bar's, since the CTA (48px, the tallest row content at
+      `lg`) already fills most of it. Mobile keeps `py-nav-y` unmodified.
     -->
     <div
       :inert="isOpen"
-      class="mx-auto flex max-w-shell-max items-center justify-between gap-nav-gap px-page py-nav-y"
+      class="mx-auto flex max-w-shell-max items-center justify-between gap-nav-gap px-page py-nav-y lg:max-w-nav-pill-w lg:rounded-full lg:border lg:border-glass-line lg:bg-glass-dark lg:py-nav-pill-py"
     >
       <NuxtLink :to="home" class="text-bone-100 focus-visible:outline-red-400">
         <Lockup />
@@ -177,6 +229,11 @@ watch(isOpen, opened => {
           :class="showCta ? 'visible opacity-100' : 'invisible opacity-0'"
         >
           <BotonPrimario variant="nav" :href="cta.href">
+            <span
+              aria-hidden="true"
+              class="inline-block transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
+              >→</span
+            >
             {{ cta.label }}
           </BotonPrimario>
         </div>
@@ -192,7 +249,11 @@ watch(isOpen, opened => {
         -->
         <noscript v-html="NOSCRIPT_CTA_OVERRIDE" />
 
-        <LanguageToggle :locale="locale" :href="localeSwitchHref" />
+        <LanguageToggle
+          :locale="locale"
+          :href="localeSwitchHref"
+          :switch-label="localeSwitchLabel"
+        />
 
         <!--
           `cursor-pointer` is declared because nothing else does: a native
@@ -231,6 +292,7 @@ watch(isOpen, opened => {
       :home="home"
       :locale="locale"
       :locale-switch-href="localeSwitchHref"
+      :locale-switch-label="localeSwitchLabel"
       :label="menuLabel"
       :close-label="menuCloseLabel"
       @closed="close"

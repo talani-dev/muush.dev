@@ -415,12 +415,108 @@ describe('static output · the layout wraps every page', () => {
 
       expect(navClasses, route).toContain('sticky')
       expect(navClasses, route).toContain('top-0')
-      /* No background, no height and no opacity of its own — FR-042, and the
-         reason spec D-07 is reported rather than fixed here. */
+      /*
+       * Still true, but for a different reason since feature 21: the `<nav>`
+       * element itself carries no background, height or opacity utility, same
+       * as always (FR-042). D-07 is fixed now — the floating pill's
+       * `bg-glass-dark`/`border-glass-line`/`rounded-full` live one level
+       * down, on the row `<div>` the pill wraps, never on this landmark
+       * itself (spec FR-004). The pill's own surface is asserted in
+       * `SiteNav.test.ts`.
+       */
       expect(
         navClasses?.some(name => /^(bg-|h-|opacity-|backdrop-)/.test(name)),
         route
       ).toBe(false)
+    }
+  })
+})
+
+describe('static output · the floating nav pill (feature 21)', () => {
+  /*
+   * The desktop nav's redesign: a floating dark-glass pill instead of a
+   * full-bleed bar (spec FR-001–FR-004, SC-001), `Servicios`/`Nosotros`
+   * instead of `Proyectos`/`Nosotros` (FR-005–FR-008, SC-002), and a leading,
+   * non-translatable arrow on the CTA (FR-012, SC-003).
+   */
+  function navMarkup(route: RoutePath): string | undefined {
+    return documentFor(route).match(/<nav[\s\S]*?<\/nav>/)?.[0]
+  }
+
+  for (const route of ROUTES) {
+    it(`should carry the pill's surface classes on the row, only above lg, when the page is ${route}`, () => {
+      const row = navMarkup(route)?.match(/<div class="([^"]*)"/)?.[1]
+
+      expect(row, route).toBeDefined()
+      for (const utility of [
+        'lg:rounded-full',
+        'lg:border',
+        'lg:border-glass-line',
+        'lg:bg-glass-dark',
+        'lg:max-w-nav-pill-w',
+        'lg:py-nav-pill-py',
+      ]) {
+        expect(row?.split(' '), `${route} · ${utility}`).toContain(utility)
+      }
+    })
+
+    it(`should never render Proyectos or Projects inside the nav when the page is ${route}`, () => {
+      /* Deliberate divergence from the redesigned frame — feature 15 is
+         `blocked`, and a link to a section that does not exist reads as a
+         broken site (spec FR-006, `ui-map.md` § 6). The mobile menu panel
+         and the footer's Navegación column are untouched and keep it. */
+      const nav = navMarkup(route)
+
+      expect(nav, route).toBeDefined()
+      expect(nav, route).not.toContain('Proyectos')
+      expect(nav, route).not.toContain('Projects')
+    })
+  }
+
+  it('should still list Proyectos in the footer Navegación column', () => {
+    /*
+     * spec FR-008 — `FOOTER_COLUMNS` is out of scope for this feature and
+     * must show the same content as before. The mobile menu panel is not
+     * asserted here: it renders behind `v-if="open"`, so it is absent from
+     * the static document regardless of this feature — `MobileMenu.test.ts`
+     * already covers its "Proyectos" entry at the component level.
+     */
+    for (const route of ROUTES) {
+      const html = documentFor(route)
+      const locale = route.startsWith('/en') ? 'Projects' : 'Proyectos'
+
+      expect(html, route).toContain(locale)
+    }
+  })
+
+  it('should carry the leading arrow on the nav CTA as a separate element, never inside the copy', () => {
+    for (const route of ROUTES) {
+      const cta = navMarkup(route)?.match(
+        /<a href="[^"]*#contacto"[^>]*>[\s\S]*?<\/a>/
+      )?.[0]
+
+      expect(cta, route).toBeDefined()
+      expect(cta, route).toContain('<span aria-hidden="true"')
+      expect(cta, route).toContain('→')
+    }
+
+    const locales = ['es', 'en'] as const
+    for (const localeFile of locales) {
+      const raw = readFileSync(
+        join(process.cwd(), 'i18n', 'locales', `${localeFile}.json`),
+        'utf8'
+      )
+      const parsed = JSON.parse(raw) as { shell: { nav: { cta: string } } }
+
+      expect(parsed.shell.nav.cta, localeFile).not.toContain('→')
+    }
+  })
+
+  it('should render exactly one circular language toggle per document', () => {
+    for (const route of ROUTES) {
+      const [toggle] = localeToggleLinks(documentFor(route))
+
+      expect(toggle, route).toBeDefined()
     }
   })
 })

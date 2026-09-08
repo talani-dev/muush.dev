@@ -9,7 +9,7 @@ import { useMobileMenu } from '@/features/shell/logic/useMobileMenu'
 import SiteNav from './SiteNav.vue'
 
 const items: ResolvedShellItem[] = [
-  { label: 'Proyectos', href: '/es#proyectos', external: false },
+  { label: 'Servicios', href: '/es#servicios', external: false },
   { label: 'Nosotros', href: '/es/nosotros', external: false, current: true },
 ]
 
@@ -45,6 +45,7 @@ const props = {
   home: '/es',
   locale: 'es' as const,
   localeSwitchHref: '/en',
+  localeSwitchLabel: 'Cambiar a inglés',
   menuItems,
   socials,
   navLabel: 'Navegación principal',
@@ -66,6 +67,14 @@ async function mountNav(overrides: Partial<typeof props> = {}) {
 /** The wrapper around the primary call to action, whose state is the feature. */
 function ctaWrapper(wrapper: VueWrapper) {
   return wrapper.find('.site-nav__cta')
+}
+
+/** The CTA's own `<a>`, found by its label rather than its full text content,
+ *  since the leading arrow (feature 21) is now part of that content too. */
+function ctaLink(wrapper: VueWrapper) {
+  return wrapper
+    .findAll('a')
+    .find(link => link.text().includes(props.cta.label))
 }
 
 describe('SiteNav', () => {
@@ -90,7 +99,7 @@ describe('SiteNav', () => {
   it('should render both nav links when rendered', async () => {
     const links = (await mountNav()).findAll('ul li a')
 
-    expect(links.map(link => link.text())).toEqual(['Proyectos', 'Nosotros'])
+    expect(links.map(link => link.text())).toEqual(['Servicios', 'Nosotros'])
   })
 
   it('should announce the current page without changing its appearance', async () => {
@@ -98,29 +107,70 @@ describe('SiteNav', () => {
        navs are byte-identical — so the information goes to assistive
        technology only (spec A-04). */
     const links = (await mountNav()).findAll('ul li a')
-    const [projects, about] = links
+    const [services, about] = links
 
     expect(about?.attributes('aria-current')).toBe('page')
-    expect(projects?.attributes('aria-current')).toBeUndefined()
-    expect(about?.classes()).toEqual(projects?.classes())
+    expect(services?.attributes('aria-current')).toBeUndefined()
+    expect(about?.classes()).toEqual(services?.classes())
+  })
+
+  it('should never render Proyectos in the desktop link row', async () => {
+    /* spec FR-006/US2 — a deliberate divergence from the redesigned frame,
+       not an omission: feature 15 is `blocked`, and a link to a section that
+       does not exist reads as a broken site (`ui-map.md` § 6). */
+    const links = (await mountNav()).findAll('ul li a')
+
+    expect(links.map(link => link.text())).not.toContain('Proyectos')
+  })
+
+  it('should render the pill container classes on the desktop row', async () => {
+    /* spec FR-001/FR-002 — the floating dark-glass pill, reusing the same
+       glass/pill vocabulary `Pill` and `BotonPrimario` already declare. No
+       new glass-surface token or variant. */
+    const row = (await mountNav()).find('nav > div')
+
+    for (const utility of [
+      'lg:rounded-full',
+      'lg:border',
+      'lg:border-glass-line',
+      'lg:bg-glass-dark',
+      'lg:max-w-nav-pill-w',
+      'lg:py-nav-pill-py',
+    ]) {
+      expect(row.classes(), utility).toContain(utility)
+    }
+  })
+
+  it('should inset the pill from the top of the viewport on desktop only', async () => {
+    const landmark = (await mountNav()).find('nav')
+
+    expect(landmark.classes()).toContain('top-0')
+    expect(landmark.classes()).toContain('lg:top-nav-pill-y')
   })
 
   it('should render the primary call to action when rendered', async () => {
-    const wrapper = await mountNav()
-    const button = wrapper
-      .findAll('a')
-      .find(link => link.text() === 'Cuéntanos tu proyecto')
+    const button = ctaLink(await mountNav())
 
     expect(button?.attributes('href')).toBe('/es#contacto')
+  })
+
+  it('should carry the leading arrow as a separate aria-hidden element', async () => {
+    /* spec FR-012 — composed by this caller inside BotonPrimario's existing
+       slot, never baked into the translated string (same discipline as
+       feature 9's `LinkArrow`, FR-010). */
+    const button = ctaLink(await mountNav())
+    const arrow = button?.find('span[aria-hidden="true"]')
+
+    expect(arrow?.exists()).toBe(true)
+    expect(arrow?.text()).toBe('→')
+    expect(button?.text()).toBe(`→ ${props.cta.label}`)
   })
 
   it('should keep the call to action out of the mobile arrangement', async () => {
     /* A recorded decision, not an omission (decisions-open.md 2026-09-06):
        on mobile the only call to action is the social row in the menu. */
     const wrapper = await mountNav()
-    const button = wrapper
-      .findAll('a')
-      .find(link => link.text() === 'Cuéntanos tu proyecto')
+    const button = ctaLink(wrapper)
 
     expect(button?.element.parentElement?.className).toContain('hidden')
     expect(button?.element.parentElement?.className).toContain('lg:block')
@@ -144,18 +194,18 @@ describe('SiteNav', () => {
 
   it('should offer a pointer on the primary call to action when rendered', async () => {
     /* It carries an href, so `BotonPrimario` marks it clickable. */
-    const button = (await mountNav())
-      .findAll('a')
-      .find(link => link.text() === 'Cuéntanos tu proyecto')
+    const button = ctaLink(await mountNav())
 
     expect(button?.classes()).toContain('cursor-pointer')
   })
 
-  it('should render the locale toggle when rendered', async () => {
+  it('should render only the active locale in the toggle when rendered', async () => {
+    /* feature 21 — the circular toggle shows one code, never the pair
+       (spec FR-015, User Story 4). */
     const text = (await mountNav()).text()
 
     expect(text).toContain('ES')
-    expect(text).toContain('EN')
+    expect(text).not.toContain('EN')
   })
 
   it('should keep the menu closed until the hamburger is activated', async () => {
