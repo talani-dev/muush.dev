@@ -489,15 +489,18 @@ describe('static output · the floating nav pill (feature 21)', () => {
     }
   })
 
-  it('should carry the leading arrow on the nav CTA as a separate element, never inside the copy', () => {
+  it('should carry the arrow on the nav CTA as a separate element, after the label, never inside the copy', () => {
+    /* Feature 23, item 1 — `.pen` frames `Rm6Wu`/`WGhSI` draw `Texto → Flecha`,
+       text first, not the arrow-first order this file used to assert. */
     for (const route of ROUTES) {
       const cta = navMarkup(route)?.match(
-        /<a href="[^"]*#contacto"[^>]*>[\s\S]*?<\/a>/
-      )?.[0]
+        /<a href="[^"]*#contacto"[^>]*>([\s\S]*?)<\/a>/
+      )?.[1]
 
       expect(cta, route).toBeDefined()
       expect(cta, route).toContain('<span aria-hidden="true"')
       expect(cta, route).toContain('→')
+      expect(cta?.indexOf('<span aria-hidden="true"'), route).toBeGreaterThan(0)
     }
 
     const locales = ['es', 'en'] as const

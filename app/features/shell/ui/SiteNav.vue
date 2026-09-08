@@ -195,25 +195,32 @@ watch(isOpen, opened => {
     -->
     <div
       :inert="isOpen"
-      class="mx-auto flex max-w-shell-max items-center justify-between gap-nav-gap px-page py-nav-y lg:max-w-nav-pill-w lg:rounded-full lg:border lg:border-glass-line lg:bg-glass-dark lg:py-nav-pill-py"
+      class="nav-row mx-auto flex max-w-shell-max items-center justify-between gap-nav-gap px-page py-nav-y lg:max-w-nav-pill-w lg:rounded-full lg:border lg:border-glass-line lg:bg-glass-dark lg:py-nav-pill-py"
     >
       <NuxtLink :to="home" class="text-bone-100 focus-visible:outline-red-400">
         <Lockup />
       </NuxtLink>
 
-      <div class="flex items-center gap-nav-gap">
-        <ul class="hidden items-center gap-nav-gap lg:flex">
-          <li v-for="item in items" :key="item.label">
-            <NuxtLink
-              :to="item.href"
-              :aria-current="item.current ? 'page' : undefined"
-              class="font-instrument text-nav-link text-bone-300 focus-visible:outline-red-400"
-            >
-              {{ item.label }}
-            </NuxtLink>
-          </li>
-        </ul>
+      <!--
+        Its own grid column at `lg` (see `<style scoped>` below), centred on
+        the WHOLE pill rather than on the leftover space between the logo and
+        the CTA+toggle group — item 2 of feature 23. Below `lg` it stays
+        `hidden`, so the mobile row is byte-identical to before: only two
+        children (the logo and `.nav-row__end`) are ever visible there.
+      -->
+      <ul class="nav-row__links hidden items-center gap-nav-gap lg:flex">
+        <li v-for="item in items" :key="item.label">
+          <NuxtLink
+            :to="item.href"
+            :aria-current="item.current ? 'page' : undefined"
+            class="font-instrument text-nav-link text-bone-300 focus-visible:outline-red-400"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </li>
+      </ul>
 
+      <div class="nav-row__end flex items-center gap-nav-gap">
         <!--
           No CTA below `lg`. It does not collapse into the menu either: on
           mobile the only call to action is the social row inside the open
@@ -228,13 +235,21 @@ watch(isOpen, opened => {
           class="site-nav__cta hidden lg:block"
           :class="showCta ? 'visible opacity-100' : 'invisible opacity-0'"
         >
+          <!--
+            Text-then-arrow, `gap: 9` (item 1 of feature 23 — `.pen` frames
+            `Rm6Wu`/`WGhSI` draw the CTA as `Texto → Flecha`, not the other
+            way around). Same `aria-hidden` span and hover-shift transition
+            as before, just moved after the label with a margin that reads
+            as the token gap rather than the collapsed template whitespace
+            the old order relied on.
+          -->
           <BotonPrimario variant="nav" :href="cta.href">
+            {{ cta.label }}
             <span
               aria-hidden="true"
-              class="inline-block transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
+              class="ml-nav-cta-arrow-gap inline-block transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
               >→</span
             >
-            {{ cta.label }}
           </BotonPrimario>
         </div>
 
@@ -318,6 +333,43 @@ watch(isOpen, opened => {
  */
 .site-nav {
   z-index: var(--layer-nav);
+}
+
+/*
+ * Item 2 of feature 23 — three independent zones instead of "logo vs.
+ * everything else". Below `lg` this stays the plain flex row it always was
+ * (`justify-between` between the logo and `.nav-row__end`, since
+ * `.nav-row__links` is `hidden` there and drops out of flow entirely — the
+ * mobile row is byte-identical to before this change).
+ *
+ * At `lg` the row becomes a three-column grid, `1fr auto 1fr`: the outer
+ * columns are equal and absorb whatever space the logo/end groups do not
+ * use, so the middle column's own centre is the ROW's centre — not the
+ * centre of the gap left over between the logo and the end group, which is
+ * what `justify-between` alone produces. `gap-nav-gap` (unchanged) still
+ * applies as the grid's column gap and is symmetric on both sides of the
+ * middle column, so it cannot shift that centre.
+ *
+ * Hand-written rather than a Tailwind arbitrary value: `grid-cols-[1fr_auto_1fr]`
+ * would be a bracketed literal, and `ContactSection.vue`'s own
+ * `grid-template-areas` already set the precedent of writing this kind of
+ * structural CSS by hand when Tailwind has no utility for it.
+ */
+@media (width >= 64rem) {
+  .nav-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .nav-row__links {
+    grid-column: 2;
+    justify-self: center;
+  }
+
+  .nav-row__end {
+    grid-column: 3;
+    justify-self: end;
+  }
 }
 
 /*
