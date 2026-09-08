@@ -18,6 +18,16 @@ export default defineVitestConfig({
     include: [
       'tests/**/*.test.ts',
       'app/shared/ui/**/*.test.ts',
+      /*
+       * Added by feature 008. Without this line `app/shared/logic/` — where
+       * Article I puts the cross-cutting composables — is collected zero
+       * times, so a test file there reports green **by never running** and the
+       * file count rises by nothing (docs/business/rules.md § R39). A feature
+       * that adds tests in a new location extends this array; a separate
+       * Vitest project is not an option, because `defineVitestConfig` throws
+       * on `projects` (§ R16).
+       */
+      'app/shared/logic/**/*.test.ts',
       'app/features/**/*.test.ts',
     ],
   },
