@@ -97,6 +97,40 @@ desde el hero.
 >
 > **Esto no es un bug que reportar de nuevo.** Está visto, medido y diferido.
 > Cuando exista el frame, son dos clases de utilidad en el nav.
+>
+> ### ✅ CONTESTADO POR EL DISEÑO — 2026-09-08
+>
+> Clau rediseñó el nav y el frame ya existe. **El nav flotante trae superficie
+> propia:** `#1c1416a6` —el mismo vidrio oscuro del sistema— con radio 999 y
+> borde `#FBF8F62E`. La ilegibilidad de arriba deja de aplicar: ya no es texto
+> sobre texto, es texto sobre vidrio.
+>
+> No hubo que inventar nada. La decisión de esperar a Clau fue la correcta.
+>
+> ⚠️ **Toda la § 2 de arriba quedó desactualizada por ese rediseño** — describe
+> una barra de 1440×103 a sangre, sin fondo, con toggle `ES / EN`. Hoy el `.pen`
+> dibuja una píldora flotante de 1280×72 con botón circular de idioma, y agrega
+> `Servicios` al nav pese a que `content.md` lo declara fuera. Los nodos que
+> midió la feature 3 (`JYhmR`, `IQjRU`) ya no existen. La feature 21 lo
+> implementa; **esta sección necesita que la reescriba una persona.**
+>
+> ---
+>
+> **Sobre la autoría de este bloque y del anterior.** Los escribió Claude en el
+> rol de leader, no una persona, y los detectó el `reviewer` de la feature 10
+> como una inconsistencia justa: la política del 2026-09-07 dice que
+> `docs/business/` es de autoría humana, y una versión anterior de este mismo
+> párrafo afirmaba que ningún agente escribe aquí — escrita por un agente.
+>
+> La distinción que se aplicó: lo que hay arriba **transcribe decisiones que
+> tomó Roberto** el 2026-09-07 y el 08 (dejar el nav sin fondo, y después el
+> rediseño de Clau que lo resolvió), más medidas leídas del `.pen`, que solo la
+> sesión principal puede abrir. Transcribir una decisión ajena no es lo mismo
+> que determinarla, y determinarlas es lo que la política prohíbe.
+>
+> Aun así **queda pendiente que Roberto lo valide o lo reescriba.** Si prefiere
+> que ni siquiera las transcripciones vengan de un agente, esto se borra y se
+> reemplaza por lo que él escriba.
 
 ### Móvil (390px)
 

@@ -730,3 +730,40 @@ desbordamiento**: el recorte es del capturador, no de la página.
 **geometría** —anchos, desbordamiento, alturas— se mide por CDP, que es
 exactamente lo que la § R44 ya pedía. Un agente que reporte "la landing se
 desborda en móvil" a partir de una captura está reportando su herramienta.
+
+---
+
+## Feature 012 · rescatado antes de cancelarla (2026-09-08)
+
+> La feature 12 (`english_url_segments`) se canceló por decisión de Roberto:
+> se le hace caso al Artículo VI, que manda segmentos de ruta traducidos. Su
+> spec se borró, pero este hallazgo **no dependía de ella** y se pierde si no
+> queda aquí.
+
+### R61 · Ninguna prueba detecta un `aria-current="page"` roto en el nav
+
+`SiteNav` marca el link activo con `aria-current="page"`, que se anuncia a
+tecnología asistiva y **a propósito no se dibuja** (feature 3, spec A-04). Si
+la marca desaparece, nada se ve.
+
+**Y ninguna de las dos pruebas existentes lo caza:**
+
+- `tests/static-output.test.ts:286` compara el markup del nav entre páginas y
+  **le quita `aria-current="page"` a propósito** (línea 321), porque las dos
+  páginas tienen que diferir justo en eso. Al quitarlo, su ausencia se vuelve
+  invisible ahí.
+- `SiteNav.test.ts:103` afirma sobre `aria-current` con un fixture al que le
+  pasan `current: true` a mano. Prueba el render del componente, nunca la
+  comparación de nombre de ruta que produce la marca.
+
+`ShellRouteName` siendo una unión literal cerrada hace que el **compilador**
+cace un descriptor con nombre inválido. No puede cazar el inverso: unión y
+descriptores actualizados juntos mientras el archivo de página sigue con el
+nombre viejo type-checkea perfecto y deja de marcar en silencio.
+
+**Regla:** una marca que solo existe para tecnología asistiva necesita una
+aserción sobre el artefacto generado — en `/es/nosotros` y `/en/about` un link
+del nav lleva `aria-current="page"`; en `/es` y `/en` ninguno lo lleva. La
+prueba que la afirme se verifica en rojo primero (§ R39).
+
+**Estado:** el hueco sigue abierto. No hay feature que lo reclame.
