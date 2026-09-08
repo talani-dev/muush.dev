@@ -1757,6 +1757,20 @@ html {
    * interpolar. Consumido como `ml-nav-cta-arrow-gap` en `SiteNav.vue`.
    */
   --spacing-nav-cta-arrow-gap: 0.5625rem;
+
+  /*
+   * Ítems 3 y 8 — el espacio perceptible entre secciones consecutivas, y
+   * entre la última sección y el footer. Sin valor de diseño que lo fije:
+   * el `.pen` dibuja las secciones a ras (una termina exactamente donde
+   * empieza la siguiente), y Roberto pidió calibrarlo. Un solo token,
+   * consumido como `mt-section-gap` en `app/pages/index.vue`,
+   * `app/pages/nosotros.vue` (entre secciones) y en el `<SiteFooter>` de
+   * `app/layouts/default.vue` (antes del footer) — nunca como padding
+   * dentro de una sección, para no tocar los `pt-*-top` ya calibrados
+   * contra el diseño (rules.md § R49). Escala fluida 32px → 80px, misma
+   * técnica clamp() que el resto del archivo (390 ↔ 1440).
+   */
+  --spacing-section-gap: clamp(2rem, 0.8857rem + 4.5714vw, 5rem);
 }
 
 /*
