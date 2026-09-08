@@ -1023,3 +1023,310 @@ estimación estaba mal ni romper el C7.
   `git diff --stat` por archivo, md5 de `useCursorSpotlight.ts` intacto y
   estilos computados en el navegador iguales).
 - `feature_list.json`: feature id 8 status `reviewing` → `done`.
+
+---
+
+## 2026-09-07 — Feature 9: hero_section (done)
+
+La primera sección real del sitio. `01 Hero` en las cuatro rutas, más el
+**reveal del CTA del nav** que Roberto agregó el mismo día (`ui-map.md` § 2),
+que alcanza cuatro archivos de la feature 3 y está declarado en
+`spec.md` § *Files this feature modifies*.
+
+- 50 tareas `[x]`. `./init.sh` sale 0: **27 archivos de prueba, 325 pruebas**
+  (antes 24 / 276). Cinco compuertas verdes.
+- Módulo `landing` nuevo con las tres capas y su barril; `app/pages/index.vue`
+  reducido a envoltorio; 14 tokens en `global.css`; 5 claves por locale;
+  `app/shared/logic/useNavCtaReveal.ts` como punto de encuentro de las dos
+  features, que **no se importan entre sí** (Artículo III).
+- `SectionGlow.vue`, `SectionBackdrop.vue`, `DotGrid.vue`, `Pill.vue`,
+  `BotonPrimario.vue` y `LinkArrow.vue`: **cero líneas cambiadas**.
+  `SectionGlow.test.ts` pasa sin modificarse — prueba de que ningún token cayó
+  en el namespace cerrado `glow` (§ R36). Lo de la feature 7 sigue intacto.
+
+### Lo que se midió, que es la razón de ser de esta feature
+
+Método: `Emulation.setDeviceMetricsOverride` contra `.output/public`
+(`findings.md` § R44), nunca `--window-size` (§ R34).
+
+- **Los seis centros de glow caen sobre el diseño.** A 1440 dentro de 0.2px
+  (1310,289.8 · 130,309.8 · 1430,869.8); a 390 exactos en x y **+2.2px en y**
+  los tres. Es la comprobación que habría cazado la derivación que la spec ya
+  tuvo que corregir una vez (D-06).
+- **Orden de pintado sobre la página**, no en el catálogo: backdrop `-3` →
+  puntos `-2` → spotlight `-1` (tras un evento de ratón; `ABSENT` antes) →
+  contenido `auto`. La sección no crea contexto de apilamiento ni pinta fondo.
+  **Cierra el primer límite declarado por la feature 8.**
+- **La página scrollea sin inyectar nada** (1320 a 1440×900, 1143 a 390×844) y
+  la hoja de puntos iluminada queda registrada: fase **0,0 mod 24px** en cuatro
+  combinaciones de puntero y scroll. **Cierra el segundo.**
+- Cero desbordamiento horizontal de 320 a 2560.
+- La pila calcula 466.25 contra los 466 del frame a 1440 y 400.63 contra 400 a
+  390 — el mapeo de tokens de la § R49 confirmado a menos de 1px.
+
+### Dos defectos visuales abiertos, y **ninguno es de esta feature**
+
+1. **La banda blanca bajo el pliegue.** A 1440 el glow `Hero · cierre` alarga el
+   documento 159px por debajo de la raíz del layout (raíz 1161.03,
+   `scrollHeight` 1320, borde del glow 1319.8). Ahí abajo no pinta nadie:
+   `html` y `body` van transparentes y el `bg-ink-500` vive en el div raíz.
+   Píxeles leídos de una captura: `rgb(38,38,38)` arriba de la costura,
+   **`rgb(255,255,255)`** abajo. `overflow-x: clip` absorbe el eje horizontal;
+   el vertical no está recortado. **La cura está en
+   `app/layouts/default.vue`, que es de la feature 6**, fuera del alcance
+   declarado de esta — se reportó y no se tocó. Es transitorio: el diseño da
+   5060px de página y el glow cae en 1320, así que desaparece con `02 Propósito`.
+   (`findings.md` § R54.)
+2. **El nav pinneado sin fondo propio — spec D-07, y es peor de lo que reportó
+   el implementer.** El nav computa `background-color: rgba(0,0,0,0)` y
+   `backdrop-filter: none`; al scrollear, **el titular del Hero pasa por debajo
+   del lockup y de los enlaces y los dos se vuelven ilegibles, a cualquier alto
+   de escritorio de hoy** — no solo a viewports cortos, que es hasta donde
+   llegó la medición del implementer (el bloque opaco del footer alcanza el nav
+   a 1440×600 y más corto). **Está correctamente implementado**: `ui-map.md`
+   § 2 dice "el mismo fondo", y el fondo de hoy es ninguno, porque el estado
+   comprimido que habría traído `#1c1416a6` es justo lo que esa decisión
+   descartó. **Decide Roberto.** Cuesta dos utilidades sobre el renglón
+   (`bg-glass-dark` y un blur).
+
+### El nav móvil mide 78.19, no los 76 del frame
+
+`--spacing-nav-y` × 2 = 44, más el hijo más alto del renglón: la hamburguesa,
+padding 12×2 + dos barras de 1.6 + gap 5 = 32.2 **más su borde de 1px arriba y
+abajo** = 34.19. Reproducido a la centésima: 22.0002 + 22.0002 + 34.19 =
+**78.19**. La derivación de la § R49 **omite el borde**, y el borde sí está en
+el diseño (§ 9.bis). El frame se contradice con su propio dibujo.
+
+**`--spacing-hero-top` se dejó en `150 − 76 = 74` y la discrepancia se reportó
+en vez de retocar el token para taparla.** Es la decisión correcta y conviene
+decirlo claro: el primer hijo del Hero queda a y152.19 en vez de y150 y los tres
+centros de glow móviles quedan 2.2px abajo, y de ahí sale ese +2.2. **La
+siguiente sección se va a topar con lo mismo**, así que la corrección tiene que
+hacerla una persona sobre el frame, no cada sección sobre su propio token.
+(`findings.md` § R55.)
+
+### El reveal del CTA no se puede ejercer todavía a 1440×900
+
+El scroll máximo son 420px contra un borde inferior del Hero en y776: el Hero
+nunca sale del viewport, así que el observador nunca cambia y el botón nunca
+aparece en la landing. **Demostrado funcionando a 1440×420** (entra con fade al
+llegar abajo, sale al volver arriba). `research.md` § R8 ya lo anticipaba y
+dejó la perilla (`rootMargin`); se dejó el default. **Se cierra solo cuando
+aterrice la siguiente sección.**
+
+Lo que sí quedó medido hoy: oculto en el HTML generado de `/es/` y `/en/`,
+visible en `/es/nosotros/` y `/en/about/`, **cero transiciones al cargar en las
+cuatro** (ni destello en la landing ni fade en Nosotros, que era el defecto más
+probable); `display: none` a 390; bajo `prefers-reduced-motion: reduce` la
+`transition-property` computa `none` y el mostrar/ocultar sigue ocurriendo;
+`focus()` sobre el botón oculto deja el foco en `BODY`; y **con scripting
+desactivado el botón es visible en 4 de 4 documentos** (leído por el dominio
+`CSS` del protocolo, no por la página). El nav en sí es idéntico a scroll 0 y a
+scroll máximo: alto 102.80, fondo transparente, opacidad 1.
+
+### Cuatro desviaciones del texto de las tareas, las cuatro verificadas por el reviewer **ejecutando**, no leyendo
+
+En los cuatro casos el texto literal habría fallado **en silencio**:
+
+- `--layer-nav` y `--duration-nav-cta-fade` van en `:root`, no en
+  `@theme inline`: Tailwind v4 **no tiene namespace de tema para `z-index` ni
+  para `transition-duration`** — compilado contra el Tailwind 4.3.3 del propio
+  repositorio, `z-nav` y `duration-nav-cta-fade` no emiten una sola utilidad,
+  `pt-hero-top` sí. (§ R52.)
+- El fundido completo vive en `<style scoped>`, no en utilidades: una regla con
+  scope lleva el atributo del componente y **le gana** a
+  `motion-reduce:transition-none`, lo que habría dejado animando a quien pidió
+  no ver animaciones. Medido `transition-property: none` bajo movimiento
+  reducido emulado. (§ R53.)
+- El `<noscript>` se pinta con `v-html`: un `<style>` literal dentro de un
+  `<template>` **compila en SSR y revienta en el compilador de cliente** —
+  `compiler-dom` da error, `compiler-ssr` calla. `pnpm generate` pasaba y
+  `pnpm test` no. (§ R51.)
+- Los hallazgos se escribieron en `docs/harness/findings.md` §§ **R51–R55** y
+  **no** en `docs/business/rules.md`, que es de solo lectura para los agentes
+  desde la política del 2026-09-07. **Nada se escribió en `docs/business/`** en
+  todo el ciclo.
+
+### La única aserción preexistente que cambió
+
+`tests/static-output.test.ts` → *"should render the same nav markup on the
+landing and on About"*. La FR-043 hace que los dos navs difieran a propósito,
+así que la FR-041 ("ninguna prueba existente se modifica") y la FR-043 no pueden
+cumplirse las dos. Se amplió la lista de exclusiones que la prueba **ya** tenía
+(destinos y marcado de página activa) con el par del CTA, y se agregaron tres
+aserciones que fijan que esa es la **única** diferencia — la mitad mecánica de
+la SC-017.
+
+El reviewer fue más lejos que el implementer y le hizo **mutación** contra el
+artefacto real: sigue cazando una clase ajena en un enlace, un atributo extra en
+`<nav>` y un `<ul>` que gane el par; oculta exactamente un caso —un elemento del
+nav que no sea el CTA y que gane literalmente `invisible opacity-0 `— y hay una
+sola coincidencia por documento y es el envoltorio del CTA. **Neto: más fuerte
+que antes**, porque antes nada fijaba el estado del CTA. Su recomendación
+—anclar el patrón con `(?=site-nav__cta)`— **se aplicó al cerrar**, y con eso el
+único hueco desaparece.
+
+### ⚠️ El candado de build de Nuxt golpeó por **tercera vez**
+
+El primer `./init.sh` del reviewer falló por eso, no por la feature.
+`tests/global-setup.ts` lanza `pnpm generate` por `execFileSync`, y un
+`pnpm dev` muerto tumba la suite entera con un `Serialized Error: { status: 1 }`
+que **no nombra nada relevante** — ni el archivo, ni la feature, ni el candado.
+Volvió a pasar al aplicar el ancla de este cierre y pasó al reintentar.
+
+**Tres ciclos, tres rojos falsos.** Vale la pena endurecerlo en el arnés: que
+`global-setup` detecte el candado o el proceso vivo y falle con un mensaje que
+diga qué matar, en vez de propagar un `status: 1` mudo. Cuesta unas líneas y
+lleva tres ciclos costando corridas completas.
+
+### Pendientes de **Roberto**
+
+- 🔴 **D-07** — fondo del nav pinneado. Hoy el titular del Hero se cruza con el
+  lockup y los enlaces al scrollear, y los dos quedan ilegibles a cualquier alto
+  de escritorio. Dos utilidades sobre el renglón.
+- 🟡 La banda blanca bajo el pliegue (feature 6, `default.vue`). Transitoria,
+  se disuelve con `02 Propósito`.
+- 🟡 Alinear —o no— los cinco enlaces del shell a anclas que no existen con la
+  línea estricta que tomó el CTA primario del Hero (D-03).
+
+### Pendientes de **Clau**
+
+- ~~🔴 El link real de Google Calendar (`decisions-open.md` #2). Mientras no
+  exista, el CTA secundario es texto gris inerte, sin ancla y sin flecha.~~
+  ✅ **RESUELTO el 2026-09-07 por Roberto** — `https://cal.com/muush/intro-call`.
+  La herramienta resultó ser **Cal.com, no Google Calendar**. Lo cableó la
+  feature 11; ver la entrada de cierre al final de este archivo. Se tacha en
+  vez de borrarse: era cierto cuando se escribió.
+- 🟡 Los 76 del frame móvil contra los 78.19 que dibuja el propio frame (§ R55).
+- 🟡 `--duration-nav-cta-fade` (**A-15**) — **UNVERIFIED**, `0.2s`, mismo trato
+  que el ping del radar y el fundido del spotlight.
+- 🟡 **D-04** y **D-05** — `--text-link` y `--text-display` resuelven a un solo
+  valor lo que el diseño dibuja distinto entre frames. Reversible en un token
+  cada uno, y hoy gratis.
+
+- Resumen del implementer: `docs/harness/progress/impl_hero_section.md`.
+  Verdict del reviewer: `docs/harness/progress/review_hero_section.md`
+  (**aprobado**, con las cuatro desviaciones verificadas por ejecución).
+- `feature_list.json`: feature id 9 status `reviewing` → `done`.
+
+---
+
+## 2026-09-08 — Feature 11: call_link_and_pointer_cursor (done)
+
+`sdd: false`. Sin `specs/011-*`: el brief fue el array `acceptance` de
+`feature_list.json` más `decisions-open.md` § Decisión 2 y `ui-map.md` §§ 3 y 6.
+Ciclo `implementer` → `reviewer` → **APROBADA**, con la compuerta de review
+respetada como manda `AGENTS.md` § 4 aunque no hubiera fase de spec.
+
+### Lo que shippeó
+
+Cuatro síntomas que Roberto reportó al ver el Hero, de los cuales **tres eran
+la misma causa**.
+
+- **El link de la llamada.** `https://cal.com/muush/intro-call`, dado por
+  Roberto el 2026-09-07, cierra el bloqueante #2. La URL es un **destino, no
+  copy**: vive una sola vez, en `app/shared/data/callBooking.ts`, y **nunca**
+  entra a `i18n/locales/*.json` — una URL duplicada por locale son dos valores
+  que pueden divergir, y `tests/i18n-parity.test.ts` los llamaría paridad
+  perfecta porque ambas claves existen. `app/shared/` es además el único lugar
+  que `landing` y `shell` pueden alcanzar sin violar el Artículo III.
+  `tests/call-booking.test.ts` afirma **un literal bajo `app/` y cero en los
+  locales**, y el reviewer lo verificó **por mutación**: un segundo archivo con
+  la URL pone la suite en rojo.
+- **Texto gris y flecha ausente no eran bugs de estilo.** `HeroSection.vue`
+  renderiza `LinkArrow` cuando existe `callHref` y un `<span>` inerte cuando no;
+  sin URL caía a la rama inerte. **No se cambió una sola línea de marcado** ni
+  en `HeroSection.vue` ni en `FooterColumn.vue` — sus diffs son de comentarios.
+  El `text-bone-100` y la flecha vienen de `LinkArrow.vue`, intacto. Verificado
+  sobre el artefacto generado, no sobre un mount.
+- **El cursor sí era un defecto aparte.** No había **ni una** declaración
+  `cursor` en toda la hoja emitida: Tailwind v4 quitó la regla de preflight de
+  v3, así que un `<a href>` se veía bien porque lo hace el agente de usuario y
+  un `<button>` nativo se quedaba en `default`. Arreglado **donde se definen los
+  elementos** — `BotonPrimario.vue`, `SocialIcon.vue` y los dos `<button>` de
+  `SiteNav.vue` / `MobileMenu.vue` — nunca por call site.
+
+`./init.sh` exit 0 · **349 tests en 29 archivos** · cero tokens nuevos.
+
+### El CTA primario del Hero: sin puntero — y la autoridad que se citó de más
+
+**El resultado es correcto y el reviewer lo sostiene: hoy no lleva puntero.** Es
+un `<button type="button">` sin `href` y sin handler, así que al hacer clic no
+pasa nada, y la premisa del criterio #4 (*"every **interactive** control"*) aún
+no se cumple para él. Gana el puntero por construcción el día que aterrice
+`contactHash`, y hay test en ambos sentidos.
+
+**Pero la autoridad citada no se sostiene entera, y queda registrado como lo que
+es — INFERRED, y sobre-afirmado.** El `implementer` apoyó la decisión en
+`ui-map.md` § 6 (los slots de Proyectos). El remedio que § 6 pide es la
+afordancia completa —*"sin cursor de link **ni hover**"*— y `.led:hover::before`
+en `BotonPrimario.vue` **sigue girando en hover tenga o no destino**. Así que
+solo se aplicó la mitad del remedio, y el control sigue leyéndose como
+clickeable por su caja.
+
+Lo que gobierna de verdad es el **criterio de aceptación #5** (*"a disabled or
+destination-less control must not claim to be clickable"*), que es directo y no
+necesita transferencia.
+
+**La inconsistencia queda viva a propósito y no se tocó aquí**: el hover
+pertenece a un primitivo congelado de la feature 2, fuera de este array de
+aceptación, y R50 exige que el CTA **conserve** su caja y su anillo LED. Es
+observación para Roberto, no defecto.
+
+### R56 · La preflight de Tailwind v4 no declara ningún `cursor`
+
+En `docs/harness/findings.md`, no en `rules.md` — es comportamiento de
+herramienta, no regla de negocio. La regla operativa: un componente que puede
+renderizar como `<button>` declara su cursor **condicionado a que el control
+haga algo**; no se pinta `cursor-pointer` sobre un control sin destino.
+
+**Trampa de al lado, y vale más que la regla:** `BotonPrimario.test.ts` hace
+grep de su propio código fuente buscando `/@(click|mouseenter|mouseleave)/` para
+probar que no lleva script de cliente. Un **comentario** que mencione el binding
+*en prosa* pone la suite en rojo. Se reescribió la prosa y **la guarda quedó
+intacta** — es deliberadamente sobre-estricta y su valor es ser tonta e
+imposible de esquivar; enseñarle a saltar comentarios habría metido parsing en
+lo único que no debe ser negociable.
+
+### El hueco de colección que se cerró antes de que costara algo
+
+`vitest.config.ts` **no recogía `app/shared/data/**/*.test.ts`**, que es donde el
+Artículo I pone una constante transversal. No era defecto vivo —el test de esta
+feature está en `tests/`— pero el siguiente que pusiera una prueba junto a un
+archivo de datos compartidos habría tenido un verde que no significa nada: el
+fallo § R39 exacto que la propia lista de `include` ya documenta.
+
+Se cerró **con el rojo demostrado, no leyendo el glob**: una sonda en
+`app/shared/data/` cuya única aserción era `expect('collected').toBe('this
+assertion must fail')` dejó la corrida en **29 archivos, todos verdes**. Con el
+glob puesto: **30 archivos, 1 fallo**. Sonda eliminada, suite en verde. Misma
+disciplina que la feature 8 tuvo que probar a propósito.
+
+### Decisión de alcance registrada
+
+`SocialIcon` es un `<a href>` que **ya** mostraba puntero por el agente de
+usuario. Se le declaró igual: el criterio #4 nombra "the social buttons" de
+forma explícita y dice *"whether it renders as `<a>` or `<button>`"*, y así los
+controles de vidrio del menú móvil dejan de depender de qué elemento les tocó
+ser. El reviewer lo avaló como justificado, no como relleno.
+
+### Lo que sigue abierto
+
+- 🟡 **El hover del LED sobre un control sin destino** (arriba). Primitivo
+  congelado de la feature 2. **De Roberto**, no de esta feature.
+- 🔴 **Sin pasada visual.** Nada se vio en un navegador; se verificó contra
+  `.output/public` y el CSS emitido. Se suma a las pasadas acumuladas de las
+  features 2, 4, 5, 3, 6, 8 y 9.
+- Los pendientes de las features 7 y 10 no los toca esta feature: la banda
+  blanca, el mensaje del build lock, el comentario obsoleto de `SectionGlow` y
+  su variante `'920'` muerta.
+- 🟡 El fondo transparente del nav sigue **diferido a propósito** por Roberto
+  (`ui-map.md` § 2). No es bug y no se reporta de nuevo.
+- 🔴 `decisions-open.md` #1 (a dónde llegan los formularios) y #3 (FAQ) siguen
+  abiertas. `FAQ` y `Blog · próximamente` siguen como texto inerte, que es
+  ahora la única pareja en ese estado.
+
+- Resumen del implementer:
+  `docs/harness/progress/impl_call_link_and_pointer_cursor.md`. Verdict del
+  reviewer: `docs/harness/progress/review_call_link_and_pointer_cursor.md`.
+- `feature_list.json`: feature id 11 status `reviewing` → `done`.

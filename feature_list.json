@@ -185,6 +185,76 @@
       "sdd": true,
       "status": "done",
       "depends_on": [6]
+    },
+    {
+      "id": 9,
+      "name": "hero_section",
+      "title": "Hero — the landing's first section, and the first real consumer of the background",
+      "description": "Build 01 Hero on the landing in both locales and both viewports. Recipe extracted by the leader from the .pen on 2026-09-07 (rules.md § R32): desktop frame hpiMz / EN I87ti, mobile t5n4Sm / EN dwool. Structurally it is four children in a vertical stack — Pill eyebrow, headline, subhead, CTA row — identical in both viewports; only sizes and the CTA row's direction change, so it is ONE responsive component and not two. It reuses Pill and BotonPrimario unchanged from feature 2; nothing new is drawn. Beyond the section itself this is the first section to exist at all, which makes it the first real exercise of the glow contribution mechanism from feature 6 and the R28/R37 paint-order contract, and it closes the two limits feature 8 had to declare (its layer was measured in the catalogue rather than on a page, and scrolling needed an injected spacer because no page was taller than the viewport). Two link destinations do not exist yet and the spec must decide how each renders — see acceptance.",
+      "acceptance": [
+        "The Hero renders on the landing in es and en, at 390px and 1440px, matching the .pen: Pill eyebrow, headline, subhead, CTA row, stacked vertically",
+        "Desktop: body 900px wide, gap 34; headline 98px/600, line-height 0.98, letter-spacing -3.5; subhead 21px/400, line-height 1.5, measure capped at 600px; CTA row horizontal, gap 28, padding-top 14, centre-aligned; BotonPrimario label at 16px",
+        "Mobile: body 342px wide, gap 24; headline 46px/600, line-height 1, letter-spacing -1.7; subhead 17px/400, line-height 1.5; CTA row VERTICAL, gap 20, padding-top 10; BotonPrimario label at 15px and sized to its text, never full-width (ui-map.md § 3)",
+        "The eyebrow is a Pill instance carrying 'Technology solution studio' at 13px desktop / 12px mobile. That string is IDENTICAL in both locales — it is English inside the Spanish page by design, verified in both .pen locale frames; it must not be translated",
+        "Headline and subhead copy match content.md and the .pen exactly: ES 'Hablamos negocio y código.' / 'Diseñamos y construimos soluciones digitales alrededor de tu negocio.'; EN 'We speak business and code.' / 'We design and build digital solutions around your business.'",
+        "The primary CTA is a BotonPrimario instance reading 'Cuéntanos tu proyecto' / 'Tell us about your project'; the secondary is loose text with NO box in either viewport (ui-map.md § 3), reading 'Agenda una llamada →' / 'Book a call →'",
+        "The secondary CTA's arrow behaviour is decided, not inherited by accident: the .pen bakes the → into the text string, but ui-map.md § 3 specifies hover as 'subrayado o desplazamiento de flecha', and an arrow that shifts must be its own element. Either use LinkArrow or state in the component why plain text is correct",
+        "BLOCKER 1 — 'Agenda una llamada' has no destination. decisions-open.md item 2 has the Google Calendar link open with Clau, and ui-map.md § 3 says the control must not lead anywhere in production. The design draws it in bone-100 as a live CTA, while feature 3's precedent renders destination-less links as non-interactive ink-300 text. The spec must resolve that conflict explicitly rather than pick one silently",
+        "BLOCKER 2 — the primary CTA targets #contacto, which lives in section 05 and does not exist. The spec must state what it does until that section ships, and it must not produce a link to a missing anchor",
+        "The Hero contributes its three glows through the feature 6 mechanism, with no edit to SectionGlow, DotGrid, SectionBackdrop or the layer tokens: foco red-400 65% size 1500-700, wine wine-300 40% size 1100-520, cierre wine-400 30% size 900-520 — all three already exist in the API and in global.css",
+        "Glow offsets are section-relative, not the page-absolute coordinates the design records (rules.md § R29 / feature 6 A-13). Desktop page coords for reference: foco 560,-460; wine -420,-240; cierre 980,420",
+        "Paint order verified ON THE PAGE and not only in Storybook: glows at --layer-glow beneath the dot sheet at --layer-dots, spotlight above it, Hero content above all three. This closes the limit feature 8 had to declare",
+        "The section creates no stacking context and paints no opaque background, per the R28 contract it is the first to be bound by. If it needs either, that is a finding to report, not something to work around silently",
+        "All copy lives in i18n/locales/{es,en}.json with both locales present; tests/i18n-parity.test.ts stays green; zero hardcoded strings in components (Constitution Article VI)",
+        "Zero hardcoded hex or px; every value resolves through a design token, and the responsive step reuses the existing fluid scale rather than adding breakpoint-specific sizes where a clamp already covers it (Constitution Article VII)",
+        "A Storybook story covers the Hero at both viewports and both locales (Constitution Article X), and a component test covers the token and copy mapping",
+        "SCOPE ADDED 2026-09-07 (Roberto, recorded in ui-map.md \u00a7 2): the nav is pinned to the top of the viewport at its current height and background, with no compressed state and no animation of the nav itself",
+        "SCOPE ADDED 2026-09-07: the nav CTA is hidden while the Hero is in view, fades in once the Hero is scrolled past and fades out on scrolling back; on every route without a Hero it is visible from first paint with no animation. Desktop only \u2014 the nav has no CTA below lg. Visible with no JavaScript, still shows and hides under prefers-reduced-motion, and hidden in the landing HTML so it cannot flash. This modifies feature 3 files; spec.md \u00a7 Files this feature modifies lists them",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+      ],
+      "sdd": true,
+      "status": "done",
+      "depends_on": [2, 6, 8]
+    },
+    {
+      "id": 10,
+      "name": "white_band_and_build_lock",
+      "title": "Fix the white band below the fold, and make the build lock fail with a message",
+      "description": "Two defects the Hero cycle surfaced, neither belonging to the feature that found them. (1) THE WHITE BAND — the Hero's 'cierre' glow makes the document 159px taller than the layout root at 1440, and that band renders rgb(255,255,255) because html/body carry no background and vertical overflow is unclipped. Confirmed by screenshot in review_hero_section.md. Pure white below the fold on a site that is dark end to end; it must not reach a deploy. It belongs to feature 6 via app/layouts/default.vue, which is where the layers and the ink base were established. It is transitory in the sense that the design's page is 5060 tall and only the Hero and footer exist today — but a fix that depends on future sections existing is not a fix. (2) THE BUILD LOCK — tests/global-setup.ts shells out to pnpm generate, so a dead pnpm dev holding a Nuxt build lock fails the entire suite with a mute 'Serialized Error: { status: 1 }' that names nothing relevant. Four occurrences, two of them in this session, three of them costing a full run. Grouped into one cycle at Roberto's instruction 2026-09-07. NOT IN SCOPE: the nav's transparent background. Roberto reviewed the illegibility it causes and deliberately deferred it to Clau — see ui-map.md § 2, and do not 'fix' it.",
+      "acceptance": [
+        "No white band renders below the fold at any viewport width: the ink surface extends past the layout root wherever a glow, the footer or any future section makes the document taller than it",
+        "The fix is at the document level (html/body and/or the layout root), not a per-section workaround, and it does not depend on how tall the page happens to be — a page shorter or taller than the viewport must both be correct",
+        "Vertical overflow behaviour is decided explicitly rather than left at its default, and the choice is stated: a glow that overflows horizontally is already clipped by design (feature 6, FR-007), and the vertical axis must not contradict that silently",
+        "The dot sheet, the section glows, the cursor spotlight and the R28/R37 layer order all still hold — verified on the generated page, not only in Storybook",
+        "The three components frozen by feature 6 and the layer tokens keep their contracts: DotGrid.vue, SectionBackdrop.vue and SectionGlow.vue are not edited",
+        "tests/global-setup.ts detects a held Nuxt build lock before shelling out, or catches the failure, and fails with a message naming the actual cause and what to kill — never a bare status code",
+        "The message is verified by reproducing the condition, not by reading the code: hold the lock, run the suite, and show the output",
+        "A regression test covers the white band — an assertion over the generated document or a measured check, so the next glow that overflows does not reintroduce it silently",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+      ],
+      "sdd": false,
+      "status": "pending",
+      "depends_on": [6, 9]
+    },
+    {
+      "id": 11,
+      "name": "call_link_and_pointer_cursor",
+      "title": "Wire the real call link, and make buttons show a pointer cursor",
+      "description": "Roberto reported four things after looking at the Hero, 2026-09-07. Three of them are one cause. (1) THE CALL LINK — https://cal.com/muush/intro-call, given by Roberto, closes blocker #2 in decisions-open.md, which the doc itself scoped as 'aparece en hero, CTA final y footer'. Recorded there with the note that the tool is Cal.com and not Google Calendar as the decision assumed. (2) GREY TEXT AND (3) MISSING ARROW in the hero's secondary CTA are not style bugs: HeroSection.vue:173-177 renders LinkArrow when callHref exists and an inert ink-300 <span> otherwise, and no href existed. Supplying the link fixes both by construction — LinkArrow is bone-100 and owns the arrow. The footer's 'Agenda una llamada' has the same inert treatment in FooterColumn.vue:67 and must change too, per the decision's own scope. (4) THE CURSOR is a genuine separate defect: BotonPrimario renders a real <button> when it has no href (line 43), and a native button's UA cursor is 'default', not 'pointer'. Verified there is not one cursor declaration in the whole compiled stylesheet, so nothing anywhere sets it — anchors only look right because the browser does it for them.",
+      "acceptance": [
+        "The hero's secondary CTA is a real LinkArrow in bone-100 with its arrow, opening https://cal.com/muush/intro-call in a new tab with rel=noopener, per ui-map.md § 3 — LinkArrow already accepts `external` and HeroSection already passes it, so this is a data change and not a markup change",
+        "The footer's 'Agenda una llamada' stops rendering as an inert ink-300 span and becomes a real link to the same destination, with the same new-tab behaviour",
+        "The URL appears once as a single source and is not repeated per locale or per call site — it is a destination, not copy",
+        "Every interactive control shows cursor: pointer on hover, whether it renders as <a> or <button>: the hero's primary CTA, the nav CTA, the mobile menu's hamburger and close button, and the social buttons",
+        "The fix is applied where the elements are defined rather than per call site, and it does not put a pointer cursor on non-interactive text — a disabled or destination-less control must not claim to be clickable",
+        "HeroSection's existing test for the inert branch is updated, not deleted: the branch still exists for any future control with no destination, and must stay covered",
+        "tests/i18n-parity.test.ts stays green, and no user-facing string is hardcoded (Constitution Article VI)",
+        "A test asserts the hero and footer emit the real href, so a future refactor cannot silently return either to the inert branch",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate and pnpm storybook:build all pass"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": [3, 9]
     }
   ]
 }

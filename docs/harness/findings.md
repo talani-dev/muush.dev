@@ -392,3 +392,182 @@ valores arbitrarios `[...]` que el Artículo VII prohíbe.
 las dos están permitidas **sobre un glow individual** — la salida que el
 comentario de `SectionBackdrop.vue` ya contempla, porque el contexto que crea
 solo contiene su propio subárbol vacío.
+
+---
+
+## Feature 009 · Hero — hallazgos de implementación (2026-09-07)
+
+> Las §§ R46 y R47 salieron del ciclo de **especificación** de esta feature y
+> se verificaron al implementarla: **las dos quedan vigentes**. La § R47 se
+> ejerció tal cual (los seis anclas de glow se posicionan con `top-*` /
+> `left-*` por nombre, sin `<style scoped>` y sin valores arbitrarios) y la
+> § R46 no llegó a hacer falta, tal como su propia nota anticipaba — pero
+> **sí mordió en otro namespace**, ver la § R52. Las cinco de abajo son
+> nuevas.
+
+### R51 · Un `<style>` literal dentro de un `<template>` compila en SSR y **revienta** en el compilador de cliente
+
+El bloque `<noscript>` que fuerza visible el CTA del nav necesita una hoja de
+estilos. Escrito como marcado normal:
+
+```vue
+<noscript>
+  <style>.site-nav__cta.site-nav__cta{opacity:1;visibility:visible}</style>
+</noscript>
+```
+
+`pnpm generate` **pasa** y el HTML emitido es correcto. Lo que falla es la
+compilación de cliente, con un error duro:
+
+```
+SyntaxError: Tags with side effect (<script> and <style>) are ignored in
+client component templates.
+```
+
+Apareció al correr la suite (Vitest compila el SFC para cliente), no al
+construir el sitio. El modo de falla es el peor de los dos: el artefacto se ve
+bien y el error sale en otro comando.
+
+**Salida:** la hoja va como constante de módulo y se pinta con `v-html`, que es
+el mismo mecanismo que `Lockup.vue` y `SocialIcon.vue` ya usan para inlinear
+sus SVG (§ R14). Ojo: Vue **sí** le pone el atributo de scope al `<noscript>`
+(`<noscript data-v-…>`), así que una aserción sobre el artefacto tiene que
+tolerarlo.
+
+**Generaliza:** cualquier etiqueta con efecto secundario dentro de un
+`<template>` hay que verificarla contra `pnpm test`, no contra
+`pnpm generate`.
+
+### R52 · Tailwind v4 no tiene namespace de tema para `z-index` ni para `transition-duration`
+
+Extensión directa de las §§ R18 y R46, y la segunda vez que muerde. Compilado
+con el Tailwind del propio repositorio (4.3.3) por su API de Node, contra un
+`@theme inline` que declara `--duration-nav-cta-fade` y `--layer-nav-theme`:
+
+| Candidato | Emite |
+|---|---|
+| `duration-nav-cta-fade` | **nada** |
+| `z-nav-theme` / `z-layer-nav-theme` | **nada** |
+| `transition-opacity` | `transition-duration: var(--tw-duration, var(--default-transition-duration))` |
+
+Los namespaces de tema de v4 son `--color-*`, `--font-*`, `--text-*`,
+`--spacing-*`, `--radius-*`, `--blur-*`, `--breakpoint-*`, `--ease-*`,
+`--animate-*` y compañía. **`z-index` y `transition-duration` no están**: sus
+utilidades solo aceptan números o valores arbitrarios.
+
+**Regla:** un token de nivel (`--layer-*`) o de duración (`--duration-*`) va en
+el bloque `:root` escrito a mano y lo lee un `<style scoped>` — que es lo que
+ya hacían los cuatro `--layer-*` y las dos `--duration-*` anteriores.
+Declararlo en `@theme inline` no emite nada, el `var()` resuelve a nada, y la
+declaración entera se invalida **en silencio**.
+
+### R53 · Un `<style scoped>` le gana a una utilidad de Tailwind, y eso puede apagar una preferencia de accesibilidad
+
+Vue le agrega `[data-v-…]` a cada selector de un bloque con scope, así que
+`.x[data-v-…]` pesa **dos clases** contra la sola clase de `.motion-reduce\:transition-none`.
+
+Consecuencia concreta: escribir el fundido como
+`transition-opacity motion-reduce:transition-none` en las clases **y** la
+duración en un `<style scoped>` deja la regla con scope ganando, y
+`transition-property: none` de la utilidad de movimiento reducido **no se
+aplica**. El visitante que pidió no ver animaciones las sigue viendo, y ninguna
+prueba lo nota.
+
+**Regla:** una propiedad se declara en **un solo lugar**. Si la duración tiene
+que salir de un token (§ R52), entonces la transición completa —propiedad,
+duración, y el `@media (prefers-reduced-motion: reduce)`— vive en el
+`<style scoped>`. Es lo que ya hace `CursorSpotlight.vue`.
+
+### R54 · Un glow de sección puede alargar el documento por debajo de la raíz del layout, y ahí abajo no pinta nadie
+
+Medido en el artefacto generado, a 1440×900, con solo el Hero y el footer
+construidos:
+
+| | |
+|---|---|
+| Alto de la raíz del layout (nav + main + footer) | **1161.03** |
+| `document.documentElement.scrollHeight` | **1320** |
+| Borde inferior del glow `Hero · cierre` | **1319.8** |
+| Sobrante | **158.97** |
+
+`overflow-x: clip` de la raíz absorbe el desbordamiento horizontal (verificado
+de 320 a 2560: cero desbordamiento), pero **el vertical no está recortado**, y
+`html` y `body` no tienen fondo (`rgba(0,0,0,0)`) — el `bg-ink-500` vive en el
+div raíz. Píxeles leídos de una captura con el viewport fijado (§ R44), al
+final del scroll: arriba de la costura `rgb(38, 38, 38)`, abajo
+`rgb(255, 255, 255)`.
+
+**Es transitorio**: el diseño da 5060px de página y el glow cae en 1320, así
+que desaparece solo en cuanto exista `02 Propósito`. A 390 no ocurre
+(sobrante 0.47px). Se registra porque **cualquier sección con un glow que
+sobresalga por abajo lo reproduce** mientras sea la última del documento, y
+porque la cura —recortar el eje vertical en la raíz del layout— es un cambio
+en un archivo de la feature 006, no de la sección.
+
+### R55 · La altura del nav móvil construido es 78.19, no 76 — falta el borde de la hamburguesa
+
+Medida en el artefacto generado con `Emulation.setDeviceMetricsOverride`
+(§ R44), no con `--window-size` (§ R34):
+
+| | Escritorio 1440 | Móvil 390 |
+|---|---|---|
+| Medido en el navegador | **102.80** | **78.19** |
+| Frame del diseño (lectura del líder) | 103 | 76 |
+| Δ | −0.2 | **+2.19** |
+
+El desglose del móvil: `--spacing-nav-y` × 2 = 44, más el hijo más alto del
+renglón, que es la hamburguesa: padding 12 × 2 + dos barras de 1.6 + gap 5 =
+32.2 **más su borde de 1px arriba y abajo** = 34.2. 44 + 34.2 = 78.2, que es
+exactamente lo medido. La derivación que da 76.2 **omite el borde**, y el
+borde sí está en el diseño (`design-extract.md` § 9.bis: "borde `#FBF8F62E`
+1px").
+
+**No se absorbió retocando `--spacing-hero-top`**, que sigue valiendo
+`150 − 76 = 74`: el primer hijo del Hero queda a y 152.19 en vez de y 150, y
+los tres centros de glow móviles quedan 2.2px abajo. Es una discrepancia entre
+el frame y el propio dibujo del frame, y le toca a una persona decidir cuál de
+los dos gana. **Reportado, no resuelto.**
+
+Detalle que cambia el número según el contexto: la hamburguesa solo se
+renderiza después de montar (`v-if="isScriptingAvailable"`), así que **sin
+JavaScript el nav móvil mide menos**.
+
+### R56 · La preflight de Tailwind v4 no declara ningún `cursor`, y un `<button>` nativo queda en `default`
+
+Verificado sobre el CSS emitido por `pnpm generate`, antes del cambio de la
+feature 11:
+
+```
+$ grep -oh "cursor:[a-z-]*" .output/public/_nuxt/*.css | sort | uniq -c
+   (sin resultados)
+```
+
+**Cero declaraciones de `cursor` en toda la hoja del sitio.** Las únicas
+coincidencias de la palabra eran nombres de clase de `CursorSpotlight.vue`.
+
+Tailwind **v3** traía en su preflight `button, [role="button"] { cursor:
+pointer }`. **v4 la quitó**, para alinearse con la hoja del agente de usuario.
+Consecuencia: un `<a href>` sigue mostrando `pointer` porque se lo da el
+navegador, y un `<button>` muestra `default` — que es lo correcto según la
+especificación de CSS, y casi nunca lo que se quiere en una web.
+
+**Por qué costó verlo.** El síntoma no es un error ni una regla que falla: es
+que la mitad de los controles se ven bien *por accidente del agente de usuario*
+y la otra mitad no, sin que nada en el repositorio diga una palabra sobre el
+tema. `BotonPrimario` renderiza `<a>` o `<button>` según tenga `href`
+(línea 43), así que el mismo componente se comportaba distinto en el nav y en
+el Hero.
+
+**Regla operativa:** un componente que puede renderizar como `<button>`
+declara su cursor explícitamente, y lo declara **condicionado a que el control
+haga algo**. No se pinta con `cursor-pointer` un control sin destino: eso es lo
+que `ui-map.md` § 6 ya prohíbe para los slots de Proyectos —*"sin cursor de
+link ni hover (un espacio reservado que parece clickeable y no lleva a nada se
+lee como sitio roto)"*— y aplica igual al CTA primario del Hero mientras la
+sección 05 no exista.
+
+**Trampa de al lado, encontrada al escribirlo:** `BotonPrimario.test.ts` hace
+grep del código fuente crudo buscando `/@(click|mouseenter|mouseleave)/` para
+probar que el componente no lleva script de cliente. Un **comentario** que
+mencione `@click` en prosa rompe esa prueba. La salida correcta es reescribir
+la prosa, no aflojar la guarda.
