@@ -5,9 +5,14 @@ import Wordmark from '@/shared/ui/Wordmark.vue'
  * The two official lockups of `branding.md`, set in Poppins — the only
  * component in this layer allowed to use it.
  *
- * Note: the font binaries are not in the repository yet (public/fonts/ is
- * empty), so both forms currently render in a fallback face. That is a known
- * gap, tracked separately; the type role, weight and tracking are correct.
+ * Both forms render in real Poppins 600, so the type role, weight and
+ * tracking below are reviewable as drawn. Feature 006 self-hosted the brand
+ * type: the site downloads the faces at build time through `@nuxt/fonts` and
+ * serves them from its own origin, and this catalogue — which runs Vite
+ * outside Nuxt and therefore sees no Nuxt module — declares the same two
+ * families itself in `.storybook/preview-head.html`. If a story does show a
+ * system face, that stylesheet failed to load; the component is not the
+ * suspect.
  */
 const meta = {
   title: 'Shared/UI/Wordmark',

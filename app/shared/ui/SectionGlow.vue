@@ -4,10 +4,11 @@ import { computed } from 'vue'
 /**
  * SectionGlow — the radial background layer of the whole site: a circle
  * filled with a radial gradient that fades from one of three base colours to
- * fully transparent. 22 of them, 12 on Landing and 10 on Nosotros, are the
- * entire background (docs/business/landing/design-extract.md § 10).
+ * fully transparent. 21 of them, 11 on Landing and 10 on Nosotros, are the
+ * entire background (docs/business/landing/design-extract.md § 10, corrected
+ * against the design file — see the note on `Glow origen` below).
  *
- * **There is no variant system here, and adding one would be a bug.** The 22
+ * **There is no variant system here, and adding one would be a bug.** The 21
  * are hand-tuned: three base colours crossed with ten opacities, and the
  * design file's names do not track the colour — `Propósito · red` is
  * wine-300, not red. So the component asks for colour, opacity and size
@@ -20,11 +21,20 @@ import { computed } from 'vue'
  * that is what the discriminated union below enforces, so a pair with no
  * token is a type error at the call site instead of an invisible glow.
  *
- * Positioning is the caller's: all 22 sit at different absolute offsets, and
- * a background layer that placed itself could serve exactly one of them.
+ * Positioning is the caller's: all of them sit at different absolute offsets,
+ * and a background layer that placed itself could serve exactly one.
+ *
+ * **Why 21 and not § 10's 22** (read from the `.pen` on 2026-09-08, which
+ * outranks the derived document — docs/business/rules.md §§ R29, R32): the
+ * twelfth Landing entry, `Glow origen`, is real, but the design file nests it
+ * inside the Propósito desktop frame instead of the page-level background
+ * group. It is a piece of that section's composition, not of the background
+ * layer, which is why the background count on Landing is 11. Its
+ * `red-400` 12% fill and its `'920'` size stay — the Propósito feature is
+ * their consumer. Correcting § 10's table is a pending human task.
  */
 
-/** Base colours — only three across all 22 (design-extract.md § 10). */
+/** Base colours — only three across the whole background (design-extract.md § 10). */
 export type GlowColor = 'red-400' | 'wine-300' | 'wine-400'
 
 export type RedGlowOpacity = 12 | 60 | 65
@@ -49,7 +59,11 @@ export type GlowSize =
   | '860-520'
   | '860-480'
   | '820-480'
-  /** Desktop-only: `Glow origen`, the anchor of the Propósito constellation. */
+  /**
+   * Desktop-only: `Glow origen`, the anchor of the Propósito constellation.
+   * Unconsumed today and **not** dead code — it is nested inside the Propósito
+   * frame in the design file, so the section's own feature renders it.
+   */
   | '920'
 
 type Props =

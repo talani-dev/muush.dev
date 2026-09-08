@@ -2,13 +2,14 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import SectionGlow, { type GlowSize } from '@/shared/ui/SectionGlow.vue'
 
 /**
- * The radial background layer of the whole site: 22 circles, 12 on Landing
- * and 10 on Nosotros (docs/business/landing/design-extract.md § 10). Every
- * story below sits on the Ink 500 background, which is the only surface these
- * ever appear on — the Bone and Red backgrounds in the toolbar will make them
- * look wrong, correctly so.
+ * The radial background layer of the whole site: 21 circles, 11 on Landing
+ * and 10 on Nosotros (docs/business/landing/design-extract.md § 10, corrected
+ * against the design file — § 10 still prints 22 and 12, and `Sizes` below
+ * says where the difference went). Every story below sits on the Ink 500
+ * background, which is the only surface these ever appear on — the Bone and
+ * Red backgrounds in the toolbar will make them look wrong, correctly so.
  *
- * **There are no named variants to review.** The 22 are hand-tuned: three
+ * **There are no named variants to review.** The 21 are hand-tuned: three
  * base colours crossed with ten opacities, and the design's own names do not
  * track the colour (`Propósito · red` is wine-300). So the props are colour,
  * opacity and size outright, and `Fills` is the catalogue of the 12 pairs
@@ -71,7 +72,7 @@ const allSizes: GlowSize[] = [
  */
 const reviewZoom = 'zoom: 0.2'
 
-/** Landing's `Hero · foco` — the largest and strongest of the 22. */
+/** Landing's `Hero · foco` — the largest and strongest of the 21. */
 export const Default: Story = {
   args: { color: 'red-400', opacity: 65, size: '1500-700' },
 }
@@ -116,7 +117,11 @@ export const Fills: Story = {
  * `1500-760` and `1500-700` are the same circle on desktop and different ones
  * on mobile, so switch the viewport to Móvil (390) and watch those two
  * separate. `920` is `Glow origen`, which the design only draws on desktop,
- * so it has no mobile measurement and stays fixed.
+ * so it has no mobile measurement and stays fixed. It is also the one
+ * diameter no page-level background uses: the design file nests that glow
+ * inside the Propósito desktop frame, which is why the background is 21 glows
+ * and Landing's is 11. Reviewing it here is how it stays honest until the
+ * Propósito feature renders it.
  */
 export const Sizes: Story = {
   args: { color: 'wine-300', opacity: 40, size: '1500-760' },
@@ -140,8 +145,8 @@ export const Sizes: Story = {
  * Landing's hero, the way the page actually stacks it: foco over wine over
  * cierre, at true size, offset and clipped by the section. Every coordinate
  * here belongs to this story — the component contributes only three circles,
- * because all 22 sit somewhere different and a glow that placed itself would
- * be right once.
+ * because all of them sit somewhere different and a glow that placed itself
+ * would be right once.
  *
  * This is the story to judge the recipe on. Three transparent gradients
  * overlapping must build one soft field with no seam, no band and no ring
