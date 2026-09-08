@@ -610,6 +610,55 @@ describe('static output · the landing hero', () => {
     })
   }
 
+  it('should ship the primary control as a pill in every document', () => {
+    /*
+     * Feature 022. The hero shipped at the 12px control radius, because when
+     * it was measured the design file had not yet been rounded; Roberto
+     * resolved on 2026-09-08 that the pill applies to **every** instance, so
+     * the code goes ahead of a half-propagated design file.
+     *
+     * Asserted on the artefact and not only on the component, because this is
+     * a visible change to a page already in production and the two controls
+     * that reach a prerendered document — the hero CTA and the nav CTA — arrive
+     * through different call sites. The form Submits have no page yet.
+     *
+     * The class, not a pixel value: `happy-dom` paints nothing, so the rendered
+     * band was reviewed in Chrome against `.output/public` instead (see
+     * `BotonPrimario.vue`'s note on the ring). What this catches is the
+     * regression a test can catch — the old radius coming back.
+     */
+    for (const route of ROUTES) {
+      const controls = [
+        ...documentFor(route).matchAll(
+          /<(?:a|button)[^>]*class="(led [^"]*)"/g
+        ),
+      ].map(match => match[1]?.split(' ') ?? [])
+
+      expect(controls.length, route).toBeGreaterThan(0)
+      for (const classes of controls) {
+        expect(classes, route).toContain('rounded-full')
+        expect(classes, route).not.toContain('rounded-control')
+        /* The fill is untouched: the nav CTA looks fill-less in the frame
+           because the nav's own glass sits behind it (Roberto, 2026-09-08). */
+        expect(classes, route).toContain('bg-glass-dark')
+      }
+    }
+  })
+
+  it('should give the pill utility a radius no control radius could reach', () => {
+    /* A pill is "as round as the box allows", which the browser resolves by
+       clamping an absurd radius down to half the shorter side. Pinning the
+       literal would pin a Tailwind implementation detail, so what is asserted
+       is the property that makes it a pill at any size: it dwarfs every radius
+       in the token catalogue, the 12px control radius included. */
+    const pillRadius = emittedCss().match(
+      /\.rounded-full\{border-radius:([^}]+)\}/
+    )?.[1]
+
+    expect(pillRadius).toBeDefined()
+    expect(Number.parseFloat(pillRadius ?? '0')).toBeGreaterThan(1000)
+  })
+
   it('should carry the identical eyebrow in all four documents', () => {
     /* ⚠️ Not a missing translation (spec FR-009). It is English inside the
        Spanish page by design, and the About page inherits it through the

@@ -782,7 +782,16 @@ html {
   );
 
   /* Radios: los paneles son fluidos, los controles fijos.
-     La cápsula del Pill usa rounded-full, no un token propio. */
+     La cápsula del Pill usa rounded-full, no un token propio — y desde la
+     feature 22 el botón primario también: Roberto resolvió el 2026-09-08 que
+     va en píldora en TODAS sus instancias, así que ya no consume
+     --radius-control. El token se queda porque el 12 sigue siendo el radio de
+     control del diseño: lo pide FormField (design-extract.md § FormField,
+     cornerRadius 12) cuando se construyan los formularios. Este comentario no
+     es lo que lo protege: lo guarda una aserción en
+     app/shared/ui/BotonPrimario.test.ts, porque un token sin consumidor
+     defendido solo con prosa es como la variante '920' de SectionGlow estuvo a
+     punto de irse por código muerto. */
   --radius-panel: clamp(1.125rem, 1.0321rem + 0.381vw, 1.375rem);
   --radius-panel-sm: clamp(1.125rem, 1.0786rem + 0.1905vw, 1.25rem);
   --radius-control: 0.75rem;

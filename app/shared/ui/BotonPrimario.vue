@@ -2,9 +2,26 @@
 import { computed } from 'vue'
 
 /**
- * BotonPrimario — the conversion control of the site: dark glass, the
- * control corner radius and a conic LED ring at `--stroke-led`. Sizes from
+ * BotonPrimario — the conversion control of the site: dark glass, a pill
+ * silhouette and a conic LED ring at `--stroke-led`. Sizes from
  * docs/business/landing/design-extract.md § 4.
+ *
+ * ## The shape is one shape, and it is a pill
+ *
+ * The design file draws `cornerRadius: 999` on the desktop hero CTAs and on
+ * the four detached nav CTAs, while the component master, the mobile hero
+ * CTAs and both form Submits are still on the old 12. Roberto resolved that
+ * inconsistency on 2026-09-08 in favour of rounding **every** instance, so
+ * this file goes ahead of the half-propagated design file rather than
+ * reproducing its state. There is no shape prop and no shape variant: a
+ * caller cannot ask for the old rectangle.
+ *
+ * `rounded-full` rather than a `--radius-pill` token of its own, because
+ * `global.css` already settled that question for the r999 capsule when `Pill`
+ * was built ("La cápsula del Pill usa rounded-full, no un token propio"), and
+ * a second name for the same shape is how two capsules drift apart. The fill
+ * is untouched: `bg-glass-dark` is still `#1c1416a6`. The nav CTA looks
+ * fill-less in the frame because the nav's own glass sits behind it.
  *
  * Renders an `<a>` when `href` is given and a real `<button>` otherwise, so
  * a form submit stays a submit and the hero CTA stays a link. The label
@@ -25,6 +42,43 @@ import { computed } from 'vue'
  *
  * It is declared here rather than at each call site, and it is **conditional**,
  * because the two branches are not equally clickable.
+ *
+ * ---
+ *
+ * ## ⚠️ Recorded exception to Article V's 200-line limit
+ *
+ * This file is over it, and every line of the excess is prose.
+ *
+ * | Measure | Before feature 022 | Now |
+ * |---|---|---|
+ * | raw lines (`wc -l`) | 176 | 251 |
+ * | non-comment, non-blank | 74 | 74 |
+ *
+ * Measured by stripping block comments, HTML comments and `//` line comments
+ * from the file and then dropping blank lines; the "now" column includes this
+ * note. Feature 022 changed **one class** and added no code at all. The second
+ * row is the number that matters — the raw one goes stale the moment a comment
+ * is edited, which is a mistake the `CursorSpotlight.vue` exception records
+ * having already made once. (The reviewer's note reads 177 → 214 and 78 code
+ * lines; the gap is a counting-method difference over comment-delimiter lines,
+ * and both measurements agree on the invariant — the code did not change.)
+ *
+ * **Do not "fix" this by extracting sub-components.** Article V's remedy
+ * clause ("extract sub-components if they grow past that") names the cure, and
+ * naming the cure is what identifies the disease as *structural* complexity.
+ * There is none here: one element, one masked pseudo-element, two media
+ * queries. Splitting the ring off would put the mask, the inherited radius and
+ * the 65%-opaque fill into two files that then have to agree — and the
+ * comments in the `<style>` block are the measurement behind a band that fails
+ * **silently** when it breaks (`docs/harness/findings.md` § R59), so deleting
+ * them is not the remedy either.
+ *
+ * This is materially the exception already recorded for `CursorSpotlight.vue`,
+ * which established the non-comment count as the only stable metric. It lives
+ * here rather than in a `plan.md` Complexity Tracking table because feature
+ * 022 is `sdd: false` and has no spec package to hold one; the Constitution's
+ * *Compliance Review* requires the record to be explicit, not to be in a
+ * particular file. Raised as non-blocking by the reviewer on 2026-09-08.
  */
 export type ButtonVariant = 'nav' | 'hero' | 'submit'
 
@@ -38,7 +92,7 @@ interface Props {
 
 const { variant = 'hero', href, type } = defineProps<Props>()
 
-/** Padding and label role per variant; fill, radius and ring are shared. */
+/** Padding and label role per variant; fill, shape and ring are shared. */
 const sizeByVariant = {
   nav: 'py-btn-nav-y px-btn-nav-x text-button-sm',
   hero: 'py-btn-y px-btn-hero-x text-button',
@@ -85,7 +139,7 @@ const isClickable = computed(
     :href="href"
     :type="href ? undefined : buttonType"
     :class="[
-      'led relative inline-flex items-center justify-center rounded-control bg-glass-dark font-instrument text-bone-100 focus-visible:outline-red-400',
+      'led relative inline-flex items-center justify-center rounded-full bg-glass-dark font-instrument text-bone-100 focus-visible:outline-red-400',
       sizeByVariant[variant],
       isClickable ? 'cursor-pointer' : '',
     ]"
@@ -126,6 +180,27 @@ const isClickable = computed(
  * that token in code (design-extract.md §§ 4, 11). The variables are the
  * `:root` ramp names, not the `--color-*` theme names — `@theme inline`
  * inlines those into utilities and emits no custom property for them.
+ *
+ * ## Why the band survives a pill radius, measured rather than assumed
+ *
+ * `border-radius: inherit` copies the *specified* radius, and each box then
+ * clamps it to its own size — so the ring inherits "as round as possible" and
+ * not a number that would fit the button and overflow the pseudo-element. The
+ * inner edge stays concentric because `mask-clip: content-box` rounds the
+ * content box by the border radius **minus the padding**, which for a pill is
+ * (height ÷ 2) − 1.5 = half the content height: another pill. The band is
+ * therefore uniform all the way round, with no hairline and no notch where the
+ * cap meets the straight edge.
+ *
+ * Verified on `.output/public` in Chrome at 1440 and 390 (the measuring
+ * discipline of `docs/harness/findings.md` § R44), and at
+ * 5× on the three sizes: hero 236.19×55.19 (cap radius 27.6), mobile hero
+ * 213.55×50 (25), nav 198.78×42.8 (21.4). What the pill *does* change is
+ * where the sweep reads: a box far wider than it is tall gives each cap only
+ * about ±12° of the turn, so the bone-100 stop lands as a short bright arc on
+ * the vertical centre line and the caps read as near-flat colour. That is a
+ * function of the aspect ratio, not of the corner radius — the same button at
+ * the old 12px puts the bright arc in the same place.
  */
 .led::before {
   content: "";

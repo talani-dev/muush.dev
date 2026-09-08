@@ -1,9 +1,23 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import BotonPrimario, {
   type ButtonVariant,
 } from '@/shared/ui/BotonPrimario.vue'
 import buttonSource from '@/shared/ui/BotonPrimario.vue?raw'
+
+/*
+ * Read as a file rather than imported: the Tailwind Vite plugin claims every
+ * `.css` request, so `@/assets/css/global.css?raw` resolves to an empty string
+ * and any assertion over it would pass against nothing — the trap
+ * `SectionGlow.test.ts` records. Resolved from Vitest's root, which is this
+ * repository; it is a path and not an import, so Article XII does not apply.
+ */
+const globalCss = readFileSync(
+  resolve(process.cwd(), 'app/assets/css/global.css'),
+  'utf8'
+)
 
 /** Padding and label role per variant, from design-extract.md § 4. */
 const sizeByVariant: Record<ButtonVariant, string[]> = {
@@ -57,12 +71,47 @@ describe('BotonPrimario', () => {
       for (const expected of expectedClasses) {
         expect(wrapper.classes()).toContain(expected)
       }
-      // Fill, radius and the ring are identical across all three variants.
+      // Fill, shape and the ring are identical across all three variants.
       expect(wrapper.classes()).toContain('bg-glass-dark')
-      expect(wrapper.classes()).toContain('rounded-control')
+      expect(wrapper.classes()).toContain('rounded-full')
       expect(wrapper.classes()).toContain('led')
     })
   }
+
+  it('should offer no way to ask for the old rectangle when its source is inspected', () => {
+    /* The pill is the shape, not a shape (Roberto, 2026-09-08): every instance
+       rounds, so there is no prop and no variant to switch it back, and the
+       12px control radius is gone from this component entirely. A caller that
+       wanted the rectangle would have to add an API for it, which is a visible
+       change rather than a class slipping back in.
+
+       Two assertions and no prose-sensitive third one on purpose: a guard that
+       greps for an English word is the trap § R56 of `findings.md` records,
+       where a doc comment turned this file red. `rounded-control` and an
+       arbitrary radius are class strings, not prose. */
+    expect(buttonSource).not.toContain('rounded-control')
+    expect(buttonSource).not.toMatch(/rounded-\[/)
+  })
+
+  it('should keep the control radius token alive when this component no longer consumes it', () => {
+    /* This component was `--radius-control`'s last consumer, so as of feature
+       022 nothing in `app/` references the token. It is not dead code: 12px is
+       still the design's control radius, and the consumer that is coming is
+       **`FormField`** — `design-extract.md § FormField`, `cornerRadius 12`, 13
+       uses across the two forms. Deleting it would throw away a design
+       measurement so the forms feature could reinvent it.
+
+       Asserted here, on the stylesheet source, because Tailwind v4 tree-shakes
+       an unreferenced custom property out of the build: the token is not in
+       `.output/public` at all, so the artefact cannot speak for it. And
+       asserted at all because a comment is not a guard — an unconsumed token
+       protected only by prose is exactly how `SectionGlow`'s `'920'` variant
+       nearly went out as dead code.
+
+       Retire this the day `FormField` lands: from then on its own test is what
+       keeps the token honest. */
+    expect(globalCss).toMatch(/--radius-control:\s*0\.75rem/)
+  })
 
   it('should offer a pointer when it renders as a link', () => {
     /* The user agent would give an `<a href>` a pointer anyway; it is declared

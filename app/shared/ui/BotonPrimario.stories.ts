@@ -11,6 +11,14 @@ import BotonPrimario, {
  * every 2.6s; leave and it stops. The three stops are red-400 → bone-100 →
  * red-400 — if you see wine anywhere, that is a defect.
  *
+ * **The shape is a pill, in all three sizes** (Roberto, 2026-09-08). What to
+ * look for in `AllVariants`, where the three sizes sit side by side: the ring
+ * is one uniform 1.5px band all the way round, the caps are full semicircles,
+ * and there is no thinning or notch where a cap meets a straight edge. The
+ * bone-100 stop lands as a short bright arc on the vertical centre line rather
+ * than spread along an edge — that is the aspect ratio, not a defect, and the
+ * turn on hover walks it round the whole outline.
+ *
  * The label is slot content in both locales below, to show that no copy is
  * baked into the component.
  *

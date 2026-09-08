@@ -675,3 +675,58 @@ vez de su código de salida (por eso `stdio` pasó de `'ignore'` a `'pipe'`).
 Reproducido para verificar el mensaje —`NUXT_LOCK=1 pnpm dev` de fondo y
 `pnpm test` encima— y la salida está en
 `docs/harness/progress/impl_white_band_and_build_lock.md`.
+
+## Feature 022 · Botón primario en píldora — hallazgos (2026-09-08)
+
+### R59 · Un anillo enmascarado sobrevive a un radio de píldora, y la razón es que `mask-clip: content-box` redondea
+
+El anillo LED de `BotonPrimario` se pinta con un pseudo-elemento de
+`padding: 1.5px` y `mask-composite: exclude` entre una máscara de `border-box` y
+otra de `content-box`. La duda razonable al pasar de r12 a píldora era si la
+banda se adelgazaría o se cortaría en las tapas — un agujero **rectangular**
+dentro de una forma de estadio dejaría la banda vacía justo en las curvas.
+
+No pasa, y no por suerte: `mask-clip: content-box` recorta con las esquinas
+redondeadas por el **radio menos el padding** (CSS Backgrounds 3 § 5.3), así que
+para una píldora el borde interior vale (alto ÷ 2) − 1.5 = medio alto del
+content box: otra píldora, concéntrica. `border-radius: inherit` copia el valor
+*especificado*, y cada caja lo acota a su propio tamaño — por eso hereda "lo más
+redondo posible" y no un número que le quedaría grande al pseudo-elemento.
+
+**Medido sobre `.output/public` con Chrome (§ R44)**, no en Storybook: hero
+236.19×55.19 a 1440 (radio de tapa 27.6), hero móvil 213.55×50 a 390 (25), CTA
+del nav 198.78×42.8 (21.4). Banda de 1.5px continua en las tres, a 0/45/90/135/
+180/270 grados de barrido, a DPR 1 y a DPR 4, y con
+`prefers-reduced-motion: reduce` forzado (anillo rojo plano). Sin hilo, sin
+muesca donde la tapa encuentra el lado recto.
+
+**Corrección al valor del radio (2026-09-08).** `rounded-full` emite
+`border-radius: 2147483647px` **verbatim en la hoja de estilos generada** —eso
+se verificó y es literal—, pero el valor **computado** en vivo no es ese: el
+navegador lo devuelve como `3.35544e+07px`, y solo después lo acota al pintar a
+la mitad del lado corto. Son dos números distintos de la misma declaración. Si
+alguien vuelve a medir esto por `getComputedStyle` y busca el 2147483647, no lo
+va a encontrar y va a creer que la clase no se aplicó. Por eso la aserción de
+`tests/static-output.test.ts` no fija el literal: comprueba que el radio emitido
+supera 1000, que es la propiedad que lo hace píldora a cualquier tamaño.
+
+**Lo que la píldora sí cambia** es dónde se lee el barrido, y conviene decirlo
+antes de que alguien lo reporte como defecto: una caja mucho más ancha que alta
+le da a cada tapa apenas ±12° del giro, así que la parada `bone-100` cae como un
+arco brillante corto sobre la línea central vertical y las tapas se leen casi de
+un solo color. Es función de la proporción de la caja, no del radio: el mismo
+botón a 12px pone el arco en el mismo sitio (comparado lado a lado).
+
+### R60 · `--screenshot` de Chrome headless recorta el contenido y **miente** sobre el desbordamiento
+
+Capturando `/es` con `--window-size=390,844` el titular del Hero sale cortado a
+la derecha, igual a DPR 1 que a DPR 3 — la imagen de un sitio con
+desbordamiento horizontal. Medido por CDP con
+`Emulation.setDeviceMetricsOverride` a los mismos 390: `scrollWidth === clientWidth === 390`
+y el `<h1>` con `scrollWidth === offsetWidth === 342`. **No hay
+desbordamiento**: el recorte es del capturador, no de la página.
+
+**Regla:** una captura sirve para juzgar forma y color; para afirmar
+**geometría** —anchos, desbordamiento, alturas— se mide por CDP, que es
+exactamente lo que la § R44 ya pedía. Un agente que reporte "la landing se
+desborda en móvil" a partir de una captura está reportando su herramienta.
