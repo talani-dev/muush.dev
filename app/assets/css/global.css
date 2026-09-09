@@ -200,6 +200,16 @@
   --duration-nav-cta-fade: 0.2s;
 
   /*
+   * ⚠️ UNVERIFIED — dueño: Clau. Igual que `--duration-nav-cta-fade` arriba:
+   * el comportamiento de ocultar el nav al hacer scroll (feature 26,
+   * ui-map.md/rules.md no lo documentan porque no hay frame para una
+   * interacción) viene de Roberto, pero no fija un timing. Se siembra en los
+   * mismos 0.2s para que los fundidos/deslizamientos del chrome del nav
+   * coincidan entre sí. Ajustable con un solo token.
+   */
+  --duration-nav-reveal: 0.2s;
+
+  /*
    * ═══ Propósito · la constelación del Golden Circle (feature 013) ═══
    *
    * Los tokens de abajo los lee CSS ESCRITO A MANO (los `<style scoped>` de

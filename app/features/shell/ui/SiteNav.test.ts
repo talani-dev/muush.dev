@@ -6,6 +6,7 @@ import type {
   ResolvedSocial,
 } from '@/features/shell/data/types'
 import { useMobileMenu } from '@/features/shell/logic/useMobileMenu'
+import Wordmark from '@/shared/ui/Wordmark.vue'
 import SiteNav from './SiteNav.vue'
 
 const items: ResolvedShellItem[] = [
@@ -317,6 +318,28 @@ describe('SiteNav', () => {
     expect(noscript.element.innerHTML).toBe(
       '<style>.site-nav__cta.site-nav__cta{opacity:1;visibility:visible}</style>'
     )
+  })
+
+  it('should hide the wordmark below lg, a recorded divergence from the .pen (feature 26)', async () => {
+    /* Roberto's decision, 2026-09-09: mobile header shows the isotipo only.
+       The desktop breakpoint and the footer are unaffected — see
+       Lockup.vue's own doc comment for why this is not a bug fix. */
+    const wordmark = (await mountNav()).findComponent(Wordmark)
+
+    expect(wordmark.exists()).toBe(true)
+    expect(wordmark.element.parentElement?.className).toContain('hidden')
+    expect(wordmark.element.parentElement?.className).toContain(
+      'lg:inline-flex'
+    )
+  })
+
+  it('should not carry the scroll-hidden class before any scroll happens', async () => {
+    /* `useNavScrollReveal` starts visible (feature 26); the scroll-direction
+       behaviour itself is unit-tested in `useNavScrollReveal.test.ts` — this
+       only guards the class-binding wiring in the template. */
+    const landmark = (await mountNav()).find('nav')
+
+    expect(landmark.classes()).not.toContain('site-nav--hidden')
   })
 
   it('should offer no menu destination that the footer lacks', () => {
