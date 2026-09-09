@@ -6,6 +6,7 @@ import type {
   ShellLocale,
 } from '@/features/shell/data/types'
 import { useMobileMenu } from '@/features/shell/logic/useMobileMenu'
+import { useNavScrollReveal } from '@/features/shell/logic/useNavScrollReveal'
 import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
 import Lockup from '@/shared/ui/Lockup.vue'
 import LanguageToggle from './LanguageToggle.vue'
@@ -28,10 +29,12 @@ import MobileMenu from './MobileMenu.vue'
  * `ui-map.md` § 2, decided by Roberto on 2026-09-07, replacing
  * `decisions-open.md` #5: the nav stays at the top while the page scrolls, at
  * **the same height and the same background**, and the compressed state is
- * dropped. Nothing about the nav itself changes at any scroll position — no
- * height, no background, no opacity. The **only** thing that changes is
- * whether the `Cuéntanos tu proyecto` button is showing, because on the
- * landing it duplicates the one the Hero offers two steps below.
+ * dropped. No height, no background and no opacity change at any scroll
+ * position. Two things now change on scroll: whether the `Cuéntanos tu
+ * proyecto` button is showing (below, unchanged since feature 009) and,
+ * since feature 26, whether the whole nav itself is showing — see that
+ * section further down. The two are independent: the button's fade is a
+ * route/Hero concern, the nav's own hide/reveal is a scroll-direction concern.
  *
  * `position: sticky`, not `fixed`: it keeps the nav in normal flow, so
  * `<main>` needs no compensating top padding and every section's top padding
@@ -67,6 +70,27 @@ import MobileMenu from './MobileMenu.vue'
  * `#1c1416a6` is what that same decision dropped. Reported as spec D-07 —
  * **owner: Clau / Roberto** — and resolved above, not by inventing a
  * background ahead of the design file arriving.
+ *
+ * ## The nav hides on scroll (feature 26, 2026-09-09)
+ *
+ * Behaviour given verbatim by Roberto — no `.pen` frame exists for this, it
+ * is an interaction, not a static composition. See
+ * `logic/useNavScrollReveal.ts` for the full rule set (the 80px always-visible
+ * zone, the 10px continuous-downward threshold that survives mobile scroll
+ * bounce, the immediate reveal on any upward movement, and the mobile-menu
+ * override). This does **not** touch `position: sticky` — the nav stays in
+ * normal flow exactly as feature 009 established; hiding is a `transform:
+ * translateY(-100%)` on top of that, which is why it needs `--layer-nav`
+ * (already declared) and nothing else.
+ *
+ * **Why the nav must never hide while the mobile menu is open, and why this
+ * is not arbitrary:** `MobileMenu.vue`'s panel is `position: fixed`. An
+ * ancestor with an active `transform` creates a new containing block for a
+ * `position: fixed` descendant, which would mis-contain the panel if both
+ * were active at once. `useNavScrollReveal` takes the menu's own `isOpen` and
+ * forces the nav visible whenever it is true, so the two states can never
+ * overlap — this is what makes the `transform` safe to use here at all, not a
+ * separate fix layered on top of a problem that would otherwise exist.
  */
 interface Props {
   /** Proyectos and Nosotros. */
@@ -152,6 +176,7 @@ const NOSCRIPT_CTA_OVERRIDE =
   '<style>.site-nav__cta.site-nav__cta{opacity:1;visibility:visible}</style>'
 
 const { isOpen, open, close } = useMobileMenu()
+const { isNavVisible } = useNavScrollReveal(isOpen)
 
 const menuTrigger = useTemplateRef<HTMLButtonElement>('menuTrigger')
 
@@ -173,7 +198,11 @@ watch(isOpen, opened => {
 </script>
 
 <template>
-  <nav :aria-label="navLabel" class="site-nav sticky top-0 lg:top-nav-pill-y">
+  <nav
+    :aria-label="navLabel"
+    class="site-nav sticky top-0 lg:top-nav-pill-y"
+    :class="{ 'site-nav--hidden': !isNavVisible }"
+  >
     <!--
       Inert while the panel is up: the row underneath is covered visually, and
       without this it would still take focus and still be announced.
@@ -198,7 +227,12 @@ watch(isOpen, opened => {
       class="nav-row mx-auto flex max-w-shell-max items-center justify-between gap-nav-gap px-page py-nav-y lg:max-w-nav-pill-w lg:rounded-full lg:border lg:border-glass-line lg:bg-glass-dark lg:px-nav-pill-x lg:py-nav-pill-py"
     >
       <NuxtLink :to="home" class="text-bone-100 focus-visible:outline-red-400">
-        <Lockup />
+        <!--
+          `hide-wordmark-below-lg` (feature 26, 2026-09-09): mobile shows the
+          isotipo only, a recorded human divergence from the `.pen` — see
+          Lockup.vue's own doc comment. Desktop and the footer are unaffected.
+        -->
+        <Lockup hide-wordmark-below-lg />
       </NuxtLink>
 
       <!--
@@ -338,9 +372,36 @@ watch(isOpen, opened => {
  * ⚠️ No height, no background and no opacity are declared here or anywhere
  * else on the nav, at any scroll position. That is the requirement, not an
  * omission (FR-042).
+ *
+ * `translateY(-100%)` (feature 26) does not conflict with `sticky`: it is a
+ * paint-time transform layered on top of the position `sticky` already
+ * resolved, never a change to `position` itself. `transition-property` is
+ * scoped to `transform` alone, same reasoning `.site-nav__cta` below already
+ * documents for its own fade — a scoped rule outranks a same-specificity
+ * utility, so writing the reduced-motion override here in the same place
+ * keeps one specificity level in charge of it instead of two.
  */
 .site-nav {
   z-index: var(--layer-nav);
+  transition-property: transform;
+  transition-duration: var(--duration-nav-reveal);
+  transition-timing-function: ease-out;
+}
+
+/* The hidden state itself: translated fully off-screen, never `display` or
+   `visibility` — those would drop the nav from the accessibility tree and
+   from tab order mid-scroll, which nothing in feature 26 asks for. */
+.site-nav--hidden {
+  transform: translateY(-100%);
+}
+
+/* Instant, per `ui-map.md` § *Movimiento reducido*'s own pattern: hiding
+   still carries information (there is more page below), the slide is
+   decoration. */
+@media (prefers-reduced-motion: reduce) {
+  .site-nav {
+    transition-property: none;
+  }
 }
 
 /*

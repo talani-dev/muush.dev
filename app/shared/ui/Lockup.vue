@@ -19,18 +19,37 @@ import Wordmark, { type WordmarkForm } from './Wordmark.vue'
  *
  * The site is dark end to end, so the on-ink variant is the only one used.
  * Lockup is not a link: the nav and the footer decide where it points.
+ *
+ * ## `hideWordmarkBelowLg` — a recorded human divergence, not a bug fix
+ * (feature 26, 2026-09-09)
+ *
+ * Roberto decided the mobile header should show the isotipo only, dropping
+ * `muush.dev`. **The `.pen` draws the full wordmark in the mobile nav**
+ * (frames `UVyfl`/`Gyzef`/`jEjlk`/`JSjcc`, each with a `Wordmark` child under
+ * the Lockup) — this is confirmed, not a documentation gap, same class as the
+ * decision to drop `Proyectos` from the nav/footer/mobile-menu this same
+ * session. Do not "fix" this by matching it back to the `.pen`.
+ *
+ * Scoped to the caller: default `false` leaves every existing use (the
+ * footer, both viewports) byte-identical. Only `SiteNav.vue` passes it.
  */
 interface Props {
   form?: WordmarkForm
+  /** Hides the wordmark below `lg`, keeping only the isotipo. Default `false`
+   *  — see the divergence note above. */
+  hideWordmarkBelowLg?: boolean
 }
 
-const { form = 'full' } = defineProps<Props>()
+const { form = 'full', hideWordmarkBelowLg = false } = defineProps<Props>()
 </script>
 
 <template>
   <span class="inline-flex items-center gap-lockup-gap">
     <span aria-hidden="true" class="inline-flex w-isotipo" v-html="isotipo" />
-    <Wordmark :form="form" />
+    <span v-if="hideWordmarkBelowLg" class="hidden lg:inline-flex">
+      <Wordmark :form="form" />
+    </span>
+    <Wordmark v-else :form="form" />
   </span>
 </template>
 

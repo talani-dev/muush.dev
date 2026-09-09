@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import type { ResolvedFooterColumn } from '@/features/shell/data/types'
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
+import Wordmark from '@/shared/ui/Wordmark.vue'
 import SiteFooter from './SiteFooter.vue'
 
 const columns: ResolvedFooterColumn[] = [
@@ -124,6 +125,16 @@ describe('SiteFooter', () => {
     const anchors = mountFooter().findAll('a')
 
     expect(anchors.every(anchor => anchor.attributes('href'))).toBe(true)
+  })
+
+  it('should never hide the wordmark, at any width (feature 26)', () => {
+    /* Only `SiteNav.vue` passes `hide-wordmark-below-lg`; the footer keeps
+       its pre-existing behaviour unchanged in both viewports. */
+    const wordmark = mountFooter().findComponent(Wordmark)
+
+    expect(wordmark.exists()).toBe(true)
+    expect(wordmark.classes()).not.toContain('hidden')
+    expect(wordmark.element.parentElement?.className).not.toContain('hidden')
   })
 })
 

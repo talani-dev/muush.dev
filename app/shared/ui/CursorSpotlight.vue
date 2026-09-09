@@ -4,11 +4,21 @@
  * whole page, and the lift it gives the dotted paper underneath
  * (`ui-map.md` § 10, row 1; frame `gViAx` "DEMO spotlight cursor").
  *
- * Two concentric radial fields, exactly as the frame draws them: an outer
- * field 660px across running red-400 42% → 17% at 0.42 → transparent, and a
- * 180px core at 37%. Plus a second copy of the dotted-paper recipe clipped to
- * the same radius, which is what makes the dots *inside* the light brighter
- * **and more distinct** rather than merely veiled (`ui-map.md:271`).
+ * Two concentric radial fields: an outer field running red-400 42% → 17% at
+ * 0.42 → transparent, and a core at 37%. Plus a second copy of the
+ * dotted-paper recipe clipped to the same radius, which is what makes the
+ * dots *inside* the light brighter **and more distinct** rather than merely
+ * veiled (`ui-map.md:271`).
+ *
+ * ⚠️ **Sizing is a recorded human divergence from the frame (feature 26,
+ * 2026-09-09), not the confirmed design measurement.** Frame `gViAx` draws
+ * the outer field at 660px and the core at 180px — `--spotlight-core-size`
+ * still matches that. `--spotlight-outer-size` was cut to roughly half of it
+ * (330px) at Roberto's request: the effect read as "more than one gradient"
+ * and too large, and he asked to shrink the bigger field while leaving the
+ * smaller core untouched. This is a first calibration pass, not a final
+ * value — see the token's own comment in `global.css` for the exact numbers
+ * and for why a further pass only ever touches that one token.
  *
  * **No props and no imports, both deliberate.** There is one spotlight in the
  * design, at one size, with one recipe — a `size`, `colour` or `enabled` prop
@@ -142,6 +152,15 @@
  * fragility FR-006 exists to forbid. The path is unreachable in production —
  * the `v-if` needs a published position and the pinned story sets one — so this
  * is latent, and recorded here so it stays that way.
+ *
+ * ⚠️ The digits above (660/756/378/330/…) are historical: they were measured
+ * when `--spotlight-outer-size` was 660px, before feature 26 (2026-09-09) cut
+ * it to roughly half. The **argument** they demonstrate — a percentage
+ * resolves against each element's own box, and the beam and the lit sheet are
+ * different sizes — is scale-invariant and still holds at the new size; only
+ * the specific numbers would change if this table were re-measured. Not
+ * recomputed here to avoid introducing a transcription error into evidence
+ * this comment depends on; re-measure before trusting the exact figures again.
  */
 .cursor-spotlight__beam {
   --spotlight-beam-x: calc(
