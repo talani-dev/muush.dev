@@ -25,10 +25,11 @@ const formContent: ContactFormContent = {
       label: '¿Cómo te identificas?',
       errorRequired: 'Elige una opción',
       options: {
+        realEstate: 'Bienes raíces/inmobiliaria',
+        creator: 'Creador de contenido',
         company: 'Empresa',
         independent: 'Emprendedor o persona física',
         startup: 'Startup',
-        creator: 'Creador de contenido',
         other: 'Otro',
       },
     },

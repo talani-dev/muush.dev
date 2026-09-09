@@ -17,24 +17,31 @@ export type ContactFieldId =
   | 'whatsapp'
 
 /**
- * The five approved options (`docs/business/landing/content.md`).
+ * The six real options, given verbatim by Roberto (feature 24, 2026-09-08),
+ * in this exact order — supersedes the previous five-option set from
+ * `docs/business/landing/content.md`.
  *
- * ⚠️ Deliberately excludes a sixth option, "Restaurante o bar", visible only
- * in the `.pen` and never approved in `content.md` (spec A-02). Adding it
- * here would ship unapproved copy; the gap is reported, not invented.
+ * `realEstate` is the one genuinely new option ("Bienes raíces/inmobiliaria")
+ * — still distinct from the `.pen`'s undocumented "Restaurante o bar", which
+ * remains unapproved copy and still does not appear here. The other five
+ * keys are unchanged: only `creator` and `company`'s rendered text changed,
+ * `independent`/`startup`/`other` are untouched (spec A-02 is superseded by
+ * this direct instruction, not silently contradicted).
  */
 export type IdentityOption =
+  | 'realEstate'
+  | 'creator'
   | 'company'
   | 'independent'
   | 'startup'
-  | 'creator'
   | 'other'
 
 export const IDENTITY_OPTIONS: IdentityOption[] = [
+  'realEstate',
+  'creator',
   'company',
   'independent',
   'startup',
-  'creator',
   'other',
 ]
 

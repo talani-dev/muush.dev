@@ -31,10 +31,11 @@ const spanish: ContactFormContent = {
       label: '¿Cómo te identificas?',
       errorRequired: 'Elige una opción',
       options: {
-        company: 'Empresa',
+        realEstate: 'Bienes raíces/inmobiliaria',
+        creator: 'Creador de contenido/marca personal',
+        company: 'Empresa pública o privada',
         independent: 'Emprendedor o persona física',
         startup: 'Startup',
-        creator: 'Creador de contenido o marca personal',
         other: 'Otro',
       },
     },

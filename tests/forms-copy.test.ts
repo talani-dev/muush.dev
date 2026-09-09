@@ -8,10 +8,12 @@ import { describe, expect, it } from 'vitest'
  * on import, and an AST node is never the empty string
  * (`docs/business/rules.md` § R27).
  *
- * The five identity options are checked verbatim against `content.md`; the
- * success/error copy against `ui-map.md` § 7 — both approved copy that ships
- * today even though the two states it belongs to are unreachable from the
- * live page (spec FR-016).
+ * The six identity options are checked verbatim against the catalogue
+ * Roberto gave directly (feature 24, 2026-09-08), which superseded the
+ * previous five-option set from `content.md`; the success/error copy
+ * against `ui-map.md` § 7 — both approved copy that ships today even though
+ * the two states it belongs to are unreachable from the live page (spec
+ * FR-016).
  */
 interface ContactFormsCopy {
   fields: {
@@ -22,7 +24,12 @@ interface ContactFormsCopy {
       label: string
       errorRequired: string
       options: Record<
-        'company' | 'independent' | 'startup' | 'creator' | 'other',
+        | 'realEstate'
+        | 'creator'
+        | 'company'
+        | 'independent'
+        | 'startup'
+        | 'other',
         string
       >
     }
@@ -72,26 +79,38 @@ describe('forms copy · forms.contact.*', () => {
     }
   })
 
-  it('should ship the five approved identity options verbatim per locale', () => {
-    /* content.md: the .pen's sixth option ("Restaurante o bar") is not
-       approved copy and MUST NOT appear (spec A-02, FR-007). */
+  it('should ship the six real identity options verbatim, in order, per locale', () => {
+    /* Given directly by Roberto (feature 24, 2026-09-08), superseding the
+       previous five-option `content.md` set. The .pen's undocumented sixth
+       option ("Restaurante o bar") is still not approved copy and MUST NOT
+       appear — `realEstate` is a different, newly-approved option. */
+    expect(Object.keys(es.forms.contact.fields.identity.options)).toEqual([
+      'realEstate',
+      'creator',
+      'company',
+      'independent',
+      'startup',
+      'other',
+    ])
     expect(Object.values(es.forms.contact.fields.identity.options)).toEqual([
-      'Empresa',
+      'Bienes raíces/inmobiliaria',
+      'Creador de contenido/marca personal',
+      'Empresa pública o privada',
       'Emprendedor o persona física',
       'Startup',
-      'Creador de contenido o marca personal',
       'Otro',
     ])
     expect(Object.values(en.forms.contact.fields.identity.options)).toEqual([
-      'Company',
+      'Real estate',
+      'Content creator/personal brand',
+      'Public or private company',
       'Independent or sole proprietor',
       'Startup',
-      'Creator or personal brand',
       'Other',
     ])
     for (const locale of [es, en]) {
       const values = Object.values(locale.forms.contact.fields.identity.options)
-      expect(values).toHaveLength(5)
+      expect(values).toHaveLength(6)
       expect(values.some(option => /restaurante|bar/i.test(option))).toBe(false)
     }
   })

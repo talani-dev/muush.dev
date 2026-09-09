@@ -29,11 +29,18 @@ export function useContactFormContent(): ComputedRef<ContactFormContent> {
       identity: {
         label: t('forms.contact.fields.identity.label'),
         errorRequired: t('forms.contact.fields.identity.errorRequired'),
+        /*
+         * Order is significant: `ContactForm.vue` walks
+         * `Object.entries(options)` to build the select's option list, so
+         * this literal's key order IS the render order — the six options
+         * Roberto gave verbatim (feature 24, 2026-09-08).
+         */
         options: {
+          realEstate: t('forms.contact.fields.identity.options.realEstate'),
+          creator: t('forms.contact.fields.identity.options.creator'),
           company: t('forms.contact.fields.identity.options.company'),
           independent: t('forms.contact.fields.identity.options.independent'),
           startup: t('forms.contact.fields.identity.options.startup'),
-          creator: t('forms.contact.fields.identity.options.creator'),
           other: t('forms.contact.fields.identity.options.other'),
         },
       },

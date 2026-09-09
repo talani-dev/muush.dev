@@ -97,10 +97,11 @@
           "label": "How do you identify?",
           "errorRequired": "Choose an option",
           "options": {
-            "company": "Company",
+            "realEstate": "Real estate",
+            "creator": "Content creator/personal brand",
+            "company": "Public or private company",
             "independent": "Independent or sole proprietor",
             "startup": "Startup",
-            "creator": "Creator or personal brand",
             "other": "Other"
           }
         },
