@@ -1,0 +1,156 @@
+# Verify + build + deploy to S3/CloudFront (Constitution Article IV —
+# static-site purity: the deployable artifact is exactly what `pnpm generate`
+# writes to `.output/public`, no server, no compute at request time).
+#
+# On a pull request: only the `verify` job runs (typecheck, lint, tests,
+# `pnpm generate`, `pnpm storybook:build`) — same gates as `init.sh`.
+# On a push to `master`: `verify` runs first, then `deploy` uploads the
+# EXACT build `verify` produced (passed as an artifact, never rebuilt) to S3
+# and invalidates CloudFront.
+#
+# ## One-time AWS setup required before this can deploy (Roberto, in the AWS
+# console — this repo/workflow cannot do it):
+#
+# 1. Create an IAM OIDC identity provider for `token.actions.githubusercontent.com`
+#    (skip if the AWS account already has one — it's account-wide, not per-repo).
+# 2. Create an IAM role trusted by that provider, scoped to this repo, e.g.
+#    trust condition `token.actions.githubusercontent.com:sub` =
+#    `repo:<org>/<repo>:ref:refs/heads/master` (restricts the role to only be
+#    assumable by workflow runs on `master`, not PRs or forks).
+# 3. Attach a permissions policy to that role granting only:
+#    - `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket` on the target bucket
+#      (and `bucket/*`)
+#    - `cloudfront:CreateInvalidation` on the target distribution
+#
+# ## Repository configuration required (Settings → Secrets and variables → Actions)
+#
+# Secrets:
+#   AWS_DEPLOY_ROLE_ARN            — the IAM role ARN from step 2 above
+#
+# Variables (not secret — bucket/distribution IDs, not credentials):
+#   AWS_REGION                     — e.g. us-east-1
+#   AWS_S3_BUCKET                  — target bucket name
+#   AWS_CLOUDFRONT_DISTRIBUTION_ID — target distribution ID
+#
+# Recommend also creating a `production` GitHub Environment and requiring
+# `AWS_DEPLOY_ROLE_ARN` there instead of at the repo level, so it's only
+# readable by this job.
+
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify (typecheck, lint, tests, build)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint + format check
+        run: pnpm check
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build static site
+        run: pnpm generate
+
+      - name: Build Storybook
+        run: pnpm storybook:build
+
+      - name: Upload build artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-site
+          path: .output/public
+          retention-days: 7
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy to S3 + invalidate CloudFront
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write # required to assume the AWS role via OIDC
+      contents: read
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: static-site
+          path: .output/public
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload hashed assets (long-cache, immutable)
+        # `_nuxt/`/`_fonts/` filenames are content-hashed by the build — safe
+        # to cache forever, a new deploy ships under new filenames.
+        run: |
+          aws s3 sync .output/public "s3://${{ vars.AWS_S3_BUCKET }}" \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "*" \
+            --include "_nuxt/*" \
+            --include "_fonts/*"
+
+      - name: Upload HTML/payload/other files (revalidate on every request)
+        # Everything else (`*.html`, per-route `_payload.json`, `favicon.svg`,
+        # `_i18n/*`) is NOT content-hashed, so a stale cached copy would keep
+        # serving the previous deploy's markup/data.
+        run: |
+          aws s3 sync .output/public "s3://${{ vars.AWS_S3_BUCKET }}" \
+            --cache-control "public,max-age=0,must-revalidate" \
+            --exclude "_nuxt/*" \
+            --exclude "_fonts/*"
+
+      - name: Remove files the current build no longer produces
+        # No `--exclude`/`--include` here on purpose: `--delete` combined with
+        # a filtered file selection only "sees" the filtered subset, so it
+        # would misidentify the other subset's objects as stale and delete
+        # them. Running the full, unfiltered sync last — after both scoped
+        # uploads above already set the right cache headers — only touches
+        # deletions; every file already matches, so nothing re-uploads.
+        run: |
+          aws s3 sync .output/public "s3://${{ vars.AWS_S3_BUCKET }}" --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*"
