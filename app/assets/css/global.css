@@ -1447,6 +1447,16 @@ html {
   --spacing-services-row-gap-m: 0.875rem;
   /* Mobile closer width, 342 — the mobile content box (design-extract.md § 9). */
   --spacing-services-closer-m-w: 21.375rem;
+  /*
+   * Space above the mobile delivery closer (feature 24, item 2a). Was
+   * borrowing `--spacing-services-item-gap` (~10-12px, ServiceItem's own
+   * internal name/brief gap) as the section-level separator too, which read
+   * as glued to the last card. No design value fixes this — calibrated
+   * bigger, consistent with the mobile gaps already in this file
+   * (`--spacing-services-row-gap-m` at 14px, `--spacing-purpose-eyebrow-gap`
+   * topping out at 58px on mobile).
+   */
+  --spacing-services-closer-gap-m: 2.5rem;
 
   /*
    * ═══ Contacto · `06 CTA final` (feature 016) ═══

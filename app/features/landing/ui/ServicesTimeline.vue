@@ -74,7 +74,25 @@ useServicesLyrics(timelineItems)
       </div>
     </div>
 
-    <div class="mt-services-item-gap flex flex-col gap-services-item-gap">
+    <!--
+      `mt-services-closer-gap-m` (feature 24, item 2a): the timeline's own
+      `mt-services-item-gap` was a ~10-12px item-internal gap borrowed for a
+      section-level separator, which read as glued to the last card. This is
+      its own token, calibrated bigger.
+
+      `items-start` (feature 24, item 2b): the same bug feature 23 already
+      fixed on the desktop closer (`ServicesConstellation.vue`) — a column
+      flex's default `align-items: stretch` was making the Pill fill the
+      whole cross-axis width instead of sizing to its own content. Unlike the
+      desktop fix, this one keeps `flex-col` rather than switching to
+      `flex-row`: the mobile closer is deliberately STACKED, not side-by-side
+      (`specs/014-services-section/data-model.md` § 2.3 — "Delivery closer:
+      Pill + copy, stacked, full 342px"). `items-start` alone removes the
+      stretch without changing that direction.
+    -->
+    <div
+      class="mt-services-closer-gap-m flex flex-col items-start gap-services-item-gap"
+    >
       <Pill :label="deliveryLabel" />
       <p class="font-instrument text-copy w-services-closer-m-w text-bone-100">
         {{ deliveryCopy }}
