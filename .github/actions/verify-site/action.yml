@@ -1,0 +1,47 @@
+# The quality gate, defined once. PR checks and the release ceremony must
+# run the exact same checks, or a release could tag code that a PR would
+# have rejected. Never runs a rebuild after this passes — the artifact this
+# produces is what gets uploaded, never regenerated.
+
+name: Verify site
+description: >-
+  Install dependencies and run typecheck, lint, tests, and both builds
+  (static site + Storybook).
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Typecheck
+      shell: bash
+      run: pnpm typecheck
+
+    - name: Lint + format check
+      shell: bash
+      run: pnpm check
+
+    - name: Unit tests
+      shell: bash
+      run: pnpm test
+
+    - name: Build static site
+      shell: bash
+      run: pnpm generate
+
+    - name: Build Storybook
+      shell: bash
+      run: pnpm storybook:build
