@@ -2282,3 +2282,64 @@ bloqueante (ver abajo).
 > `./init.sh` exit 0 · **59 files / 711 tests** (mismo conteo — un test se
 > reescribió, no se agregó).
 > - `feature_list.json`: feature id 24 status `reviewing` → `done`.
+
+> 🔁 **Ronda 4 — post-merge, Roberto reabrió el ítem 1 con una captura nueva
+> tras el merge a `master`.** Dos síntomas: el arco no llegaba tan lejos como
+> debía por el lado izquierdo (se cortaba con un extremo redondeado a medio
+> camino) y el Pill "Propósito" seguía muy abajo pese a la segunda
+> calibración. Rama `fix/purpose-arc-reach-and-pill`, feature vuelta a
+> `in_progress` → `reviewing`.
+>
+> **Causa real (medida por CDP, no asumida):** `.arcs` — el wrapper que lleva
+> `overflow-clip` — estaba recortado a la caja de contenido de la SECCIÓN
+> (1280px, adentro del `px-page` de `<main>`), no al frame completo del
+> `.pen` (1440px = el border-box de `<main>`). Mismo patrón de bug que ya se
+> corrigió en Servicios (`.canvas`, feature 23 item 4), pero aquí no bastaba
+> con ensanchar `.arcs` directamente porque sus hijos `.arc-*` se posicionan
+> con PORCENTAJES sobre esa misma caja (`--purpose-arc-origin-x`, a
+> propósito, para escalar con el ancho) — ensancharla habría movido el
+> origen y roto la tangencia arco↔radar ya confirmada en la ronda 3.
+>
+> **Fix:** `.arcs` se partió en dos elementos anidados. `.arcs-clip`
+> (exterior, nuevo) lleva el `overflow-clip`/`absolute inset-0`/`hidden
+> lg:block`/`aria-hidden`, ensanchado con la MISMA fórmula ya revisada para
+> Servicios (`width: min(var(--spacing-shell-max), calc(100% + 2 *
+> var(--spacing-page)))`, `margin-inline: calc(-1 * var(--spacing-page))`,
+> reutilizando el token compartido `--spacing-shell-max` en vez del
+> namespaced `--services-canvas-w`). `.arcs` (interior, sin cambios de
+> tamaño) sigue siendo la caja exacta de 1280px de siempre — mismo ancho,
+> mismo offset — y sigue siendo el padre directo de los tres `.arc-why/-how/
+> -what` (ninguna medida de diseño cambió de valor). Ningún token de origen
+> (`--purpose-arc-origin-x`, `--purpose-origin-y`) se tocó.
+>
+> **Pill, tercera calibración.** `-1.375rem` (22px, ronda 2) "seguía sin ser
+> suficiente" — subido a `-3.75rem` (60px), más del doble, deliberadamente
+> grande para no quedarse corto una tercera vez.
+>
+> **CDP confirmó, antes/después, 1440×1400:** `.arcs-clip` ahora llega de
+> `x=0` a `x=1440` (el frame completo); `.arcs` (interior) sigue en
+> `x=79.98, ancho=1280`, idéntico; origen y centros de los tres Radar sin
+> cambio. El corte visible del arco Why pasó de `(80, 518)` a `(0, 541)` y el
+> de How de `(80, 803)` a `(0, 817)` — 80px más a la izquierda y varios px
+> más abajo en ambos; el corte de What **no cambió** (`≈447, ≈926`), porque
+> ese arco está acotado por la ALTURA de la sección, no por su ancho — el
+> frame del `.pen` mide solo 900px de alto y los arcos "se salen del frame"
+> a propósito, así que ese comportamiento ya era correcto. A 390px (móvil):
+> `.arcs-clip` en `display:none`, rect `0×0`, y `--arc-diameter` sin
+> override inline en los tres arcos — el guard de la ronda 3 sigue intacto.
+> Tangencia re-confirmada en ambos locales: gap efectivamente 0px en los 6
+> casos (3 nodos × 2 locales).
+>
+> El reviewer **APROBÓ** de forma independiente (ver
+> `docs/harness/progress/review_visual_polish_round_2.md` § "Re-review —
+> round 4"): reprodujo cada número desde CDP/geometría propia (no reusó los
+> del implementer), confirmó la tangencia intacta, el guard mobile intacto,
+> los seis primitivos congelados sin tocar, y el diff acotado exactamente al
+> ítem 1 (`global.css`, `PurposeSection.vue`, `PurposeSection.test.ts`,
+> `feature_list.json`).
+> `./init.sh` exit 0 · **59 files / 711 tests** (mismo conteo — sin pruebas
+> nuevas, solo las de `.arcs-clip` reescritas).
+> - Implementer: `docs/harness/progress/impl_visual_polish_round_3.md`.
+>   Reviewer: `docs/harness/progress/review_visual_polish_round_2.md` §
+>   "Re-review — round 4".
+> - `feature_list.json`: feature id 24 status `reviewing` → `done`.

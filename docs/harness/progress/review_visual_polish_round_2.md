@@ -258,3 +258,111 @@ next time this file is touched.
   alias needed.
 - No `console.*`/`TODO`/`FIXME` left in any of the round-3 touched files.
 - No `specs/024-*` folder expected or found (`sdd: false`), consistent with C7.
+
+---
+
+# Re-review — round 4 (post-merge reopen, `fix/purpose-arc-reach-and-pill`, item 1 only)
+
+Status confirmed `reviewing` in `feature_list.json` before starting (was flipped
+back from `done`, diff confirmed: `git diff HEAD -- feature_list.json` shows only
+`"status": "done"` → `"status": "reviewing"`). Scope confirmed limited to item 1
+(Propósito arcs + Pill): `git status --porcelain` shows only
+`app/assets/css/global.css`, `app/features/landing/ui/PurposeSection.vue`,
+`app/features/landing/ui/PurposeSection.test.ts`, `feature_list.json` changed
+(plus the new untracked report). Not re-auditing points 2–6.
+
+## Verdict: APPROVED
+
+## Independently verified myself (fresh `pnpm generate`, real headless Chrome via CDP, not the implementer's numbers)
+
+Built a fresh CDP harness this round (Node 24's native `WebSocket`, no
+Playwright, no `--window-size`) against `Google Chrome.app --headless=new
+--remote-debugging-port`, driving `Emulation.setDeviceMetricsOverride`
+directly, served a fresh `pnpm generate` output via `npx serve` on
+`localhost:4173`.
+
+**Wrapper split, 1440×1400, `/es/#proposito`.**
+- `.arcs-clip`: `left: 0, width: 1440` — the full viewport/border-box width,
+  confirmed reaching all the way to `x=0`.
+- `.arcs` (inner): `left: 79.98, width: 1280` — byte-for-byte the same box it
+  always had.
+- Origin (`.arc-why`/`.arc-how`/`.arc-what` box centre, all three): `(-100.02,
+  44.23)` — identical across all three arcs (shared origin, different radii,
+  as designed) and matching the report's `(-100.02, 44.24)` to within rounding.
+- Radar centres: `(249.98, 409.98)`, `(399.98, 641.48)`, `(549.98, 852.73)` —
+  match the report's `(250,410)/(400,641)/(550,853)` exactly (rounding only).
+
+**Arc cutoff math, computed independently from raw geometry (not trusting the
+report's stated cutoff points), using each arc's own centre/radius and the
+`clip-path: inset(50% 0 0 50%)` bottom-right-quadrant geometry:**
+- arc-why: solved for the wrapper's `x=0` edge → cutoff at `(0, 540.98)`.
+  Report says `(0, 541.0)`. Match.
+- arc-how: solved the same way → cutoff at `(0, 817.17)`. Report says
+  `(0, 817.1)`. Match.
+- arc-what: solved for the wrapper's own height (bound by section height, not
+  width, `y=926.23`) → cutoff at `(446.9, 926.23)`. Report says `(≈447, ≈926)`.
+  Match — correctly still height-bound, confirming this arc's behaviour is
+  unaffected by the fix, as claimed.
+
+All three cutoffs check out to within a few hundredths of a pixel from first
+principles, not by re-running the implementer's own script — this is real
+independent confirmation the arcs now reach `x≈0`, not `x≈80`.
+
+**Pill nudge.** `getComputedStyle('.pill-nudge').top` = `-60px` exactly (token
+`--purpose-pill-y: -3.75rem` = 60px). Rendered rect top = `194.23px`, matching
+the report's `194.2px`.
+
+**Tangency regression check (`usePurposeArcRadii.ts`), both locales, 1440px.**
+Recomputed `distance(origin, radar)` from raw rects independently and compared
+against each arc's live `--arc-diameter` inline value (radius = diameter/2):
+- ES: why 506.23 vs 506.23, how 778.91 vs 778.91, what 1037.39 vs 1037.39.
+- EN: why 491.80 vs 491.80, how 748.31 vs 748.31, what 1006.14 vs 1006.14.
+
+Gap effectively 0px in all 6 cases (well under the <1px bar) — the wrapper
+split did **not** regress the tangency fix from round 2/3.
+
+**Mobile (390×900), both locales.** `.arcs-clip`: `display: none`, rect
+`0×0×0×0`. `--arc-diameter` inline on all three arcs: empty string (`""`) —
+the guard correctly never fires and never writes a value, confirming the
+round-3 fast-follow fix (wrapper-rect guard, not the arc's own blockified
+`display`) is still in effect and was not reintroduced/broken by the round-4
+split. Cross-checked `usePurposeArcRadii.test.ts`: the hidden-wrapper test now
+uses `stubRect` on the wrapper (a real zero-size rect), not a mocked
+`getComputedStyle` — the round-3 finding about the previous false-confidence
+test was genuinely fixed, not just reworded.
+
+**Non-regression at 1536/1600/1920.** `.arcs-clip` stays capped at 1440px
+width in all three, centred (`left` grows with viewport, e.g. 1920 → left
+240, right 1680, still 1440 wide) — same capped/centred pattern as Servicios'
+`.canvas`, confirmed by direct measurement rather than assumed from the code.
+
+**Frozen primitives.** `git diff HEAD --numstat` against `SectionGlow.vue`,
+`DotGrid.vue`, `SectionBackdrop.vue`, `Radar.vue`, `Pill.vue`,
+`BotonPrimario.vue` — zero output, all six untouched.
+
+**Scope.** `git diff --stat HEAD` — only `global.css` (+18/-8, the pill token
+comment/value), `PurposeSection.vue` (+82/-15, the wrapper split + doc
+comments), `PurposeSection.test.ts` (+24/-9, `.arcs` → `.arcs-clip` assertion
+updates), `feature_list.json` (status flip). No other file touched.
+
+**Test honesty (`PurposeSection.test.ts`).** The updated assertions
+(`.arcs-clip` for the clip/`overflow-clip`/`hidden lg:block`/`aria-hidden`
+checks, `.arcs-clip` for the paint-order check) still assert the exact same
+substantive properties as before, just against the element that now actually
+carries them — not weakened. The `.arcs > *` "one origin, three radii" check
+was correctly left untouched, since `.arcs` still directly parents the three
+`.arc-*` spans.
+
+**`./init.sh`.** Reran myself: exit 0. 711/711 tests, `pnpm check`,
+`pnpm typecheck`, `pnpm generate`, `pnpm storybook:build` all green.
+
+## Conclusion
+
+Every specific number in the implementer's report was reproduced independently
+(not merely re-read) via fresh CDP measurement or first-principles geometry,
+and none diverged beyond sub-pixel rounding. The arcs now genuinely reach
+`x≈0` at 1440px (not `x≈80`), the origin/radar/tangency are unchanged, the
+Pill nudge is `-60px` as claimed, mobile correctly renders nothing and writes
+no stray inline style, wider viewports show the expected capped/centred
+pattern, no frozen primitive was touched, and the diff is scoped exactly to
+item 1. Approved.
