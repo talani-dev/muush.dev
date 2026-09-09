@@ -96,15 +96,27 @@
   --spotlight-stop-mid: 42%;
 
   /*
-   * Diámetros del frame: 660×660 el campo exterior y 180×180 el núcleo.
-   * 660 ÷ 16 = 41.25 y 180 ÷ 16 = 11.25. ui-map.md:270 los confirma por su
-   * radio (~330 y ~90, que son justo la mitad de cada uno).
+   * Diámetros del frame `gViAx`: 660×660 el campo exterior y 180×180 el
+   * núcleo. 660 ÷ 16 = 41.25 y 180 ÷ 16 = 11.25. ui-map.md:270 los confirma
+   * por su radio (~330 y ~90, que son justo la mitad de cada uno).
    *
    * En rem y no en px por lo mismo que el papel punteado (feature 006, su
    * A-03): la hoja iluminada tiene que seguir a la retícula exactamente, así
    * que si el visitante agranda la letra las dos crecen juntas (spec A-10).
+   *
+   * ⚠️ DIVERGENCIA HUMANA registrada (feature 26, 2026-09-09), no una
+   * corrección del `.pen`. Roberto percibió el efecto como "más de un
+   * gradiente" y pidió reducir/quitar el más grande — el campo exterior —
+   * dejando el núcleo tal cual. `--spotlight-outer-size` se redujo A LA
+   * MITAD del valor confirmado del frame (41.25rem → 20.625rem, 660px →
+   * 330px); `--spotlight-core-size` NO se toca. Roberto mismo no tenía una
+   * medida exacta en mente: esta es una primera pasada de calibración,
+   * verificada con capturas CDP antes/después, no un valor final. Si hace
+   * falta otra pasada, es este único número el que cambia — `.window` y
+   * `.lit` en CursorSpotlight.vue derivan su tamaño de él, así que nada más
+   * se toca para recalibrar.
    */
-  --spotlight-outer-size: 41.25rem;
+  --spotlight-outer-size: 20.625rem;
   --spotlight-core-size: 11.25rem;
 
   /*
