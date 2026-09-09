@@ -2165,3 +2165,120 @@ untouched since round 1.**
   existing anywhere in `footerColumns.ts`, not a coverage regression; see the
   reviewer's own count reconciliation).
 - `feature_list.json`: feature id 23 status `reviewing` → `done`.
+
+## 2026-09-08 — Feature 24 `visual_polish_round_2` — Propósito, Servicios móvil, menú móvil, contenido de formularios (done)
+
+Segunda ronda de ajustes visuales (`sdd: false`), seis puntos: tres visuales
+y tres de contenido real de formularios dado directamente por Roberto.
+**Aprobada en la primera pasada de revisión**, un solo hallazgo no
+bloqueante (ver abajo).
+
+- **1a — Arcos de Propósito.** Cada `.arc` era ya un círculo completo cuyo
+  centro coincide con el origen del diseño; se agregó
+  `clip-path: inset(50% 0 0 50%)`, que aísla el cuadrante inferior-derecho —
+  exacto por definición geométrica (los diámetros de un círculo lo dividen
+  en cuatro arcos de 90° sin importar el radio), y coincide con la porción
+  que ya era visible dentro de ~0.2% de margen. Verificado por CDP contra
+  `.output/public`: `clipPath: "inset(50% 0px 0px 50%)"`, `borderRadius:
+  "50%"`, ancho=alto en los tres arcos (círculos reales, no elipses).
+- **1b — Pill "Propósito".** Nuevo token `--purpose-pill-y: -0.5rem` en
+  `:root` (no en `@theme inline` — nada lo consume como utilidad) más un
+  wrapper `.pill-nudge { position: relative; top: var(--purpose-pill-y) }`.
+  `position: relative` en vez de `margin-top` para no arrastrar a
+  `PurposeConstellation`/`PurposeCarousel`, que conservan su
+  `mt-purpose-eyebrow-gap` intacto. CDP confirmó `top: -8px` computado y
+  arcos/nodos sin cambio de posición.
+- **2a/2b — Servicios móvil.** Nuevo token
+  `--spacing-services-closer-gap-m: 2.5rem` (antes reutilizaba el gap
+  interno de 10-12px de `ServiceItem`). El bloque de cierre pasó a
+  `flex-col items-start` — MISMO bug que la feature 23 corrigió en
+  desktop (stretch por default), pero se conservó `flex-col` en vez de
+  copiar `flex-row`: el spec de la feature 14 confirma que el cierre móvil
+  es "stacked", a diferencia del desktop. CDP confirmó `marginTop: 40px`,
+  Pill a 113.9px de ancho contra un contenedor de 342px (no estirado).
+- **3 — Menú móvil.** `Proyectos` retirado de `MENU_ITEMS`
+  (`navigation.ts`), mismo tratamiento de comentario de divergencia que
+  `NAV_ITEMS`/`FOOTER_COLUMNS` ya tenían. `MobileMenu.test.ts`/`.stories.ts`
+  actualizados (3 items, no 4). Clave huérfana `shell.menu.projects`
+  retirada de ambos locales.
+- **4 — `ROLE_CATALOG`.** Placeholder (`⚠️ UNVERIFIED, owner Clau`)
+  reemplazado por el catálogo real de las 6 áreas dado por Roberto,
+  verbatim, con `infrastructureCloud` y `performanceMedia` como roles
+  únicos combinados (no separados). Ambos locales actualizados.
+- **5 — Identidad del contacto.** Las 5 opciones pasaron a las 6 reales
+  (`realEstate` nueva, `creator`/`company` con texto renombrado,
+  `independent`/`startup`/`other` sin cambio), en el orden exacto dado por
+  Roberto. El orden lo fija el objeto literal en
+  `useContactFormContent.ts` (`ContactForm.vue` recorre
+  `Object.entries()`), no el JSON. CDP confirmó el orden real en el DOM del
+  `<select>` renderizado.
+- **Regresión no relacionada, encontrada y corregida:** el nuevo rol
+  "Blog y storytelling" (punto 4) contiene la palabra "Blog", que chocaba
+  con una prueba de regresión de la feature 23 que prohibía "Blog" en
+  cualquier parte del documento (por el placeholder de footer ya
+  eliminado). Se acotó esa aserción al elemento `<footer>` — el único lugar
+  donde el placeholder existía — en vez de a todo el documento.
+- **Hallazgo del reviewer, no bloqueante:** `PurposeSection.vue` pasó de
+  198 a 248 líneas por el volumen de comentarios de los puntos 1a/1b,
+  cruzando el límite de 200 líneas del Artículo V. Documentado como
+  excepción registrada en el propio archivo, siguiendo el patrón ya
+  establecido en `BotonPrimario.vue` ("Recorded exception to Article V's
+  200-line limit"): medido código real (sin comentarios/blancos) contra
+  líneas totales — 82 → 87 líneas de código real, muy por debajo de 200; el
+  exceso (198→248 en bruto) es enteramente prosa, no complejidad
+  estructural nueva.
+- Frozen primitives (`SectionGlow`, `DotGrid`, `SectionBackdrop`, `Radar`,
+  `Pill`, `BotonPrimario`) sin tocar — confirmado por `git diff --numstat`
+  contra los seis archivos, cero líneas.
+- Implementer: `docs/harness/progress/impl_visual_polish_round_2.md`.
+  Reviewer: `docs/harness/progress/review_visual_polish_round_2.md`.
+- `./init.sh` exit 0 · **58 files / 705 tests**.
+- `feature_list.json`: feature id 24 status `reviewing` → `done`.
+
+> ⚠️ **Corrección, misma sesión, antes de commitear.** Roberto rechazó este
+> cierre. La feature volvió a `in_progress` → `reviewing` para una **ronda
+> 2**: 1a (cuadrante del arco) quedó confirmado correcto contra el `.pen`
+> real, sin cambios; 1b (nudge del Pill) resultó insuficiente y subió de
+> `-0.5rem` a `-1.375rem`; y se abrió un punto nuevo — la tangencia
+> arco↔radar, ya documentada en `impl_purpose_section.md` como un gap de
+> 13-61px según idioma/nodo (el copy real envuelve distinto de como lo
+> dibujó Pencil). Roberto pidió corregirla en runtime: nuevo composable
+> `usePurposeArcRadii.ts` (client-only, `getBoundingClientRect()` post-mount,
+> `ResizeObserver`, fallback al token fijo antes del primer mount) — la
+> sección deja de ser puramente CSS para esta corrección puntual, documentado
+> en `PurposeSection.vue`. CDP en ambos locales a 1440px: gap real **<0.01px**
+> en los tres nodos (antes 13-61px). La excepción del Artículo V se actualizó
+> a 91 líneas de código real (312 en bruto), sigue muy por debajo de 200.
+> `./init.sh` exit 0 · **59 files / 711 tests** (+1 archivo/+6 pruebas:
+> `usePurposeArcRadii.test.ts`). Ver `docs/harness/progress/current.md` para
+> el estado vigente — la feature quedó en `reviewing`, **no `done`**, hasta
+> que el reviewer confirme la ronda 2.
+
+> ✅ **Ronda 3 — el reviewer APROBÓ la ronda 2, con un hallazgo real no
+> bloqueante para aprobar pero exigido antes de cerrar.** El guard de
+> `usePurposeArcRadii.ts` revisaba `getComputedStyle(.arc).display`, pero
+> `.arc` tiene `position: absolute`, y CSS "blockifica" el `display` de un
+> elemento posicionado a `block` en tiempo de valor computado **sin importar**
+> que un ancestro tenga `display: none` — confirmado por CDP a 390px: el
+> wrapper `.arcs` (el que sí lleva `hidden lg:block`) reportaba `"none"`,
+> pero el `.arc` individual reportaba `"block"`. El guard nunca disparaba en
+> mobile; el composable se autocorregía solo al pasar a desktop (sin crash,
+> sin NaN), pero contradecía su propio comentario. El test dedicado a este
+> escenario mockeaba `getComputedStyle` de una forma que no reproducía la
+> blockificación real, dando falsa confianza.
+>
+> **Fix:** el guard pasó a revisar un **zero-rect check sobre el WRAPPER**
+> (`.arcs`, nunca un `.arc` individual) — `getBoundingClientRect()` de una
+> caja no renderizada da `0×0`, sin depender de qué valor de `display`
+> sobrevive la blockificación. Test reescrito con la misma técnica
+> `stubRect` que ya usaba el resto del archivo (rect real en el wrapper, no
+> mock de `getComputedStyle`), más un nuevo caso que fija primero una
+> medición real y después corrompe el rect del wrapper a `0×0` para probar
+> que el guard sí retiene el valor anterior. **CDP a 390px confirmó el
+> fix:** wrapper rect `0×0`/`display:none`, `.arc-why` computado sigue en
+> `"block"` (confirma el diagnóstico), y `--arc-diameter` en el `.arc` queda
+> **sin override inline** — el token fijo del `.pen` (`81.1719%`) intacto.
+> Regresión en 1440px reconfirmada: gap real <0.01px en los tres nodos.
+> `./init.sh` exit 0 · **59 files / 711 tests** (mismo conteo — un test se
+> reescribió, no se agregó).
+> - `feature_list.json`: feature id 24 status `reviewing` → `done`.

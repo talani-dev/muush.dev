@@ -477,11 +477,11 @@ describe('static output · the floating nav pill (feature 21)', () => {
     /*
      * Superseded by feature 23: `FOOTER_COLUMNS` dropped `Proyectos` entirely
      * (Roberto, 2026-09-08), the same class of decision as dropping it from
-     * this nav in feature 21. The mobile menu panel is not asserted here —
-     * it renders behind `v-if="open"`, so it is absent from the static
-     * document regardless, and it still lists `Proyectos` on purpose
-     * (`MobileMenu.test.ts` covers it; the mobile scroll is much longer,
-     * `ui-map.md` § 2).
+     * this nav in feature 21 — and feature 24 (2026-09-08) applied the same
+     * decision a third time, to `MENU_ITEMS`. The mobile menu panel is not
+     * asserted here — it renders behind `v-if="open"`, so it is absent from
+     * the static document regardless of its content (`MobileMenu.test.ts`
+     * covers what it actually renders once open).
      */
     for (const route of ROUTES) {
       const html = documentFor(route)
@@ -491,13 +491,20 @@ describe('static output · the floating nav pill (feature 21)', () => {
     }
   })
 
-  it('should render no "FAQ"/"Blog" text anywhere in the static document (feature 23, item 9)', () => {
-    /* Same treatment as Proyectos above: removed entirely, not left inert. */
+  it('should render no "FAQ"/"Blog · próximamente" text in the footer (feature 23, item 9)', () => {
+    /*
+     * Same treatment as Proyectos above: removed entirely, not left inert.
+     * Scoped to the `<footer>` — the only place either ever rendered — and
+     * not the whole document: feature 24's `ROLE_CATALOG` legitimately adds
+     * a Creative role literally named "Blog y storytelling", which contains
+     * the substring "Blog" without being the removed footer placeholder.
+     */
     for (const route of ROUTES) {
-      const html = documentFor(route)
+      const footer = documentFor(route).match(/<footer[\s\S]*<\/footer>/)?.[0]
 
-      expect(html, route).not.toContain('FAQ')
-      expect(html, route).not.toContain('Blog')
+      expect(footer, route).toBeDefined()
+      expect(footer, route).not.toContain('FAQ')
+      expect(footer, route).not.toContain('Blog')
     }
   })
 

@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useTemplateRef } from 'vue'
 import type { PurposeNodeContent } from '@/features/landing/data/purposeContent'
+import { usePurposeArcRadii } from '@/features/landing/logic/usePurposeArcRadii'
 import Pill from '@/shared/ui/Pill.vue'
 import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/SectionGlow.vue'
@@ -21,9 +23,29 @@ import PurposeConstellation from './PurposeConstellation.vue'
  *
  * It calls **no Nuxt composable**: copy arrives already translated from
  * `logic/usePurposeContent.ts`, which is what lets this render in Storybook and
- * in a bare mount (`rules.md` § R23).
+ * in a bare mount (`rules.md` § R23). It does call one **plain Vue**
+ * composable, `usePurposeArcRadii` — see the note below on why the desktop
+ * composition is no longer CSS-only for the arcs' geometry.
  *
  * ---
+ *
+ * ## ⚠️ The arcs are no longer purely CSS-derived (feature 24, round 2)
+ *
+ * `.arc-why/-how/-what`'s diameters were fixed tokens, each supposedly
+ * `2 × distance(origin, radar)` — true only at the row height Pencil
+ * assumed. A real browser wraps `PurposeCard`'s copy differently
+ * (`docs/harness/progress/impl_purpose_section.md` documented this the day
+ * the section shipped: `Why` wraps to 3 lines in Chrome, not Pencil's 4),
+ * which moves every Radar's Y position off the fixed-radius circle by
+ * **13–61px**, and the amount is locale-dependent since the copy itself
+ * differs in length. Roberto's call (2026-09-08): fix the tangency exactly
+ * by measuring in the browser, accepting that this one geometry correction
+ * is no longer zero-JS. `usePurposeArcRadii.ts` does the measuring — see
+ * its own doc comment for the mechanism, the `lg`-only guard and the
+ * fixed-token fallback that holds until the first `onMounted` runs (no
+ * hydration mismatch). The hover **reveal** in `PurposeConstellation.vue`
+ * is untouched and stays pure CSS; only this static radius correction adds
+ * a runtime step.
  *
  * ## The five rules this component must not break
  *
@@ -65,6 +87,41 @@ import PurposeConstellation from './PurposeConstellation.vue'
  * either — the section's own top padding (254 desktop / 90 mobile) comfortably
  * exceeds the pinned nav's measured height (102.8 / 78.19,
  * `findings.md` § R55), so a jump to `#proposito` lands the Pill below the nav.
+ *
+ * ---
+ *
+ * ## ⚠️ Recorded exception to Article V's 200-line limit
+ *
+ * Feature 24 (2026-09-08, two review rounds) pushed this file over the
+ * limit. Round 1 touched the arcs' `clip-path` (item 1a) and the Pill's own
+ * nudge (item 1b) — one property and one wrapper `<div>`. Round 2 added the
+ * runtime arc-radius correction (`usePurposeArcRadii`, above) — one
+ * template ref, one composable call, and a rewrite of two style comments to
+ * stop claiming the arcs are purely CSS-derived. Across both rounds the
+ * growth is comments explaining *why*, not new structural logic.
+ *
+ * | Measure | Before feature 24 | After round 1 | After round 2 |
+ * |---|---|---|---|
+ * | raw lines (`wc -l`) | 198 | 248 | 312 |
+ * | non-comment, non-blank | 82 | 87 | 91 |
+ *
+ * Measured the same way `BotonPrimario.vue`'s own recorded exception does:
+ * strip block comments, HTML comments and line comments, then drop blank
+ * lines. The second row is the number that matters and it stays well under
+ * 200 across both rounds — round 2's own +4 is the template-ref line, the
+ * `usePurposeArcRadii(sectionRoot)` call, and the `ref="sectionRoot"`
+ * template attribute. Everything else added in round 2 is prose.
+ *
+ * **Do not "fix" this by extracting sub-components.** Same reasoning
+ * `BotonPrimario.vue`'s exception already recorded: Article V's remedy names
+ * sub-component extraction as the cure for *structural* complexity, and there
+ * is none here to extract — one clip-path declaration, one positioned
+ * wrapper and one composable call don't split into files that then have to
+ * agree with each other. The five numbered rules above this note, the
+ * arc-quadrant proof and the arc-radius correction note are the reason the
+ * section still matches the design when the next feature touches it;
+ * deleting them to make the line count look better would trade a documented
+ * invariant for a smaller file.
  */
 interface Props {
   eyebrow: string
@@ -74,10 +131,15 @@ interface Props {
 }
 
 const { eyebrow, carouselLabel, nodes } = defineProps<Props>()
+
+/* Corrects the arcs' radii to the real rendered Radar positions — see the
+   doc comment above and `usePurposeArcRadii.ts` for why. */
+const sectionRoot = useTemplateRef<HTMLElement>('sectionRoot')
+usePurposeArcRadii(sectionRoot)
 </script>
 
 <template>
-  <section id="proposito" class="relative pt-purpose-top">
+  <section id="proposito" ref="sectionRoot" class="relative pt-purpose-top">
     <!--
       Three glows, each anchored **by its centre** at an offset from this
       section's own top-left corner — never at a page offset, which would drift
@@ -126,8 +188,16 @@ const { eyebrow, carouselLabel, nodes } = defineProps<Props>()
       <span class="arc arc-what" />
     </div>
 
-    <!-- `flex` keeps the Pill at its intrinsic 127×38 with no line box. -->
-    <div class="flex">
+    <!--
+      `flex` keeps the Pill at its intrinsic 127×38 with no line box.
+      `pill-nudge` moves the Pill up a little, independently of the arcs and
+      the constellation below it (feature 24, item 1b — Roberto: it sat "muy
+      abajo"). `position: relative` shifts only this box; it does not affect
+      normal flow, so `PurposeConstellation`/`PurposeCarousel` — positioned
+      after it via `mt-purpose-eyebrow-gap` — keep the exact gap they already
+      had, unaware this box moved.
+    -->
+    <div class="pill-nudge flex">
       <Pill :label="eyebrow" />
     </div>
 
@@ -152,13 +222,19 @@ const { eyebrow, carouselLabel, nodes } = defineProps<Props>()
 /*
  * The arcs. Three radii from one origin, and **not three magic numbers**: each
  * diameter is `2 × distance(origin, radarCentre)`, so every arc passes through
- * its own radar. Verified against all three, to under 1px each — the table is
- * in `global.css` beside `--purpose-arc-why`.
+ * its own radar. `--arc-diameter` below is the fixed `.pen` token — exact only
+ * at the row height Pencil assumed, and only a fallback for the first paint
+ * now: `usePurposeArcRadii.ts` overrides it with the REAL measured distance
+ * once mounted (feature 24, round 2), because a real browser wraps
+ * `PurposeCard`'s copy differently per locale and drifts the fixed radius by
+ * 13–61px (see this file's top doc comment). The table in `global.css` beside
+ * `--purpose-arc-why` is the *design* radius, not the final on-screen one.
  *
- * `width` adds one stroke to the token because the design's diameter is the
- * **centreline** of the 1px stroke while `box-sizing: border-box` measures the
- * outer edge. Without it the three arcs land 0.5px inside their radars, which
- * is enough to push the middle one past the 1px tolerance.
+ * `width` adds one stroke to the diameter because the design's diameter is
+ * the **centreline** of the 1px stroke while `box-sizing: border-box`
+ * measures the outer edge. Without it the three arcs land 0.5px inside their
+ * radars — still relevant post-measurement, since the composable computes
+ * the centreline distance, not the outer edge.
  *
  * `aspect-ratio` and not `height`: a percentage height would resolve against
  * the section's height, which is copy-driven, while the percentage width
@@ -174,6 +250,35 @@ const { eyebrow, carouselLabel, nodes } = defineProps<Props>()
   border: var(--purpose-arc-w) solid var(--arc-color);
   border-radius: 50%;
   translate: -50% -50%;
+  /*
+   * ⚠️ Feature 24, item 1a. Before this line each `.arc` was a FULL circle,
+   * and what read as "an arc" was only the incidental fraction the `.arcs`
+   * wrapper's `overflow-clip` happened to leave inside the section box — a
+   * side effect of where the section edge falls, not a controlled shape
+   * (Roberto, 2026-09-08).
+   *
+   * `translate: -50% -50%` above makes this box's own local centre (50%,
+   * 50% in its own coordinate space) land exactly on the design's origin
+   * point. A circle's horizontal and vertical diameters always split it into
+   * four quadrants of exactly 90° each — that is true by the geometric
+   * definition of a circle regardless of radius, which is what makes this
+   * exact rather than incidental. `inset(50% 0 0 50%)` keeps only the
+   * quadrant below-and-right of that centre (cutting the top 50% and the
+   * left 50% of the box) and discards the other three.
+   *
+   * That is also, to under 1px, the same quadrant the old incidental clip
+   * left visible: the origin sits above and to the left of the section
+   * (`--purpose-origin-y` is a thin 44px below the section's own top edge,
+   * `--purpose-arc-origin-x` is negative — off the section's left edge), so
+   * the only part of any of the three circles that ever fell inside the
+   * section box was already this same bottom-right quadrant. Confirmed
+   * arithmetically per arc — the section's left edge, expressed as a
+   * percentage of each arc's own box, falls at 50.08–50.17% (why/how/what),
+   * under 1px from the 50% this clip-path declares. Nothing that was visible
+   * moves; it is now bounded by construction instead of by where the section
+   * happens to end.
+   */
+  clip-path: inset(50% 0 0 50%);
 }
 
 /*
@@ -194,5 +299,18 @@ const { eyebrow, carouselLabel, nodes } = defineProps<Props>()
 .arc-what {
   --arc-diameter: var(--purpose-arc-what);
   --arc-color: var(--purpose-arc-what-color);
+}
+
+/*
+ * Feature 24, item 1b. `position: relative` + `top` is a visual-only nudge —
+ * unlike `margin-top`, it never changes this box's contribution to normal
+ * flow, so the constellation/carousel below keep reading the exact same
+ * `mt-purpose-eyebrow-gap` they always did, measured from where the Pill
+ * *would* have sat without this offset. No design value fixes this; Roberto
+ * asked for "a little" and the token is the one number to retune.
+ */
+.pill-nudge {
+  position: relative;
+  top: var(--purpose-pill-y);
 }
 </style>

@@ -6,10 +6,16 @@ import type {
 } from '@/features/shell/data/types'
 import MobileMenu from './MobileMenu.vue'
 
+/*
+ * Three items, not four (feature 24, 2026-09-08): `Proyectos` is
+ * deliberately absent from the mobile menu too now, same reasoning
+ * `navigation.ts` records for the desktop nav — a menu link to a section
+ * that does not exist yet reads as a broken site. This reverts what used to
+ * be documented here as an intentional mobile-only exception.
+ */
 const items: ResolvedShellItem[] = [
   { label: 'Propósito', href: '/es#proposito', external: false },
   { label: 'Servicios', href: '/es#servicios', external: false },
-  { label: 'Proyectos', href: '/es#proyectos', external: false },
   { label: 'Nosotros', href: '/es/nosotros', external: false },
 ]
 
@@ -61,13 +67,12 @@ describe('MobileMenu', () => {
     expect(panel.attributes('aria-label')).toBe('Menú')
   })
 
-  it('should render the four destinations when open', () => {
+  it('should render the three destinations when open', () => {
     const entries = mountMenu().findAll('li')
 
     expect(entries.map(entry => entry.text())).toEqual([
       'Propósito',
       'Servicios',
-      'Proyectos',
       'Nosotros',
     ])
   })
@@ -120,13 +125,13 @@ describe('MobileMenu', () => {
 
   it('should report the chosen destination when an item is activated', async () => {
     const wrapper = mountMenu()
-    const projects = wrapper
+    const services = wrapper
       .findAll('li a')
-      .find(link => link.text() === 'Proyectos')
+      .find(link => link.text() === 'Servicios')
 
-    await projects?.trigger('click')
+    await services?.trigger('click')
 
-    expect(wrapper.emitted('itemChosen')).toEqual([['/es#proyectos']])
+    expect(wrapper.emitted('itemChosen')).toEqual([['/es#servicios']])
   })
 
   it('should not navigate on its own when an item is activated', async () => {

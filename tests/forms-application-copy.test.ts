@@ -11,8 +11,9 @@ import { describe, expect, it } from 'vitest'
  *
  * The six area labels are checked verbatim against `ui-map.md` § 9; the
  * success copy against the same source. The per-area role list is checked
- * only for its documented UNVERIFIED placeholder shape (plan.md D-6) — never
- * asserted as if it were a final role name.
+ * verbatim against the real catalogue Roberto gave directly (feature 24,
+ * 2026-09-08), which replaced the previous `⚠️ UNVERIFIED placeholder —
+ * owner Clau` this test used to only check the shape of.
  */
 interface AreaRoleFieldCopy {
   label: string
@@ -100,15 +101,15 @@ describe('forms copy · forms.application.*', () => {
     )
   })
 
-  it('should ship an explicit UNVERIFIED placeholder role per area, never an invented title', () => {
-    /* plan.md D-6: the real per-area role list is not documented anywhere
-       this project can read. Every area's own role list must be the single
-       flagged placeholder, and nothing that reads as a real job title. */
+  it('should ship the real per-area role catalogue verbatim, in both locales', () => {
+    /* Given directly by Roberto (feature 24, 2026-09-08). Role ids, and
+       therefore area membership, are asserted first — the labels are
+       asserted per locale below. `infrastructureCloud` and
+       `performanceMedia` are each ONE combined role, never split. */
     for (const locale of [es, en]) {
       const { roles } = locale.forms.application.fields.areaRole
-      const areaIds = Object.keys(roles)
 
-      expect(areaIds).toEqual([
+      expect(Object.keys(roles)).toEqual([
         'it',
         'product',
         'projectManagement',
@@ -116,21 +117,73 @@ describe('forms copy · forms.application.*', () => {
         'marketing',
         'creative',
       ])
-      for (const area of areaIds) {
-        expect(Object.keys(roles[area] ?? {})).toEqual(['placeholder'])
-      }
+      expect(Object.keys(roles.it)).toEqual([
+        'backend',
+        'frontend',
+        'fullStack',
+        'mobile',
+        'devOps',
+        'infrastructureCloud',
+      ])
+      expect(Object.keys(roles.product)).toEqual([
+        'productManager',
+        'productOwner',
+        'uxResearch',
+        'uxUiDesign',
+        'productDesign',
+        'designSystems',
+      ])
+      expect(Object.keys(roles.projectManagement)).toEqual(['projectManager'])
+      expect(Object.keys(roles.sales)).toEqual([
+        'sales',
+        'accountManagement',
+        'partnerships',
+      ])
+      expect(Object.keys(roles.marketing)).toEqual([
+        'growth',
+        'performanceMedia',
+        'content',
+        'seo',
+        'communityManagement',
+      ])
+      expect(Object.keys(roles.creative)).toEqual([
+        'design3d',
+        'graphicDesign',
+        'blogStorytelling',
+      ])
     }
 
-    expect(
-      Object.values(es.forms.application.fields.areaRole.roles).map(
-        role => role.placeholder
-      )
-    ).toEqual(Array(6).fill('Rol por confirmar'))
-    expect(
-      Object.values(en.forms.application.fields.areaRole.roles).map(
-        role => role.placeholder
-      )
-    ).toEqual(Array(6).fill('Role to be confirmed'))
+    expect(es.forms.application.fields.areaRole.roles.it).toEqual({
+      backend: 'Backend',
+      frontend: 'Frontend',
+      fullStack: 'Full stack',
+      mobile: 'Mobile',
+      devOps: 'DevOps',
+      infrastructureCloud: 'Infrastructure y Cloud',
+    })
+    expect(es.forms.application.fields.areaRole.roles.marketing).toEqual({
+      growth: 'Growth',
+      performanceMedia: 'Performance y pauta',
+      content: 'Contenido',
+      seo: 'SEO',
+      communityManagement: 'Community management',
+    })
+
+    expect(en.forms.application.fields.areaRole.roles.it).toEqual({
+      backend: 'Backend',
+      frontend: 'Frontend',
+      fullStack: 'Full stack',
+      mobile: 'Mobile',
+      devOps: 'DevOps',
+      infrastructureCloud: 'Infrastructure & Cloud',
+    })
+    expect(en.forms.application.fields.areaRole.roles.marketing).toEqual({
+      growth: 'Growth',
+      performanceMedia: 'Performance & paid media',
+      content: 'Content',
+      seo: 'SEO',
+      communityManagement: 'Community management',
+    })
   })
 
   it('should default the contact preference options to Correo/Email and WhatsApp', () => {
