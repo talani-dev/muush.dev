@@ -135,6 +135,7 @@ describe('SiteNav', () => {
       'lg:border-glass-line',
       'lg:bg-glass-dark',
       'lg:max-w-nav-pill-w',
+      'lg:px-nav-pill-x',
       'lg:py-nav-pill-py',
     ]) {
       expect(row.classes(), utility).toContain(utility)

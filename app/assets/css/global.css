@@ -1062,6 +1062,22 @@ html {
   --spacing-nav-pill-py: 0.6875rem;
 
   /*
+   * Feature 025. `px-page` was doing two jobs on `.nav-row` at once: (i)
+   * narrowing the row from 1440 to 1280 via `max-w-nav-pill-w` — correct,
+   * documented above — and (ii) the pill's own inner content padding, which
+   * had never been checked against where the Lockup actually sits inside the
+   * pill. Verified against the `.pen` (frames `WGhSI`/`UfsGV`, both real,
+   * 1280 wide): the Lockup sits at x40 local to the pill in both locales, not
+   * x80. Fixed, not `clamp()`, same criterion as `--spacing-nav-pill-y`/`-py`
+   * above — the `.pen` only has one reference frame for this pill, so there
+   * is nothing to interpolate between. Substitutes `px-page` **only** at
+   * `lg` (`lg:px-nav-pill-x` in `SiteNav.vue`, winning by media-query
+   * specificity over the unprefixed `px-page`) — mobile has no pill and keeps
+   * `px-page` unchanged.
+   */
+  --spacing-nav-pill-x: 2.5rem;
+
+  /*
    * Feature 021 — el botón circular de idioma, frame `tGVGq` (Banda 1):
    * 44×44, el mismo valor en los tres lugares donde aparece (nav de
    * escritorio, nav móvil, panel del menú móvil — spec A-03/FR-019, un solo

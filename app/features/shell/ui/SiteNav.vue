@@ -195,7 +195,7 @@ watch(isOpen, opened => {
     -->
     <div
       :inert="isOpen"
-      class="nav-row mx-auto flex max-w-shell-max items-center justify-between gap-nav-gap px-page py-nav-y lg:max-w-nav-pill-w lg:rounded-full lg:border lg:border-glass-line lg:bg-glass-dark lg:py-nav-pill-py"
+      class="nav-row mx-auto flex max-w-shell-max items-center justify-between gap-nav-gap px-page py-nav-y lg:max-w-nav-pill-w lg:rounded-full lg:border lg:border-glass-line lg:bg-glass-dark lg:px-nav-pill-x lg:py-nav-pill-py"
     >
       <NuxtLink :to="home" class="text-bone-100 focus-visible:outline-red-400">
         <Lockup />
@@ -221,6 +221,20 @@ watch(isOpen, opened => {
       </ul>
 
       <div class="nav-row__end flex items-center gap-nav-gap">
+        <!--
+          Feature 025: the language toggle sits BEFORE the CTA, left to right —
+          verified against the `.pen` (frames `WGhSI` Landing ES, `UfsGV`
+          Landing EN, both real, 1280×72): Idioma x985/CTA x1043 in ES, Idioma
+          x970/CTA x1028 in EN — the toggle is always immediately before the
+          CTA in both locales. Previously the CTA div came first; swapped to
+          match.
+        -->
+        <LanguageToggle
+          :locale="locale"
+          :href="localeSwitchHref"
+          :switch-label="localeSwitchLabel"
+        />
+
         <!--
           No CTA below `lg`. It does not collapse into the menu either: on
           mobile the only call to action is the social row inside the open
@@ -263,12 +277,6 @@ watch(isOpen, opened => {
           mount is exactly the flash FR-045 forbids.
         -->
         <noscript v-html="NOSCRIPT_CTA_OVERRIDE" />
-
-        <LanguageToggle
-          :locale="locale"
-          :href="localeSwitchHref"
-          :switch-label="localeSwitchLabel"
-        />
 
         <!--
           `cursor-pointer` is declared because nothing else does: a native
