@@ -169,10 +169,17 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
         :readonly="readonly"
       />
 
+      <!--
+        Feature 025 (corrected) — same node and same reasoning as
+        `ContactForm.vue`: `width: 216` explicit at `lg`, `fill_container`
+        below it, so the fixed width and the centring both stay scoped to
+        `lg:` and mobile keeps stretching to the form's width.
+      -->
       <BotonPrimario
         variant="submit"
         type="submit"
         :disabled="previewState === 'sending'"
+        class="lg:w-btn-submit-w lg:self-center"
       >
         {{ previewState === 'sending' ? content.sending : content.submit }}
       </BotonPrimario>
