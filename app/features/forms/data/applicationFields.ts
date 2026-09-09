@@ -109,26 +109,59 @@ export type AreaId =
 
 export interface RoleCatalogEntry {
   area: AreaId
-  /**
-   * ⚠️ UNVERIFIED placeholder — owner Clau. The specific roles per area are
-   * not documented in any file this project can read: not in `content.md`,
-   * not in `design-extract.md`, and the Notion source `ui-map.md` itself
-   * defers to is inaccessible to this process (spec Assumptions, plan.md
-   * D-6). Each area ships exactly one role id, `'placeholder'`, until the
-   * real per-area role list arrives. Adding real roles is a data-only change
-   * to this array — no component, no validation rule, and no i18n key shape
-   * changes.
-   */
   roleIds: string[]
 }
 
+/**
+ * The real per-area role catalogue, given verbatim by Roberto (feature 24,
+ * 2026-09-08) — closes the `⚠️ UNVERIFIED placeholder — owner Clau` this
+ * array used to carry, which no file this project can read (`content.md`,
+ * `design-extract.md`, the Notion source `ui-map.md` itself defers to)
+ * documented.
+ *
+ * `'infrastructureCloud'` and `'performanceMedia'` are each ONE combined
+ * role ("Infrastructure y Cloud", "Performance y pauta") — confirmed
+ * explicitly with Roberto, never split into two roles.
+ */
 export const ROLE_CATALOG: RoleCatalogEntry[] = [
-  { area: 'it', roleIds: ['placeholder'] },
-  { area: 'product', roleIds: ['placeholder'] },
-  { area: 'projectManagement', roleIds: ['placeholder'] },
-  { area: 'sales', roleIds: ['placeholder'] },
-  { area: 'marketing', roleIds: ['placeholder'] },
-  { area: 'creative', roleIds: ['placeholder'] },
+  {
+    area: 'it',
+    roleIds: [
+      'backend',
+      'frontend',
+      'fullStack',
+      'mobile',
+      'devOps',
+      'infrastructureCloud',
+    ],
+  },
+  {
+    area: 'product',
+    roleIds: [
+      'productManager',
+      'productOwner',
+      'uxResearch',
+      'uxUiDesign',
+      'productDesign',
+      'designSystems',
+    ],
+  },
+  { area: 'projectManagement', roleIds: ['projectManager'] },
+  { area: 'sales', roleIds: ['sales', 'accountManagement', 'partnerships'] },
+  {
+    area: 'marketing',
+    roleIds: [
+      'growth',
+      'performanceMedia',
+      'content',
+      'seo',
+      'communityManagement',
+    ],
+  },
+  {
+    area: 'creative',
+    roleIds: ['design3d', 'graphicDesign', 'blogStorytelling'],
+  },
 ]
 
 /**

@@ -30,13 +30,42 @@ const areas = {
   creative: 'Creative',
 }
 
+/* The real catalogue (feature 24, 2026-09-08) — see `ROLE_CATALOG`. */
 const roles = {
-  it: { placeholder: 'Rol por confirmar' },
-  product: { placeholder: 'Rol por confirmar' },
-  projectManagement: { placeholder: 'Rol por confirmar' },
-  sales: { placeholder: 'Rol por confirmar' },
-  marketing: { placeholder: 'Rol por confirmar' },
-  creative: { placeholder: 'Rol por confirmar' },
+  it: {
+    backend: 'Backend',
+    frontend: 'Frontend',
+    fullStack: 'Full stack',
+    mobile: 'Mobile',
+    devOps: 'DevOps',
+    infrastructureCloud: 'Infrastructure y Cloud',
+  },
+  product: {
+    productManager: 'Product manager',
+    productOwner: 'Product owner',
+    uxResearch: 'UX research',
+    uxUiDesign: 'UX/UI design',
+    productDesign: 'Diseño de producto',
+    designSystems: 'Design systems',
+  },
+  projectManagement: { projectManager: 'Project manager' },
+  sales: {
+    sales: 'Ventas',
+    accountManagement: 'Account management',
+    partnerships: 'Partnerships',
+  },
+  marketing: {
+    growth: 'Growth',
+    performanceMedia: 'Performance y pauta',
+    content: 'Contenido',
+    seo: 'SEO',
+    communityManagement: 'Community management',
+  },
+  creative: {
+    design3d: 'Diseño 3D',
+    graphicDesign: 'Diseño gráfico',
+    blogStorytelling: 'Blog y storytelling',
+  },
 }
 
 const spanishForm: ApplicationFormContent = {

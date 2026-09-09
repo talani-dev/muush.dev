@@ -491,13 +491,20 @@ describe('static output · the floating nav pill (feature 21)', () => {
     }
   })
 
-  it('should render no "FAQ"/"Blog" text anywhere in the static document (feature 23, item 9)', () => {
-    /* Same treatment as Proyectos above: removed entirely, not left inert. */
+  it('should render no "FAQ"/"Blog · próximamente" text in the footer (feature 23, item 9)', () => {
+    /*
+     * Same treatment as Proyectos above: removed entirely, not left inert.
+     * Scoped to the `<footer>` — the only place either ever rendered — and
+     * not the whole document: feature 24's `ROLE_CATALOG` legitimately adds
+     * a Creative role literally named "Blog y storytelling", which contains
+     * the substring "Blog" without being the removed footer placeholder.
+     */
     for (const route of ROUTES) {
-      const html = documentFor(route)
+      const footer = documentFor(route).match(/<footer[\s\S]*<\/footer>/)?.[0]
 
-      expect(html, route).not.toContain('FAQ')
-      expect(html, route).not.toContain('Blog')
+      expect(footer, route).toBeDefined()
+      expect(footer, route).not.toContain('FAQ')
+      expect(footer, route).not.toContain('Blog')
     }
   })
 

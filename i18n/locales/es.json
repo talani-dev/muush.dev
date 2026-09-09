@@ -157,22 +157,40 @@
           },
           "roles": {
             "it": {
-              "placeholder": "Rol por confirmar"
+              "backend": "Backend",
+              "frontend": "Frontend",
+              "fullStack": "Full stack",
+              "mobile": "Mobile",
+              "devOps": "DevOps",
+              "infrastructureCloud": "Infrastructure y Cloud"
             },
             "product": {
-              "placeholder": "Rol por confirmar"
+              "productManager": "Product manager",
+              "productOwner": "Product owner",
+              "uxResearch": "UX research",
+              "uxUiDesign": "UX/UI design",
+              "productDesign": "Diseño de producto",
+              "designSystems": "Design systems"
             },
             "projectManagement": {
-              "placeholder": "Rol por confirmar"
+              "projectManager": "Project manager"
             },
             "sales": {
-              "placeholder": "Rol por confirmar"
+              "sales": "Ventas",
+              "accountManagement": "Account management",
+              "partnerships": "Partnerships"
             },
             "marketing": {
-              "placeholder": "Rol por confirmar"
+              "growth": "Growth",
+              "performanceMedia": "Performance y pauta",
+              "content": "Contenido",
+              "seo": "SEO",
+              "communityManagement": "Community management"
             },
             "creative": {
-              "placeholder": "Rol por confirmar"
+              "design3d": "Diseño 3D",
+              "graphicDesign": "Diseño gráfico",
+              "blogStorytelling": "Blog y storytelling"
             }
           }
         },
