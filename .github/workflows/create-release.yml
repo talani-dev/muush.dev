@@ -76,6 +76,11 @@ jobs:
       - name: Verify
         uses: ./.github/actions/verify-site
 
+      - name: Configure git identity for github-actions[bot]
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Tag and push
         env:
           TAG: ${{ steps.version.outputs.tag }}
