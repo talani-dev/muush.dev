@@ -257,6 +257,25 @@
   --purpose-row-gap: 2.75rem;
 
   /*
+   * Nudge vertical propio del Pill "Propósito" (feature 24, item 1b) —
+   * independiente de `--spacing-purpose-top`, que arcos y constelación
+   * siguen usando sin cambio. Sin valor de diseño que lo fije. Va en
+   * `:root`, no en `@theme inline`, porque lo lee CSS escrito a mano
+   * (`.pill-nudge` en PurposeSection.vue) vía `position: relative; top:` —
+   * nunca `margin-top`, para que no arrastre a los elementos que siguen en
+   * flujo (mismo criterio de namespace que `--services-pill-y`, arriba en
+   * este mismo archivo).
+   *
+   * ⚠️ SEGUNDA CALIBRACIÓN (feature 24, ronda 2, 2026-09-08). El primer
+   * valor (`-0.5rem`, 8px) no fue perceptible — Roberto lo reportó "sigue
+   * muy abajo". Subido a `-1.375rem` (22px), a mitad del rango que Roberto
+   * pidió probar ("-1.25rem a -1.5rem"), deliberadamente claro en vez de
+   * sutil: mejor pasarse un poco en la segunda pasada que quedarse corto
+   * otra vez.
+   */
+  --purpose-pill-y: -1.375rem;
+
+  /*
    * Origen de la constelación: los TRES arcos y `Glow origen` comparten un
    * solo punto. Los cuatro bounding boxes del frame centran en (−100, −120)
    * relativo al frame → sección (−180, 44).
