@@ -227,7 +227,12 @@ watch(isOpen, opened => {
       class="nav-row mx-auto flex max-w-shell-max items-center justify-between gap-nav-gap px-page py-nav-y lg:max-w-nav-pill-w lg:rounded-full lg:border lg:border-glass-line lg:bg-glass-dark lg:px-nav-pill-x lg:py-nav-pill-py"
     >
       <NuxtLink :to="home" class="text-bone-100 focus-visible:outline-red-400">
-        <Lockup />
+        <!--
+          `hide-wordmark-below-lg` (feature 26, 2026-09-09): mobile shows the
+          isotipo only, a recorded human divergence from the `.pen` — see
+          Lockup.vue's own doc comment. Desktop and the footer are unaffected.
+        -->
+        <Lockup hide-wordmark-below-lg />
       </NuxtLink>
 
       <!--

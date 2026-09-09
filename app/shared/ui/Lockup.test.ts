@@ -75,4 +75,27 @@ describe('Lockup', () => {
 
     expect(wrapper.find('a').exists()).toBe(false)
   })
+
+  it('should show the wordmark at every width by default', () => {
+    /* Default false: the footer's existing use stays byte-identical (feature
+       26 — hideWordmarkBelowLg is opt-in, never the footer's behaviour). */
+    const wrapper = mount(Lockup)
+
+    expect(wrapper.findComponent(Wordmark).classes()).not.toContain('hidden')
+  })
+
+  it('should hide the wordmark below lg when asked to, keeping it in the DOM for desktop', () => {
+    /* A recorded human divergence from the `.pen` (2026-09-09), not a bug fix
+       — see Lockup.vue's own doc comment. `hidden lg:inline-flex` keeps the
+       wordmark present for assistive technology and for the desktop
+       breakpoint, never removes it from the DOM. */
+    const wrapper = mount(Lockup, { props: { hideWordmarkBelowLg: true } })
+    const wordmark = wrapper.findComponent(Wordmark)
+
+    expect(wordmark.exists()).toBe(true)
+    expect(wordmark.element.parentElement?.className).toContain('hidden')
+    expect(wordmark.element.parentElement?.className).toContain(
+      'lg:inline-flex'
+    )
+  })
 })
