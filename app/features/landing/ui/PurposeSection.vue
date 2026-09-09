@@ -73,7 +73,11 @@ import PurposeConstellation from './PurposeConstellation.vue'
  * 5. **The arcs' clip is on a wrapper, never on the section.** `overflow:
  *    clip` on the section would cut its own ~1000px glows hard at the section
  *    box; on an `absolute inset-0` wrapper it clips to the same box, creates no
- *    stacking context, and leaves the glows soft (spec FR-018).
+ *    stacking context, and leaves the glows soft (spec FR-018). That wrapper
+ *    (`.arcs-clip`) is now wider than the section itself (feature 24, round
+ *    3) — it matches `<main>`'s own BORDER box, not its padded content box —
+ *    which is still "a wrapper, never the section": the section still
+ *    carries no `overflow` of its own.
  *
  * The arcs live here rather than in `PurposeConstellation` for one reason: they
  * centre on a point 270px **above** the constellation's own box, so only a
@@ -92,25 +96,27 @@ import PurposeConstellation from './PurposeConstellation.vue'
  *
  * ## ⚠️ Recorded exception to Article V's 200-line limit
  *
- * Feature 24 (2026-09-08, two review rounds) pushed this file over the
+ * Feature 24 (2026-09-08, three review rounds) pushed this file over the
  * limit. Round 1 touched the arcs' `clip-path` (item 1a) and the Pill's own
  * nudge (item 1b) — one property and one wrapper `<div>`. Round 2 added the
  * runtime arc-radius correction (`usePurposeArcRadii`, above) — one
  * template ref, one composable call, and a rewrite of two style comments to
- * stop claiming the arcs are purely CSS-derived. Across both rounds the
- * growth is comments explaining *why*, not new structural logic.
+ * stop claiming the arcs are purely CSS-derived. Round 3 split `.arcs` into
+ * a wider clip boundary (`.arcs-clip`) and the untouched percentage-basis box
+ * (`.arcs`) — one extra `<div>` and two small style rules. Across all three
+ * rounds the growth is comments explaining *why*, not new structural logic.
  *
- * | Measure | Before feature 24 | After round 1 | After round 2 |
- * |---|---|---|---|
- * | raw lines (`wc -l`) | 198 | 248 | 312 |
- * | non-comment, non-blank | 82 | 87 | 91 |
+ * | Measure | Before feature 24 | After round 1 | After round 2 | After round 3 |
+ * |---|---|---|---|---|
+ * | raw lines (`wc -l`) | 198 | 248 | 312 | 366 |
+ * | non-comment, non-blank | 82 | 87 | 91 | 104 |
  *
  * Measured the same way `BotonPrimario.vue`'s own recorded exception does:
  * strip block comments, HTML comments and line comments, then drop blank
  * lines. The second row is the number that matters and it stays well under
- * 200 across both rounds — round 2's own +4 is the template-ref line, the
- * `usePurposeArcRadii(sectionRoot)` call, and the `ref="sectionRoot"`
- * template attribute. Everything else added in round 2 is prose.
+ * 200 across all three rounds — round 3's own +13 is one wrapper `<div>` in
+ * the template plus the `.arcs-clip`/`.arcs` style rules; everything else
+ * added in round 3 is prose.
  *
  * **Do not "fix" this by extracting sub-components.** Same reasoning
  * `BotonPrimario.vue`'s exception already recorded: Article V's remedy names
@@ -178,14 +184,24 @@ usePurposeArcRadii(sectionRoot)
       and never on the section (rule 5 above), and `clip` rather than `hidden`
       so the wrapper never becomes a scroll container — the same distinction
       `app/layouts/default.vue` already documents.
+
+      Two nested boxes, not one (feature 24, round 3 — see `.arcs-clip`'s own
+      comment below for why): `.arcs-clip` is the CLIP boundary and breaks out
+      of `<main>`'s `--spacing-page` padding to match its own BORDER box (the
+      `.pen`'s full 1440px frame). `.arcs` keeps the untouched 1280px content
+      box every `--purpose-arc-*` percentage is still measured against, so the
+      origin and every arc's position are unchanged — only where the curve
+      gets cut widens.
     -->
     <div
       aria-hidden="true"
-      class="arcs pointer-events-none absolute inset-0 hidden overflow-clip lg:block"
+      class="arcs-clip pointer-events-none absolute inset-0 hidden overflow-clip lg:block"
     >
-      <span class="arc arc-why" />
-      <span class="arc arc-how" />
-      <span class="arc arc-what" />
+      <div class="arcs">
+        <span class="arc arc-why" />
+        <span class="arc arc-how" />
+        <span class="arc arc-what" />
+      </div>
     </div>
 
     <!--
@@ -241,6 +257,42 @@ usePurposeArcRadii(sectionRoot)
  * resolves against the section's content box — the 1280 every other
  * percentage in this feature is measured against.
  */
+/*
+ * Feature 24, round 3. The old single `.arcs` box was BOTH the percentage
+ * basis for `--purpose-arc-*` (correctly, the section's 1280px content box)
+ * AND the overflow-clip boundary — and those two jobs need different widths.
+ * The origin (`--purpose-arc-origin-x: -14.0625%`) sits off the LEFT of the
+ * section by design (section-relative −180px, i.e. viewport −100px at
+ * 1440px, matching the `.pen`'s own frame coordinate). CDP-measured
+ * 2026-09-08: with the clip on the 1280px section box, arc-why/arc-how's
+ * visible curve was cut at the section's own left edge (viewport x≈80),
+ * 80px short of the `.pen`'s 1440px frame edge (viewport x=0) — the arc
+ * "didn't reach far enough left" Roberto reported. arc-what's cutoff is
+ * unaffected (bound by the section's own HEIGHT, which is correct — the
+ * `.pen` frame is only 900 tall and the arcs "salen del frame" by design).
+ *
+ * `.arcs-clip` is the fix: it breaks out of `<main>`'s `--spacing-page`
+ * padding to match `<main>`'s own BORDER box, the same formula already
+ * reviewed for Servicios' `.canvas` (`ServicesConstellation.vue`) — `min()`
+ * against the fixed 1440px frame width once `<main>` itself is capped by
+ * `max-w-shell-max`, `calc(100% + 2 * var(--spacing-page))` otherwise.
+ * `.arcs` (inner) undoes exactly that padding again, landing back on the
+ * SAME box it always had — same width, same left offset from the section —
+ * so no `--purpose-arc-*` token changes value or meaning.
+ */
+.arcs-clip {
+  width: min(var(--spacing-shell-max), calc(100% + 2 * var(--spacing-page)));
+  margin-inline: calc(-1 * var(--spacing-page));
+}
+
+.arcs {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--spacing-page);
+  width: calc(100% - 2 * var(--spacing-page));
+}
+
 .arc {
   position: absolute;
   top: var(--purpose-origin-y);
