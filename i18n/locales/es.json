@@ -32,15 +32,15 @@
       "carouselLabel": "Propósito",
       "why": {
         "label": "Why",
-        "copy": "Construimos con el estándar de las aplicaciones que admiramos. Tu negocio merece estar a la misma altura."
+        "copy": "El software rara vez falla por cómo se construye. Falla porque nadie tradujo el problema de negocio; saber qué vale la pena construir es lo que cambia el resultado."
       },
       "how": {
         "label": "How",
-        "copy": "Con precisión: lo que tu negocio necesita, sin relleno. Un technology solution studio que responde como un solo equipo."
+        "copy": "Primero entendemos tu operación, después decidimos qué se construye. Traducimos antes de construir."
       },
       "what": {
         "label": "What",
-        "copy": "Diseñamos y construimos soluciones digitales alrededor de tu negocio."
+        "copy": "Diseñamos y construimos soluciones digitales que tu negocio usa todos los días."
       }
     },
     "services": {

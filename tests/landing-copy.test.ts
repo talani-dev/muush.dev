@@ -164,39 +164,46 @@ describe('landing copy · Propósito', () => {
   })
 
   it('should carry the approved Golden Circle copy in each locale', () => {
-    /* Verbatim from `content.md` § *Propósito · Golden Circle ✅ aprobado*,
-       whose two-line blockquotes join into one paragraph. */
+    /*
+     * Feature 25: `content.md`'s Golden Circle blockquotes were never the
+     * real copy — they were a placeholder that survived the whole feature 13
+     * cycle unreplaced. The strings below are verbatim from the real `.pen`
+     * nodes (`ZddCZ`/`OD567`/`qwVGc` ES, `l0DUl`/`w9zj30`/`F1Lku` EN), read by
+     * the leader per `rules.md` § R32.
+     */
     expect(spanish.purpose.why.copy).toBe(
-      'Construimos con el estándar de las aplicaciones que admiramos. Tu negocio merece estar a la misma altura.'
+      'El software rara vez falla por cómo se construye. Falla porque nadie tradujo el problema de negocio; saber qué vale la pena construir es lo que cambia el resultado.'
     )
     expect(english.purpose.why.copy).toBe(
-      'We build to the standard of the apps we admire. Your business deserves to be held to it.'
+      "Software rarely fails because of how it's built. It fails because nobody translated the business problem; knowing what's worth building is what changes the outcome."
     )
     expect(spanish.purpose.how.copy).toBe(
-      'Con precisión: lo que tu negocio necesita, sin relleno. Un technology solution studio que responde como un solo equipo.'
+      'Primero entendemos tu operación, después decidimos qué se construye. Traducimos antes de construir.'
     )
     expect(english.purpose.how.copy).toBe(
-      'With precision: what your business needs, nothing padded. A technology solution studio that answers as one team.'
+      'First, we understand how you operate; then we decide what gets built. We translate before we build.'
     )
     expect(spanish.purpose.what.copy).toBe(
-      'Diseñamos y construimos soluciones digitales alrededor de tu negocio.'
+      'Diseñamos y construimos soluciones digitales que tu negocio usa todos los días.'
     )
     expect(english.purpose.what.copy).toBe(
-      'We design and build digital solutions around your business.'
+      'We design and build digital solutions your business uses every day.'
     )
   })
 
-  it('should keep the What block and the hero subhead the same sentence', () => {
+  it('should no longer duplicate the hero subhead in the What block', () => {
     /*
-     * ⚠️ Asserted rather than discovered later as a bug. Both are approved
-     * copy in `content.md` — the *WHAT* block and the Hero's subhead are
-     * literally the same sentence — so the feature ships it as written and
-     * reports the duplication instead of collapsing two keys into one, which
-     * would couple two sections. This test is what stops either drifting
-     * silently.
+     * ⚠️ Corrected 2026-09-08 (feature 25). Before this feature the What
+     * block's placeholder copy happened to be the exact same sentence as
+     * `hero.subhead`, and a previous version of this test asserted that
+     * coincidence as if it were a rule. It never was one — nothing in
+     * `content.md`, `ui-map.md` or the `.pen` ties the two together — and the
+     * real Golden Circle copy for What is its own sentence. This test is the
+     * new guard: it stops a future edit from silently re-coupling the two
+     * sections by copy-pasting one string into the other.
      */
-    expect(spanish.purpose.what.copy).toBe(spanish.hero.subhead)
-    expect(english.purpose.what.copy).toBe(english.hero.subhead)
+    expect(spanish.purpose.what.copy).not.toBe(spanish.hero.subhead)
+    expect(english.purpose.what.copy).not.toBe(english.hero.subhead)
   })
 
   it('should reuse the eyebrow word for the carousel in both locales', () => {

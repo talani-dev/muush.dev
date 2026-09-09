@@ -799,15 +799,22 @@ describe('static output · the landing purpose section', () => {
   const PURPOSE_COPY = {
     es: {
       eyebrow: 'Propósito',
-      why: 'Construimos con el estándar de las aplicaciones que admiramos. Tu negocio merece estar a la misma altura.',
-      how: 'Con precisión: lo que tu negocio necesita, sin relleno. Un technology solution studio que responde como un solo equipo.',
-      what: 'Diseñamos y construimos soluciones digitales alrededor de tu negocio.',
+      why: 'El software rara vez falla por cómo se construye. Falla porque nadie tradujo el problema de negocio; saber qué vale la pena construir es lo que cambia el resultado.',
+      how: 'Primero entendemos tu operación, después decidimos qué se construye. Traducimos antes de construir.',
+      what: 'Diseñamos y construimos soluciones digitales que tu negocio usa todos los días.',
     },
     en: {
       eyebrow: 'Purpose',
-      why: 'We build to the standard of the apps we admire. Your business deserves to be held to it.',
-      how: 'With precision: what your business needs, nothing padded. A technology solution studio that answers as one team.',
-      what: 'We design and build digital solutions around your business.',
+      /*
+       * `&#39;` rather than `'`: Nuxt's static HTML entity-encodes the
+       * apostrophe, and this is asserted against the emitted document, not
+       * against `i18n/locales/en.json` (`occurrences()` does a literal
+       * substring match, so a straight quote here would never match and
+       * silently read as "copy missing").
+       */
+      why: 'Software rarely fails because of how it&#39;s built. It fails because nobody translated the business problem; knowing what&#39;s worth building is what changes the outcome.',
+      how: 'First, we understand how you operate; then we decide what gets built. We translate before we build.',
+      what: 'We design and build digital solutions your business uses every day.',
     },
   } as const
 
