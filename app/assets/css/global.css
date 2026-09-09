@@ -266,14 +266,16 @@
    * flujo (mismo criterio de namespace que `--services-pill-y`, arriba en
    * este mismo archivo).
    *
-   * ⚠️ SEGUNDA CALIBRACIÓN (feature 24, ronda 2, 2026-09-08). El primer
-   * valor (`-0.5rem`, 8px) no fue perceptible — Roberto lo reportó "sigue
-   * muy abajo". Subido a `-1.375rem` (22px), a mitad del rango que Roberto
-   * pidió probar ("-1.25rem a -1.5rem"), deliberadamente claro en vez de
-   * sutil: mejor pasarse un poco en la segunda pasada que quedarse corto
-   * otra vez.
+   * ⚠️ TERCERA CALIBRACIÓN (feature 24, ronda 3, 2026-09-08). El primer valor
+   * (`-0.5rem`, 8px) no fue perceptible; el segundo (`-1.375rem`, 22px)
+   * "sigue sin ser suficiente" — dos correcciones cortas seguidas. Subido a
+   * `-3.75rem` (60px), más del doble del segundo intento y deliberadamente
+   * grande: el Pill queda claramente por encima de donde estaba (top final
+   * ≈ 190px a 1440, contra los ~102.8px del nav pineado — findings.md § R55
+   * — así que sigue sin acercarse al nav), mejor pasarse una tercera vez que
+   * volver a quedarse corto.
    */
-  --purpose-pill-y: -1.375rem;
+  --purpose-pill-y: -3.75rem;
 
   /*
    * Origen de la constelación: los TRES arcos y `Glow origen` comparten un

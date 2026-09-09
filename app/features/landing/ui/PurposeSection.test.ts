@@ -219,21 +219,27 @@ describe('PurposeSection · the paint-order contract', () => {
      * box, creates no stacking context, and leaves the glows soft
      * (spec FR-018). `clip` and not `hidden`, so the wrapper never becomes a
      * scroll container.
+     *
+     * Feature 24, round 3: the clip lives on `.arcs-clip`, not on `.arcs`
+     * itself — `.arcs-clip` widens to `<main>`'s own BORDER box (CDP-measured
+     * fix for the arcs being cut 80px short of the `.pen`'s frame edge),
+     * while `.arcs` keeps the untouched 1280px box every `--purpose-arc-*`
+     * percentage is measured against.
      */
     const wrapper = mountSection()
-    const arcs = wrapper.find('.arcs').classes()
+    const arcsClip = wrapper.find('.arcs-clip').classes()
 
-    expect(arcs).toContain('overflow-clip')
-    expect(arcs).toContain('absolute')
-    expect(arcs).toContain('inset-0')
-    expect(arcs).toContain('hidden')
-    expect(arcs).toContain('lg:block')
-    expect(arcs).not.toContain('overflow-hidden')
+    expect(arcsClip).toContain('overflow-clip')
+    expect(arcsClip).toContain('absolute')
+    expect(arcsClip).toContain('inset-0')
+    expect(arcsClip).toContain('hidden')
+    expect(arcsClip).toContain('lg:block')
+    expect(arcsClip).not.toContain('overflow-hidden')
 
     const root = sectionRoot(wrapper)
     expect(root.some(name => name.startsWith('overflow-'))).toBe(false)
 
-    expect(wrapper.find('.arcs').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.find('.arcs-clip').attributes('aria-hidden')).toBe('true')
   })
 
   it('should render the arcs before both compositions so the cards paint over', () => {
@@ -241,7 +247,7 @@ describe('PurposeSection · the paint-order contract', () => {
        content layer — above the dotted paper, below the copy (spec A-09). */
     const children = mountSection().findAll('section#proposito > *')
     const arcIndex = children.findIndex(child =>
-      child.classes().includes('arcs')
+      child.classes().includes('arcs-clip')
     )
     const constellationIndex = children.findIndex(child =>
       child.classes().includes('constellation')
