@@ -48,17 +48,17 @@ const socials: ResolvedSocial[] = [
   },
 ]
 
+/* Three items, not four (feature 24) — `Proyectos`/`Projects` dropped from
+   the mobile menu, matching `MENU_ITEMS`. */
 const spanishItems: ResolvedShellItem[] = [
   { label: 'Propósito', href: '/es#proposito' },
   { label: 'Servicios', href: '/es#servicios' },
-  { label: 'Proyectos', href: '/es#proyectos' },
   { label: 'Nosotros', href: '/es/nosotros' },
 ]
 
 const englishItems: ResolvedShellItem[] = [
   { label: 'Purpose', href: '/en#proposito' },
   { label: 'Services', href: '/en#servicios' },
-  { label: 'Projects', href: '/en#proyectos' },
   { label: 'About us', href: '/en/about' },
 ]
 

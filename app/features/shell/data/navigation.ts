@@ -65,9 +65,19 @@ export const NAV_CTA: ShellItem = {
 }
 
 /**
- * The mobile menu carries four items where the desktop nav carries two:
+ * The mobile menu carries three items where the desktop nav carries two:
  * `Propósito` and `Servicios` are included because the mobile scroll is much
  * longer (`ui-map.md` § 2).
+ *
+ * ⚠️ **`Proyectos` is deliberately absent — Roberto's explicit call
+ * (feature 24, 2026-09-08), reverting the mobile-only exception this file
+ * used to document.** Same reasoning `NAV_ITEMS` already records for
+ * dropping it from the desktop nav: feature 15 (`projects_section`) is
+ * `blocked` indefinitely, and a menu link to a section that does not exist
+ * yet reads as a broken site (`ui-map.md` § 6). `MobileMenu.test.ts` used to
+ * assert Proyectos SHOULD list in mobile "on purpose" — that assertion is
+ * updated in the same change. Restoring it the day feature 15 ships is a
+ * one-entry change, back to `SHELL_ANCHORS.projects`.
  */
 export const MENU_ITEMS: ShellItem[] = [
   {
@@ -80,14 +90,6 @@ export const MENU_ITEMS: ShellItem[] = [
       kind: 'anchor',
       name: 'index',
       hash: SHELL_ANCHORS.services,
-    },
-  },
-  {
-    labelKey: 'shell.menu.projects',
-    destination: {
-      kind: 'anchor',
-      name: 'index',
-      hash: SHELL_ANCHORS.projects,
     },
   },
   {

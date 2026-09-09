@@ -477,11 +477,11 @@ describe('static output · the floating nav pill (feature 21)', () => {
     /*
      * Superseded by feature 23: `FOOTER_COLUMNS` dropped `Proyectos` entirely
      * (Roberto, 2026-09-08), the same class of decision as dropping it from
-     * this nav in feature 21. The mobile menu panel is not asserted here —
-     * it renders behind `v-if="open"`, so it is absent from the static
-     * document regardless, and it still lists `Proyectos` on purpose
-     * (`MobileMenu.test.ts` covers it; the mobile scroll is much longer,
-     * `ui-map.md` § 2).
+     * this nav in feature 21 — and feature 24 (2026-09-08) applied the same
+     * decision a third time, to `MENU_ITEMS`. The mobile menu panel is not
+     * asserted here — it renders behind `v-if="open"`, so it is absent from
+     * the static document regardless of its content (`MobileMenu.test.ts`
+     * covers what it actually renders once open).
      */
     for (const route of ROUTES) {
       const html = documentFor(route)
