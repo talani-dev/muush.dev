@@ -551,6 +551,29 @@
       "sdd": false,
       "status": "done",
       "depends_on": [13, 20, 21]
+    },
+    {
+      "id": 26,
+      "name": "nav_scroll_hide_mobile_logo_and_spotlight_size",
+      "title": "Nav se oculta al bajar, logo icon-only en mobile, gradiente del spotlight más chico",
+      "description": "Roberto pidió 3 ajustes de interacción/visual, dados directamente por él (no verificables contra el `.pen` en el primer caso — comportamiento de scroll, no algo que un archivo de diseño estático capture) y con divergencia explícita confirmada en el segundo.\n\n1 · NAV — OCULTAR AL HACER SCROLL HACIA ABAJO. Comportamiento dado verbatim por Roberto: el nav siempre visible arriba del todo; se oculta al bajar, pero SOLO después de pasar los primeros 80px desde el tope (no se oculta mientras se está dentro de esos primeros 80px) Y solo tras 10px de movimiento continuo hacia abajo (para que el rebote/bounce del scroll en mobile no lo haga parpadear); reaparece DE INMEDIATO al subir (sin umbral); NUNCA se oculta mientras el menú mobile está abierto; y sin transición cuando `prefers-reduced-motion` está activo (aparece/desaparece instantáneo, sin animación). Esto es un comportamiento NUEVO — no existe hoy ningún composable de scroll-direction en el repo (el único mecanismo de scroll relacionado, `useNavCtaReveal.ts`/`useHeroSentinel`, es un IntersectionObserver de presencia/ausencia del Hero, sin dirección ni umbrales — no sirve de base, es un composable nuevo). El patrón más cercano a reutilizar para la mecánica (rAF-coalescing, listener pasivo, cleanup en onScopeDispose) es `useCursorSpotlight.ts`, no `useNavCtaReveal.ts`. El nav es `position: sticky` — no cambiar eso; el ocultamiento va por `transform: translateY(-100%)` en el wrapper del nav (no rompe `sticky`). No se oculta con el menú abierto evita a propósito el problema de que `MobileMenu.vue`'s panel (probablemente `position: fixed`) quedaría mal contenido si su ancestro tuviera un `transform` activo en ese momento — no es una regla arbitraria, es lo que hace segura la implementación con `transform`.\n\n2 · LOGO EN MOBILE — SOLO ISOTIPO, SIN 'muush.dev'. Únicamente en el header/nav, únicamente en mobile (debajo de `lg`) — el footer NO cambia. `Lockup.vue` (no es primitivo congelado, confirmado) se usa en dos lugares: `SiteNav.vue` y `SiteFooter.vue`, sin ninguna prop que controle visibilidad del wordmark hoy (solo `form?: 'full'|'short'`, que es sobre el TEXTO del wordmark — 'muush.dev' vs 'muush' — no sobre ocultarlo). VERIFICADO CONTRA EL `.pen`: el nav mobile SÍ dibuja el wordmark completo (`UVyfl`/`Gyzef`/`jEjlk`/`JSjcc`, todos con un frame 'Wordmark' como hijo del Lockup) — esto es una DIVERGENCIA HUMANA explícita respecto al diseño, decidida por Roberto el 2026-09-09, misma clase que otras decisiones de esta sesión (quitar Proyectos del nav/footer/menú). Documentar como tal, no como corrección de un error de implementación.\n\n3 · GRADIENTE DEL CURSOR DEMASIADO GRANDE. `CursorSpotlight.vue` en realidad tiene DOS capas superpuestas en el mismo archivo: (a) el 'beam' — un campo radial de dos paradas, tamaño exterior `--spotlight-outer-size` (41.25rem/660px) más un núcleo `--spotlight-core-size` (11.25rem/180px) — y (b) `.cursor-spotlight__lit`, la capa que reilumina los puntos del `DotGrid` dentro de ese radio (no es un gradiente per se, es una máscara). Roberto percibe 'más de un gradiente' y quiere reducir/quitar el más grande, dejando el más chico. No hay valor de diseño que fije esto (es una animación/interacción, no algo en el `.pen`) — Roberto mismo dice no estar seguro de la medida exacta. Reducir el tamaño total del efecto de forma notoria (no sutil) en la primera pasada, priorizando ACHICAR sobre BORRAR capas completas a menos que la investigación confirme que hay dos elementos genuinamente redundantes — y producir capturas antes/después para que el leader se las muestre a Roberto y confirme si hace falta otra pasada.",
+      "acceptance": [
+        "1a · El nav permanece visible mientras el scroll está entre 0 y 80px desde el tope, en cualquier dirección",
+        "1b · Pasado el umbral de 80px, el nav se oculta solo tras acumular 10px continuos de scroll hacia abajo (sin revertir por el rebote/bounce del scroll)",
+        "1c · El nav reaparece de inmediato (sin umbral) en cuanto el scroll cambia a dirección hacia arriba, en cualquier punto",
+        "1d · El nav NUNCA se oculta mientras el menú mobile está abierto, sin importar la posición o dirección del scroll",
+        "1e · Con prefers-reduced-motion activo, el nav aparece/desaparece sin transición animada (cambio instantáneo)",
+        "1f · El nav sigue siendo position: sticky, no se rompe ese comportamiento",
+        "2 · El wordmark 'muush.dev' no se renderiza en el Lockup del header en mobile (debajo de lg), pero SÍ sigue apareciendo en desktop y en el footer (mobile y desktop) sin cambios — verificado en el HTML generado, ambos locales",
+        "3 · El efecto del cursor (CursorSpotlight.vue) ocupa un área visiblemente más chica que antes — verificado con capturas antes/después vía CDP a un ancho de escritorio común, para que el leader se las muestre a Roberto",
+        "No se toca ningún primitivo congelado (SectionGlow, DotGrid, SectionBackdrop, Radar, Pill, BotonPrimario)",
+        "Todas las medidas en x/posición usan unidades relativas (rem/%), nunca px crudo",
+        "Medición vía CDP para los puntos 1a-1e y 2 antes de reportarlos arreglados — no basta con leer las clases (findings.md §§ R34, R44)",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": [9, 21]
     }
   ]
 }

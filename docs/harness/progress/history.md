@@ -2400,3 +2400,51 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - Implementer: `docs/harness/progress/impl_purpose_copy_nav_and_submit_width.md`.
   Reviewer: `docs/harness/progress/review_purpose_copy_nav_and_submit_width.md`.
 - `feature_list.json`: feature id 25 status `reviewing` → `done`.
+
+## 2026-09-09 — Feature 26 `nav_scroll_hide_mobile_logo_and_spotlight_size` — nav se oculta al bajar, logo icon-only en mobile, spotlight más chico (done)
+
+Tres ajustes de interacción/visual pedidos directamente por Roberto (`sdd:
+false`). **Aprobada por el reviewer** de forma independiente vía CDP real
+(`docs/harness/progress/review_nav_scroll_hide_mobile_logo_and_spotlight_size.md`).
+
+- **1 — Nav oculto al hacer scroll hacia abajo.** Composable nuevo
+  `app/features/shell/logic/useNavScrollReveal.ts` (mecánica de
+  `useCursorSpotlight.ts`: listener pasivo, rAF-coalesced,
+  `onScopeDispose`): visible en los primeros 80px desde el tope en cualquier
+  dirección; pasado ese umbral se oculta solo tras 10px continuos de scroll
+  hacia abajo (inmune al rebote/bounce móvil); reaparece de inmediato al
+  subir, sin umbral; nunca se oculta con el menú móvil abierto (evita el
+  problema de containing block de un `transform` activo sobre el panel
+  `fixed` de `MobileMenu.vue`); instantáneo bajo `prefers-reduced-motion`.
+  `SiteNav.vue` consume el composable vía una clase `site-nav--hidden`
+  (`transform: translateY(-100%)`), `position: sticky` intacto. CDP
+  (390×844 y 1440×900) confirmó los seis subpuntos 1a–1f contra
+  `.output/public` real.
+- **2 — Logo mobile, solo isotipo.** `Lockup.vue` gana
+  `hideWordmarkBelowLg` (default `false`); `SiteNav.vue` lo pasa,
+  `SiteFooter.vue` no — footer sin cambios en ningún ancho. Documentado en
+  ambos componentes como divergencia humana explícita del `.pen` (Roberto,
+  2026-09-09, misma clase que quitar "Proyectos"), no una corrección.
+  Verificado en `pnpm generate`, ambos locales: wordmark oculto en nav móvil,
+  visible en nav desktop y en footer (mobile y desktop).
+- **3 — Spotlight del cursor, más chico.** Investigado: el campo exterior y
+  el núcleo son dos capas de `radial-gradient()` en el mismo elemento, no dos
+  elementos redundantes. Por instrucción literal de Roberto ("achicar el más
+  grande, dejar el más chico"), solo `--spotlight-outer-size` se redujo a la
+  mitad (41.25rem → 20.625rem / 660px → 330px) en `global.css`;
+  `--spotlight-core-size` intacto. Documentado como primera pasada de
+  calibración, no valor final. **Roberto confirmó visualmente el nuevo
+  tamaño por capturas antes/después (1440px, mismo punto de mouse) antes de
+  que el reviewer aprobara** — no hace falta otra pasada por ahora.
+
+El reviewer verificó los tres puntos de forma independiente vía CDP real
+(`Emulation.setDeviceMetricsOverride` + `Input.dispatchMouseEvent`), sin
+reusar las cifras del implementer, y confirmó los seis primitivos congelados
+(`SectionGlow`, `DotGrid`, `SectionBackdrop`, `Radar`, `Pill`,
+`BotonPrimario`) sin diff.
+
+`./init.sh` exit 0 · `pnpm check`/`typecheck`/`test` (728/728)/`generate`/
+`storybook:build` todos verdes.
+- Implementer: `docs/harness/progress/impl_nav_scroll_hide_mobile_logo_and_spotlight_size.md`.
+  Reviewer: `docs/harness/progress/review_nav_scroll_hide_mobile_logo_and_spotlight_size.md`.
+- `feature_list.json`: feature id 26 status `reviewing` → `done`.
