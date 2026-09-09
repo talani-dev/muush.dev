@@ -1,0 +1,188 @@
+# Create Release — the entry point for every deploy. Runs on every push to
+# master: verifies, tags whatever version is already in package.json, opens
+# a GitHub Release, deploys that tag, and publishes the release only if the
+# deploy succeeded.
+#
+#   verify+release  — verify (fmt/typecheck/lint/test/build), fail if the
+#                     tag for the current package.json version already
+#                     exists, then tag + open a PRERELEASE
+#   deploy          — calls deploy.yml (workflow_call) with that tag
+#   finalize        — publish the release, or mark it DEPLOY FAILED
+#
+# This does not bump package.json — the developer bumps it in their PR.
+# This workflow only reads it and tags what's already there, so a merge
+# without a version bump fails loudly (tag already exists) instead of
+# silently re-deploying the previous version's tag or skipping the release.
+#
+# Why the release starts as a prerelease: a GitHub Release is a claim that a
+# version shipped. Publishing it before the deploy's outcome is known would
+# let a failed deploy leave behind a release asserting the site was updated
+# when it was not.
+
+name: Create release
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write # tag + push, and create the GitHub Release
+  id-token: write # superset requirement: deploy.yml's deploy job needs this
+  # when reached via workflow_call — the parent workflow must declare it,
+  # the child's own job-level permissions cannot grant more than the parent
+  # allows (github.com/en/actions/reference/security/oidc; the same class
+  # of bug this org already hit once in muush-foundation's create-release).
+
+concurrency:
+  group: create-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Verify, tag, and open a prerelease
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          set -euo pipefail
+          VERSION=$(jq -r .version package.json)
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "::error::package.json has no version field."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
+      - name: Fail if this version was already released
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists. Bump the version in package.json before merging to master — this workflow tags whatever version is already there, it does not bump it for you."
+            exit 1
+          fi
+          echo "$TAG is unclaimed, continuing."
+
+      - name: Verify
+        uses: ./.github/actions/verify-site
+
+      - name: Tag and push
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Build release body
+        id: body
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          GH_SERVER_URL: ${{ github.server_url }}
+          GH_REPOSITORY: ${{ github.repository }}
+          GH_ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            COMMIT_HISTORY=$(git log "${PREV_TAG}..HEAD" --pretty=format:'- %s (%h)')
+            CHANGELOG_URL="${GH_SERVER_URL}/${GH_REPOSITORY}/compare/${PREV_TAG}...${TAG}"
+          else
+            COMMIT_HISTORY=$(git log -n 50 --pretty=format:'- %s (%h)')
+            CHANGELOG_URL="${GH_SERVER_URL}/${GH_REPOSITORY}/commits/${TAG}"
+          fi
+          [ -z "$COMMIT_HISTORY" ] && COMMIT_HISTORY="_No commits since ${PREV_TAG}._"
+
+          {
+            printf '## 🚀 %s\n\n' "$TAG"
+            printf '> ⏳ **Deploy in progress.** This release stays a prerelease until\n'
+            printf '> the deploy job reports its outcome.\n\n'
+            printf '**Version**: `%s`\n\n' "$VERSION"
+            printf -- '---\n\n'
+            printf '## 📋 Commit History\n\n%s\n\n' "$COMMIT_HISTORY"
+            printf '**Full Changelog**: %s\n\n' "$CHANGELOG_URL"
+            printf -- '---\n\n'
+            printf '🤖 *Released by @%s via GitHub Actions*\n' "$GH_ACTOR"
+          } > release_body.md
+
+      - name: Create GitHub prerelease
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: 🚀 ${{ steps.version.outputs.tag }}
+          body_path: release_body.md
+          draft: false
+          prerelease: true
+
+  deploy:
+    name: Deploy the tagged release
+    needs: release
+    uses: ./.github/workflows/deploy.yml
+    with:
+      tag: ${{ needs.release.outputs.tag }}
+    secrets: inherit
+
+  finalize:
+    name: Finalize release status
+    runs-on: ubuntu-latest
+    needs: [release, deploy]
+    if: always()
+    steps:
+      - name: Publish or mark the release as failed
+        uses: actions/github-script@v7
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
+          DEPLOY_RESULT: ${{ needs.deploy.result }}
+        with:
+          script: |
+            const tag = process.env.TAG;
+            const deployed = process.env.DEPLOY_RESULT === 'success';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const { data: release } = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag,
+            });
+
+            const withoutBanner = release.body.replace(
+              /^> ⏳ \*\*Deploy in progress\.\*\*[\s\S]*?\n\n/m,
+              ''
+            );
+
+            const banner = deployed
+              ? `> ✅ **Deployed.** This version is live.\n> [Deploy run](${runUrl})\n\n`
+              : `> ❌ **NOT DEPLOYED.** The deploy for this tag failed or was cancelled — the site does **not** reflect this release.\n> [Failed run](${runUrl})\n\n`;
+
+            const title = deployed
+              ? release.name
+              : `${release.name} — DEPLOY FAILED`;
+
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release.id,
+              name: title,
+              body: banner + withoutBanner,
+              prerelease: !deployed,
+            });
+
+            if (!deployed) {
+              core.setFailed(
+                `Release ${tag} was tagged but the deploy did not succeed. ` +
+                `The release is marked as a failed prerelease. Fix forward and ` +
+                `cut a new version — do not silently re-run this tag.`
+              );
+            }
