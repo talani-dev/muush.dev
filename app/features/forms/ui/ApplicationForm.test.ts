@@ -114,6 +114,16 @@ describe('ApplicationForm · the eight fields', () => {
     expect(button.text()).toBe(content.submit)
   })
 
+  it('should fix the submit button to its desktop width and centre it only from lg up', () => {
+    /* Feature 025 (corrected) — same fix and same reasoning as ContactForm.test.ts. */
+    const button = mountForm().find('button[type="submit"]')
+
+    expect(button.classes()).toContain('lg:w-btn-submit-w')
+    expect(button.classes()).toContain('lg:self-center')
+    expect(button.classes()).not.toContain('self-center')
+    expect(button.classes()).not.toContain('w-btn-submit-w')
+  })
+
   it('should render the six grouped role options under their own area optgroup', () => {
     const wrapper = mountForm()
     const optgroups = wrapper.find('#areaRole').findAll('optgroup')

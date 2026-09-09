@@ -2343,3 +2343,60 @@ bloqueante (ver abajo).
 >   Reviewer: `docs/harness/progress/review_visual_polish_round_2.md` §
 >   "Re-review — round 4".
 > - `feature_list.json`: feature id 24 status `reviewing` → `done`.
+
+## 2026-09-08 — Feature 25 `purpose_copy_nav_order_and_submit_width` — copy real de Propósito, orden/padding del nav, ancho del botón Enviar (done)
+
+Tres reportes de Roberto tras revisar el sitio, cada uno verificado contra el
+`.pen` antes de escribir la entrada (`sdd: false`). **Aprobada por el
+reviewer** de forma independiente vía CDP real (ver
+`docs/harness/progress/review_purpose_copy_nav_and_submit_width.md`).
+
+- **1 — Copy de Propósito.** `landing.purpose.{why,how,what}.copy` en
+  `i18n/locales/{es,en}.json` traía un placeholder que nunca se reemplazó por
+  el copy real de los nodos `.pen` (`ZddCZ`/`OD567`/`qwVGc` ES,
+  `l0DUl`/`w9zj30`/`F1Lku` EN). Reemplazado verbatim en ambos locales;
+  `usePurposeContent`/`purposeContent.ts` solo referencia claves, así que
+  `PurposeConstellation.vue` (desktop) y `PurposeCarousel.vue` (mobile) toman
+  el copy nuevo sin tocar componentes. Tests/fixtures que pinneaban el copy
+  viejo actualizados (`tests/landing-copy.test.ts`,
+  `tests/static-output.test.ts`, `PurposeSection.stories.ts`); la aserción
+  "What == hero subhead" se reescribió a su inversa porque esa igualdad era
+  coincidencia del placeholder viejo, no una regla documentada. Confirmado en
+  el HTML prerenderizado: cada string aparece 2 veces por locale (una por
+  composición).
+- **2 — Nav, orden y padding.** `SiteNav.vue`: `<LanguageToggle>` movido antes
+  del div `.site-nav__cta` (el `.pen`, frames `WGhSI`/`UfsGV`, dibuja Idioma
+  antes que CTA en ambos locales). Token nuevo `--spacing-nav-pill-x: 2.5rem`
+  (fijo, mismo criterio que `--spacing-nav-pill-y`/`-py`) sustituyendo a
+  `px-page` solo a `lg` vía `lg:px-nav-pill-x`, porque `px-page` hacía doble
+  trabajo (angostar la fila Y dar padding interno) y el Lockup del `.pen` está
+  a 40px del borde de la píldora, no a 80px. CDP confirmó: Idioma antes que
+  CTA en ambos locales, Lockup y el extremo del grupo idioma+CTA simétricos a
+  ~121px del borde real del viewport a 1440px (antes 160/no simétrico).
+- **3 — Botón Enviar.** Dos rondas. Ronda 1: `<form class="flex flex-col
+  gap-form-gap">` sin `items-*` estiraba el botón Submit al 100% por
+  `align-items: stretch` heredado; fix inicial fue `self-center` sin scope de
+  breakpoint, asumiendo `width: fit_content` en las 4 instancias reales.
+  **Ronda 2 (corrección del líder tras leer el nodo base `OqChv` + las 4
+  instancias directo en el `.pen`):** desktop es `width: 216` EXPLÍCITO
+  (fijo — "Enviar"/"Submit" dan el mismo ancho pese a distinto largo de
+  texto) y mobile es `width: "fill_container"` EXPLÍCITO (debe seguir
+  estirado). El `self-center` sin scope de ronda 1 rompía mobile. Corregido:
+  token `--spacing-btn-submit-w: 13.5rem` en `@theme inline`, clases
+  `lg:w-btn-submit-w lg:self-center` en la instancia de
+  `<BotonPrimario variant="submit">` de ambos forms (`ContactForm.vue`,
+  `ApplicationForm.vue`) — nada sin scope. `BotonPrimario.vue` sin tocar.
+  CDP confirmó, ambos forms: desktop 1440 → 216px exacto, centrado (187/187);
+  móvil 390 → 292px = 100% del form (0/0 de margen, estirado).
+
+El reviewer verificó los tres puntos de forma independiente contra
+`.output/public` real vía CDP (`Emulation.setDeviceMetricsOverride`), sin
+reusar las cifras del implementer, y confirmó los seis primitivos congelados
+(`SectionGlow`, `DotGrid`, `SectionBackdrop`, `Radar`, `Pill`,
+`BotonPrimario`) sin diff.
+
+`./init.sh` exit 0 · `pnpm check`/`typecheck`/`test` (713/713)/`generate`/
+`storybook:build` todos verdes.
+- Implementer: `docs/harness/progress/impl_purpose_copy_nav_and_submit_width.md`.
+  Reviewer: `docs/harness/progress/review_purpose_copy_nav_and_submit_width.md`.
+- `feature_list.json`: feature id 25 status `reviewing` → `done`.

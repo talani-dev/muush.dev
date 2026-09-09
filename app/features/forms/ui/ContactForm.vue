@@ -146,10 +146,23 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
         />
       </Transition>
 
+      <!--
+        Feature 025 (corrected). The form is `flex flex-col` with no
+        `items-*`, so every child inherits `align-items: stretch` — right for
+        the fields, wrong for the submit button on desktop. The `.pen`'s real
+        node (`bTYw7` and its EN/Nosotros equivalents) draws `width: 216`
+        EXPLICIT at `lg` — a fixed value, not fit-content: `Enviar`/`Submit`
+        both render at 216px despite differing text length. Below `lg` the
+        same node is `width: "fill_container"`, so mobile must keep
+        stretching to the form's width — the opposite of desktop. Both
+        `lg:self-center` and `lg:w-btn-submit-w` are scoped to `lg:` for
+        exactly that reason; unscoped, they would wrongly cap mobile too.
+      -->
       <BotonPrimario
         variant="submit"
         type="submit"
         :disabled="previewState === 'sending'"
+        class="lg:w-btn-submit-w lg:self-center"
       >
         {{ previewState === 'sending' ? content.sending : content.submit }}
       </BotonPrimario>

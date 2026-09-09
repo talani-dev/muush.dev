@@ -88,6 +88,25 @@ describe('ContactForm · the seven fields', () => {
     expect(button.text()).toBe(content.submit)
   })
 
+  it('should fix the submit button to its desktop width and centre it only from lg up', () => {
+    /*
+     * Feature 025 (corrected). `<form class="flex flex-col gap-form-gap">`
+     * has no `items-*`, so every child inherits `align-items: stretch` —
+     * right for the fields at every width, and right for the submit button
+     * too, but only below `lg`: the `.pen`'s real node (`bTYw7`) is
+     * `width: "fill_container"` on mobile and `width: 216` EXPLICIT at `lg`.
+     * `lg:w-btn-submit-w`/`lg:self-center` guard exactly that split — neither
+     * class is unscoped, and neither lands on the `<form>` itself (which
+     * would also un-stretch the inputs).
+     */
+    const button = mountForm().find('button[type="submit"]')
+
+    expect(button.classes()).toContain('lg:w-btn-submit-w')
+    expect(button.classes()).toContain('lg:self-center')
+    expect(button.classes()).not.toContain('self-center')
+    expect(button.classes()).not.toContain('w-btn-submit-w')
+  })
+
   it('should show no error before any submit is attempted, even on an empty form', () => {
     /* `ui-map.md` § 7's "Idle" row: the empty form's own resting state shows
        no red borders and no messages — those belong to "Validación fallida"
