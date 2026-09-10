@@ -16,6 +16,41 @@
   Spanish is the default and the language is never detected from IP or
   `Accept-Language` (docs/business/landing/ui-map.md § 1), so `x-default`
   points at `/es` too.
+
+  ## The instant before the refresh fires (feature 27, 2026-09-09)
+
+  Roberto reported seeing the browser's default white background and the
+  "muush.dev" text flash here before the refresh redirects to `/es`. Two
+  fixes, both requested as purely visual so the accessibility fallback below
+  stays intact:
+
+  1. `body` gets `background-color: #262626` (`--ink-500`, the same base the
+     rest of the site paints on `html`/`body` in `app/assets/css/global.css`
+     line ~618) via an inline `<style>` — this file stays dependency-free on
+     purpose (no bundle, no `<link>` to the app's stylesheet), so the hex is
+     written literally rather than through a CSS custom property that would
+     not exist in this document.
+
+  2. The `<a href="/es">muush.dev</a>` link BELOW is not removed, and must
+     never be: its own history note (this same comment, previous paragraph)
+     already documents it as the accessibility fallback for when both the
+     meta refresh AND scripting are disabled — deleting it would regress
+     exactly that guarantee. Instead its text is painted the same colour as
+     `body`'s background, `#262626`, so it carries no visual contrast — not
+     only during the instant before the redirect fires, but also in the
+     fallback case this link exists for, since this is plain CSS with no
+     script or refresh dependency of its own. It is still a real anchor: in
+     the DOM, in tab order, and reachable by assistive technology and by
+     keyboard focus (most browsers still draw their own default focus
+     ring, which nothing here overrides). Explicitly not `display: none`,
+     not `visibility: hidden`, and not deleted — any of those three would
+     pull it out of the accessibility tree or the tab order, which is the
+     one thing this fix must not do. Roberto weighed this trade-off
+     explicitly and accepted it 2026-09-09: the fallback keeps working for
+     a keyboard user or assistive technology (its actual audience — a
+     sighted, mouse-only visitor with both refresh and scripting disabled
+     is the corner of a corner case), and the flash the rest of the site
+     sees is gone.
 -->
 <html lang="es">
   <head>
@@ -28,6 +63,24 @@
     <link rel="alternate" hreflang="es-MX" href="https://muush.dev/es" />
     <link rel="alternate" hreflang="en" href="https://muush.dev/en" />
     <link rel="alternate" hreflang="x-default" href="https://muush.dev/es" />
+    <style>
+      body {
+        margin: 0;
+        background-color: #262626;
+      }
+      /*
+        Same colour as body's background, not display:none/visibility:hidden:
+        the link stays in the DOM, in tab order and reachable by assistive
+        technology (see the file comment above) — only its contrast against
+        the background disappears for the sighted instant before the
+        refresh fires or when scripting/refresh are both unavailable and it
+        remains the only way off this page.
+      */
+      a {
+        color: #262626;
+        text-decoration: none;
+      }
+    </style>
   </head>
   <body>
     <a href="/es">muush.dev</a>

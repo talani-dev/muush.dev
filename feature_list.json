@@ -574,6 +574,43 @@
       "sdd": false,
       "status": "done",
       "depends_on": [9, 21]
+    },
+    {
+      "id": 27,
+      "name": "nav_hide_clipping_bug_and_root_redirect_flash",
+      "title": "Bug del nav que se queda cortado a la mitad al ocultarse, y flash en blanco del index.html raíz",
+      "description": "Roberto reportó 2 problemas tras el deploy de la feature 26, más una instrucción de proceso.\n\n1 · NAV CORTADO A LA MITAD AL OCULTARSE. La feature 26 agregó `transform: translateY(-100%)` en `.site-nav--hidden` para ocultar el nav al hacer scroll hacia abajo. En producción, Roberto ve el nav quedarse visualmente cortado a la mitad (una porción del pill sigue asomando arriba del viewport) en vez de desaparecer por completo. El `translateY(-100%)` en teoría debería mover el elemento exactamente su propia altura completa hacia arriba sin importar cuál sea esa altura (es un porcentaje de la propia caja, no un valor fijo) — el implementer necesita reproducir esto en vivo (`pnpm generate` + servir + scroll real, no solo leer el CSS) e investigar la causa real antes de arreglarlo: candidatos a revisar — interacción de `position: sticky` con `transform` y recálculo de la posición 'pegada' en cada frame de scroll; si `isNavVisible` está oscilando rápido (parpadeando) cerca del umbral de 10px causando que la transición nunca complete un ciclo completo antes de revertirse; si algún ancestro con `overflow-clip` (el layout raíz, `default.vue`) está recortando el elemento trasladado en el borde exacto del viewport en vez de dejarlo salir limpiamente; o si el elemento que recibe la clase `.site-nav--hidden` no es el mismo cuya altura coincide con lo que visualmente se espera ocultar (¿se aplica en `<nav>` o en `.nav-row`? ¿Hay padding/gap del contenedor que no forma parte de la caja que se traslada?).\n\n2 · FLASH EN BLANCO DEL index.html RAÍZ. `public/index.html` es el objeto que responde en el dominio raíz (`/`, sin locale) — un stub deliberadamente estático y sin dependencias con un `meta http-equiv=\"refresh\"` a `/es` y un link `<a href=\"/es\">muush.dev</a>` como respaldo para cuando el refresh/JS no están disponibles (ver el propio comentario del archivo). Roberto ve este archivo renderizarse brevemente (fondo blanco del navegador, el texto \"muush.dev\") antes de que el refresh redirija a `/es` — se ve mal. Pide: (a) el `<body>` debe tener el mismo color de fondo que el resto del sitio — `--ink-500` (`#262626`), el fondo base del layout raíz, confirmado en `global.css` línea ~618 — y (b) el link/texto \"muush.dev\" no debe verse visualmente durante ese instante. IMPORTANTE: no borrar el elemento `<a>` del DOM — el propio comentario del archivo documenta que existe específicamente como respaldo de accesibilidad para cuando el meta-refresh Y el JS están ambos deshabilitados; quitarlo regresionaría esa garantía. La solución es visual (el link sigue presente y funcional, pero no contrasta visualmente contra el fondo — p. ej. mismo color de texto que el fondo, o una técnica equivalente que lo mantenga accesible/enfocable sin verse), no estructural.\n\n3 · PROCESO — Roberto retira la autorización estándar de que el leader commitee/mergee/pushee sin pedir confirmación en cada ocasión. A partir de ahora, el leader implementa y verifica, pero SIEMPRE pausa antes de cualquier `git commit`/`merge`/`push` y espera instrucción explícita — no aplica a esta feature en particular, es un cambio de proceso permanente hasta nuevo aviso.",
+      "acceptance": [
+        "1a · Investigar y documentar la causa real del corte a la mitad (reproducido en vivo, no solo leyendo CSS) antes de aplicar el fix",
+        "1b · El nav se oculta por completo (translateY exactamente 100% de su propia altura, sin residuo visible) al pasar el umbral de scroll, verificado vía CDP midiendo el bounding box real del nav en el estado oculto",
+        "1c · El comportamiento ya aprobado en la feature 26 (zona de 80px, umbral de 10px, reaparición inmediata al subir, nunca oculto con el menú abierto, instantáneo con reduced-motion) sigue funcionando exactamente igual — no se reintroduce ni se pierde nada de eso",
+        "2a · El body de public/index.html tiene background-color: #262626 (--ink-500), sin depender de ningún bundle/CSS de la app (el archivo se mantiene dependency-free, un <style> inline basta)",
+        "2b · El link <a href=\"/es\">muush.dev</a> sigue presente en el DOM, sigue siendo funcional/enfocable (no display:none, no visibility:hidden, no eliminado), pero no es visualmente perceptible como texto contrastante durante el instante antes del refresh",
+        "2c · docs/harness/progress y/o el propio comentario del archivo documentan por qué el link no se eliminó pese a no verse",
+        "No se toca ningún primitivo congelado (SectionGlow, DotGrid, SectionBackdrop, Radar, Pill, BotonPrimario)",
+        "Todas las medidas en x/posición usan unidades relativas (rem/%), nunca px crudo, salvo en public/index.html (archivo deliberadamente sin tokens/build, ya establecido así)",
+        "Medición vía CDP para el punto 1 antes de reportarlo arreglado — no basta con leer las clases (findings.md §§ R34, R44)",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": [21, 26]
+    },
+    {
+      "id": 28,
+      "name": "nav_end_group_order_and_gap",
+      "title": "Invertir orden idioma/CTA en el nav y reducir el espacio entre ellos",
+      "description": "Roberto pidió invertir el orden que se implementó en la feature 25 (que en su momento se verificó contra el `.pen`: idioma antes que el CTA). Ahora, explícitamente, quiere lo contrario — DIVERGENCIA HUMANA sobre lo ya verificado, no una corrección: el botón 'Cuéntanos tu proyecto' va a la IZQUIERDA, el toggle de idioma va a la DERECHA (el orden más a la derecha de los dos). En `app/features/shell/ui/SiteNav.vue`, dentro de `.nav-row__end`, esto significa volver a poner `<div class=\"site-nav__cta\">` ANTES que `<LanguageToggle>` en el markup (el orden que tenía antes de la feature 25).\n\nTambién pidió reducir 'un poquito' el espacio entre esos dos elementos. Hoy ambos (y también `.nav-row` y `.nav-row__links`) comparten `gap-nav-gap` (`--spacing-nav-gap`, clamp 0.875rem→1.875rem) — reducirlo afectaría también el espacio entre los links (Servicios/Nosotros) y el gap de la rejilla de tres columnas, que Roberto NO pidió tocar. Necesita un token NUEVO y dedicado solo para `.nav-row__end` (p. ej. `--spacing-nav-end-gap`), consumido ahí en vez de `gap-nav-gap`, para no afectar los otros dos usos compartidos. Sin valor de diseño que fije la reducción exacta (es una preferencia de Roberto, 'un poquito') — calibrar con criterio, un paso perceptible pero no drástico respecto al valor actual.",
+      "acceptance": [
+        "1 · En el nav de escritorio, el botón 'Cuéntanos tu proyecto'/'Tell us about your project' queda a la izquierda y el toggle de idioma a la derecha (el más a la derecha de los dos) — verificado por posición real vía CDP, no solo el orden en el markup",
+        "2 · El espacio entre el botón CTA y el toggle de idioma es visiblemente menor que antes, sin afectar el gap entre los links de navegación (Servicios/Nosotros) ni el gap de la rejilla de tres columnas del nav — verificado midiendo ambos gaps por separado vía CDP y confirmando que solo uno cambió",
+        "No se toca ningún primitivo congelado (SectionGlow, DotGrid, SectionBackdrop, Radar, Pill, BotonPrimario)",
+        "Todas las medidas en x/posición usan unidades relativas (rem/%), nunca px crudo",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": [21, 25]
     }
   ]
 }

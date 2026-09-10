@@ -1055,6 +1055,23 @@ html {
   --spacing-lang-gap: clamp(0.3125rem, 0.2893rem + 0.0952vw, 0.375rem);
 
   /*
+   * Feature 28 (2026-09-09). `.nav-row__end` shared `--spacing-nav-gap` with
+   * `.nav-row` (the three-column grid gap) and `.nav-row__links` (the space
+   * between Servicios/Nosotros) — reducing it would have shrunk all three at
+   * once. Roberto asked to tighten only the space between the CTA and the
+   * language toggle, "un poquito", with no `.pen` value backing an exact
+   * number (no frame fixes this gap; it is a preference, same class as
+   * `--purpose-pill-y`'s own unmeasured nudge). This dedicated token keeps
+   * `.nav-row`/`.nav-row__links` on `--spacing-nav-gap`, untouched.
+   *
+   * Same fluid-clamp shape as `--spacing-nav-gap` (390px → 1440px), scaled to
+   * ~60% of it end to end: 30px → 18px at desktop, 14px → 8px at mobile — a
+   * perceptible step, not a drastic one. First pass; recalibrate this single
+   * token if Roberto asks for more or less.
+   */
+  --spacing-nav-end-gap: clamp(0.5rem, 0.2679rem + 0.9524vw, 1.125rem);
+
+  /*
    * Feature 021 (floating nav redesign) — píldora flotante de escritorio,
    * frames `WGhSI`/`s0ni6l`: 1280×72 en `x80 y24` sobre un canvas de 1440.
    * Solo existe en `lg`; móvil no lleva píldora (spec FR-020, frame `X3Xquh`
