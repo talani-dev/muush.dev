@@ -380,6 +380,38 @@ watch(isOpen, opened => {
  * documents for its own fade — a scoped rule outranks a same-specificity
  * utility, so writing the reduced-motion override here in the same place
  * keeps one specificity level in charge of it instead of two.
+ *
+ * ## Bug fixed by feature 27 (2026-09-09): the pill stayed clipped at `lg`
+ *
+ * `translateY(-100%)` moves the box by its own border-box height only. That
+ * is enough at `top: 0` (mobile), but at `lg` the sticky offset itself is
+ * `--spacing-nav-pill-y` (24px, the pill's inset from the viewport edge,
+ * feature 21) — `top-nav-pill-y` above — so the "stuck" position already
+ * sits 24px *inside* the viewport before any transform runs. Moving up by
+ * only the box's own height leaves those 24px poking back in at the top
+ * edge: measured live via CDP (`pnpm generate` + a static server, real
+ * `Emulation.setDeviceMetricsOverride` + programmatic scroll past the
+ * threshold, `getBoundingClientRect()` on the settled hidden state) at 1440,
+ * `rectBottom` was `24`, not `0` — the exact width of `--spacing-nav-pill-y`.
+ * At 390 (`top: 0`, no inset) `rectBottom` was already `0`; the bug is
+ * `lg`-only, which is why it was invisible below that breakpoint.
+ *
+ * It was not `position: sticky` recomputing against the transform (the
+ * sticky offset and the transform composed exactly as the CSS spec says —
+ * the arithmetic above is what was missing, not a browser quirk), not
+ * `isNavVisible` flicker (the class was stable and singular in every
+ * captured frame), and not a clipping ancestor (`overflow-clip` on
+ * `default.vue`'s root only bounds the document's own scroll range, not an
+ * already-off-canvas transform on a `position: sticky` descendant painted
+ * via the compositor). It was candidate 4: the class sits on the right
+ * element (`<nav>`, which *is* the visible box — `MobileMenu`'s panel is
+ * `position: fixed` and contributes nothing to `<nav>`'s own height), but
+ * `-100%` was the wrong amount at `lg` because the sticky inset was never
+ * folded into it.
+ *
+ * Fixed by adding the same inset the `lg:top-nav-pill-y` offset already
+ * declares, so the two cancel and the box clears the viewport completely
+ * regardless of which breakpoint's `top` is active.
  */
 .site-nav {
   z-index: var(--layer-nav);
@@ -390,9 +422,20 @@ watch(isOpen, opened => {
 
 /* The hidden state itself: translated fully off-screen, never `display` or
    `visibility` — those would drop the nav from the accessibility tree and
-   from tab order mid-scroll, which nothing in feature 26 asks for. */
+   from tab order mid-scroll, which nothing in feature 26 asks for.
+   `-100%` alone is correct only where `top: 0` (mobile); see the doc
+   comment above for the `lg` case, fixed below. */
 .site-nav--hidden {
   transform: translateY(-100%);
+}
+
+/* `lg` sticks the nav at `top: var(--spacing-nav-pill-y)` instead of `0`
+   (the floating pill, feature 21) — that inset has to be added on top of
+   the box's own height or the pill stays visible by exactly that amount. */
+@media (width >= 64rem) {
+  .site-nav--hidden {
+    transform: translateY(calc(-100% - var(--spacing-nav-pill-y)));
+  }
 }
 
 /* Instant, per `ui-map.md` § *Movimiento reducido*'s own pattern: hiding
