@@ -254,21 +254,7 @@ watch(isOpen, opened => {
         </li>
       </ul>
 
-      <div class="nav-row__end flex items-center gap-nav-gap">
-        <!--
-          Feature 025: the language toggle sits BEFORE the CTA, left to right —
-          verified against the `.pen` (frames `WGhSI` Landing ES, `UfsGV`
-          Landing EN, both real, 1280×72): Idioma x985/CTA x1043 in ES, Idioma
-          x970/CTA x1028 in EN — the toggle is always immediately before the
-          CTA in both locales. Previously the CTA div came first; swapped to
-          match.
-        -->
-        <LanguageToggle
-          :locale="locale"
-          :href="localeSwitchHref"
-          :switch-label="localeSwitchLabel"
-        />
-
+      <div class="nav-row__end flex items-center gap-nav-end-gap">
         <!--
           No CTA below `lg`. It does not collapse into the menu either: on
           mobile the only call to action is the social row inside the open
@@ -300,6 +286,25 @@ watch(isOpen, opened => {
             >
           </BotonPrimario>
         </div>
+
+        <!--
+          ⚠️ DIVERGENCIA HUMANA (feature 28, 2026-09-09), reemplazando la de la
+          feature 025 — no es una corrección de esa verificación, que sigue
+          siendo válida: feature 025 confirmó contra el `.pen` (frames `WGhSI`
+          Landing ES, `UfsGV` Landing EN, ambos reales, 1280×72) que el toggle
+          de idioma queda inmediatamente ANTES del CTA — Idioma x985/CTA x1043
+          en ES, Idioma x970/CTA x1028 en EN — y por eso el markup ponía
+          `<LanguageToggle>` primero. Ahora Roberto pide explícitamente el
+          orden contrario: CTA a la izquierda, idioma a la derecha (el más a
+          la derecha de los dos). Se vuelve a mover `<LanguageToggle>` después
+          del CTA en el markup por esa instrucción directa, no porque el `.pen`
+          haya cambiado.
+        -->
+        <LanguageToggle
+          :locale="locale"
+          :href="localeSwitchHref"
+          :switch-label="localeSwitchLabel"
+        />
 
         <!--
           Without scripting the observer never runs, so the flag never changes
