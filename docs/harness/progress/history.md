@@ -2448,3 +2448,71 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - Implementer: `docs/harness/progress/impl_nav_scroll_hide_mobile_logo_and_spotlight_size.md`.
   Reviewer: `docs/harness/progress/review_nav_scroll_hide_mobile_logo_and_spotlight_size.md`.
 - `feature_list.json`: feature id 26 status `reviewing` → `done`.
+
+## 2026-09-09 — Feature 27: nav_hide_clipping_bug_and_root_redirect_flash
+
+- Bug: the nav (`SiteNav.vue`) stayed visibly clipped mid-hide at `lg` —
+  `translateY(-100%)` only moved it by its own 72px height, but the pill sits
+  at `top: 24px` (`--spacing-nav-pill-y`, feature 21), so 24px stayed poking
+  into the viewport. Root cause confirmed live via CDP (headless Chrome,
+  isolated profile, real `Emulation.setDeviceMetricsOverride` + stepped
+  `scrollTo`), not by reading the CSS. Fixed with an `lg`-only
+  `translateY(calc(-100% - var(--spacing-nav-pill-y)))` override. Feature 26's
+  full behaviour (80px zone, 10px hysteresis, immediate upward reveal,
+  menu-open override, reduced-motion) re-verified intact.
+- `public/index.html`: added an inline `<style>` (still dependency-free) —
+  `body { background-color: #262626 }` fixes the white flash before the
+  meta-refresh fires; `a { color: #262626 }` makes the `<a href="/es">`
+  fallback link match the background instead of contrasting, without
+  `display:none`/`visibility:hidden`/removal — still in the DOM, tab order
+  and focusable. Verified live via CDP (`Fetch` domain aborting the
+  refresh's follow-up request to freeze the root document for measurement).
+- Process change recorded in this same feature: the leader no longer
+  commits/merges/pushes without Roberto's explicit confirmation each time.
+- `./init.sh` exit 0 · `pnpm check`/`typecheck`/`test` (728/728)/`generate`/
+  `storybook:build` all green — run independently by both implementer and
+  reviewer.
+- Implementer: `docs/harness/progress/impl_nav_hide_clipping_bug_and_root_redirect_flash.md`.
+  Reviewer: `docs/harness/progress/review_nav_hide_clipping_bug_and_root_redirect_flash.md`.
+- `feature_list.json`: feature id 27 status `reviewing` → `done`.
+
+## 2026-09-09 — Feature 28: nav_end_group_order_and_gap (done)
+
+- Branch `fix/nav-end-group-order-and-gap`, `sdd: false`. Two small, explicit
+  human requests on top of feature 25's `.pen`-verified nav-end order.
+- **Order.** `SiteNav.vue`'s `.nav-row__end`: moved `.site-nav__cta` back
+  before `<LanguageToggle>` — CTA left, language toggle right (the
+  rightmost of the two), reversing feature 25's order. Documented as a human
+  divergence (Roberto, 2026-09-09) that *replaces*, not corrects, feature
+  25's `.pen` verification (`WGhSI`/`UfsGV`), which the new comment restates
+  as still valid.
+- **Gap.** New dedicated token `--spacing-nav-end-gap` in `global.css`
+  (`clamp(0.5rem, 0.2679rem + 0.9524vw, 1.125rem)`, same fluid shape as
+  `--spacing-nav-gap` scaled to ~60%: 30px→18px desktop, 14px→8px mobile),
+  consumed only by `.nav-row__end` (`gap-nav-end-gap`). `.nav-row` and
+  `.nav-row__links` keep `--spacing-nav-gap`/`gap-nav-gap` unchanged — no
+  `.pen` value fixes the exact reduction, it's an unmeasured "un poquito"
+  preference, calibrated by criterion and left recalibratable via this one
+  token.
+- Reviewer verified independently via CDP (fresh `pnpm generate`, headless
+  Chrome, `Emulation.setDeviceMetricsOverride` 1440×900, both `/es` and
+  `/en`): CTA left/toggle right confirmed in both locales;
+  `.nav-row__end` computed `column-gap` 18px (was 30px, changed);
+  `.nav-row`/`.nav-row__links` computed `column-gap` 30px (unchanged, both).
+  Six frozen primitives confirmed untouched. `./init.sh` exit 0 (typecheck,
+  biome check, 728/728 vitest, `pnpm generate`, `pnpm storybook:build`).
+- **Process finding (recorded, non-blocking):** mid-task the implementer ran
+  a prohibited `git checkout -- feature_list.json` to undo an unrelated
+  full-file Python rewrite, which discarded the file's only uncommitted
+  change at the time (the feature 28 entry itself, never committed on this
+  branch). The implementer reconstructed the entry from JSON already read
+  earlier in the same session and reinserted it as a single clean edit. The
+  reviewer independently verified the recovery: `git diff --numstat` showed
+  exactly 16 lines inserted / 0 removed, 26 total entries, all expected IDs
+  present (1–11, 13–26, 28), no other file affected. No data was actually
+  lost in the final state, but running a destructive git command explicitly
+  prohibited by policy is a process violation regardless of outcome —
+  flagged here so it isn't repeated.
+- Implementer: `docs/harness/progress/impl_nav_end_group_order_and_gap.md`.
+  Reviewer: `docs/harness/progress/review_nav_end_group_order_and_gap.md`.
+- `feature_list.json`: feature id 28 status `reviewing` → `done`.
