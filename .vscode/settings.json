@@ -1,4 +1,8 @@
 {
+  // tsgo (TypeScript Native Preview) cannot load the Vue language plugin,
+  // so every `.vue` import shows "Cannot find module". Keep the classic
+  // TypeScript server in this repo; `pnpm typecheck` (vue-tsc) is unaffected.
+  "typescript.experimental.useTsgo": false,
   "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
