@@ -2516,3 +2516,48 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - Implementer: `docs/harness/progress/impl_nav_end_group_order_and_gap.md`.
   Reviewer: `docs/harness/progress/review_nav_end_group_order_and_gap.md`.
 - `feature_list.json`: feature id 28 status `reviewing` → `done`.
+
+## 2026-10-05 — Feature 29: form_submission_integration (done)
+
+- `sdd: true`. Spec package `specs/029-form-submission-integration/` (58
+  tasks). Contract source of truth: `docs/business/landing/form-api-contract.md`
+  (saved by the leader with Roberto's authorization). Human gate: Roberto
+  approved OA-1..OA-6 as proposed; test sitekey corrected to the Invisible
+  `…BB` key.
+- `ContactForm` and `ApplicationForm` now submit for real through
+  `app/features/forms/logic/`: payloads built key by key (no honeypot,
+  timestamp or `cv` key; `areaRole` always a role id; `locale` read at submit
+  time), a fresh Turnstile token per request with exactly one retry on
+  `403 challenge_failed`, `validation_failed` mapped to field errors with
+  focus on the first, 500/network/timeout to the generic error with values
+  kept. Success only on `200` + `ok: true`. CV flow: `/careers/upload` → PUT
+  with the server's exact headers → `/careers` with `cvId`; any upload failure
+  applies without `cvId` and shows the approved CV note (ES/EN).
+- Config: `runtimeConfig.public.{formsApiBaseUrl, turnstileSiteKey}`, read
+  only in `logic/useFormSubmission.ts`; `.env.example` declares both.
+  The only `fetch(` in `app/` is `forms/logic/formsApiClient.ts`.
+- Review: round 1 REJECTED (replacement no-fetch guard tests weaker than the
+  016/020 ones), round 2 REJECTED (regex missed `fetch (` and calls split
+  across lines), round 3 APPROVED. Guards now `\bfetch\s*\(` at source level
+  (single call site across `app/`, none in `forms/ui/`) and artefact level
+  (exactly one call in the form chunks); the reviewer confirmed them with
+  probes, then restored the files.
+- `./init.sh` exit 0: typecheck, Biome, 72 files / 908 tests, `pnpm generate`,
+  `pnpm storybook:build`.
+- **Go-live prerequisites (owned by Roberto, not done by this feature):**
+  - The real Invisible Turnstile sitekey and the Form Submission API base URL
+    must reach the production `pnpm generate` env. The deploy workflow was
+    not touched; until it is wired, production builds fall back to the
+    `nuxt.config.ts` defaults (the Cloudflare test sitekey `…BB` and the
+    contract § 1 API URL).
+  - The backend routes still return 404 (the infra apply is half done). All
+    verification so far is against a mocked `fetch` and a fake Turnstile.
+  - The reset+execute fresh-token-per-request behavior is unverified against
+    real Cloudflare.
+  - The CV note's styling has no design frame (it reuses the body-copy role)
+    and is unconfirmed by design.
+  - Data-processing consent (OA-6) is out of scope; if it is needed before
+    go-live it is a separate feature with its own approved copy.
+- Implementer: `docs/harness/progress/impl_form_submission_integration.md`.
+  Reviewer: `docs/harness/progress/review_form_submission_integration.md`.
+- `feature_list.json`: feature id 29 status `reviewing` → `done`.

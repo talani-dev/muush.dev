@@ -611,6 +611,52 @@
       "sdd": false,
       "status": "done",
       "depends_on": [21, 25]
+    },
+    {
+      "id": 29,
+      "name": "form_submission_integration",
+      "title": "Integración real de los formularios de contacto y talento contra la Form Submission API, con Turnstile invisible y subida de CV a S3",
+      "description": "Reemplaza el onSubmit no-op de ContactForm y ApplicationForm por el envío real contra el backend ya desplegado. El contrato completo, derivado del handler, está en docs/business/landing/form-api-contract.md, que es la fuente de verdad de nombres de campo, errores y flujo. Las decisiones de Roberto del 2026-10-05 están en el § 9: sitekey de prueba de Cloudflare por ahora, widget Invisible, honeypot y tiempo mínimo solo en el cliente, y una nota en el éxito si el CV no se pudo adjuntar. La base URL y la sitekey van en runtimeConfig.public (Constitución Art. XI) y nunca inline. Turnstile es un script de terceros cargado en runtime, que es una excepción explícita a la regla de cero peticiones a terceros que branding.md fija para las fuentes. La API todavía devuelve 404 (el apply de infra está a medias), así que la verificación se hace con fetch mockeado en las pruebas unitarias.",
+      "acceptance": [
+        "La base URL de la API y la sitekey de Turnstile se leen de runtimeConfig.public; ninguna URL de API ni sitekey aparece inline en app/; .env.example declara ambas con placeholder",
+        "POST /contact y POST /careers mandan exactamente los campos del contrato (propiedades en inglés, locale es/en, company \"\" si está vacío) y ningún campo desconocido (ni honeypot, ni marca de tiempo, ni cv)",
+        "whatsapp se omite o va vacío cuando contactPreference es email",
+        "areaRole siempre es un id de rol, nunca de área",
+        "El estado de éxito solo se pinta con una respuesta 200 con ok:true; no hay éxito falso",
+        "Cada petición usa un token de Turnstile nuevo; una postulación con CV usa dos tokens distintos",
+        "Un 403 challenge_failed pide un token nuevo y reintenta exactamente una vez antes de mostrar el error",
+        "Un 400 validation_failed marca los campos de fields[] en sus inputs, no un error global",
+        "Un 500 o un error de red muestra el error genérico, conserva lo capturado y permite reintentar",
+        "Flujo con CV: /careers/upload → PUT a uploadUrl con exactamente los headers devueltos → /careers con cvId; si falla cualquier paso del upload, se envía sin cvId y el éxito muestra la nota aprobada (ES/EN)",
+        "El widget de Turnstile es Invisible: no se le muestra nada al visitante en el flujo normal",
+        "El honeypot y el tiempo mínimo bloquean el envío en el cliente y nunca llegan al payload",
+        "Paridad i18n ES/EN para todo copy nuevo",
+        "Componentes de ui/ no llaman a fetch; toda la red vive en composables de logic/ (Constitución Art. V)",
+        "Pruebas unitarias con fetch mockeado cubren: payloads, reintento por 403, mapeo de validation_failed, 500, flujo CV completo y fallo de CV",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "done",
+      "depends_on": [16, 20]
+    },
+    {
+      "id": 30,
+      "name": "english_file_names",
+      "title": "Todos los nombres de archivo en inglés: nosotros.vue → about.vue, BotonPrimario → PrimaryButton, isotipo-on-* → logomark-on-*",
+      "description": "Roberto pidió (2026-10-05) que todos los nombres de archivo estén en inglés. Un inventario de los archivos versionados fuera de docs/ y specs/ encontró solo tres grupos en español: app/pages/nosotros.vue, app/shared/ui/BotonPrimario.{vue,test.ts,stories.ts} y app/assets/logo/isotipo-on-{bone,ink,red}.svg. Nombres aprobados por Roberto: about.vue, PrimaryButton y logomark-on-*. Es un renombrado puro y no cambia comportamiento. Las URLs públicas no cambian (/es/nosotros, /en/about): solo cambia la clave interna de la ruta en nuxt.config.ts i18n.pages (nosotros → about) y cada referencia por nombre de ruta. BotonPrimario es un primitivo congelado: se renombra pero no se toca su markup ni sus estilos. Documentación: se actualizan los docs vigentes (constitution, AGENTS.md, docs/harness/*.md salvo progress/ e historial, y docs/business/, que Roberto autorizó editar solo para estos renombrados). Los specs cerrados, history.md y las entradas anteriores de feature_list.json no se tocan, porque son registro histórico.",
+      "acceptance": [
+        "Los archivos se mueven con git mv: app/pages/about.vue, app/shared/ui/PrimaryButton.{vue,test.ts,stories.ts}, app/assets/logo/logomark-on-{bone,ink,red}.svg; los nombres viejos ya no existen",
+        "Ningún archivo en app/, tests/, i18n/, .storybook/, .github/ ni nuxt.config.ts referencia BotonPrimario, isotipo- ni la ruta por nombre 'nosotros' (las cadenas de URL /nosotros siguen existiendo donde son la ruta pública en español)",
+        "nuxt.config.ts i18n.pages usa la clave about con es:'/nosotros' y en:'/about'",
+        ".output/public tiene es/nosotros/index.html y en/about/index.html, igual que antes, y el toggle de idioma sigue resolviendo entre ellas",
+        "Cero cambios de comportamiento o visuales: el markup y los estilos de PrimaryButton son idénticos a los de BotonPrimario salvo el nombre",
+        "El título de la story en Storybook usa PrimaryButton",
+        "Los docs vigentes se actualizan a los nombres nuevos; specs/ de features cerradas, history.md y las entradas anteriores de feature_list.json no se tocan",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "pending",
+      "depends_on": [29]
     }
   ]
 }
