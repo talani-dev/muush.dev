@@ -31,6 +31,11 @@ export type {
   IdentityOption,
 } from './data/contactFields'
 export type {
+  ApplicationSubmitter,
+  ContactSubmitter,
+  SubmissionOutcome,
+} from './data/submissionContract'
+export type {
   ApplicationSubmitState,
   UseApplicationFormReturn,
 } from './logic/useApplicationForm'
@@ -42,5 +47,9 @@ export type {
 } from './logic/useContactForm'
 export { useContactForm } from './logic/useContactForm'
 export { useContactFormContent } from './logic/useContactFormContent'
+export {
+  useApplicationSubmitter,
+  useContactSubmitter,
+} from './logic/useFormSubmission'
 export { default as ApplicationForm } from './ui/ApplicationForm.vue'
 export { default as ContactForm } from './ui/ContactForm.vue'

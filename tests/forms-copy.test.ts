@@ -11,9 +11,8 @@ import { describe, expect, it } from 'vitest'
  * The six identity options are checked verbatim against the catalogue
  * Roberto gave directly (feature 24, 2026-09-08), which superseded the
  * previous five-option set from `content.md`; the success/error copy
- * against `ui-map.md` § 7 — both approved copy that ships today even though
- * the two states it belongs to are unreachable from the live page (spec
- * FR-016).
+ * against `ui-map.md` § 7 — approved copy, reachable on the live page since
+ * feature 029.
  */
 interface ContactFormsCopy {
   fields: {
@@ -42,7 +41,10 @@ interface ContactFormsCopy {
   }
   submit: string
   sending: string
-  success: { title: string }
+  success: {
+    title: string
+    channel: Record<'email' | 'whatsapp', string>
+  }
   error: { title: string; fallback: string }
 }
 
@@ -126,16 +128,26 @@ describe('forms copy · forms.contact.*', () => {
     })
   })
 
-  it('should carry the success and error copy verbatim in each locale, unreachable or not', () => {
-    /* `ui-map.md` § 7, verbatim. The `@` renders correctly at runtime via the
-       `{'@'}` escape (`rules.md` § R26) — this file reads the raw JSON, so
-       the literal escape sequence is what the fixture below matches. */
+  it('should carry the success and error copy verbatim in each locale', () => {
+    /* `ui-map.md` § 7, verbatim, with its `[correo/WhatsApp]` bracket read as
+       the visitor's chosen channel (feature 029, spec OA-4, approved
+       2026-10-05). The `@` renders correctly at runtime via the `{'@'}`
+       escape (`rules.md` § R26) — this file reads the raw JSON, so the
+       literal escape sequence is what the fixture below matches. */
     expect(es.forms.contact.success.title).toBe(
-      'Listo, ya lo recibimos. Te respondemos por [correo/WhatsApp] en menos de 24 horas hábiles.'
+      'Listo, ya lo recibimos. Te respondemos por {channel} en menos de 24 horas hábiles.'
     )
     expect(en.forms.contact.success.title).toBe(
-      "Got it. We'll get back to you by [email/WhatsApp] within one business day."
+      "Got it. We'll get back to you by {channel} within one business day."
     )
+    expect(es.forms.contact.success.channel).toEqual({
+      email: 'correo',
+      whatsapp: 'WhatsApp',
+    })
+    expect(en.forms.contact.success.channel).toEqual({
+      email: 'email',
+      whatsapp: 'WhatsApp',
+    })
     expect(es.forms.contact.error.title).toContain('No pudimos enviarlo.')
     expect(es.forms.contact.error.fallback).toBe("support{'@'}muush.dev")
     expect(en.forms.contact.error.fallback).toBe("support{'@'}muush.dev")

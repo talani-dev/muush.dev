@@ -37,6 +37,40 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/i18n', '@nuxt/fonts'],
 
   /*
+   * Feature 029 · the Form Submission API (docs/business/landing/
+   * form-api-contract.md). Both values are PUBLIC identifiers, not secrets:
+   * the API has no credential at all (contract § 1) and a Turnstile sitekey is
+   * printed into every page by design. They still live here and never inline
+   * under `app/` (Constitution Article XI, spec FR-001), so the planned move
+   * to `api.muush.dev` and the real sitekey are configuration changes, not
+   * code changes.
+   *
+   * The site is static: these are baked into the generated HTML at
+   * `pnpm generate` time, so the override has to be present in the build
+   * environment, not the serving one (research R1):
+   *   NUXT_PUBLIC_FORMS_API_BASE_URL · NUXT_PUBLIC_TURNSTILE_SITE_KEY
+   *
+   * - `formsApiBaseUrl` defaults to the deployed API of contract § 1, so a
+   *   build without `.env` still targets the right backend.
+   * - `turnstileSiteKey` defaults to Cloudflare's always-pass INVISIBLE test
+   *   key (contract § 9, spec OA-5; `…AA` is the visible one). The real server
+   *   rejects test-key tokens, so a production build that falls back to this
+   *   default ships forms that always fail: the real Invisible sitekey must
+   *   reach the production build (Roberto owns that wiring).
+   *
+   * Turnstile's script (`challenges.cloudflare.com`) is a deliberate, scoped
+   * exception to the "no third-party request at runtime" practice recorded
+   * above for fonts: loaded only in the browser, only on a page with a form,
+   * only after the visitor engages it (spec FR-021, plan Complexity Tracking).
+   */
+  runtimeConfig: {
+    public: {
+      formsApiBaseUrl: 'https://ma8y4vvt58.execute-api.us-east-1.amazonaws.com',
+      turnstileSiteKey: '1x00000000000000000000BB',
+    },
+  },
+
+  /*
    * The brand type, self-hosted. `branding.md` § Tipografía grants Poppins to
    * the logo/wordmark alone, at 600, and gives everything else to Instrument
    * Sans at 400 / 500 / 600. The set is closed: the 32 type tokens in

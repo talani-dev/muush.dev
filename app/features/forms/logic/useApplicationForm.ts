@@ -1,5 +1,6 @@
-import { type ComputedRef, computed, nextTick, type Ref, ref } from 'vue'
+import { type ComputedRef, computed, type Ref, ref } from 'vue'
 import {
+  APPLICATION_FIELD_ORDER,
   type ApplicationFieldId,
   type ApplicationFormErrors,
   type ApplicationFormValues,
@@ -12,41 +13,49 @@ import {
   WHATSAPP_MX_DIGIT_COUNT,
 } from '@/features/forms/data/applicationFields'
 import type { ContactPreference } from '@/features/forms/data/contactFields'
+import type { ApplicationSubmitter } from '@/features/forms/data/submissionContract'
+import { APPLICATION_SERVER_ERROR_KEYS } from './serverFieldErrors'
+import { type SubmitState, useFormSubmitState } from './useFormSubmitState'
 
 /**
- * The application form's whole client-side state machine — the literal
- * extension of `useContactForm.ts`'s "no fake success" guarantee to a file
- * field (plan.md D-1, mirroring feature 16's D-2).
+ * The application form's client-side state: its values, its validation
+ * rules, the WhatsApp branch and the CV field. Submitting is
+ * `useFormSubmitState`'s job, shared with the contact form.
  *
- * `ApplicationSubmitState` below has exactly two members, `'idle' |
- * 'invalid'`. There is no `sending`, no `success`, no `server-error`
- * anywhere in this file: no local variable, no branch, no timer that could
- * ever assign one of those three strings to `state`. `ApplicationForm.vue`'s
- * `previewState` prop is the **only** place those three strings exist in the
- * shipped feature, and it is a Storybook-only prop this composable never
- * reads, never sets and does not know exists. A reviewer can confirm the
- * guarantee by grepping this file for `sending`, `success` or `server-error`
- * and finding nothing.
+ * Until feature 029 this file guaranteed that no `sending`/`success`/
+ * `server-error` existed here. That guarantee is replaced, not dropped (spec
+ * FR-011/FR-012): `success` is produced only from a classified `ok`
+ * response, in `submissionFlows.ts`.
  *
- * `onSubmit` runs **no** `await`, no `fetch`, no `XMLHttpRequest`, no
- * `FormData`, no `setTimeout` standing in for a network round-trip (FR-003,
- * FR-011). Its only real effect on a passing validation is: nothing further.
- * `onCvChange` stores the raw `File | null` with no serialization — never
- * read into a `FormData`, never base64-encoded, never kept as an object URL
- * past this ref's own lifetime.
+ * The CV is sent only through the presigned S3 upload in
+ * `submissionFlows.ts`, never inside a JSON payload, never as `FormData`.
+ * `cvNoteVisible` is true only after a success in which that upload failed
+ * (spec FR-016).
  *
- * Plain Vue, no Nuxt composable — same discipline `useContactForm.ts`
- * documents, so this renders in a bare `mount()` and in Storybook with no
- * runtime present.
+ * Plain Vue, no Nuxt composable, so it runs in a bare `mount()` and in
+ * Storybook with no runtime present.
  */
-export type ApplicationSubmitState = 'idle' | 'invalid'
+export type ApplicationSubmitState = SubmitState
+
+export interface UseApplicationFormOptions {
+  submitter: ApplicationSubmitter
+  /** The form's Turnstile host element (a template ref). */
+  challengeHost?: Readonly<Ref<HTMLElement | null>>
+  initial?: Partial<ApplicationFormValues>
+  /** Injectable clock for the minimum fill time. */
+  now?: () => number
+}
 
 export interface UseApplicationFormReturn {
   values: Ref<ApplicationFormValues>
   errors: ComputedRef<ApplicationFormErrors>
   state: Ref<ApplicationSubmitState>
   firstInvalidFieldId: ComputedRef<ApplicationFieldId | undefined>
-  onSubmit: (event: Event) => void
+  cvNoteVisible: ComputedRef<boolean>
+  honeypot: Ref<string>
+  markInteractive: () => void
+  onEngage: () => void
+  onSubmit: (event: Event) => Promise<void>
   onContactPreferenceChange: (value: ContactPreference) => void
   onCvChange: (file: File | null) => void
 }
@@ -134,42 +143,31 @@ function isWellFormedUrl(value: string): boolean {
 }
 
 export function useApplicationForm(
-  initial?: Partial<ApplicationFormValues>
+  options: UseApplicationFormOptions
 ): UseApplicationFormReturn {
   const values = ref<ApplicationFormValues>({
     ...initialApplicationFormValues(),
-    ...initial,
+    ...options.initial,
   }) as Ref<ApplicationFormValues>
 
-  const state = ref<ApplicationSubmitState>('idle')
-  const errors = computed<ApplicationFormErrors>(() =>
-    validateApplicationForm(values.value)
-  )
-
-  const firstInvalidFieldId = computed<ApplicationFieldId | undefined>(() => {
-    const [firstKey] = Object.keys(errors.value)
-    return firstKey as ApplicationFieldId | undefined
+  const submission = useFormSubmitState({
+    values,
+    validate: validateApplicationForm,
+    fieldOrder: APPLICATION_FIELD_ORDER,
+    serverErrorKeys: APPLICATION_SERVER_ERROR_KEYS,
+    submitter: options.submitter,
+    challengeHost: options.challengeHost ?? ref(null),
+    now: options.now,
   })
 
-  function onSubmit(event: Event): void {
-    event.preventDefault()
-
-    if (Object.keys(errors.value).length === 0) {
-      /* Validation passed. Nothing further: no request, no state change
-         beyond staying `idle` (FR-003, FR-005). */
-      state.value = 'idle'
-      return
-    }
-
-    state.value = 'invalid'
-    void focusFirstInvalidField(firstInvalidFieldId.value)
-  }
+  const cvNoteVisible = computed(
+    () => submission.state.value === 'success' && !submission.cvAttached.value
+  )
 
   /**
    * Resets `whatsapp` to `''` the moment the visitor leaves that branch, so a
-   * later re-mount of the field always starts empty — the value was never
-   * retained, rather than reset on unmount (FR-013, spec US2), identical
-   * mechanism to `useContactForm.ts`.
+   * later re-mount of the field always starts empty (FR-013, spec US2),
+   * identical mechanism to `useContactForm.ts`.
    */
   function onContactPreferenceChange(value: ContactPreference): void {
     values.value.contactPreference = value
@@ -178,35 +176,23 @@ export function useApplicationForm(
     }
   }
 
-  /**
-   * Stores the raw `File | null` — the whole of it. No `FormData`, no
-   * `fetch`, no object URL kept past this ref's own lifetime (FR-011).
-   */
+  /** Stores the raw `File | null`. It leaves the browser only through the
+   * presigned upload of `submissionFlows.ts`. */
   function onCvChange(file: File | null): void {
     values.value.cv = file
   }
 
   return {
     values,
-    errors,
-    state,
-    firstInvalidFieldId,
-    onSubmit,
+    errors: submission.errors,
+    state: submission.state,
+    firstInvalidFieldId: submission.firstInvalidFieldId,
+    cvNoteVisible,
+    honeypot: submission.honeypot,
+    markInteractive: submission.markInteractive,
+    onEngage: submission.onEngage,
+    onSubmit: submission.onSubmit,
     onContactPreferenceChange,
     onCvChange,
   }
-}
-
-/**
- * Moves focus to the first invalid field's control, in the next tick so the
- * error markup (and the field, in the WhatsApp case) has already rendered
- * (`ui-map.md` § 7's "foco al primer error", reused for this form).
- */
-async function focusFirstInvalidField(
-  fieldId: ApplicationFieldId | undefined
-): Promise<void> {
-  if (!fieldId) return
-  await nextTick()
-  const control = document.getElementById(fieldId)
-  control?.focus()
 }

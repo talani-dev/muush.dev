@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import type { ContactFormContent } from '@/features/forms'
+import type { ContactFormContent, ContactSubmitter } from '@/features/forms'
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import ContactSection from './ContactSection.vue'
 
@@ -61,14 +61,24 @@ const spanishForm: ContactFormContent = {
   submit: 'Enviar',
   sending: 'Enviando…',
   success: {
-    title:
-      'Listo, ya lo recibimos. Te respondemos por correo en menos de 24 horas hábiles.',
+    titleByChannel: {
+      email:
+        'Listo, ya lo recibimos. Te respondemos por correo en menos de 24 horas hábiles.',
+      whatsapp:
+        'Listo, ya lo recibimos. Te respondemos por WhatsApp en menos de 24 horas hábiles.',
+    },
   },
   error: {
     title:
       'No pudimos enviarlo. Escríbenos a support@muush.dev o por WhatsApp y lo resolvemos.',
     fallback: 'support@muush.dev',
   },
+}
+
+/** Never reaches the network: the section only passes it through. */
+const formSubmitter: ContactSubmitter = {
+  engage: () => undefined,
+  submit: async () => ({ kind: 'success', cvAttached: true }),
 }
 
 const spanish = {
@@ -79,6 +89,7 @@ const spanish = {
   altQuestion: '¿Ya sabes qué necesitas?',
   callHref: CALL_BOOKING_URL,
   formContent: spanishForm,
+  formSubmitter,
 }
 
 export const Desktop: Story = {

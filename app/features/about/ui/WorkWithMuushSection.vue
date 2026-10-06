@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { ApplicationForm, type ApplicationFormContent } from '@/features/forms'
+import {
+  ApplicationForm,
+  type ApplicationFormContent,
+  type ApplicationSubmitter,
+} from '@/features/forms'
 import Pill from '@/shared/ui/Pill.vue'
 import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/SectionGlow.vue'
@@ -54,6 +58,9 @@ interface Props {
   headline: string
   body: string
   formContent: ApplicationFormContent
+  /** Created by the page (`useApplicationSubmitter()`) and passed through
+   * untouched: this section never reaches the network (feature 029). */
+  formSubmitter: ApplicationSubmitter
 }
 
 defineProps<Props>()
@@ -91,7 +98,11 @@ defineProps<Props>()
         <p class="font-instrument text-body-sm text-ink-100">{{ body }}</p>
       </div>
 
-      <ApplicationForm class="work-layout__form" :content="formContent" />
+      <ApplicationForm
+        class="work-layout__form"
+        :content="formContent"
+        :submitter="formSubmitter"
+      />
     </div>
   </section>
 </template>

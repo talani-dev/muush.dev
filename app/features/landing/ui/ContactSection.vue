@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { ContactForm, type ContactFormContent } from '@/features/forms'
+import {
+  ContactForm,
+  type ContactFormContent,
+  type ContactSubmitter,
+} from '@/features/forms'
 import LinkArrow from '@/shared/ui/LinkArrow.vue'
 import Pill from '@/shared/ui/Pill.vue'
 import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
@@ -73,6 +77,9 @@ interface Props {
   altQuestion: string
   callHref: string
   formContent: ContactFormContent
+  /** Created by the page (`useContactSubmitter()`) and passed through
+   * untouched: this section never reaches the network (feature 029). */
+  formSubmitter: ContactSubmitter
 }
 
 const {
@@ -83,6 +90,7 @@ const {
   altQuestion,
   callHref,
   formContent,
+  formSubmitter,
 } = defineProps<Props>()
 </script>
 
@@ -118,7 +126,11 @@ const {
         <p class="font-instrument text-body-sm text-ink-100">{{ body }}</p>
       </div>
 
-      <ContactForm class="contact-layout__form" :content="formContent" />
+      <ContactForm
+        class="contact-layout__form"
+        :content="formContent"
+        :submitter="formSubmitter"
+      />
 
       <div
         class="contact-layout__alt flex flex-col gap-contact-text-gap border-t border-hairline-footer pt-footer-bar-gap"

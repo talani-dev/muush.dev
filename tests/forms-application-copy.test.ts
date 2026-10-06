@@ -48,7 +48,7 @@ interface ApplicationFormsCopy {
   }
   submit: string
   sending: string
-  success: { title: string }
+  success: { title: string; cvNote: string }
   error: { title: string; fallback: string }
 }
 
@@ -197,13 +197,24 @@ describe('forms copy · forms.application.*', () => {
     })
   })
 
-  it('should carry the success copy verbatim in each locale, unreachable or not', () => {
+  it('should carry the success copy verbatim in each locale', () => {
     /* `ui-map.md` § 9, verbatim. */
     expect(es.forms.application.success.title).toBe(
       'Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes.'
     )
     expect(en.forms.application.success.title).toBe(
       "Thanks, we've got your profile. We'll reach out when there's a project that fits."
+    )
+  })
+
+  it('should carry the approved CV note verbatim, with the "@" escaped, in each locale', () => {
+    /* Feature 029, spec OA-2, approved at the gate on 2026-10-05. The `@` is
+       written `{'@'}` (`rules.md` § R26); this file reads the raw JSON. */
+    expect(es.forms.application.success.cvNote).toBe(
+      "Tu perfil llegó, pero no pudimos adjuntar tu CV. Si quieres, mándalo a support{'@'}muush.dev."
+    )
+    expect(en.forms.application.success.cvNote).toBe(
+      "Your profile came through, but we couldn't attach your CV. If you'd like, send it to support{'@'}muush.dev."
     )
   })
 

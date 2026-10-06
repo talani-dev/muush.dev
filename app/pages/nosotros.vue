@@ -5,7 +5,10 @@ import {
   useWorkContent,
   WorkWithMuushSection,
 } from '@/features/about'
-import { useApplicationFormContent } from '@/features/forms'
+import {
+  useApplicationFormContent,
+  useApplicationSubmitter,
+} from '@/features/forms'
 
 /**
  * About — `/es/nosotros` and `/en/about` from this one file. The translated
@@ -30,6 +33,8 @@ const { t } = useI18n()
 const aboutHero = useAboutHeroContent()
 const work = useWorkContent()
 const applicationFormContent = useApplicationFormContent()
+/* Feature 029: same seam as `index.vue`'s `useContactSubmitter()`. */
+const applicationSubmitter = useApplicationSubmitter()
 
 useHead({ title: t('pages.about.title') })
 </script>
@@ -40,5 +45,6 @@ useHead({ title: t('pages.about.title') })
     class="mt-section-gap"
     v-bind="work"
     :form-content="applicationFormContent"
+    :form-submitter="applicationSubmitter"
   />
 </template>

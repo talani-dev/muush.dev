@@ -67,6 +67,19 @@ export interface ContactFormValues {
 
 export type ContactFormErrors = Partial<Record<ContactFieldId, string>>
 
+/** The form's field order — the order errors are merged in, so "focus the
+ * first invalid field" stays `Object.keys(errors)[0]` once server marks join
+ * the client errors (feature 029, data-model § 4.1). */
+export const CONTACT_FIELD_ORDER: readonly ContactFieldId[] = [
+  'name',
+  'email',
+  'company',
+  'identity',
+  'need',
+  'contactPreference',
+  'whatsapp',
+]
+
 /** `docs/business/landing/ui-map.md` § 7: "Mínimo 2 caracteres". */
 export const NAME_MIN_LENGTH = 2
 
@@ -113,9 +126,11 @@ export interface ContactFormContent {
     whatsapp: ContactFormFieldContent
   }
   submit: string
-  /** Story-only copy — the shipped page never reaches this state (FR-014). */
+  /** The submit label while a request is in flight (feature 029, FR-019). */
   sending: string
-  success: { title: string }
+  /** The confirmation with the visitor's chosen channel already filled in
+   * (`ui-map.md` § 7, spec OA-4) — one variant per preference. */
+  success: { titleByChannel: Record<ContactPreference, string> }
   error: { title: string; fallback: string }
 }
 

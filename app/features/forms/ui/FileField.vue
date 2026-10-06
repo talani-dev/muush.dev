@@ -9,15 +9,15 @@ import { CV_MAX_BYTES } from '@/features/forms/data/applicationFields'
  * presentational only (Constitution Article V): no composable, no i18n, and
  * — the point of this component — **no destination**.
  *
- * ## The structurally-enforced dead end (plan.md D-1)
+ * ## No destination here
  *
- * There is no `FormData`, no `fetch`/`XMLHttpRequest`, no object URL kept
- * past this component's own lifetime. Selecting a file only reads the
- * native `File` object's own `.type`/`.name`/`.size` — synchronously, no
- * `await` — to decide whether to emit it as `modelValue` or to show a
- * format/size error instead. Grep this file for `FormData`, `fetch` or
- * `XMLHttpRequest` and find nothing, the same guarantee `ContactForm.vue`'s
- * doc comment already establishes for the network round-trip.
+ * This component sends nothing and builds no request body: no object URL is
+ * kept past its own lifetime. Selecting a file only reads the native `File`
+ * object's own `.type`/`.name`/`.size`, synchronously, to decide whether to
+ * emit it as `modelValue` or to show a format/size error instead. Since
+ * feature 029 the chosen file is uploaded on submit by
+ * `logic/submissionFlows.ts` through a presigned S3 PUT; `ui/` never touches
+ * the network (Constitution Article V, `tests/forms-config.test.ts`).
  *
  * `design-extract.md` § FormField's "upload" variant: fill `#FBF8F60A`
  * (bone-100 @ ~4%) and stroke `#FBF8F229` (bone-100 @ ~16%) — both close

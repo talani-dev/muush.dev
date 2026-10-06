@@ -43,7 +43,8 @@ export interface ApplicationFormValues {
   portfolio: string
   /** `''` is valid — optional field (FR-009). */
   linkedin: string
-  /** Never serialized, never sent (FR-011). */
+  /** Never part of a JSON payload; uploaded only through the presigned S3
+   * PUT of `logic/submissionFlows.ts` (feature 029). */
   cv: File | null
   contactPreference: ContactPreference
   /** `''` unless `contactPreference === 'whatsapp'` (FR-013). */
@@ -51,6 +52,18 @@ export interface ApplicationFormValues {
 }
 
 export type ApplicationFormErrors = Partial<Record<ApplicationFieldId, string>>
+
+/** Same role as `contactFields.ts`'s `CONTACT_FIELD_ORDER` (feature 029). */
+export const APPLICATION_FIELD_ORDER: readonly ApplicationFieldId[] = [
+  'name',
+  'email',
+  'areaRole',
+  'portfolio',
+  'linkedin',
+  'cv',
+  'contactPreference',
+  'whatsapp',
+]
 
 export function initialApplicationFormValues(): ApplicationFormValues {
   return {
@@ -109,7 +122,7 @@ export type AreaId =
 
 export interface RoleCatalogEntry {
   area: AreaId
-  roleIds: string[]
+  roleIds: readonly string[]
 }
 
 /**
@@ -123,7 +136,7 @@ export interface RoleCatalogEntry {
  * role ("Infrastructure y Cloud", "Performance y pauta") — confirmed
  * explicitly with Roberto, never split into two roles.
  */
-export const ROLE_CATALOG: RoleCatalogEntry[] = [
+export const ROLE_CATALOG = [
   {
     area: 'it',
     roleIds: [
@@ -162,7 +175,19 @@ export const ROLE_CATALOG: RoleCatalogEntry[] = [
     area: 'creative',
     roleIds: ['design3d', 'graphicDesign', 'blogStorytelling'],
   },
-]
+] as const satisfies readonly RoleCatalogEntry[]
+
+/**
+ * The 24 role ids, flattened from `ROLE_CATALOG` — the exact list the API
+ * accepts in `areaRole` (form-api-contract.md § 5). `as const` above is what
+ * makes `RoleId` a literal union instead of `string`, and
+ * `logic/submissionPayloads.test.ts` asserts this list equals the contract's
+ * literally, so a catalogue edit that diverges from the server fails CI
+ * (contract § 7.7).
+ */
+export const ROLE_IDS = ROLE_CATALOG.flatMap(entry => entry.roleIds)
+
+export type RoleId = (typeof ROLE_IDS)[number]
 
 /**
  * What `logic/`/`ui/` receive: already-translated field content, resolved by
@@ -201,8 +226,10 @@ export interface ApplicationFormContent {
     whatsapp: ApplicationFormFieldContent
   }
   submit: string
-  /** Story-only copy — the shipped page never reaches this state (FR-004). */
+  /** The submit label while a request is in flight (feature 029, FR-019). */
   sending: string
-  success: { title: string }
+  /** `cvNote` is shown under `title` only when a chosen CV did not attach
+   * (contract § 9, spec OA-2). */
+  success: { title: string; cvNote: string }
   error: { title: string; fallback: string }
 }
