@@ -1,6 +1,9 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import type { ApplicationFormContent } from '@/features/forms'
+import type {
+  ApplicationFormContent,
+  ApplicationSubmitter,
+} from '@/features/forms'
 import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/SectionGlow.vue'
 import WorkWithMuushSection from './WorkWithMuushSection.vue'
@@ -69,8 +72,17 @@ const formContent: ApplicationFormContent = {
   },
   submit: 'Enviar',
   sending: 'Enviando…',
-  success: { title: 'Gracias, ya tenemos tu perfil.' },
+  success: {
+    title: 'Gracias, ya tenemos tu perfil.',
+    cvNote: 'No pudimos adjuntar tu CV.',
+  },
   error: { title: 'No pudimos enviarlo.', fallback: 'support@muush.dev' },
+}
+
+/** Never reaches the network: the section only passes it through. */
+const formSubmitter: ApplicationSubmitter = {
+  engage: () => undefined,
+  submit: async () => ({ kind: 'success', cvAttached: true }),
 }
 
 const props = {
@@ -78,6 +90,7 @@ const props = {
   headline: 'Tú eliges en qué proyectos entras, con quién y desde dónde.',
   body: 'Si trabajas en tecnología, diseño o producción, cuéntanos qué haces.',
   formContent,
+  formSubmitter,
 }
 
 function mountSection() {

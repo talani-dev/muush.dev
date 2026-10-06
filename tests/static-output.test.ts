@@ -1240,8 +1240,11 @@ describe('static output · the landing contact section', () => {
   /*
    * Feature 016. Claims only the artefact can settle: both dangling CTAs
    * resolve to a real, existing section, the form ships `novalidate` and a
-   * native submit with no `action`, and no code path in the compiled bundle
-   * reaches a network call from the form's submit handler (SC-002, SC-004).
+   * native submit with no `action`, and the compiled form chunk never uses
+   * XMLHttpRequest (SC-002, SC-004). Feature 029 superseded the original
+   * "no network call" claim: the form now submits through the single
+   * `fetch(` in `forms/logic/formsApiClient.ts`, which is guarded below in
+   * "form submission (feature 029)" and in `tests/forms-config.test.ts`.
    */
   function contactSection(route: RoutePath): string {
     const html = documentFor(route)
@@ -1318,12 +1321,15 @@ describe('static output · the landing contact section', () => {
     expect(glowTokens.filter(token => token.includes('contact'))).toEqual([])
   })
 
-  it('should reach no network call from the compiled form chunk', () => {
+  it('should ship no XMLHttpRequest from the compiled form chunk', () => {
     /*
-     * FR-014, this feature's central guarantee, checked on the shipped
-     * JavaScript rather than only on the composable's source: the built
-     * chunk containing `useContactForm`'s compiled code carries no
-     * `fetch(`, `XMLHttpRequest` or literal endpoint URL.
+     * Feature 016's "no network call at all" guarantee is superseded by
+     * feature 029 (spec FR-011): the form now submits, through `fetch` in
+     * `forms/logic/formsApiClient.ts`. What still holds is that nothing
+     * reaches for XMLHttpRequest. The no-fake-success guarantee moved to the
+     * flow and client unit tests (success only on 200 + ok:true), and
+     * FR-025 (no fetch under `ui/`) is asserted on the sources in
+     * `tests/forms-config.test.ts`.
      */
     const scripts = everyEmittedFile(join(OUTPUT, '_nuxt'))
       .filter(path => path.endsWith('.js'))
@@ -1335,7 +1341,6 @@ describe('static output · the landing contact section', () => {
 
     expect(scripts.length).toBeGreaterThan(0)
     for (const source of scripts) {
-      expect(source).not.toMatch(/fetch\(/)
       expect(source).not.toContain('XMLHttpRequest')
     }
   })
@@ -1347,8 +1352,12 @@ describe('static output · the about work section', () => {
    * the real section on both localized About documents (no more placeholder
    * heading), the eight-field form ships `novalidate` and a native submit
    * with no `action`, the three reused glows paint without breaking the
-   * paint order, and no code path in the compiled bundle — for either the
-   * form or the CV field specifically — reaches a network call.
+   * paint order, and the compiled application-form chunk never serializes
+   * the CV as FormData or an object URL and never uses XMLHttpRequest.
+   * Feature 029 superseded the original "no network call" claim: the form
+   * and the CV now leave the browser, but only through the single `fetch(`
+   * in `forms/logic/formsApiClient.ts`, which is guarded below in "form
+   * submission (feature 029)" and in `tests/forms-config.test.ts`.
    */
   function workSection(route: RoutePath): string {
     const html = documentFor(route)
@@ -1422,13 +1431,12 @@ describe('static output · the about work section', () => {
     expect(glowTokens.filter(token => token.includes('work'))).toEqual([])
   })
 
-  it('should reach no network call from the compiled application-form chunk, CV field included', () => {
+  it('should never serialize the CV as FormData or an object URL in the compiled application-form chunk', () => {
     /*
-     * FR-003/FR-011, this feature's central guarantee, extended from
-     * feature 016's contact-form check to the file field specifically: the
-     * built chunk containing `ApplicationForm`/`useApplicationForm`/
-     * `FileField`'s compiled code carries no `fetch(`, `XMLHttpRequest`,
-     * `FormData` construction or `createObjectURL`.
+     * Feature 020's "no network call" guarantee is superseded by feature 029
+     * (spec FR-011): the CV now leaves the browser, but only as the raw body
+     * of the presigned S3 PUT (contract § 4) — never as `FormData`, never as
+     * an object URL, never through XMLHttpRequest.
      */
     const scripts = everyEmittedFile(join(OUTPUT, '_nuxt'))
       .filter(path => path.endsWith('.js'))
@@ -1442,10 +1450,91 @@ describe('static output · the about work section', () => {
 
     expect(scripts.length).toBeGreaterThan(0)
     for (const source of scripts) {
-      expect(source).not.toMatch(/fetch\(/)
       expect(source).not.toContain('XMLHttpRequest')
       expect(source).not.toMatch(/new FormData\(/)
       expect(source).not.toContain('createObjectURL')
+    }
+  })
+})
+
+describe('static output · form submission (feature 029)', () => {
+  const FORM_PAGES = ['/es', '/en', '/es/nosotros', '/en/about'] as const
+
+  it('should render a form on all four pages that carry one', () => {
+    for (const route of FORM_PAGES) {
+      expect(documentFor(route), route).toMatch(/<form[^>]*novalidate/)
+    }
+  })
+
+  it('should put no Turnstile script in any generated page (it loads only after engagement)', () => {
+    /* Spec FR-021: the third-party script is inserted by the browser on the
+       visitor's first focus in the form, never prerendered. */
+    for (const route of ROUTES) {
+      const scripts = documentFor(route).match(/<script[^>]*>/g) ?? []
+      for (const tag of scripts) {
+        expect(tag, route).not.toContain('challenges.cloudflare.com')
+      }
+    }
+  })
+
+  it('should render no preview state in the generated forms', () => {
+    for (const route of FORM_PAGES) {
+      const html = documentFor(route)
+      expect(html, route).not.toMatch(/preview-?state/i)
+      expect(html, route).not.toContain('role="status"')
+      expect(html, route).not.toContain('role="alert"')
+    }
+  })
+
+  it('should compile exactly one fetch( and no API host literal into the form chunk(s)', () => {
+    /*
+     * The artefact half of the network guard (the source half is in
+     * `tests/forms-config.test.ts`). The client's single call site,
+     * `globalThis.fetch(` in `forms/logic/formsApiClient.ts`, is bundled
+     * into the form chunk(s). One more `fetch(` there means a second call
+     * site reached the browser.
+     *
+     * The host check is scoped to the form chunk(s) ON PURPOSE. The base
+     * URL default lives in `runtimeConfig.public.formsApiBaseUrl`
+     * (`nuxt.config.ts`), so the host legitimately appears in the
+     * serialized Nuxt config and payload in the generated HTML. It must
+     * reach the browser only that way, never as a literal compiled into the
+     * form code. The host is read from `nuxt.config.ts`, so changing the
+     * default keeps this test in step.
+     */
+    const baseUrl = readFileSync(
+      join(process.cwd(), 'nuxt.config.ts'),
+      'utf8'
+    ).match(/formsApiBaseUrl:\s*'([^']+)'/)?.[1]
+    expect(baseUrl).toBeDefined()
+    const host = new URL(baseUrl ?? '').host
+    expect(host.length).toBeGreaterThan(0)
+
+    const formChunks = everyEmittedFile(join(OUTPUT, '_nuxt'))
+      .filter(path => path.endsWith('.js'))
+      .map(path => readFileSync(path, 'utf8'))
+      .filter(source =>
+        /ContactForm|ApplicationForm|useContactForm|useApplicationForm|FileField/.test(
+          source
+        )
+      )
+
+    expect(formChunks.length).toBeGreaterThan(0)
+    const fetchCalls = formChunks.reduce(
+      (count, source) => count + [...source.matchAll(/\bfetch\s*\(/g)].length,
+      0
+    )
+    expect(fetchCalls).toBe(1)
+    for (const source of formChunks) {
+      expect(source.includes(host)).toBe(false)
+    }
+  })
+
+  it('should render the honeypot hidden from assistive technology on every form page', () => {
+    for (const route of FORM_PAGES) {
+      expect(documentFor(route), route).toMatch(
+        /<div aria-hidden="true" class="sr-only"><input type="text" name="muush_website"[^>]*tabindex="-1"[^>]*autocomplete="off"/
+      )
     }
   })
 })

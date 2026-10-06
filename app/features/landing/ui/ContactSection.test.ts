@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import type { ContactFormContent } from '@/features/forms'
+import type { ContactFormContent, ContactSubmitter } from '@/features/forms'
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/SectionGlow.vue'
@@ -50,8 +50,19 @@ const formContent: ContactFormContent = {
   },
   submit: 'Enviar',
   sending: 'Enviando…',
-  success: { title: 'Listo, ya lo recibimos.' },
+  success: {
+    titleByChannel: {
+      email: 'Listo, por correo.',
+      whatsapp: 'Listo, por WhatsApp.',
+    },
+  },
   error: { title: 'No pudimos enviarlo.', fallback: 'support@muush.dev' },
+}
+
+/** Never reaches the network: the section only passes it through. */
+const formSubmitter: ContactSubmitter = {
+  engage: () => undefined,
+  submit: async () => ({ kind: 'success', cvAttached: true }),
 }
 
 const props = {
@@ -62,6 +73,7 @@ const props = {
   altQuestion: '¿Ya sabes qué necesitas?',
   callHref: CALL_BOOKING_URL,
   formContent,
+  formSubmitter,
 }
 
 function mountSection() {

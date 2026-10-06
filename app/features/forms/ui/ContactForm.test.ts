@@ -1,6 +1,15 @@
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vitest'
-import type { ContactFormContent } from '@/features/forms/data/contactFields'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type {
+  ContactFieldId,
+  ContactFormContent,
+} from '@/features/forms/data/contactFields'
+import {
+  type ContactSubmitter,
+  HONEYPOT_FIELD_NAME,
+  MIN_FILL_TIME_MS,
+  type SubmissionOutcome,
+} from '@/features/forms/data/submissionContract'
 import ContactForm from './ContactForm.vue'
 
 /** Fixture content — already-translated, the shape `useContactContent`-style
@@ -43,7 +52,12 @@ const content: ContactFormContent = {
   },
   submit: 'Enviar',
   sending: 'Enviando…',
-  success: { title: 'Listo, ya lo recibimos.' },
+  success: {
+    titleByChannel: {
+      email: 'Listo, te respondemos por correo.',
+      whatsapp: 'Listo, te respondemos por WhatsApp.',
+    },
+  },
   error: {
     title: 'No pudimos enviarlo.',
     fallback: 'support@muush.dev',
@@ -52,18 +66,62 @@ const content: ContactFormContent = {
 
 const mounted: VueWrapper[] = []
 
+/* The minimum fill time reads `Date.now()`; tests move this clock instead of
+   sleeping. */
+let clock = 0
+
+beforeEach(() => {
+  clock = 1_000_000
+  vi.spyOn(Date, 'now').mockImplementation(() => clock)
+})
+
 afterEach(() => {
   while (mounted.length > 0) mounted.pop()?.unmount()
+  vi.restoreAllMocks()
 })
+
+/** A submitter that never touches the network: it records and answers. */
+function stubSubmitter(
+  outcome: SubmissionOutcome<ContactFieldId> = {
+    kind: 'success',
+    cvAttached: true,
+  }
+) {
+  return {
+    engage: vi.fn<ContactSubmitter['engage']>(),
+    submit: vi.fn<ContactSubmitter['submit']>(async () => outcome),
+  }
+}
 
 interface MountOverrides {
   previewState?: 'sending' | 'success' | 'server-error'
+  submitter?: ContactSubmitter
 }
 
 function mountForm(overrides: MountOverrides = {}) {
-  const wrapper = mount(ContactForm, { props: { content, ...overrides } })
+  const wrapper = mount(ContactForm, {
+    props: { content, submitter: stubSubmitter(), ...overrides },
+    attachTo: document.body,
+  })
   mounted.push(wrapper)
   return wrapper
+}
+
+async function fillValid(wrapper: VueWrapper): Promise<void> {
+  await wrapper.find('#name').setValue('Ana')
+  await wrapper.find('#email').setValue('ana@muush.dev')
+  await wrapper.find('#identity').setValue('company')
+  await wrapper
+    .find('#need')
+    .setValue('Necesitamos un rediseño completo del sitio.')
+}
+
+/** Fill validly, let the minimum fill time pass, submit, settle. */
+async function submitValid(wrapper: VueWrapper): Promise<void> {
+  await fillValid(wrapper)
+  clock += MIN_FILL_TIME_MS
+  await wrapper.find('form').trigger('submit')
+  await flushPromises()
 }
 
 describe('ContactForm · the seven fields', () => {
@@ -129,21 +187,12 @@ describe('ContactForm · the seven fields', () => {
     expect(wrapper.find('#name').attributes('aria-invalid')).toBe('true')
   })
 
-  it('should show no error and no unreachable-state markup on a valid submit', async () => {
+  it('should show no field error on a valid submit', async () => {
     const wrapper = mountForm()
 
-    await wrapper.find('#name').setValue('Ana')
-    await wrapper.find('#email').setValue('ana@muush.dev')
-    await wrapper.find('#identity').setValue('company')
-    await wrapper
-      .find('#need')
-      .setValue('Necesitamos un rediseño completo del sitio.')
-    await wrapper.find('form').trigger('submit')
+    await submitValid(wrapper)
 
     expect(wrapper.text()).not.toContain(content.fields.name.errorRequired)
-    expect(wrapper.text()).not.toContain(content.sending)
-    expect(wrapper.text()).not.toContain(content.success.title)
-    expect(wrapper.text()).not.toContain(content.error.title)
   })
 })
 
@@ -175,13 +224,188 @@ describe('ContactForm · the WhatsApp field', () => {
   })
 })
 
-describe('ContactForm · previewState is Storybook-only', () => {
-  it('should render no preview markup when previewState is absent', () => {
+describe('ContactForm · submitting', () => {
+  it('should disable the button, show the sending label and lock the fields while the request is in flight', async () => {
+    const submitter = stubSubmitter()
+    submitter.submit.mockReturnValue(new Promise(() => undefined))
+    const wrapper = mountForm({ submitter })
+
+    await submitValid(wrapper)
+
+    const button = wrapper.find('button[type="submit"]')
+    expect(button.attributes('disabled')).toBe('')
+    expect(button.text()).toBe(content.sending)
+    expect(wrapper.find('#name').attributes('readonly')).toBe('')
+    expect(wrapper.find('form').attributes('aria-busy')).toBe('true')
+  })
+
+  it('should call the submitter once when submit fires again during sending', async () => {
+    const submitter = stubSubmitter()
+    submitter.submit.mockReturnValue(new Promise(() => undefined))
+    const wrapper = mountForm({ submitter })
+
+    await submitValid(wrapper)
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(submitter.submit).toHaveBeenCalledTimes(1)
+  })
+
+  it('should replace the form with a focused status naming the chosen channel on success', async () => {
+    const wrapper = mountForm()
+
+    await wrapper
+      .find('input[name="contactPreference"][value="whatsapp"]')
+      .setValue(true)
+    await wrapper.find('#whatsapp').setValue('55 1234 5678')
+    await submitValid(wrapper)
+
+    const status = wrapper.find('[role="status"]')
+    expect(wrapper.find('form').exists()).toBe(false)
+    expect(status.text()).toBe(content.success.titleByChannel.whatsapp)
+    expect(document.activeElement).toBe(status.find('p').element)
+  })
+
+  it('should keep every value and show the alert with the support link on failure', async () => {
+    const wrapper = mountForm({
+      submitter: stubSubmitter({ kind: 'failure' }),
+    })
+
+    await submitValid(wrapper)
+
+    expect(wrapper.find('form').exists()).toBe(true)
+    expect(wrapper.find('[role="alert"]').text()).toContain(content.error.title)
+    expect(wrapper.find('a[href="mailto:support@muush.dev"]').exists()).toBe(
+      true
+    )
+    expect((wrapper.find('#name').element as HTMLInputElement).value).toBe(
+      'Ana'
+    )
+    expect((wrapper.find('#need').element as HTMLTextAreaElement).value).toBe(
+      'Necesitamos un rediseño completo del sitio.'
+    )
+  })
+
+  it('should send again from the error state when submitted again', async () => {
+    const submitter = stubSubmitter({ kind: 'failure' })
+    const wrapper = mountForm({ submitter })
+
+    await submitValid(wrapper)
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(submitter.submit).toHaveBeenCalledTimes(2)
+  })
+
+  it('should engage the submitter with the card host on first focus', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await wrapper.find('#name').trigger('focusin')
+
+    expect(submitter.engage).toHaveBeenCalledTimes(1)
+    const host = submitter.engage.mock.calls[0]?.[0]
+    expect(host).toBeInstanceOf(HTMLElement)
+    expect(wrapper.find('form').element.contains(host ?? null)).toBe(false)
+  })
+
+  it('should never call fetch from the component, whatever the outcome', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const wrapper = mountForm({
+      submitter: stubSubmitter({ kind: 'failure' }),
+    })
+
+    await submitValid(wrapper)
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe('ContactForm · server field errors', () => {
+  it('should mark the inputs the server rejected, focus the first, and show no alert', async () => {
+    const wrapper = mountForm({
+      submitter: stubSubmitter({
+        kind: 'field-errors',
+        fields: ['email', 'whatsapp'],
+      }),
+    })
+
+    await wrapper
+      .find('input[name="contactPreference"][value="whatsapp"]')
+      .setValue(true)
+    await wrapper.find('#whatsapp').setValue('5512345678')
+    await submitValid(wrapper)
+
+    const email = wrapper.find('#email')
+    expect(email.attributes('aria-invalid')).toBe('true')
+    expect(email.classes()).toContain('border-red-400')
+    expect(wrapper.text()).toContain(content.fields.email.errorFormat)
+    expect(wrapper.text()).toContain(content.fields.whatsapp.errorDigits)
+    expect(document.activeElement).toBe(email.element)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+  })
+
+  it('should clear a field mark once the visitor edits that field', async () => {
+    const wrapper = mountForm({
+      submitter: stubSubmitter({ kind: 'field-errors', fields: ['email'] }),
+    })
+
+    await submitValid(wrapper)
+    await wrapper.find('#email').setValue('ana.ruiz@muush.dev')
+
+    expect(wrapper.find('#email').attributes('aria-invalid')).toBe('false')
+  })
+})
+
+describe('ContactForm · anti-spam', () => {
+  it('should render the honeypot inside the form, out of the Tab order', () => {
+    const honeypot = mountForm().find(
+      `form input[name="${HONEYPOT_FIELD_NAME}"]`
+    )
+
+    expect(honeypot.exists()).toBe(true)
+    expect(honeypot.attributes('tabindex')).toBe('-1')
+  })
+
+  it('should send nothing and show the generic error when the honeypot is filled', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await wrapper
+      .find(`input[name="${HONEYPOT_FIELD_NAME}"]`)
+      .setValue('https://spam.example')
+    await submitValid(wrapper)
+
+    expect(submitter.submit).not.toHaveBeenCalled()
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true)
+    expect((wrapper.find('#name').element as HTMLInputElement).value).toBe(
+      'Ana'
+    )
+  })
+
+  it('should send nothing when submitted before the minimum fill time, then send after it', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await fillValid(wrapper)
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+    expect(submitter.submit).not.toHaveBeenCalled()
+
+    clock += MIN_FILL_TIME_MS
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+    expect(submitter.submit).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('ContactForm · previewState is a Storybook-only display override', () => {
+  it('should render no outcome markup when previewState is absent', () => {
     const wrapper = mountForm()
 
     expect(wrapper.text()).not.toContain(content.sending)
-    expect(wrapper.text()).not.toContain(content.success.title)
-    expect(wrapper.text()).not.toContain(content.error.title)
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
   })
 
   it('should disable the submit control and mark fields read-only when previewState is sending', () => {
@@ -198,7 +422,7 @@ describe('ContactForm · previewState is Storybook-only', () => {
     const wrapper = mountForm({ previewState: 'success' })
 
     expect(wrapper.find('form').exists()).toBe(false)
-    expect(wrapper.text()).toContain(content.success.title)
+    expect(wrapper.text()).toContain(content.success.titleByChannel.email)
   })
 
   it('should keep the captured form and add the fallback link when previewState is server-error', () => {

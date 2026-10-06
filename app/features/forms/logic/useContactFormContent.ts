@@ -66,7 +66,18 @@ export function useContactFormContent(): ComputedRef<ContactFormContent> {
     },
     submit: t('forms.contact.submit'),
     sending: t('forms.contact.sending'),
-    success: { title: t('forms.contact.success.title') },
+    /* `{channel}` interpolated per preference (spec OA-4): the confirmation
+       names the channel the visitor actually chose. */
+    success: {
+      titleByChannel: {
+        email: t('forms.contact.success.title', {
+          channel: t('forms.contact.success.channel.email'),
+        }),
+        whatsapp: t('forms.contact.success.title', {
+          channel: t('forms.contact.success.channel.whatsapp'),
+        }),
+      },
+    },
     error: {
       title: t('forms.contact.error.title'),
       fallback: t('forms.contact.error.fallback'),

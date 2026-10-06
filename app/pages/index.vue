@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useContactFormContent } from '@/features/forms'
+import { useContactFormContent, useContactSubmitter } from '@/features/forms'
 import {
   ContactSection,
   HeroSection,
@@ -39,6 +39,10 @@ const purpose = usePurposeContent()
 const services = useServicesContent()
 const contact = useContactContent()
 const contactForm = useContactFormContent()
+/* Feature 029: the form's only door to the network. Creating it loads
+   nothing; Turnstile and the API are reached only after the visitor engages
+   the form. */
+const contactSubmitter = useContactSubmitter()
 
 useHead({ title: t('site.title') })
 </script>
@@ -51,5 +55,6 @@ useHead({ title: t('site.title') })
     class="mt-section-gap"
     v-bind="contact"
     :form-content="contactForm"
+    :form-submitter="contactSubmitter"
   />
 </template>

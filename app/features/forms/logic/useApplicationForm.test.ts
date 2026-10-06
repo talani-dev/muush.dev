@@ -1,5 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
-import { initialApplicationFormValues } from '@/features/forms/data/applicationFields'
+import { toRaw } from 'vue'
+import {
+  type ApplicationFieldId,
+  type ApplicationFormValues,
+  initialApplicationFormValues,
+} from '@/features/forms/data/applicationFields'
+import {
+  type ApplicationSubmitter,
+  MIN_FILL_TIME_MS,
+  type SubmissionOutcome,
+} from '@/features/forms/data/submissionContract'
 import {
   useApplicationForm,
   validateApplicationForm,
@@ -211,83 +221,197 @@ describe('validateApplicationForm', () => {
   })
 })
 
-describe('useApplicationForm · the two reachable states', () => {
+const VALID: Partial<ApplicationFormValues> = {
+  name: 'Ana',
+  email: 'ana@muush.dev',
+  areaRole: 'it:backend',
+}
+
+function stubSubmitter(
+  outcome: SubmissionOutcome<ApplicationFieldId> = {
+    kind: 'success',
+    cvAttached: true,
+  }
+) {
+  return {
+    engage: vi.fn<ApplicationSubmitter['engage']>(),
+    submit: vi.fn<ApplicationSubmitter['submit']>(async () => outcome),
+  }
+}
+
+/** A composable whose clock already sits past the minimum fill time. */
+function readyForm(
+  initial: Partial<ApplicationFormValues> = VALID,
+  submitter = stubSubmitter()
+) {
+  let clock = 0
+  const form = useApplicationForm({ submitter, initial, now: () => clock })
+  form.markInteractive()
+  clock += MIN_FILL_TIME_MS
+  return { form, submitter }
+}
+
+describe('useApplicationForm · client validation', () => {
   it('should default to idle with the default contact preference of email', () => {
-    const { state, values } = useApplicationForm()
+    const { state, values } = useApplicationForm({ submitter: stubSubmitter() })
 
     expect(state.value).toBe('idle')
     expect(values.value.contactPreference).toBe('email')
     expect(values.value.cv).toBeNull()
   })
 
-  it('should move to invalid and name the first invalid field on an empty submit', () => {
-    const { state, firstInvalidFieldId, onSubmit } = useApplicationForm()
+  it('should move to invalid, name the first invalid field and send nothing on an empty submit', async () => {
+    const { form, submitter } = readyForm({})
 
-    onSubmit(new Event('submit'))
+    await form.onSubmit(new Event('submit'))
 
-    expect(state.value).toBe('invalid')
-    expect(firstInvalidFieldId.value).toBe('name')
+    expect(form.state.value).toBe('invalid')
+    expect(form.firstInvalidFieldId.value).toBe('name')
+    expect(submitter.submit).not.toHaveBeenCalled()
   })
 
-  it('should not clear any value when validation fails', () => {
-    const { values, onSubmit } = useApplicationForm({
-      name: 'A',
-      portfolio: 'https://ana.dev',
-    })
+  it('should not clear any value when validation fails', async () => {
+    const { form } = readyForm({ name: 'A', portfolio: 'https://ana.dev' })
 
-    onSubmit(new Event('submit'))
+    await form.onSubmit(new Event('submit'))
 
-    expect(values.value.name).toBe('A')
-    expect(values.value.portfolio).toBe('https://ana.dev')
+    expect(form.values.value.name).toBe('A')
+    expect(form.values.value.portfolio).toBe('https://ana.dev')
   })
 
-  it('should stay idle — never any other value — when a valid submit occurs, cv included', () => {
-    const form = useApplicationForm({
-      name: 'Ana',
-      email: 'ana@muush.dev',
-      areaRole: 'it:placeholder',
-      cv: pdfFixture(1024),
-    })
-
-    form.onSubmit(new Event('submit'))
-
-    /* The composable's return type has no `sending` | `success` |
-       `server-error` member at all — this asserts the runtime value stays
-       inside the two-member union the type already restricts it to. */
-    expect(form.state.value).toBe('idle')
-  })
-
-  it('should call preventDefault on submit regardless of validity', () => {
+  it('should call preventDefault on submit regardless of validity', async () => {
     const event = new Event('submit', { cancelable: true })
-    const { onSubmit } = useApplicationForm()
+    const { form } = readyForm({})
 
-    onSubmit(event)
+    await form.onSubmit(event)
 
     expect(event.defaultPrevented).toBe(true)
   })
+})
 
-  it('should expose no fetch-shaped dependency from the composable', () => {
-    /* There is no injected network function to call because none exists —
-       the return shape itself is the proof (FR-003, FR-011). */
-    const form = useApplicationForm()
-
-    expect(Object.keys(form).sort()).toEqual(
-      [
-        'errors',
-        'firstInvalidFieldId',
-        'onContactPreferenceChange',
-        'onCvChange',
-        'onSubmit',
-        'state',
-        'values',
-      ].sort()
+describe('useApplicationForm · the submit state machine', () => {
+  it('should go sending, then success, and hand over the chosen CV', async () => {
+    let finish: (outcome: SubmissionOutcome<ApplicationFieldId>) => void = () =>
+      undefined
+    const submitter = stubSubmitter()
+    submitter.submit.mockReturnValue(
+      new Promise(resolve => {
+        finish = resolve
+      })
     )
+    const cv = pdfFixture(2048)
+    const { form } = readyForm({ ...VALID, cv }, submitter)
+
+    const submitting = form.onSubmit(new Event('submit'))
+    expect(form.state.value).toBe('sending')
+    expect(submitter.submit.mock.calls[0]?.[0].cv).toBe(cv)
+
+    finish({ kind: 'success', cvAttached: true })
+    await submitting
+    expect(form.state.value).toBe('success')
+  })
+
+  it('should call the submitter once when submit fires again while sending', async () => {
+    const submitter = stubSubmitter()
+    submitter.submit.mockReturnValue(new Promise(() => undefined))
+    const { form } = readyForm(VALID, submitter)
+
+    void form.onSubmit(new Event('submit'))
+    void form.onSubmit(new Event('submit'))
+
+    expect(submitter.submit).toHaveBeenCalledTimes(1)
+  })
+
+  it('should expose the CV note only after a success in which the CV did not attach', async () => {
+    const attached = readyForm({ ...VALID, cv: pdfFixture() })
+    const lost = readyForm(
+      { ...VALID, cv: pdfFixture() },
+      stubSubmitter({ kind: 'success', cvAttached: false })
+    )
+
+    expect(lost.form.cvNoteVisible.value).toBe(false)
+    await attached.form.onSubmit(new Event('submit'))
+    await lost.form.onSubmit(new Event('submit'))
+
+    expect(attached.form.cvNoteVisible.value).toBe(false)
+    expect(lost.form.cvNoteVisible.value).toBe(true)
+  })
+
+  it('should move to server-error with every value intact and no CV note on failure', async () => {
+    const cv = pdfFixture()
+    const { form, submitter } = readyForm(
+      { ...VALID, cv },
+      stubSubmitter({ kind: 'failure' })
+    )
+
+    await form.onSubmit(new Event('submit'))
+
+    expect(form.state.value).toBe('server-error')
+    expect(form.cvNoteVisible.value).toBe(false)
+    expect(toRaw(form.values.value).cv).toBe(cv)
+    expect(form.values.value.name).toBe('Ana')
+
+    await form.onSubmit(new Event('submit'))
+    expect(submitter.submit).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('useApplicationForm · server field errors', () => {
+  it('should mark the rejected fields with their existing keys in form order', async () => {
+    const { form } = readyForm(
+      { ...VALID, linkedin: 'https://linkedin.com/in/ana' },
+      stubSubmitter({ kind: 'field-errors', fields: ['linkedin', 'email'] })
+    )
+
+    await form.onSubmit(new Event('submit'))
+
+    expect(form.state.value).toBe('invalid')
+    expect(form.errors.value).toEqual({
+      email: 'forms.application.fields.email.errorFormat',
+      linkedin: 'forms.application.fields.linkedin.errorFormat',
+    })
+    expect(form.firstInvalidFieldId.value).toBe('email')
+
+    form.values.value.email = 'ana.ruiz@muush.dev'
+    expect(Object.keys(form.errors.value)).toEqual(['linkedin'])
+  })
+})
+
+describe('useApplicationForm · anti-spam guard', () => {
+  it('should send nothing and show the generic error when the honeypot is filled', async () => {
+    const { form, submitter } = readyForm()
+
+    form.honeypot.value = 'bot'
+    await form.onSubmit(new Event('submit'))
+
+    expect(form.state.value).toBe('server-error')
+    expect(submitter.submit).not.toHaveBeenCalled()
+  })
+
+  it('should send nothing before the minimum fill time and send after it', async () => {
+    let clock = 0
+    const submitter = stubSubmitter()
+    const form = useApplicationForm({
+      submitter,
+      initial: VALID,
+      now: () => clock,
+    })
+    form.markInteractive()
+
+    await form.onSubmit(new Event('submit'))
+    expect(submitter.submit).not.toHaveBeenCalled()
+
+    clock += MIN_FILL_TIME_MS
+    await form.onSubmit(new Event('submit'))
+    expect(submitter.submit).toHaveBeenCalledTimes(1)
   })
 })
 
 describe('useApplicationForm · the WhatsApp field discards its value', () => {
   it('should reset whatsapp to empty synchronously when switching back to email', () => {
-    const { values, onContactPreferenceChange } = useApplicationForm()
+    const { values, onContactPreferenceChange } = useApplicationForm({
+      submitter: stubSubmitter(),
+    })
 
     onContactPreferenceChange('whatsapp')
     values.value.whatsapp = '5639060739'
@@ -298,7 +422,9 @@ describe('useApplicationForm · the WhatsApp field discards its value', () => {
   })
 
   it('should leave whatsapp untouched while staying on whatsapp', () => {
-    const { values, onContactPreferenceChange } = useApplicationForm()
+    const { values, onContactPreferenceChange } = useApplicationForm({
+      submitter: stubSubmitter(),
+    })
 
     onContactPreferenceChange('whatsapp')
     values.value.whatsapp = '5639060739'
@@ -308,12 +434,14 @@ describe('useApplicationForm · the WhatsApp field discards its value', () => {
   })
 })
 
-describe('useApplicationForm · the CV field never transmits anything', () => {
+describe('useApplicationForm · storing the CV transmits nothing', () => {
   it('should store the raw File on onCvChange with no serialization', () => {
     /* `values` is a reactive `ref`, so the stored file is Vue's reactive
        proxy over the original object, not the same reference — comparing
        its own properties is what proves nothing was serialized instead. */
-    const { values, onCvChange } = useApplicationForm()
+    const { values, onCvChange } = useApplicationForm({
+      submitter: stubSubmitter(),
+    })
     const file = pdfFixture(2048)
 
     onCvChange(file)
@@ -325,7 +453,9 @@ describe('useApplicationForm · the CV field never transmits anything', () => {
   })
 
   it('should clear cv back to null when onCvChange receives null', () => {
-    const { values, onCvChange } = useApplicationForm()
+    const { values, onCvChange } = useApplicationForm({
+      submitter: stubSubmitter(),
+    })
 
     onCvChange(pdfFixture(2048))
     onCvChange(null)
@@ -334,12 +464,12 @@ describe('useApplicationForm · the CV field never transmits anything', () => {
   })
 
   it('should call no network primitive from onCvChange, even when a real File is stored', () => {
-    /* The composable-level complement of `tests/static-output.test.ts`'s
-       compiled-chunk grep (T061): this asserts the *behaviour* — storing a
-       file changes only `values.value.cv`, synchronously, with no promise
-       left pending and no global fetch/XHR spy ever invoked. */
+    /* Choosing a file only stores it; it leaves the browser only through
+       the presigned upload of `submissionFlows.ts`, on submit. */
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
-    const { values, onCvChange } = useApplicationForm()
+    const { values, onCvChange } = useApplicationForm({
+      submitter: stubSubmitter(),
+    })
 
     onCvChange(pdfFixture(2048))
 

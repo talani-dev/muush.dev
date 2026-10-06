@@ -87,7 +87,10 @@ export function useApplicationFormContent(): ComputedRef<ApplicationFormContent>
     },
     submit: t('forms.application.submit'),
     sending: t('forms.application.sending'),
-    success: { title: t('forms.application.success.title') },
+    success: {
+      title: t('forms.application.success.title'),
+      cvNote: t('forms.application.success.cvNote'),
+    },
     error: {
       title: t('forms.application.error.title'),
       fallback: t('forms.application.error.fallback'),

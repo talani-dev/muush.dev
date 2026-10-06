@@ -1,5 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import type { ApplicationFormContent } from '@/features/forms'
+import type {
+  ApplicationFormContent,
+  ApplicationSubmitter,
+} from '@/features/forms'
 import WorkWithMuushSection from './WorkWithMuushSection.vue'
 
 /**
@@ -114,6 +117,8 @@ const spanishForm: ApplicationFormContent = {
   success: {
     title:
       'Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes.',
+    cvNote:
+      'Tu perfil llegó, pero no pudimos adjuntar tu CV. Si quieres, mándalo a support@muush.dev.',
   },
   error: {
     title:
@@ -137,7 +142,15 @@ const englishForm: ApplicationFormContent = {
   success: {
     title:
       "Thanks, we've got your profile. We'll reach out when there's a project that fits.",
+    cvNote:
+      "Your profile came through, but we couldn't attach your CV. If you'd like, send it to support@muush.dev.",
   },
+}
+
+/** Never reaches the network: the section only passes it through. */
+const formSubmitter: ApplicationSubmitter = {
+  engage: () => undefined,
+  submit: async () => ({ kind: 'success', cvAttached: true }),
 }
 
 const spanish = {
@@ -145,6 +158,7 @@ const spanish = {
   headline: 'Tú eliges en qué proyectos entras, con quién y desde dónde.',
   body: 'Si trabajas en tecnología, diseño o producción y quieres sumarte a nuestro talent pool, cuéntanos qué haces.',
   formContent: spanishForm,
+  formSubmitter,
 }
 
 const english = {
@@ -153,6 +167,7 @@ const english = {
     'You choose which projects you join, who you work with, and where from.',
   body: 'If you work in technology, design or production and want to join our talent pool, tell us what you do.',
   formContent: englishForm,
+  formSubmitter,
 }
 
 export const Desktop: Story = {

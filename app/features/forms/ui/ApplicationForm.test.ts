@@ -1,6 +1,15 @@
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vitest'
-import type { ApplicationFormContent } from '@/features/forms/data/applicationFields'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type {
+  ApplicationFieldId,
+  ApplicationFormContent,
+} from '@/features/forms/data/applicationFields'
+import {
+  type ApplicationSubmitter,
+  HONEYPOT_FIELD_NAME,
+  MIN_FILL_TIME_MS,
+  type SubmissionOutcome,
+} from '@/features/forms/data/submissionContract'
 import ApplicationForm from './ApplicationForm.vue'
 
 /** Fixture content — already-translated, the shape
@@ -62,7 +71,10 @@ const content: ApplicationFormContent = {
   },
   submit: 'Enviar',
   sending: 'Enviando…',
-  success: { title: 'Gracias, ya tenemos tu perfil.' },
+  success: {
+    title: 'Gracias, ya tenemos tu perfil.',
+    cvNote: 'Tu perfil llegó, pero no pudimos adjuntar tu CV.',
+  },
   error: {
     title: 'No pudimos enviarlo.',
     fallback: 'support@muush.dev',
@@ -71,18 +83,67 @@ const content: ApplicationFormContent = {
 
 const mounted: VueWrapper[] = []
 
+/* The minimum fill time reads `Date.now()`; tests move this clock instead of
+   sleeping. */
+let clock = 0
+
+beforeEach(() => {
+  clock = 1_000_000
+  vi.spyOn(Date, 'now').mockImplementation(() => clock)
+})
+
 afterEach(() => {
   while (mounted.length > 0) mounted.pop()?.unmount()
+  vi.restoreAllMocks()
 })
+
+/** A submitter that never touches the network: it records and answers. */
+function stubSubmitter(
+  outcome: SubmissionOutcome<ApplicationFieldId> = {
+    kind: 'success',
+    cvAttached: true,
+  }
+) {
+  return {
+    engage: vi.fn<ApplicationSubmitter['engage']>(),
+    submit: vi.fn<ApplicationSubmitter['submit']>(async () => outcome),
+  }
+}
 
 interface MountOverrides {
   previewState?: 'sending' | 'success' | 'server-error'
+  submitter?: ApplicationSubmitter
 }
 
 function mountForm(overrides: MountOverrides = {}) {
-  const wrapper = mount(ApplicationForm, { props: { content, ...overrides } })
+  const wrapper = mount(ApplicationForm, {
+    props: { content, submitter: stubSubmitter(), ...overrides },
+    attachTo: document.body,
+  })
   mounted.push(wrapper)
   return wrapper
+}
+
+const pdf = new File(['%PDF-1.4'], 'cv.pdf', { type: 'application/pdf' })
+
+async function attachCv(wrapper: VueWrapper): Promise<void> {
+  const input = wrapper.find('#cv').element as HTMLInputElement
+  Object.defineProperty(input, 'files', { value: [pdf] })
+  await wrapper.find('#cv').trigger('change')
+}
+
+async function fillValid(wrapper: VueWrapper): Promise<void> {
+  await wrapper.find('#name').setValue('Ana')
+  await wrapper.find('#email').setValue('ana@muush.dev')
+  await wrapper.find('#areaRole').setValue('it:backend')
+}
+
+/** Fill validly, let the minimum fill time pass, submit, settle. */
+async function submitValid(wrapper: VueWrapper): Promise<void> {
+  await fillValid(wrapper)
+  clock += MIN_FILL_TIME_MS
+  await wrapper.find('form').trigger('submit')
+  await flushPromises()
 }
 
 describe('ApplicationForm · the eight fields', () => {
@@ -166,18 +227,12 @@ describe('ApplicationForm · the eight fields', () => {
     expect(wrapper.find('#cv').attributes('aria-invalid')).toBe('false')
   })
 
-  it('should show no error and no unreachable-state markup on a valid minimal submit', async () => {
+  it('should show no field error on a valid minimal submit', async () => {
     const wrapper = mountForm()
 
-    await wrapper.find('#name').setValue('Ana')
-    await wrapper.find('#email').setValue('ana@muush.dev')
-    await wrapper.find('#areaRole').setValue('it:placeholder')
-    await wrapper.find('form').trigger('submit')
+    await submitValid(wrapper)
 
     expect(wrapper.text()).not.toContain(content.fields.name.errorRequired)
-    expect(wrapper.text()).not.toContain(content.sending)
-    expect(wrapper.text()).not.toContain(content.success.title)
-    expect(wrapper.text()).not.toContain(content.error.title)
   })
 })
 
@@ -209,33 +264,135 @@ describe('ApplicationForm · the WhatsApp field', () => {
   })
 })
 
-describe('ApplicationForm · the CV field', () => {
-  it('should attach a CV and still show no error, no sending/success/server-error markup on submit', async () => {
+describe('ApplicationForm · submitting', () => {
+  it('should disable the button, show the sending label and lock the fields while sending', async () => {
+    const submitter = stubSubmitter()
+    submitter.submit.mockReturnValue(new Promise(() => undefined))
+    const wrapper = mountForm({ submitter })
+
+    await submitValid(wrapper)
+
+    const button = wrapper.find('button[type="submit"]')
+    expect(button.attributes('disabled')).toBe('')
+    expect(button.text()).toBe(content.sending)
+    expect(wrapper.find('#portfolio').attributes('readonly')).toBe('')
+  })
+
+  it('should hand the submitter the qualified select value and the chosen file', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await attachCv(wrapper)
+    await submitValid(wrapper)
+
+    const sent = submitter.submit.mock.calls[0]?.[0]
+    expect(sent?.areaRole).toBe('it:backend')
+    expect(sent?.cv?.name).toBe('cv.pdf')
+  })
+
+  it('should show the confirmation without the CV note when the CV attached', async () => {
     const wrapper = mountForm()
-    const file = new File(['%PDF-1.4'], 'cv.pdf', { type: 'application/pdf' })
-    const input = wrapper.find('#cv').element as HTMLInputElement
-    Object.defineProperty(input, 'files', { value: [file] })
 
-    await wrapper.find('#cv').trigger('change')
-    await wrapper.find('#name').setValue('Ana')
-    await wrapper.find('#email').setValue('ana@muush.dev')
-    await wrapper.find('#areaRole').setValue('it:placeholder')
-    await wrapper.find('form').trigger('submit')
+    await attachCv(wrapper)
+    await submitValid(wrapper)
 
-    expect(wrapper.text()).not.toContain(content.fields.cv.errorFormat)
-    expect(wrapper.text()).not.toContain(content.sending)
-    expect(wrapper.text()).not.toContain(content.success.title)
-    expect(wrapper.text()).not.toContain(content.error.title)
+    const status = wrapper.find('[role="status"]')
+    expect(status.text()).toContain(content.success.title)
+    expect(status.text()).not.toContain(content.success.cvNote)
+    expect(document.activeElement).toBe(status.find('p').element)
+  })
+
+  it('should add the CV note under the confirmation when the CV did not attach', async () => {
+    const wrapper = mountForm({
+      submitter: stubSubmitter({ kind: 'success', cvAttached: false }),
+    })
+
+    await attachCv(wrapper)
+    await submitValid(wrapper)
+
+    const status = wrapper.find('[role="status"]')
+    expect(status.text()).toContain(content.success.title)
+    expect(status.text()).toContain(content.success.cvNote)
+  })
+
+  it('should keep every value, the chosen file included, and show the alert on failure', async () => {
+    const wrapper = mountForm({
+      submitter: stubSubmitter({ kind: 'failure' }),
+    })
+
+    await attachCv(wrapper)
+    await submitValid(wrapper)
+
+    expect(wrapper.find('[role="alert"]').text()).toContain(content.error.title)
+    expect(wrapper.text()).not.toContain(content.success.cvNote)
+    expect((wrapper.find('#name').element as HTMLInputElement).value).toBe(
+      'Ana'
+    )
+    expect(wrapper.text()).toContain('cv.pdf')
+  })
+
+  it('should never call fetch from the component', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const wrapper = mountForm()
+
+    await attachCv(wrapper)
+    await submitValid(wrapper)
+
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })
 
-describe('ApplicationForm · previewState is Storybook-only', () => {
-  it('should render no preview markup when previewState is absent', () => {
+describe('ApplicationForm · server field errors', () => {
+  it('should mark the inputs the server rejected, focus the first, and show no alert', async () => {
+    const wrapper = mountForm({
+      submitter: stubSubmitter({
+        kind: 'field-errors',
+        fields: ['portfolio', 'areaRole'],
+      }),
+    })
+
+    await wrapper.find('#portfolio').setValue('https://ana.dev')
+    await submitValid(wrapper)
+
+    expect(wrapper.find('#areaRole').attributes('aria-invalid')).toBe('true')
+    expect(wrapper.find('#portfolio').attributes('aria-invalid')).toBe('true')
+    expect(wrapper.text()).toContain(content.fields.portfolio.errorFormat)
+    expect(document.activeElement).toBe(wrapper.find('#areaRole').element)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+  })
+})
+
+describe('ApplicationForm · anti-spam', () => {
+  it('should render the honeypot inside the form, out of the Tab order', () => {
+    const honeypot = mountForm().find(
+      `form input[name="${HONEYPOT_FIELD_NAME}"]`
+    )
+
+    expect(honeypot.exists()).toBe(true)
+    expect(honeypot.attributes('tabindex')).toBe('-1')
+  })
+
+  it('should send nothing and show the generic error when the honeypot is filled', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await wrapper
+      .find(`input[name="${HONEYPOT_FIELD_NAME}"]`)
+      .setValue('https://spam.example')
+    await submitValid(wrapper)
+
+    expect(submitter.submit).not.toHaveBeenCalled()
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true)
+  })
+})
+
+describe('ApplicationForm · previewState is a Storybook-only display override', () => {
+  it('should render no outcome markup when previewState is absent', () => {
     const wrapper = mountForm()
 
     expect(wrapper.text()).not.toContain(content.sending)
-    expect(wrapper.text()).not.toContain(content.success.title)
-    expect(wrapper.text()).not.toContain(content.error.title)
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
   })
 
   it('should disable the submit control and mark fields read-only when previewState is sending', () => {

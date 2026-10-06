@@ -1,5 +1,6 @@
-import { type ComputedRef, computed, nextTick, type Ref, ref } from 'vue'
+import { type ComputedRef, type Ref, ref } from 'vue'
 import {
+  CONTACT_FIELD_ORDER,
   type ContactFieldId,
   type ContactFormErrors,
   type ContactFormValues,
@@ -10,38 +11,45 @@ import {
   NEED_MIN_LENGTH,
   WHATSAPP_MX_DIGIT_COUNT,
 } from '@/features/forms/data/contactFields'
+import type { ContactSubmitter } from '@/features/forms/data/submissionContract'
+import { CONTACT_SERVER_ERROR_KEYS } from './serverFieldErrors'
+import { type SubmitState, useFormSubmitState } from './useFormSubmitState'
 
 /**
- * The contact form's whole client-side state machine — and the file that
- * makes the "no fake success" guarantee structural rather than a rule to
- * remember.
+ * The contact form's client-side state: its values, its validation rules and
+ * the WhatsApp branch. Submitting is `useFormSubmitState`'s job, shared with
+ * the application form.
  *
- * `ContactSubmitState` below has exactly two members, `'idle' | 'invalid'`.
- * There is no `sending`, no `success`, no `server-error` anywhere in this
- * file: no local variable, no branch, no timer that could ever assign one of
- * those three strings to `state`. `ContactForm.vue`'s `previewState` prop is
- * the **only** place those three strings exist in the shipped feature, and it
- * is a Storybook-only prop this composable never reads, never sets and does
- * not know exists (plan.md D-2). A reviewer can confirm the guarantee by
- * grepping this file for `sending`, `success` or `server-error` and finding
- * nothing.
+ * Until feature 029 this file's guarantee was "no `sending`/`success`/
+ * `server-error` exists here, so no fake success is possible". That guarantee
+ * is replaced, not dropped (spec FR-011/FR-012): `success` now exists, and it
+ * is produced only from a classified `ok` response — a 200 with `ok: true` —
+ * in `submissionFlows.ts`. No `fetch` lives here; the network is behind the
+ * injected `submitter`.
  *
- * `onSubmit` runs **no** `await`, no `fetch`, no `XMLHttpRequest`, no
- * `setTimeout` standing in for a network round-trip (FR-008, FR-014). Its
- * only real effect on a passing validation is: nothing further.
- *
- * Plain Vue, no Nuxt composable — the same discipline `useHeroContent.ts`
- * documents, so this renders in a bare `mount()` and in Storybook with no
- * runtime present.
+ * Plain Vue, no Nuxt composable, so it runs in a bare `mount()` and in
+ * Storybook with no runtime present.
  */
-export type ContactSubmitState = 'idle' | 'invalid'
+export type ContactSubmitState = SubmitState
+
+export interface UseContactFormOptions {
+  submitter: ContactSubmitter
+  /** The form's Turnstile host element (a template ref). */
+  challengeHost?: Readonly<Ref<HTMLElement | null>>
+  initial?: Partial<ContactFormValues>
+  /** Injectable clock for the minimum fill time. */
+  now?: () => number
+}
 
 export interface UseContactFormReturn {
   values: Ref<ContactFormValues>
   errors: ComputedRef<ContactFormErrors>
   state: Ref<ContactSubmitState>
   firstInvalidFieldId: ComputedRef<ContactFieldId | undefined>
-  onSubmit: (event: Event) => void
+  honeypot: Ref<string>
+  markInteractive: () => void
+  onEngage: () => void
+  onSubmit: (event: Event) => Promise<void>
   onContactPreferenceChange: (value: ContactPreference) => void
 }
 
@@ -97,41 +105,28 @@ export function validateContactForm(
 }
 
 export function useContactForm(
-  initial?: Partial<ContactFormValues>
+  options: UseContactFormOptions
 ): UseContactFormReturn {
   const values = ref<ContactFormValues>({
     ...initialContactFormValues(),
-    ...initial,
+    ...options.initial,
   }) as Ref<ContactFormValues>
 
-  const state = ref<ContactSubmitState>('idle')
-  const errors = computed<ContactFormErrors>(() =>
-    validateContactForm(values.value)
-  )
-
-  const firstInvalidFieldId = computed<ContactFieldId | undefined>(() => {
-    const [firstKey] = Object.keys(errors.value)
-    return firstKey as ContactFieldId | undefined
+  const submission = useFormSubmitState({
+    values,
+    validate: validateContactForm,
+    fieldOrder: CONTACT_FIELD_ORDER,
+    serverErrorKeys: CONTACT_SERVER_ERROR_KEYS,
+    submitter: options.submitter,
+    challengeHost: options.challengeHost ?? ref(null),
+    now: options.now,
   })
-
-  function onSubmit(event: Event): void {
-    event.preventDefault()
-
-    if (Object.keys(errors.value).length === 0) {
-      /* Validation passed. Nothing further: no request, no state change
-         beyond staying `idle` (FR-014, `ui-map.md` § 7's "idle" row). */
-      state.value = 'idle'
-      return
-    }
-
-    state.value = 'invalid'
-    void focusFirstInvalidField(firstInvalidFieldId.value)
-  }
 
   /**
    * Resets `whatsapp` to `''` the moment the visitor leaves that branch, so a
    * later re-mount of the field always starts empty — the value was never
-   * retained, rather than reset on unmount (FR-011, spec US3).
+   * retained, rather than reset on unmount (FR-011, spec US3). A server mark
+   * on `whatsapp` goes with the value.
    */
   function onContactPreferenceChange(value: ContactPreference): void {
     values.value.contactPreference = value
@@ -142,24 +137,13 @@ export function useContactForm(
 
   return {
     values,
-    errors,
-    state,
-    firstInvalidFieldId,
-    onSubmit,
+    errors: submission.errors,
+    state: submission.state,
+    firstInvalidFieldId: submission.firstInvalidFieldId,
+    honeypot: submission.honeypot,
+    markInteractive: submission.markInteractive,
+    onEngage: submission.onEngage,
+    onSubmit: submission.onSubmit,
     onContactPreferenceChange,
   }
-}
-
-/**
- * Moves focus to the first invalid field's control, in the next tick so the
- * error markup (and the field, in the WhatsApp case) has already rendered
- * (`ui-map.md` § 7: "foco al primer error").
- */
-async function focusFirstInvalidField(
-  fieldId: ContactFieldId | undefined
-): Promise<void> {
-  if (!fieldId) return
-  await nextTick()
-  const control = document.getElementById(fieldId)
-  control?.focus()
 }

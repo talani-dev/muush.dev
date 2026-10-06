@@ -1,76 +1,71 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, useTemplateRef } from 'vue'
 import type { ContactFormContent } from '@/features/forms/data/contactFields'
+import type { ContactSubmitter } from '@/features/forms/data/submissionContract'
+import { fieldErrorMessage } from '@/features/forms/logic/fieldErrorMessage'
+import { toFieldOptions } from '@/features/forms/logic/selectOptions'
 import { useContactForm } from '@/features/forms/logic/useContactForm'
 import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
+import FormOutcome from './FormOutcome.vue'
+import HoneypotField from './HoneypotField.vue'
 import RadioPillGroup from './RadioPillGroup.vue'
 import SelectField from './SelectField.vue'
 import TextareaField from './TextareaField.vue'
 import TextField from './TextField.vue'
+import WhatsappField from './WhatsappField.vue'
 
 /**
- * ContactForm — the seven fields of `docs/business/landing/ui-map.md` § 7,
- * real client-side validation, and nothing else. `landing/ContactSection.vue`
- * is its only consumer today; `forms/`'s barrel is what lets feature 20's
- * application form reuse the same field vocabulary without either module
- * reaching into the other (Constitution Article III, plan.md D-1).
+ * ContactForm — the seven fields of `docs/business/landing/ui-map.md` § 7 and
+ * the real submission flow of feature 029: idle → sending → success |
+ * server-error | invalid.
  *
- * The no-submit guarantee is structural, not conventional:
- * `useContactForm`'s `state` is typed `'idle' | 'invalid'` — no third value
- * exists anywhere in that file. `previewState` below is the **only** place
- * `'sending' | 'success' | 'server-error'` exist in this feature, consumed
- * **only** by `ContactForm.stories.ts`; grep this file and its barrel for
- * `previewState` and the only call sites are the prop below and the three
- * template branches that read it — neither `ContactSection.vue` nor
- * `app/pages/index.vue` ever sets it (plan.md D-2).
+ * This component never touches the network (Constitution Article V, spec
+ * FR-025). The page creates a `submitter` with `useContactSubmitter()` and
+ * hands it down; stories and tests hand in a stub. `success` comes only from
+ * the submitter's classified `ok` response (spec FR-012).
+ *
+ * `previewState` is a Storybook-only display override: it forces what is
+ * shown, never what is sent. No page or section passes it
+ * (`tests/forms-config.test.ts` asserts that).
  */
 interface Props {
   content: ContactFormContent
-  /** Storybook-only (plan.md D-2). Absent → renders the real `idle`/`invalid`
-   * state `useContactForm` computes. */
+  submitter: ContactSubmitter
   previewState?: 'sending' | 'success' | 'server-error'
 }
 
-const { content, previewState } = defineProps<Props>()
+const { content, submitter, previewState } = defineProps<Props>()
 
-const { values, errors, state, onSubmit, onContactPreferenceChange } =
-  useContactForm()
+const challengeHost = useTemplateRef<HTMLElement>('challengeHost')
 
-const readonly = computed(() => previewState === 'sending')
-const showForm = computed(() => previewState !== 'success')
+const {
+  values,
+  errors,
+  state,
+  honeypot,
+  markInteractive,
+  onEngage,
+  onSubmit,
+  onContactPreferenceChange,
+} = useContactForm({ submitter, challengeHost })
+
+onMounted(markInteractive)
+
+const shownState = computed(() => previewState ?? state.value)
+const readonly = computed(() => shownState.value === 'sending')
 
 const identityOptions = computed(() =>
-  (Object.entries(content.fields.identity.options) as [string, string][]).map(
-    ([value, label]) => ({ value, label })
-  )
+  toFieldOptions(content.fields.identity.options)
 )
-
 const contactPreferenceOptions = computed(() =>
-  (
-    Object.entries(content.fields.contactPreference.options) as [
-      string,
-      string,
-    ][]
-  ).map(([value, label]) => ({ value, label }))
+  toFieldOptions(content.fields.contactPreference.options)
 )
 
-/**
- * Gated on `state === 'invalid'`: `errors` itself is always live (it is
- * `validate(values)`, unconditionally), but the error *treatment* — red
- * border, message, `aria-invalid` — must not appear before a submit is
- * attempted (`ui-map.md` § 7: the empty form's own "Idle" row shows no
- * errors at all).
- */
+/** Error treatment appears only once a submit was attempted (`ui-map.md`
+ * § 7: the idle form shows no errors at all). */
 function errorFor(field: keyof typeof errors.value): string | undefined {
   if (state.value !== 'invalid') return undefined
-  const key = errors.value[field]
-  if (!key) return undefined
-  const messages = content.fields[field] as unknown as Record<
-    string,
-    string | undefined
-  >
-  const kind = key.split('.').pop() ?? ''
-  return messages[kind]
+  return fieldErrorMessage(errors.value[field], content.fields[field])
 }
 </script>
 
@@ -79,10 +74,12 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
     class="rounded-panel-sm border border-glass-dark-line bg-glass-dark-contact p-glass-dark backdrop-blur-glass-dark"
   >
     <form
-      v-if="showForm"
+      v-if="shownState !== 'success'"
       novalidate
       class="flex flex-col gap-form-gap"
+      :aria-busy="shownState === 'sending'"
       @submit="onSubmit"
+      @focusin="onEngage"
     >
       <TextField
         id="name"
@@ -133,89 +130,43 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
         :readonly="readonly"
         @update:model-value="onContactPreferenceChange($event as 'email' | 'whatsapp')"
       />
-      <Transition name="whatsapp-field">
-        <TextField
-          v-if="values.contactPreference === 'whatsapp'"
-          id="whatsapp"
-          v-model="values.whatsapp"
-          type="tel"
-          :label="content.fields.whatsapp.label"
-          :error="errorFor('whatsapp')"
-          :readonly="readonly"
-          required
-        />
-      </Transition>
+      <WhatsappField
+        v-model="values.whatsapp"
+        :visible="values.contactPreference === 'whatsapp'"
+        :label="content.fields.whatsapp.label"
+        :error="errorFor('whatsapp')"
+        :readonly="readonly"
+      />
+      <HoneypotField v-model="honeypot" />
 
       <!--
-        Feature 025 (corrected). The form is `flex flex-col` with no
-        `items-*`, so every child inherits `align-items: stretch` — right for
-        the fields, wrong for the submit button on desktop. The `.pen`'s real
-        node (`bTYw7` and its EN/Nosotros equivalents) draws `width: 216`
-        EXPLICIT at `lg` — a fixed value, not fit-content: `Enviar`/`Submit`
-        both render at 216px despite differing text length. Below `lg` the
-        same node is `width: "fill_container"`, so mobile must keep
-        stretching to the form's width — the opposite of desktop. Both
-        `lg:self-center` and `lg:w-btn-submit-w` are scoped to `lg:` for
-        exactly that reason; unscoped, they would wrongly cap mobile too.
+        `width: 216` explicit at `lg`, `fill_container` below it (the `.pen`
+        node `bTYw7`, feature 025), so both classes stay scoped to `lg:` and
+        mobile keeps stretching to the form's width.
       -->
       <BotonPrimario
         variant="submit"
         type="submit"
-        :disabled="previewState === 'sending'"
+        :disabled="readonly"
         class="lg:w-btn-submit-w lg:self-center"
       >
-        {{ previewState === 'sending' ? content.sending : content.submit }}
+        {{ readonly ? content.sending : content.submit }}
       </BotonPrimario>
     </form>
 
-    <div v-else class="flex flex-col gap-form-gap">
-      <p class="font-instrument text-body-lg text-bone-100">
-        {{ content.success.title }}
-      </p>
-    </div>
+    <FormOutcome
+      v-if="shownState === 'success' || shownState === 'server-error'"
+      :kind="shownState"
+      :message="
+        shownState === 'success'
+          ? content.success.titleByChannel[values.contactPreference]
+          : content.error.title
+      "
+      :error-fallback="content.error.fallback"
+    />
 
-    <!-- `server-error`: the form above stays mounted with its captured values. -->
-    <p
-      v-if="previewState === 'server-error'"
-      class="mt-form-gap font-instrument text-body-sm text-red-400"
-    >
-      {{ content.error.title }}
-      <a href="mailto:support@muush.dev" class="underline">{{
-        content.error.fallback
-      }}</a>
-    </p>
+    <!-- Turnstile's host: empty in the normal flow (Invisible key). Outside
+         the form so the widget survives the form being replaced. -->
+    <div ref="challengeHost" />
   </div>
 </template>
-
-<style scoped>
-/* The WhatsApp field's mount/unmount transition (FR-011, FR-012).
-   `max-height`, not `height`: the error message varies its own height. */
-.whatsapp-field-enter-active,
-.whatsapp-field-leave-active {
-  overflow: clip;
-  transition:
-    max-height var(--duration-contact-whatsapp-toggle) ease,
-    opacity var(--duration-contact-whatsapp-toggle) ease;
-}
-
-.whatsapp-field-enter-from,
-.whatsapp-field-leave-to {
-  max-height: 0;
-  opacity: 0;
-}
-
-.whatsapp-field-enter-to,
-.whatsapp-field-leave-from {
-  max-height: var(--spacing-contact-whatsapp-h);
-  opacity: 1;
-}
-
-/* Dropped, not shortened: the field still mounts/unmounts, only the animated
-   step is removed (spec FR-012, `findings.md` § R53 discipline). */
-@media (prefers-reduced-motion: reduce) {
-  .whatsapp-field-enter-active,
-  .whatsapp-field-leave-active {
-    transition: none;
-  }
-}
-</style>

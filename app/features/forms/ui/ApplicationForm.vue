@@ -1,92 +1,75 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, useTemplateRef } from 'vue'
 import {
   type ApplicationFormContent,
   CV_REQUIRED,
-  ROLE_CATALOG,
 } from '@/features/forms/data/applicationFields'
+import type { ApplicationSubmitter } from '@/features/forms/data/submissionContract'
+import { fieldErrorMessage } from '@/features/forms/logic/fieldErrorMessage'
+import {
+  toAreaRoleGroups,
+  toFieldOptions,
+} from '@/features/forms/logic/selectOptions'
 import { useApplicationForm } from '@/features/forms/logic/useApplicationForm'
 import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
-import ApplicationWhatsappField from './ApplicationWhatsappField.vue'
 import FileField from './FileField.vue'
+import FormOutcome from './FormOutcome.vue'
+import HoneypotField from './HoneypotField.vue'
 import RadioPillGroup from './RadioPillGroup.vue'
 import SelectField from './SelectField.vue'
 import TextField from './TextField.vue'
+import WhatsappField from './WhatsappField.vue'
 
 /**
  * ApplicationForm — the eight fields of `docs/business/landing/ui-map.md`
- * § 9, real client-side validation, and nothing else. `about/
- * WorkWithMuushSection.vue` is its only consumer, through `forms/`'s barrel
- * (Article III, plan.md D-1).
+ * § 9 and the real submission flow of feature 029, including the optional
+ * CV upload. Same seam as `ContactForm.vue`: the page creates the
+ * `submitter` (`useApplicationSubmitter()`), this component never touches the
+ * network (Article V, spec FR-025), and `previewState` is a Storybook-only
+ * display override no page or section passes.
  *
- * No-submit guarantee, structural: `useApplicationForm`'s `state` is typed
- * `'idle' | 'invalid'`, no third value exists anywhere in that file, and
- * `previewState` below is the **only** place `'sending' | 'success' |
- * 'server-error'` exist — consumed only by `ApplicationForm.stories.ts`.
- *
- * "Área y rol" values are qualified `${area}:${roleId}`, not bare role ids:
- * `ROLE_CATALOG` ships the identical placeholder role id under all six areas
- * (plan.md D-6), and a bare id would collide across `<optgroup>`s otherwise.
- *
- * The WhatsApp field and its transition live in `ApplicationWhatsappField.vue`
- * — extracted so this file stays under Article V's 200-line limit (round 1
- * review caught it shipping at 249 with no real extraction).
+ * "Área y rol" values are qualified `${area}:${roleId}` because `sales` is
+ * both an area and a role; the payload builder converts them to the bare
+ * role id the API accepts (research R7).
  */
 interface Props {
   content: ApplicationFormContent
-  /** Storybook-only (plan.md D-1). Absent → renders the real `idle`/`invalid`
-   * state `useApplicationForm` computes. */
+  submitter: ApplicationSubmitter
   previewState?: 'sending' | 'success' | 'server-error'
 }
 
-const { content, previewState } = defineProps<Props>()
+const { content, submitter, previewState } = defineProps<Props>()
+
+const challengeHost = useTemplateRef<HTMLElement>('challengeHost')
 
 const {
   values,
   errors,
   state,
+  cvNoteVisible,
+  honeypot,
+  markInteractive,
+  onEngage,
   onSubmit,
   onContactPreferenceChange,
   onCvChange,
-} = useApplicationForm()
+} = useApplicationForm({ submitter, challengeHost })
 
-const readonly = computed(() => previewState === 'sending')
-const showForm = computed(() => previewState !== 'success')
+onMounted(markInteractive)
+
+const shownState = computed(() => previewState ?? state.value)
+const readonly = computed(() => shownState.value === 'sending')
 
 const contactPreferenceOptions = computed(() =>
-  (
-    Object.entries(content.fields.contactPreference.options) as [
-      string,
-      string,
-    ][]
-  ).map(([value, label]) => ({ value, label }))
+  toFieldOptions(content.fields.contactPreference.options)
 )
+const areaRoleGroups = computed(() => toAreaRoleGroups(content.fields.areaRole))
 
-const areaRoleGroups = computed(() =>
-  ROLE_CATALOG.map(({ area, roleIds }) => ({
-    label: content.fields.areaRole.areas[area],
-    options: roleIds.map(roleId => ({
-      value: `${area}:${roleId}`,
-      label: content.fields.areaRole.roles[area]?.[roleId] ?? roleId,
-    })),
-  }))
-)
-
-/**
- * Gated on `state === 'invalid'`, same reasoning as `ContactForm.vue`'s own
- * `errorFor`: `errors` is always live, but the error *treatment* must not
- * appear before a submit is attempted.
- */
+/** Error treatment appears only once a submit was attempted (`ui-map.md`
+ * § 7: the idle form shows no errors at all). */
 function errorFor(field: keyof typeof errors.value): string | undefined {
   if (state.value !== 'invalid') return undefined
-  const key = errors.value[field]
-  if (!key) return undefined
-  const messages = content.fields[field] as unknown as Record<
-    string,
-    string | undefined
-  >
-  const kind = key.split('.').pop() ?? ''
-  return messages[kind]
+  return fieldErrorMessage(errors.value[field], content.fields[field])
 }
 </script>
 
@@ -95,10 +78,12 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
     class="rounded-panel-sm border border-glass-dark-line bg-glass-dark-contact p-glass-dark backdrop-blur-glass-dark"
   >
     <form
-      v-if="showForm"
+      v-if="shownState !== 'success'"
       novalidate
       class="flex flex-col gap-form-gap"
+      :aria-busy="shownState === 'sending'"
       @submit="onSubmit"
+      @focusin="onEngage"
     >
       <TextField
         id="name"
@@ -161,45 +146,37 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
         :readonly="readonly"
         @update:model-value="onContactPreferenceChange($event as 'email' | 'whatsapp')"
       />
-      <ApplicationWhatsappField
+      <WhatsappField
         v-model="values.whatsapp"
         :visible="values.contactPreference === 'whatsapp'"
         :label="content.fields.whatsapp.label"
         :error="errorFor('whatsapp')"
         :readonly="readonly"
       />
+      <HoneypotField v-model="honeypot" />
 
-      <!--
-        Feature 025 (corrected) — same node and same reasoning as
-        `ContactForm.vue`: `width: 216` explicit at `lg`, `fill_container`
-        below it, so the fixed width and the centring both stay scoped to
-        `lg:` and mobile keeps stretching to the form's width.
-      -->
+      <!-- Same `lg:`-scoped width and centring as `ContactForm.vue`. -->
       <BotonPrimario
         variant="submit"
         type="submit"
-        :disabled="previewState === 'sending'"
+        :disabled="readonly"
         class="lg:w-btn-submit-w lg:self-center"
       >
-        {{ previewState === 'sending' ? content.sending : content.submit }}
+        {{ readonly ? content.sending : content.submit }}
       </BotonPrimario>
     </form>
 
-    <div v-else class="flex flex-col gap-form-gap">
-      <p class="font-instrument text-body-lg text-bone-100">
-        {{ content.success.title }}
-      </p>
-    </div>
+    <FormOutcome
+      v-if="shownState === 'success' || shownState === 'server-error'"
+      :kind="shownState"
+      :message="
+        shownState === 'success' ? content.success.title : content.error.title
+      "
+      :note="cvNoteVisible ? content.success.cvNote : undefined"
+      :error-fallback="content.error.fallback"
+    />
 
-    <!-- `server-error`: the form above stays mounted with its captured values. -->
-    <p
-      v-if="previewState === 'server-error'"
-      class="mt-form-gap font-instrument text-body-sm text-red-400"
-    >
-      {{ content.error.title }}
-      <a href="mailto:support@muush.dev" class="underline">{{
-        content.error.fallback
-      }}</a>
-    </p>
+    <!-- Turnstile's host, outside the form: see `ContactForm.vue`. -->
+    <div ref="challengeHost" />
   </div>
 </template>

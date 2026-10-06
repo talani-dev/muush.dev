@@ -254,15 +254,15 @@ Copy de error — **ES**: "No pudimos enviarlo. Escríbenos a support@muush.dev
 o por WhatsApp y lo resolvemos." — **EN**: "We couldn't send it. Write to
 support@muush.dev or reach us on WhatsApp and we'll sort it out."
 
-Protección contra spam: honeypot oculto + marca de tiempo mínima. Sin
-captcha visible (agrega fricción en el punto de conversión).
+Protección contra spam: honeypot oculto + marca de tiempo mínima (solo en
+el cliente, nunca se mandan al servidor) + Cloudflare Turnstile en modo
+**Invisible**. Sin captcha visible (agrega fricción en el punto de
+conversión).
 
-> 🔴 **Bloqueante:** a dónde llega el envío. Opciones: Formspree/Web3Forms,
-> función serverless a support@muush.dev, o directo a una base del Company
-> OS (Notion) para que el lead caiga en CRM. La última es la que conviene
-> al negocio. Sin esto el formulario no se puede terminar — ver
-> `decisions-open.md`.
-> 🔴 Si el envío también dispara un correo de confirmación al usuario.
+> ✅ **Resuelto 2026-10-05 (Roberto):** el envío va a la Form Submission
+> API propia (`POST /contact`), y el backend manda el correo de
+> confirmación al usuario. Contrato completo y decisiones del sitio en
+> `form-api-contract.md`.
 
 ## 8 · Footer
 
@@ -318,7 +318,9 @@ profile. We'll reach out when there's a project that fits."
 
 > 🔴 Si el CV es obligatorio — recomendación de la fuente: **opcional**,
 > con portafolio/LinkedIn como respaldo.
-> 🔴 Dónde se guardan los CVs (implica storage + consentimiento de datos).
+> ✅ Dónde se guardan los CVs — **resuelto 2026-10-05:** bucket S3 del
+> backend, subida directa con URL firmada (`form-api-contract.md` § 4). El
+> consentimiento de datos sigue sin definirse.
 > 🔴 El copy de Hero, Network y Work with muush sigue en borrador.
 
 ## 10 · Efectos que dependen de JavaScript (con fallback sin JS)

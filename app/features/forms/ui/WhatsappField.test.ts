@@ -1,16 +1,15 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import ApplicationWhatsappField from './ApplicationWhatsappField.vue'
+import WhatsappField from './WhatsappField.vue'
 
 /**
- * Extracted from `ApplicationForm.vue` (round 2 review fix, Article V's
- * 200-line limit). `ApplicationForm.test.ts`'s own "WhatsApp field" describe
- * block already exercises this through the composed form; these assertions
- * cover the component in isolation, per Constitution Article X.
+ * Shared by both forms since feature 029. `ContactForm.test.ts` and
+ * `ApplicationForm.test.ts` each exercise it through the composed form; these
+ * assertions cover the component in isolation, per Constitution Article X.
  */
-describe('ApplicationWhatsappField', () => {
+describe('WhatsappField', () => {
   it('should render no field when visible is false', () => {
-    const wrapper = mount(ApplicationWhatsappField, {
+    const wrapper = mount(WhatsappField, {
       props: { visible: false, modelValue: '', label: 'Número de WhatsApp' },
     })
 
@@ -18,7 +17,7 @@ describe('ApplicationWhatsappField', () => {
   })
 
   it('should render the field with the given label when visible is true', () => {
-    const wrapper = mount(ApplicationWhatsappField, {
+    const wrapper = mount(WhatsappField, {
       props: { visible: true, modelValue: '', label: 'Número de WhatsApp' },
     })
 
@@ -28,7 +27,7 @@ describe('ApplicationWhatsappField', () => {
   })
 
   it('should emit update:modelValue when the field changes', async () => {
-    const wrapper = mount(ApplicationWhatsappField, {
+    const wrapper = mount(WhatsappField, {
       props: { visible: true, modelValue: '', label: 'Número de WhatsApp' },
     })
 
@@ -38,7 +37,7 @@ describe('ApplicationWhatsappField', () => {
   })
 
   it('should render the error message and readonly state it is given', () => {
-    const wrapper = mount(ApplicationWhatsappField, {
+    const wrapper = mount(WhatsappField, {
       props: {
         visible: true,
         modelValue: '5639060739',

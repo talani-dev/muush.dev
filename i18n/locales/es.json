@@ -126,7 +126,11 @@
       "submit": "Enviar",
       "sending": "Enviando…",
       "success": {
-        "title": "Listo, ya lo recibimos. Te respondemos por [correo/WhatsApp] en menos de 24 horas hábiles."
+        "title": "Listo, ya lo recibimos. Te respondemos por {channel} en menos de 24 horas hábiles.",
+        "channel": {
+          "email": "correo",
+          "whatsapp": "WhatsApp"
+        }
       },
       "error": {
         "title": "No pudimos enviarlo. Escríbenos a support{'@'}muush.dev o por WhatsApp y lo resolvemos.",
@@ -228,7 +232,8 @@
       "submit": "Enviar",
       "sending": "Enviando…",
       "success": {
-        "title": "Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes."
+        "title": "Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes.",
+        "cvNote": "Tu perfil llegó, pero no pudimos adjuntar tu CV. Si quieres, mándalo a support{'@'}muush.dev."
       },
       "error": {
         "title": "No pudimos enviarlo. Escríbenos a support{'@'}muush.dev o por WhatsApp y lo resolvemos.",

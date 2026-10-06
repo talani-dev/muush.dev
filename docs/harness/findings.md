@@ -866,3 +866,58 @@ de los tres defectos reportados.
 "target − contenido" sin medir en vivo, y sin considerar un `border` que la
 misma corrección introduce, es exactamente el tipo de error que una lectura
 del token nunca detecta — solo lo hace medir la caja renderizada.
+
+---
+
+## Feature 029 · Form submission integration — hallazgos de implementación (2026-10-05)
+
+### R65 · La API de Turnstile, verificada contra la documentación actual de Cloudflare
+
+`research.md` § R2 de la feature 029 marcaba como UNVERIFIED los nombres de
+opción del widget. Context7 no estaba disponible como herramienta en la sesión
+del `implementer`, así que se leyó directamente la documentación pública de
+Cloudflare en formato markdown (sin enviar ningún dato), el 2026-10-05:
+
+- `developers.cloudflare.com/turnstile/get-started/client-side-rendering/`
+- `…/client-side-rendering/widget-configurations/`
+- `…/troubleshooting/testing/`
+
+**Confirmado:** `api.js?render=explicit`; `turnstile.render(container,
+options) → widgetId`; `turnstile.reset(widgetId)`;
+`turnstile.execute(container)` (los ejemplos lo llaman con el contenedor, así
+que el código pasa el elemento host, no el id); `turnstile.remove(widgetId)`;
+opciones `execution: 'render' | 'execute'`, `appearance: 'always' | 'execute'
+| 'interaction-only'`, `'response-field'` (default `true`), `callback`,
+`'error-callback'`, `'expired-callback'`.
+
+**Claves de prueba (tabla de *testing*):** `1x00000000000000000000AA` pasa
+siempre y es **visible**; `1x00000000000000000000BB` pasa siempre y es
+**invisible**. Coincide con la corrección que el líder hizo en el gate
+(spec OA-5).
+
+**Dato que cambia una suposición del plan:** la documentación dice que
+`appearance` *solo afecta a widgets visibles* ("Invisible widgets are never
+shown regardless of the appearance setting"). `appearance: 'interaction-only'`
+sigue puesto por si alguna vez se configura una sitekey Managed, pero **lo que
+garantiza "sin captcha visible" (FR-020) es que la sitekey real sea de tipo
+Invisible en Cloudflare**, no la opción del cliente.
+
+**No verificado** (no hay navegador ni red real en las pruebas): que
+`reset` + `execute` sobre el mismo widget emita un token nuevo en cada
+llamada contra Cloudflare real. Las pruebas usan un Turnstile falso. Se
+confirma en el primer humo manual con la API ya desplegada.
+
+### R66 · happy-dom envuelve un `File` en un proxy reactivo; un navegador no
+
+**Observado** en `useApplicationForm.test.ts`: tras guardar un `File` dentro
+del `ref` de valores, `values.value.cv` **no** es `===` al `File` original
+bajo happy-dom (Vitest lo reporta como "serializes to the same string").
+**Inferido, no medido en un navegador:** Vue solo hace reactivos los objetos
+cuyo `Object.prototype.toString` es `Object`/`Array`/colección; un `File` de
+navegador da `[object File]` y quedaría crudo, así que la diferencia vendría
+del `File` de happy-dom.
+
+Consecuencia práctica: `useFormSubmitState.ts` le pasa al submitter
+`{ ...toRaw(values.value) }`, de modo que el `File` que llega al `PUT` de S3
+es el objeto crudo en cualquier entorno, y una prueba que compara identidad
+del archivo tiene que usar `toRaw(...)`.
