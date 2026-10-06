@@ -10,7 +10,7 @@
 
 | # | Decisión | De quién | Por qué bloquea |
 |---|---|---|---|
-| 1 | A dónde llegan los formularios: servicio externo (Formspree/Web3Forms), función serverless a support@muush.dev, o directo a CRM del Company OS | Roberto y Clau | Sin esto no hay formulario funcional |
+| ~~1~~ | ~~A dónde llegan los formularios~~ | ~~Roberto y Clau~~ | ✅ **RESUELTA 2026-10-05** — Form Submission API propia, ver `form-api-contract.md` |
 | ~~2~~ | ~~Link real de Google Calendar para el CTA de llamada~~ | ~~Clau~~ | ✅ **RESUELTA 2026-09-07** — ver abajo |
 | 3 | Qué pasa con FAQ: escribirla, quitar el link del footer, o dejarla "próximamente" sin link | Clau | Hoy sería un 404 en el footer de todo el sitio |
 | ~~4~~ | ~~Estrategia de URL del idioma~~ | ~~Roberto~~ | ✅ **RESUELTA 2026-09-06** — ver abajo |
@@ -22,7 +22,7 @@
 | 5 | Nav fijo al hacer scroll y su estado comprimido — falta el frame | Clau y Roberto |
 | 7 | Si el CV de la aplicación (Nosotros) es obligatorio, y dónde se guardan los archivos | Clau |
 | 8 | Borde LED en móvil: estático o en loop permanente (no hay hover en móvil) | Clau |
-| 9 | Si el envío del formulario dispara también un correo de confirmación al usuario | Clau |
+| ~~9~~ | ~~Si el envío del formulario dispara también un correo de confirmación al usuario~~ | ✅ **RESUELTA 2026-10-05** — sí, lo manda el backend (SES; en sandbox mientras no se apruebe producción). Ver `form-api-contract.md` § 0 |
 
 ---
 
