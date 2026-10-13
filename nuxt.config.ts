@@ -52,11 +52,13 @@ export default defineNuxtConfig({
    *
    * - `formsApiBaseUrl` defaults to the deployed API of contract § 1, so a
    *   build without `.env` still targets the right backend.
-   * - `turnstileSiteKey` defaults to Cloudflare's always-pass INVISIBLE test
-   *   key (contract § 9, spec OA-5; `…AA` is the visible one). The real server
-   *   rejects test-key tokens, so a production build that falls back to this
-   *   default ships forms that always fail: the real Invisible sitekey must
-   *   reach the production build (Roberto owns that wiring).
+   * - `turnstileSiteKey` defaults to the REAL Invisible sitekey for
+   *   `muush.dev` (Roberto, 2026-10-12): it is public by design, and keeping
+   *   it here means the production build needs no extra wiring. Its secret
+   *   lives only in the backend. For local work, override it in `.env` with
+   *   Cloudflare's always-pass invisible test key `1x00000000000000000000BB`
+   *   — the real key fails on `localhost` unless that hostname is added in
+   *   Cloudflare. Never inline it under `app/` (tests/forms-config.test.ts).
    *
    * Turnstile's script (`challenges.cloudflare.com`) is a deliberate, scoped
    * exception to the "no third-party request at runtime" practice recorded
@@ -66,7 +68,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       formsApiBaseUrl: 'https://ma8y4vvt58.execute-api.us-east-1.amazonaws.com',
-      turnstileSiteKey: '1x00000000000000000000BB',
+      turnstileSiteKey: '0x4AAAAAAFO1zGh2W1tV7LWH',
     },
   },
 
