@@ -182,6 +182,12 @@ jobs:
               name: title,
               body: banner + withoutBanner,
               prerelease: !deployed,
+              // make_latest only defaults to true for a release published
+              // out of draft. This one is created as a non-draft prerelease
+              // and flipped here, so without an explicit value GitHub keeps
+              // the previous release as "Latest". A failed deploy stays a
+              // prerelease, which GitHub never allows to be latest.
+              make_latest: deployed ? 'true' : 'false',
             });
 
             if (!deployed) {
