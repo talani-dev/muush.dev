@@ -2561,3 +2561,39 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - Implementer: `docs/harness/progress/impl_form_submission_integration.md`.
   Reviewer: `docs/harness/progress/review_form_submission_integration.md`.
 - `feature_list.json`: feature id 29 status `reviewing` → `done`.
+
+## 2026-10-13 — Feature 31: cv_upload_no_silent_loss (done)
+
+- Hotfix requested by Roberto. A chosen CV is never dropped in silence. If
+  `/careers/upload` or the S3 PUT fails, `/careers` is not sent. The form
+  then enters `cv-upload-error`, which offers "Reintentar subida" / "Enviar
+  sin CV" (EN "Retry upload" / "Submit without CV").
+  - Every attempt asks for a new grant and new Turnstile tokens.
+  - The PUT sends only `content-type`, taken from the grant, and counts as
+    done only on status 200.
+  - While the CV uploads the button reads "Subiendo CV…".
+  - A non-PDF file, or one larger than 5242880 bytes, is refused the moment
+    it is selected, with no request.
+  - Feature 29's CV success note is removed.
+  - A static test checks that the forms code has no `console.` and that
+    `app/` imports no analytics or Sentry SDK.
+- New UI: `forms/ui/CvUploadError.vue`, and `forms/ui/CvField.vue`. The
+  `CvField` wrapper (research R9 fallback) keeps `ApplicationForm.vue` at 199
+  lines.
+- `./init.sh` exit 0 (73 files / 965 tests, generate, storybook build).
+- Gate: Roberto approved the spec on 2026-10-13 (OA-2 copy as given, OA-3
+  PUT 60 s, OA-4 a retry continues the submission). Reviewer APPROVED.
+- **Still open:**
+  - OA-1: `docs/business/landing/form-api-contract.md` needs a human
+    rewrite. § 4 ("send the headers exactly as returned"), § 7.5 and the
+    last bullet of § 9 still describe the old behaviour.
+  - OA-5 / T055: the `CvUploadError` visuals are unverified against the
+    `.pen`, and nobody has looked at them in Storybook yet. Stories:
+    `Forms/ApplicationForm` → `Uploading`, `CvUploadError`,
+    `CvUploadErrorEnglish`; `Forms/CvUploadError`.
+  - Infra: the CV bucket's CORS rule must allow origin `https://muush.dev`,
+    method `PUT` and header `content-type`. Until then every production CV
+    upload ends in the CV error.
+- Implementer: `docs/harness/progress/impl_cv_upload_no_silent_loss.md`.
+  Reviewer: `docs/harness/progress/review_cv_upload_no_silent_loss.md`.
+- `feature_list.json`: feature id 31 status `reviewing` → `done`.
