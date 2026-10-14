@@ -24,16 +24,6 @@ export const Success: Story = {
   },
 }
 
-export const SuccessWithCvNote: Story = {
-  args: {
-    kind: 'success',
-    message:
-      'Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes.',
-    note: 'Tu perfil llegó, pero no pudimos adjuntar tu CV. Si quieres, mándalo a support@muush.dev.',
-    errorFallback: 'support@muush.dev',
-  },
-}
-
 export const ServerError: Story = {
   args: {
     kind: 'server-error',

@@ -231,9 +231,14 @@
       },
       "submit": "Send",
       "sending": "Sending…",
+      "uploading": "Uploading CV…",
+      "cvUploadError": {
+        "message": "We couldn't upload your CV. Try again or submit without a CV.",
+        "retry": "Retry upload",
+        "submitWithoutCv": "Submit without CV"
+      },
       "success": {
-        "title": "Thanks, we've got your profile. We'll reach out when there's a project that fits.",
-        "cvNote": "Your profile came through, but we couldn't attach your CV. If you'd like, send it to support{'@'}muush.dev."
+        "title": "Thanks, we've got your profile. We'll reach out when there's a project that fits."
       },
       "error": {
         "title": "We couldn't send it. Write to support{'@'}muush.dev or reach us on WhatsApp and we'll sort it out.",

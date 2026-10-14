@@ -136,10 +136,7 @@ const VALID: Partial<ContactFormValues> = {
 }
 
 function stubSubmitter(
-  outcome: SubmissionOutcome<ContactFieldId> = {
-    kind: 'success',
-    cvAttached: true,
-  }
+  outcome: SubmissionOutcome<ContactFieldId> = { kind: 'success' }
 ) {
   return {
     engage: vi.fn<ContactSubmitter['engage']>(),
@@ -211,7 +208,7 @@ describe('useContactForm · the submit state machine', () => {
     const submitting = form.onSubmit(new Event('submit'))
     expect(form.state.value).toBe('sending')
 
-    finish({ kind: 'success', cvAttached: true })
+    finish({ kind: 'success' })
     await submitting
     expect(form.state.value).toBe('success')
   })
@@ -233,7 +230,9 @@ describe('useContactForm · the submit state machine', () => {
 
     await form.onSubmit(new Event('submit'))
 
-    expect(submitter.submit).toHaveBeenCalledWith({
+    /* The shared state machine also hands every submitter a progress
+       callback (feature 031); the contact flow ignores it. */
+    expect(submitter.submit.mock.calls[0]?.[0]).toEqual({
       ...initialContactFormValues(),
       ...VALID,
     })

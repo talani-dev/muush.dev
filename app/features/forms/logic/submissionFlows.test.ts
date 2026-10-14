@@ -67,8 +67,7 @@ function countingTokens(log?: string[]) {
 const GRANT: CvUploadGrant = {
   cvId: 'cv-uuid',
   uploadUrl: 'https://bucket.test.invalid/signed',
-  method: 'PUT',
-  headers: { 'content-type': 'application/pdf' },
+  contentType: 'application/pdf',
 }
 
 const CHALLENGE = { kind: 'challenge' } as const
@@ -103,7 +102,7 @@ describe('submitContactFlow', () => {
 
     expect(
       await submitContactFlow(contact, { client, getToken, locale: 'es' })
-    ).toEqual({ kind: 'success', cvAttached: true })
+    ).toEqual({ kind: 'success' })
     expect(log).toEqual(['contact:token-1'])
   })
 
@@ -218,7 +217,7 @@ describe('submitContactFlow · real client classification over a mocked fetch', 
 })
 
 describe('submitApplicationFlow', () => {
-  it('should send one application with one token and no upload when there is no CV', async () => {
+  it('should send one application without cvId and no upload when cv is null', async () => {
     const { client, log, careersPayloads } = fakeClient({})
 
     expect(
@@ -227,9 +226,11 @@ describe('submitApplicationFlow', () => {
         getToken: countingTokens(),
         locale: 'en',
       })
-    ).toEqual({ kind: 'success', cvAttached: true })
+    ).toEqual({ kind: 'success' })
     expect(log).toEqual(['careers:token-1'])
     expect(careersPayloads[0]).not.toHaveProperty('cvId')
+    expect(client.requestCvUpload).not.toHaveBeenCalled()
+    expect(client.putCv).not.toHaveBeenCalled()
   })
 
   it('should upload, PUT, then apply with the grant cvId and two distinct tokens when a CV is chosen', async () => {
@@ -241,7 +242,7 @@ describe('submitApplicationFlow', () => {
         getToken: countingTokens(),
         locale: 'es',
       })
-    ).toEqual({ kind: 'success', cvAttached: true })
+    ).toEqual({ kind: 'success' })
     expect(log).toEqual(['upload:token-1', 'put', 'careers:token-2'])
     expect(careersPayloads[0]?.cvId).toBe(GRANT.cvId)
     expect(client.requestCvUpload).toHaveBeenCalledWith({
@@ -274,18 +275,20 @@ describe('submitApplicationFlow', () => {
     expect(getToken).toHaveBeenCalledTimes(2)
   })
 
-  const cvFailures: [string, Parameters<typeof fakeClient>[0]][] = [
+  /* A factory: `fakeClient` consumes its script queues, so every test gets
+     fresh ones. */
+  const cvFailures = (): [string, Parameters<typeof fakeClient>[0]][] => [
     ['the upload request fails', { upload: [FAILURE] }],
     [
       'the upload request is rejected as invalid',
       { upload: [{ kind: 'validation', fields: ['contentLength'] }] },
     ],
     ['both upload tokens are rejected', { upload: [CHALLENGE, CHALLENGE] }],
-    ['the PUT fails or times out', { put: ['failed'] }],
+    ['the PUT fails, answers non-200 or times out', { put: ['failed'] }],
   ]
 
-  it.each(cvFailures)(
-    'should still apply without cvId and flag the CV when %s',
+  it.each(cvFailures())(
+    'should return cv-upload-failed and never call postCareers when %s',
     async (_label, script) => {
       const { client, careersPayloads } = fakeClient(script)
 
@@ -295,11 +298,122 @@ describe('submitApplicationFlow', () => {
           getToken: countingTokens(),
           locale: 'es',
         })
-      ).toEqual({ kind: 'success', cvAttached: false })
-      expect(careersPayloads).toHaveLength(1)
-      expect(careersPayloads[0]).not.toHaveProperty('cvId')
+      ).toEqual({ kind: 'cv-upload-failed' })
+      expect(client.postCareers).not.toHaveBeenCalled()
+      expect(careersPayloads).toHaveLength(0)
     }
   )
+
+  it('should return cv-upload-failed and never call postCareers when no token can be obtained before the grant', async () => {
+    const { client, log } = fakeClient({})
+    const getToken = vi.fn(async (): Promise<string> => {
+      throw new Error('script blocked')
+    })
+
+    expect(
+      await submitApplicationFlow(application({ cv }), {
+        client,
+        getToken,
+        locale: 'es',
+      })
+    ).toEqual({ kind: 'cv-upload-failed' })
+    expect(log).toEqual([])
+  })
+
+  it('should never call postCareers without cvId when a CV is chosen', async () => {
+    const scripts = [...cvFailures().map(([, script]) => script), {}]
+    for (const script of scripts) {
+      const { client, careersPayloads } = fakeClient(script)
+      await submitApplicationFlow(application({ cv }), {
+        client,
+        getToken: countingTokens(),
+        locale: 'es',
+      })
+      for (const payload of careersPayloads) {
+        expect(payload.cvId).toBe(GRANT.cvId)
+      }
+    }
+  })
+
+  it('should call progress.cvUploaded once, after the PUT and before the careers token', async () => {
+    const log: string[] = []
+    const { client } = fakeClient({})
+    const getToken = countingTokens(log)
+    const cvUploaded = vi.fn(() => {
+      log.push('cvUploaded')
+    })
+    client.putCv = vi.fn(async () => {
+      log.push('put')
+      return 'uploaded' as const
+    })
+
+    await submitApplicationFlow(
+      application({ cv }),
+      { client, getToken, locale: 'es' },
+      { cvUploaded }
+    )
+
+    expect(cvUploaded).toHaveBeenCalledTimes(1)
+    expect(log).toEqual(['token:token-1', 'put', 'cvUploaded', 'token:token-2'])
+  })
+
+  it('should never call progress.cvUploaded when the CV upload failed', async () => {
+    const cvUploaded = vi.fn()
+    for (const [, script] of cvFailures()) {
+      await submitApplicationFlow(
+        application({ cv }),
+        {
+          client: fakeClient(script).client,
+          getToken: countingTokens(),
+          locale: 'es',
+        },
+        { cvUploaded }
+      )
+    }
+
+    expect(cvUploaded).not.toHaveBeenCalled()
+  })
+
+  it('should request a new grant, PUT to the new uploadUrl and use only new tokens when the flow runs again after a failed PUT', async () => {
+    const second: CvUploadGrant = {
+      cvId: 'cv-2',
+      uploadUrl: 'https://bucket.test.invalid/signed-2',
+      contentType: 'application/pdf',
+    }
+    const first: CvUploadGrant = {
+      ...second,
+      cvId: 'cv-1',
+      uploadUrl: 'https://bucket.test.invalid/signed-1',
+    }
+    const { client, log, careersPayloads } = fakeClient({
+      upload: [
+        { kind: 'ok', body: first },
+        { kind: 'ok', body: second },
+      ],
+      put: ['failed', 'uploaded'],
+    })
+    const deps = { client, getToken: countingTokens(), locale: 'es' } as const
+
+    expect(await submitApplicationFlow(application({ cv }), deps)).toEqual({
+      kind: 'cv-upload-failed',
+    })
+    expect(await submitApplicationFlow(application({ cv }), deps)).toEqual({
+      kind: 'success',
+    })
+
+    const putUrls = vi
+      .mocked(client.putCv)
+      .mock.calls.map(([grant]) => grant.uploadUrl)
+    expect(putUrls).toEqual([first.uploadUrl, second.uploadUrl])
+    const tokens = log.filter(entry => entry.includes(':'))
+    expect(tokens).toEqual([
+      'upload:token-1',
+      'upload:token-2',
+      'careers:token-3',
+    ])
+    expect(careersPayloads).toHaveLength(1)
+    expect(careersPayloads[0]?.cvId).toBe('cv-2')
+  })
 
   it('should not PUT when the upload request failed', async () => {
     const { client } = fakeClient({ upload: [FAILURE] })
@@ -313,7 +427,7 @@ describe('submitApplicationFlow', () => {
     expect(client.putCv).not.toHaveBeenCalled()
   })
 
-  it('should fail with no CV note when the CV uploaded but the application failed', async () => {
+  it('should fail when the CV uploaded but the application failed', async () => {
     const { client } = fakeClient({ careers: [FAILURE] })
 
     expect(
@@ -363,5 +477,143 @@ describe('submitApplicationFlow', () => {
         locale: 'es',
       })
     ).toEqual(FAILURE)
+  })
+})
+
+describe('submitApplicationFlow · real client over a mocked fetch', () => {
+  const API = 'https://api.test.invalid'
+
+  interface Route {
+    status: number
+    body?: unknown
+  }
+
+  function grantBody(n: number) {
+    return {
+      ok: true,
+      cvId: `cv-${n}`,
+      uploadUrl: `https://bucket.test.invalid/signed-${n}`,
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/pdf',
+        'content-length': String(cv.size),
+      },
+      expiresInSeconds: 600,
+    }
+  }
+
+  /** Answers by URL; `put` entries may be an Error to simulate a network
+   * or CORS rejection (a `TypeError` with no status, as in browsers). */
+  function routedFetch(routes: {
+    upload?: Route[]
+    put?: (Route | Error)[]
+    careers?: Route[]
+  }) {
+    let grants = 0
+    const fetchImpl = vi.fn<FetchLike>(async (url, init) => {
+      const respond = ({ status, body }: Route) => ({
+        ok: status >= 200 && status < 300,
+        status,
+        text: async () => JSON.stringify(body ?? {}),
+      })
+      if (url === `${API}/careers/upload`) {
+        grants += 1
+        return respond(
+          routes.upload?.shift() ?? { status: 200, body: grantBody(grants) }
+        )
+      }
+      if (url === `${API}/careers`) {
+        return respond(
+          routes.careers?.shift() ?? { status: 200, body: { ok: true } }
+        )
+      }
+      expect(init.method).toBe('PUT')
+      const answer = routes.put?.shift() ?? { status: 200 }
+      if (answer instanceof Error) throw answer
+      return respond(answer)
+    })
+    return {
+      fetchImpl,
+      client: createFormsApiClient({ baseUrl: API, fetchImpl }),
+    }
+  }
+
+  function calledUrls(fetchImpl: ReturnType<typeof vi.fn<FetchLike>>) {
+    return fetchImpl.mock.calls.map(([url]) => url)
+  }
+
+  function bodyOf(init: RequestInit | undefined): Record<string, unknown> {
+    return JSON.parse(String(init?.body))
+  }
+
+  it.each([
+    [
+      '/careers/upload answers 500',
+      {
+        upload: [{ status: 500, body: { ok: false, error: 'internal_error' } }],
+      },
+    ],
+    ['the PUT answers 403', { put: [{ status: 403 }] }],
+    [
+      'the PUT rejects with a network error',
+      { put: [new TypeError('Failed to fetch')] },
+    ],
+  ])('should not call /careers when %s', async (_label, routes) => {
+    const { client, fetchImpl } = routedFetch(routes)
+
+    expect(
+      await submitApplicationFlow(application({ cv }), {
+        client,
+        getToken: countingTokens(),
+        locale: 'es',
+      })
+    ).toEqual({ kind: 'cv-upload-failed' })
+    expect(calledUrls(fetchImpl).some(url => url.endsWith('/careers'))).toBe(
+      false
+    )
+  })
+
+  it('should send /careers with the cvId only after the PUT answered 200', async () => {
+    const { client, fetchImpl } = routedFetch({})
+
+    expect(
+      await submitApplicationFlow(application({ cv }), {
+        client,
+        getToken: countingTokens(),
+        locale: 'es',
+      })
+    ).toEqual({ kind: 'success' })
+    expect(calledUrls(fetchImpl)).toEqual([
+      `${API}/careers/upload`,
+      'https://bucket.test.invalid/signed-1',
+      `${API}/careers`,
+    ])
+    expect(bodyOf(fetchImpl.mock.calls[2]?.[1]).cvId).toBe('cv-1')
+  })
+
+  it('should send /careers with the second cvId when the retried PUT answers 200', async () => {
+    const { client, fetchImpl } = routedFetch({ put: [{ status: 403 }] })
+    const deps = { client, getToken: countingTokens(), locale: 'es' } as const
+
+    await submitApplicationFlow(application({ cv }), deps)
+    expect(await submitApplicationFlow(application({ cv }), deps)).toEqual({
+      kind: 'success',
+    })
+
+    const calls = fetchImpl.mock.calls
+    const putUrls = calls
+      .filter(([, init]) => init.method === 'PUT')
+      .map(([url]) => url)
+    expect(putUrls).toEqual([
+      'https://bucket.test.invalid/signed-1',
+      'https://bucket.test.invalid/signed-2',
+    ])
+    const tokens = calls
+      .filter(([, init]) => init.method === 'POST')
+      .map(([, init]) => bodyOf(init).turnstileToken)
+    expect(new Set(tokens).size).toBe(tokens.length)
+    const careers = calls.filter(([url]) => url === `${API}/careers`)
+    expect(careers).toHaveLength(1)
+    expect(bodyOf(careers[0]?.[1]).cvId).toBe('cv-2')
   })
 })

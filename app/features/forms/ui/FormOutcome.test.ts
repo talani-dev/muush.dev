@@ -28,24 +28,15 @@ describe('FormOutcome · success', () => {
     expect(document.activeElement).toBe(confirmation.element)
   })
 
-  it('should render the note below the confirmation only when one is given', () => {
-    const withNote = mountOutcome({
-      kind: 'success',
-      message: 'Gracias.',
-      note: 'No pudimos adjuntar tu CV.',
-      errorFallback: 'support@muush.dev',
-    })
-    const withoutNote = mountOutcome({
+  it('should render only the confirmation when the outcome is success', () => {
+    /* Feature 031 FR-006: no "CV could not be attached" note exists. */
+    const wrapper = mountOutcome({
       kind: 'success',
       message: 'Gracias.',
       errorFallback: 'support@muush.dev',
     })
 
-    expect(withNote.findAll('p').map(p => p.text())).toEqual([
-      'Gracias.',
-      'No pudimos adjuntar tu CV.',
-    ])
-    expect(withoutNote.findAll('p')).toHaveLength(1)
+    expect(wrapper.findAll('p').map(p => p.text())).toEqual(['Gracias.'])
   })
 })
 
@@ -65,16 +56,5 @@ describe('FormOutcome · server-error', () => {
     )
     expect(wrapper.find('[role="status"]').exists()).toBe(false)
     expect(document.activeElement).toBe(document.body)
-  })
-
-  it('should never show a note on an error, even if one is passed', () => {
-    const wrapper = mountOutcome({
-      kind: 'server-error',
-      message: 'No pudimos enviarlo.',
-      note: 'No pudimos adjuntar tu CV.',
-      errorFallback: 'support@muush.dev',
-    })
-
-    expect(wrapper.text()).not.toContain('No pudimos adjuntar tu CV.')
   })
 })

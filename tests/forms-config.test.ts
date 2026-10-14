@@ -145,3 +145,41 @@ describe('forms config · previewState stays Storybook-only', () => {
     }
   })
 })
+
+describe('forms config · nothing logs uploadUrl or form data (FR-014)', () => {
+  /*
+   * Feature 031: the presigned `uploadUrl` is a temporary credential and the
+   * form carries personal data. The site writes neither anywhere: no
+   * `console.` call in the forms module, and no analytics or
+   * error-reporting SDK imported anywhere in app/. (A browser printing a
+   * blocked URL on a CORS failure is the browser, not site code.)
+   */
+  const appSources = APP_SOURCES.filter(
+    ({ path }) => !/\.(test|stories)\.ts$/.test(path)
+  )
+
+  it('should find no console. call in any non-test source under app/features/forms/', () => {
+    const formsSources = appSources.filter(({ path }) =>
+      path.startsWith(join('app', 'features', 'forms'))
+    )
+
+    expect(formsSources.length).toBeGreaterThan(0)
+    for (const { path, source } of formsSources) {
+      expect(source, path).not.toMatch(/\bconsole\s*\./)
+    }
+  })
+
+  it('should find no analytics or error-reporting SDK import anywhere under app/', () => {
+    const sdk = /@sentry\/|posthog|gtag|plausible|umami|analytics/i
+    const specifiers = (source: string) =>
+      [...source.matchAll(/(?:from\s+|import\s*\(\s*)['"]([^'"]+)['"]/g)].map(
+        match => match[1] ?? ''
+      )
+
+    for (const { path, source } of appSources) {
+      for (const specifier of specifiers(source)) {
+        expect(sdk.test(specifier), `${path} imports ${specifier}`).toBe(false)
+      }
+    }
+  })
+})

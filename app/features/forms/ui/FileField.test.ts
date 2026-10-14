@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import { CV_MAX_BYTES } from '@/features/forms/data/applicationFields'
 import FileField from './FileField.vue'
 
 /** A `File` fixture with a controllable `.size`. */
@@ -85,6 +86,42 @@ describe('FileField · a real, presentational control', () => {
 
     expect(wrapper.emitted('reject')?.[0]).toEqual(['size'])
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+  })
+
+  it('should accept a PDF of exactly CV_MAX_BYTES when selected', async () => {
+    const wrapper = mount(FileField, {
+      props: {
+        id: 'cv',
+        label: 'CV',
+        modelValue: null,
+        placeholder: 'Adjuntar CV · PDF',
+      },
+    })
+
+    await selectFile(
+      wrapper,
+      fileFixture('cv.pdf', 'application/pdf', CV_MAX_BYTES)
+    )
+
+    expect(wrapper.emitted('update:modelValue')?.[0]?.[0]).toBeInstanceOf(File)
+    expect(wrapper.emitted('reject')).toBeUndefined()
+  })
+
+  it('should append describedBy to its own error id in aria-describedby', () => {
+    const wrapper = mount(FileField, {
+      props: {
+        id: 'cv',
+        label: 'CV',
+        modelValue: null,
+        placeholder: 'Adjuntar CV · PDF',
+        error: 'Solo se aceptan archivos PDF',
+        describedBy: 'cv-upload-error',
+      },
+    })
+
+    expect(
+      wrapper.find('input[type="file"]').attributes('aria-describedby')
+    ).toBe('cv-error cv-upload-error')
   })
 
   it('should render the filename and human-readable size when a file is already selected', () => {

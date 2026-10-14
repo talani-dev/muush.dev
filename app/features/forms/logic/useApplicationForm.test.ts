@@ -9,6 +9,7 @@ import {
   type ApplicationSubmitter,
   MIN_FILL_TIME_MS,
   type SubmissionOutcome,
+  type SubmissionProgress,
 } from '@/features/forms/data/submissionContract'
 import {
   useApplicationForm,
@@ -228,10 +229,7 @@ const VALID: Partial<ApplicationFormValues> = {
 }
 
 function stubSubmitter(
-  outcome: SubmissionOutcome<ApplicationFieldId> = {
-    kind: 'success',
-    cvAttached: true,
-  }
+  outcome: SubmissionOutcome<ApplicationFieldId> = { kind: 'success' }
 ) {
   return {
     engage: vi.fn<ApplicationSubmitter['engage']>(),
@@ -289,31 +287,66 @@ describe('useApplicationForm · client validation', () => {
   })
 })
 
-describe('useApplicationForm · the submit state machine', () => {
-  it('should go sending, then success, and hand over the chosen CV', async () => {
-    let finish: (outcome: SubmissionOutcome<ApplicationFieldId>) => void = () =>
-      undefined
-    const submitter = stubSubmitter()
-    submitter.submit.mockReturnValue(
+/** A submitter whose `submit` stays pending until the test settles it. */
+function pendingSubmitter() {
+  const submitter = stubSubmitter()
+  const control: {
+    finish: (outcome: SubmissionOutcome<ApplicationFieldId>) => void
+    progress?: SubmissionProgress
+  } = { finish: () => undefined }
+  submitter.submit.mockImplementation(
+    (_values, progress) =>
       new Promise(resolve => {
-        finish = resolve
+        control.finish = resolve
+        control.progress = progress
       })
-    )
+  )
+  return { submitter, control }
+}
+
+describe('useApplicationForm · the submit state machine', () => {
+  it('should go uploading, then sending after progress.cvUploaded, then success when a CV is chosen', async () => {
+    const { submitter, control } = pendingSubmitter()
     const cv = pdfFixture(2048)
     const { form } = readyForm({ ...VALID, cv }, submitter)
 
     const submitting = form.onSubmit(new Event('submit'))
-    expect(form.state.value).toBe('sending')
+    expect(form.state.value).toBe('uploading')
     expect(submitter.submit.mock.calls[0]?.[0].cv).toBe(cv)
 
-    finish({ kind: 'success', cvAttached: true })
+    control.progress?.cvUploaded()
+    expect(form.state.value).toBe('sending')
+
+    control.finish({ kind: 'success' })
     await submitting
     expect(form.state.value).toBe('success')
   })
 
-  it('should call the submitter once when submit fires again while sending', async () => {
-    const submitter = stubSubmitter()
-    submitter.submit.mockReturnValue(new Promise(() => undefined))
+  it('should go straight to sending when no CV is chosen', async () => {
+    const { submitter, control } = pendingSubmitter()
+    const { form } = readyForm(VALID, submitter)
+
+    const submitting = form.onSubmit(new Event('submit'))
+    expect(form.state.value).toBe('sending')
+
+    control.finish({ kind: 'success' })
+    await submitting
+    expect(form.state.value).toBe('success')
+  })
+
+  it('should call the submitter once when submit fires again while uploading', () => {
+    const { submitter } = pendingSubmitter()
+    const { form } = readyForm({ ...VALID, cv: pdfFixture() }, submitter)
+
+    void form.onSubmit(new Event('submit'))
+    void form.onSubmit(new Event('submit'))
+
+    expect(form.state.value).toBe('uploading')
+    expect(submitter.submit).toHaveBeenCalledTimes(1)
+  })
+
+  it('should call the submitter once when submit fires again while sending', () => {
+    const { submitter } = pendingSubmitter()
     const { form } = readyForm(VALID, submitter)
 
     void form.onSubmit(new Event('submit'))
@@ -322,22 +355,7 @@ describe('useApplicationForm · the submit state machine', () => {
     expect(submitter.submit).toHaveBeenCalledTimes(1)
   })
 
-  it('should expose the CV note only after a success in which the CV did not attach', async () => {
-    const attached = readyForm({ ...VALID, cv: pdfFixture() })
-    const lost = readyForm(
-      { ...VALID, cv: pdfFixture() },
-      stubSubmitter({ kind: 'success', cvAttached: false })
-    )
-
-    expect(lost.form.cvNoteVisible.value).toBe(false)
-    await attached.form.onSubmit(new Event('submit'))
-    await lost.form.onSubmit(new Event('submit'))
-
-    expect(attached.form.cvNoteVisible.value).toBe(false)
-    expect(lost.form.cvNoteVisible.value).toBe(true)
-  })
-
-  it('should move to server-error with every value intact and no CV note on failure', async () => {
+  it('should move to server-error with every value intact when the submitter fails', async () => {
     const cv = pdfFixture()
     const { form, submitter } = readyForm(
       { ...VALID, cv },
@@ -347,12 +365,177 @@ describe('useApplicationForm · the submit state machine', () => {
     await form.onSubmit(new Event('submit'))
 
     expect(form.state.value).toBe('server-error')
-    expect(form.cvNoteVisible.value).toBe(false)
     expect(toRaw(form.values.value).cv).toBe(cv)
     expect(form.values.value.name).toBe('Ana')
 
     await form.onSubmit(new Event('submit'))
     expect(submitter.submit).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('useApplicationForm · a failed CV upload', () => {
+  function failedUpload() {
+    const cv = pdfFixture(2048)
+    const ready = readyForm(
+      { ...VALID, portfolio: 'https://ana.dev', cv },
+      stubSubmitter({ kind: 'cv-upload-failed' })
+    )
+    return { ...ready, cv }
+  }
+
+  it('should enter cv-upload-error, keep every value and the file, and not succeed when the submitter reports cv-upload-failed', async () => {
+    const { form, cv } = failedUpload()
+
+    await form.onSubmit(new Event('submit'))
+
+    expect(form.state.value).toBe('cv-upload-error')
+    expect(form.cvUploadFailed.value).toBe(true)
+    expect(toRaw(form.values.value).cv).toBe(cv)
+    expect(form.values.value).toMatchObject({
+      name: 'Ana',
+      email: 'ana@muush.dev',
+      areaRole: 'it:backend',
+      portfolio: 'https://ana.dev',
+    })
+  })
+
+  it('should clear cv-upload-error back to idle when the visitor picks another file', async () => {
+    const { form } = failedUpload()
+    await form.onSubmit(new Event('submit'))
+
+    form.onCvChange(pdfFixture(4096))
+
+    expect(form.state.value).toBe('idle')
+    expect(form.cvUploadFailed.value).toBe(false)
+  })
+
+  it('should clear cv-upload-error back to idle when the visitor removes the file', async () => {
+    const { form } = failedUpload()
+    await form.onSubmit(new Event('submit'))
+
+    form.onCvChange(null)
+
+    expect(form.state.value).toBe('idle')
+    expect(form.values.value.cv).toBeNull()
+  })
+
+  it('should call the submitter again with the same file when onRetryCvUpload runs from cv-upload-error', async () => {
+    const { form, submitter, cv } = failedUpload()
+    await form.onSubmit(new Event('submit'))
+
+    submitter.submit.mockResolvedValueOnce({ kind: 'success' })
+    await form.onRetryCvUpload()
+
+    expect(submitter.submit).toHaveBeenCalledTimes(2)
+    expect(submitter.submit.mock.calls[1]?.[0].cv).toBe(cv)
+    expect(form.state.value).toBe('success')
+  })
+
+  it('should call the submitter again with the file when the form is submitted from cv-upload-error', async () => {
+    const { form, submitter, cv } = failedUpload()
+    await form.onSubmit(new Event('submit'))
+
+    await form.onSubmit(new Event('submit'))
+
+    expect(submitter.submit).toHaveBeenCalledTimes(2)
+    expect(submitter.submit.mock.calls[1]?.[0].cv).toBe(cv)
+    expect(form.state.value).toBe('cv-upload-error')
+  })
+
+  it('should ignore onRetryCvUpload while uploading or sending', () => {
+    const { submitter, control } = pendingSubmitter()
+    const { form } = readyForm({ ...VALID, cv: pdfFixture() }, submitter)
+
+    void form.onSubmit(new Event('submit'))
+    void form.onRetryCvUpload()
+    control.progress?.cvUploaded()
+    void form.onRetryCvUpload()
+
+    expect(form.state.value).toBe('sending')
+    expect(submitter.submit).toHaveBeenCalledTimes(1)
+  })
+
+  it('should clear the file and call the submitter with cv null when onSubmitWithoutCv runs', async () => {
+    const { form, submitter } = failedUpload()
+    await form.onSubmit(new Event('submit'))
+
+    submitter.submit.mockResolvedValueOnce({ kind: 'success' })
+    await form.onSubmitWithoutCv()
+
+    expect(form.values.value.cv).toBeNull()
+    expect(submitter.submit).toHaveBeenCalledTimes(2)
+    expect(submitter.submit.mock.calls[1]?.[0].cv).toBeNull()
+    expect(form.state.value).toBe('success')
+  })
+
+  it('should show the generic error and keep the CV removed when sending without CV fails', async () => {
+    const { form, submitter } = failedUpload()
+    await form.onSubmit(new Event('submit'))
+
+    submitter.submit.mockResolvedValue({ kind: 'failure' })
+    await form.onSubmitWithoutCv()
+
+    expect(form.state.value).toBe('server-error')
+    expect(form.values.value.cv).toBeNull()
+    expect(form.values.value.name).toBe('Ana')
+
+    await form.onSubmit(new Event('submit'))
+    expect(submitter.submit.mock.calls[2]?.[0].cv).toBeNull()
+  })
+
+  it('should never drop the file through onSubmitWithoutCv when no CV error is shown', async () => {
+    const { submitter } = pendingSubmitter()
+    const cv = pdfFixture()
+    const { form } = readyForm({ ...VALID, cv }, submitter)
+
+    void form.onSubmit(new Event('submit'))
+    await form.onSubmitWithoutCv()
+
+    expect(toRaw(form.values.value).cv).toBe(cv)
+    expect(submitter.submit).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('useApplicationForm · immediate file refusal', () => {
+  it('should clear the file and expose a format rejection when onCvReject receives format', () => {
+    const { form } = readyForm({ ...VALID, cv: pdfFixture() })
+
+    form.onCvReject('format')
+
+    expect(form.values.value.cv).toBeNull()
+    expect(form.cvRejection.value).toBe('format')
+  })
+
+  it('should clear the file and expose a size rejection when onCvReject receives size', () => {
+    const { form } = readyForm({ ...VALID, cv: pdfFixture() })
+
+    form.onCvReject('size')
+
+    expect(form.values.value.cv).toBeNull()
+    expect(form.cvRejection.value).toBe('size')
+  })
+
+  it('should clear the rejection when a valid file is chosen', () => {
+    const { form } = readyForm()
+
+    form.onCvReject('format')
+    form.onCvChange(pdfFixture())
+
+    expect(form.cvRejection.value).toBeNull()
+    expect(form.values.value.cv).toBeInstanceOf(File)
+  })
+
+  it('should never call the submitter from onCvReject', () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const { form, submitter } = readyForm()
+
+    form.onCvReject('size')
+
+    expect(submitter.submit).not.toHaveBeenCalled()
+    expect(submitter.engage).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(form.state.value).toBe('idle')
+    fetchSpy.mockRestore()
   })
 })
 

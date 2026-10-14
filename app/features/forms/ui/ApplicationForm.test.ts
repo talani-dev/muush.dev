@@ -4,11 +4,13 @@ import type {
   ApplicationFieldId,
   ApplicationFormContent,
 } from '@/features/forms/data/applicationFields'
+import { CV_MAX_BYTES } from '@/features/forms/data/applicationFields'
 import {
   type ApplicationSubmitter,
   HONEYPOT_FIELD_NAME,
   MIN_FILL_TIME_MS,
   type SubmissionOutcome,
+  type SubmissionProgress,
 } from '@/features/forms/data/submissionContract'
 import ApplicationForm from './ApplicationForm.vue'
 
@@ -71,9 +73,15 @@ const content: ApplicationFormContent = {
   },
   submit: 'Enviar',
   sending: 'Enviando…',
+  uploading: 'Subiendo CV…',
+  cvUploadError: {
+    message:
+      'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
+    retry: 'Reintentar subida',
+    submitWithoutCv: 'Enviar sin CV',
+  },
   success: {
     title: 'Gracias, ya tenemos tu perfil.',
-    cvNote: 'Tu perfil llegó, pero no pudimos adjuntar tu CV.',
   },
   error: {
     title: 'No pudimos enviarlo.',
@@ -99,10 +107,7 @@ afterEach(() => {
 
 /** A submitter that never touches the network: it records and answers. */
 function stubSubmitter(
-  outcome: SubmissionOutcome<ApplicationFieldId> = {
-    kind: 'success',
-    cvAttached: true,
-  }
+  outcome: SubmissionOutcome<ApplicationFieldId> = { kind: 'success' }
 ) {
   return {
     engage: vi.fn<ApplicationSubmitter['engage']>(),
@@ -111,7 +116,12 @@ function stubSubmitter(
 }
 
 interface MountOverrides {
-  previewState?: 'sending' | 'success' | 'server-error'
+  previewState?:
+    | 'uploading'
+    | 'sending'
+    | 'success'
+    | 'server-error'
+    | 'cv-upload-error'
   submitter?: ApplicationSubmitter
 }
 
@@ -126,10 +136,22 @@ function mountForm(overrides: MountOverrides = {}) {
 
 const pdf = new File(['%PDF-1.4'], 'cv.pdf', { type: 'application/pdf' })
 
-async function attachCv(wrapper: VueWrapper): Promise<void> {
+/** Simulates a selection in the native picker; repeatable on one input. */
+async function selectFile(wrapper: VueWrapper, file: File): Promise<void> {
   const input = wrapper.find('#cv').element as HTMLInputElement
-  Object.defineProperty(input, 'files', { value: [pdf] })
+  Object.defineProperty(input, 'files', { value: [file], configurable: true })
   await wrapper.find('#cv').trigger('change')
+}
+
+async function attachCv(wrapper: VueWrapper): Promise<void> {
+  await selectFile(wrapper, pdf)
+}
+
+/** A `File` whose reported size is `size`, without allocating it. */
+function sizedFile(size: number, type = 'application/pdf'): File {
+  const file = new File(['%PDF-1.4'], 'big.pdf', { type })
+  Object.defineProperty(file, 'size', { value: size })
+  return file
 }
 
 async function fillValid(wrapper: VueWrapper): Promise<void> {
@@ -290,29 +312,15 @@ describe('ApplicationForm · submitting', () => {
     expect(sent?.cv?.name).toBe('cv.pdf')
   })
 
-  it('should show the confirmation without the CV note when the CV attached', async () => {
+  it('should show the standard confirmation with no extra note when the CV attached', async () => {
     const wrapper = mountForm()
 
     await attachCv(wrapper)
     await submitValid(wrapper)
 
     const status = wrapper.find('[role="status"]')
-    expect(status.text()).toContain(content.success.title)
-    expect(status.text()).not.toContain(content.success.cvNote)
+    expect(status.text()).toBe(content.success.title)
     expect(document.activeElement).toBe(status.find('p').element)
-  })
-
-  it('should add the CV note under the confirmation when the CV did not attach', async () => {
-    const wrapper = mountForm({
-      submitter: stubSubmitter({ kind: 'success', cvAttached: false }),
-    })
-
-    await attachCv(wrapper)
-    await submitValid(wrapper)
-
-    const status = wrapper.find('[role="status"]')
-    expect(status.text()).toContain(content.success.title)
-    expect(status.text()).toContain(content.success.cvNote)
   })
 
   it('should keep every value, the chosen file included, and show the alert on failure', async () => {
@@ -324,7 +332,7 @@ describe('ApplicationForm · submitting', () => {
     await submitValid(wrapper)
 
     expect(wrapper.find('[role="alert"]').text()).toContain(content.error.title)
-    expect(wrapper.text()).not.toContain(content.success.cvNote)
+    expect(wrapper.text()).not.toContain(content.cvUploadError.message)
     expect((wrapper.find('#name').element as HTMLInputElement).value).toBe(
       'Ana'
     )
@@ -339,6 +347,225 @@ describe('ApplicationForm · submitting', () => {
     await submitValid(wrapper)
 
     expect(fetchSpy).not.toHaveBeenCalled()
+  })
+})
+
+/** A submitter whose first call stays pending until the test settles it. */
+function pendingSubmitter() {
+  const submitter = stubSubmitter()
+  const control: {
+    finish: (outcome: SubmissionOutcome<ApplicationFieldId>) => void
+    progress?: SubmissionProgress
+  } = { finish: () => undefined }
+  submitter.submit.mockImplementationOnce(
+    (_values, progress) =>
+      new Promise(resolve => {
+        control.finish = resolve
+        control.progress = progress
+      })
+  )
+  return { submitter, control }
+}
+
+describe('ApplicationForm · a failed CV upload', () => {
+  async function failedUpload() {
+    const submitter = stubSubmitter({ kind: 'cv-upload-failed' })
+    const wrapper = mountForm({ submitter })
+    await attachCv(wrapper)
+    await wrapper.find('#portfolio').setValue('https://ana.dev')
+    await submitValid(wrapper)
+    return { wrapper, submitter }
+  }
+
+  it('should show the CV error with both actions next to the CV field and keep every value when the submitter reports cv-upload-failed', async () => {
+    const { wrapper } = await failedUpload()
+    const alert = wrapper.find('[role="alert"]')
+    const actions = alert.findAll('button')
+
+    expect(alert.text()).toContain(content.cvUploadError.message)
+    expect(actions.map(button => button.text())).toEqual([
+      content.cvUploadError.retry,
+      content.cvUploadError.submitWithoutCv,
+    ])
+    expect(document.activeElement).toBe(actions[0]?.element)
+    const fieldIds = wrapper
+      .findAll('input, select, button')
+      .map(el => el.attributes('id') ?? el.text())
+    expect(fieldIds.indexOf(content.cvUploadError.retry)).toBe(
+      fieldIds.indexOf('cv') + 1
+    )
+    expect((wrapper.find('#name').element as HTMLInputElement).value).toBe(
+      'Ana'
+    )
+    expect((wrapper.find('#portfolio').element as HTMLInputElement).value).toBe(
+      'https://ana.dev'
+    )
+    expect(wrapper.text()).toContain('cv.pdf')
+  })
+
+  it('should not show the success copy when the CV upload failed', async () => {
+    const { wrapper } = await failedUpload()
+
+    expect(wrapper.find('form').exists()).toBe(true)
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain(content.success.title)
+    expect(wrapper.text()).not.toContain(content.error.title)
+  })
+
+  it("should point the CV input's aria-describedby at the CV error while it is shown", async () => {
+    const { wrapper } = await failedUpload()
+    const describedBy = wrapper.find('#cv').attributes('aria-describedby')
+    const message = wrapper.find(`[id="${describedBy}"]`)
+
+    expect(message.text()).toBe(content.cvUploadError.message)
+
+    await selectFile(wrapper, pdf)
+    expect(wrapper.find('#cv').attributes('aria-describedby')).toBeUndefined()
+    expect(wrapper.text()).not.toContain(content.cvUploadError.message)
+  })
+
+  it('should call the submitter again with the chosen file when Reintentar subida is clicked', async () => {
+    const { wrapper, submitter } = await failedUpload()
+
+    submitter.submit.mockResolvedValueOnce({ kind: 'success' })
+    await wrapper.find('[role="alert"] button').trigger('click')
+    await flushPromises()
+
+    expect(submitter.submit).toHaveBeenCalledTimes(2)
+    expect(submitter.submit.mock.calls[1]?.[0].cv?.name).toBe('cv.pdf')
+    expect(wrapper.find('[role="status"]').text()).toBe(content.success.title)
+  })
+
+  it('should empty the CV field and submit without the file when Enviar sin CV is clicked', async () => {
+    const { wrapper, submitter } = await failedUpload()
+    submitter.submit.mockReturnValueOnce(new Promise(() => undefined))
+
+    await wrapper.findAll('[role="alert"] button')[1]?.trigger('click')
+    await flushPromises()
+
+    expect(submitter.submit).toHaveBeenCalledTimes(2)
+    expect(submitter.submit.mock.calls[1]?.[0].cv).toBeNull()
+    expect(wrapper.text()).toContain(content.fields.cv.placeholder)
+    expect(wrapper.text()).not.toContain('cv.pdf')
+  })
+
+  it('should show the standard success copy and no extra note when sending without CV succeeds', async () => {
+    const { wrapper, submitter } = await failedUpload()
+    submitter.submit.mockResolvedValueOnce({ kind: 'success' })
+
+    await wrapper.findAll('[role="alert"] button')[1]?.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('[role="status"]').text()).toBe(content.success.title)
+  })
+
+  it('should render both actions as buttons that do not submit the form', async () => {
+    const { wrapper } = await failedUpload()
+
+    for (const button of wrapper.findAll('[role="alert"] button')) {
+      expect(button.attributes('type')).toBe('button')
+    }
+  })
+})
+
+describe('ApplicationForm · uploading', () => {
+  it('should disable the button, show the uploading label and lock the fields while uploading', async () => {
+    const { submitter, control } = pendingSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await attachCv(wrapper)
+    await submitValid(wrapper)
+
+    const button = wrapper.find('button[type="submit"]')
+    expect(button.attributes('disabled')).toBe('')
+    expect(button.text()).toBe(content.uploading)
+    expect(wrapper.find('#name').attributes('readonly')).toBe('')
+    expect(wrapper.find('#cv').attributes('disabled')).toBe('')
+    expect(wrapper.find('form').attributes('aria-busy')).toBe('true')
+
+    await wrapper.find('form').trigger('submit')
+    expect(submitter.submit).toHaveBeenCalledTimes(1)
+
+    control.progress?.cvUploaded()
+    await flushPromises()
+    expect(button.text()).toBe(content.sending)
+  })
+
+  it('should not render the CV actions while uploading', async () => {
+    const { submitter } = pendingSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await attachCv(wrapper)
+    await submitValid(wrapper)
+
+    expect(wrapper.text()).not.toContain(content.cvUploadError.retry)
+    expect(wrapper.text()).not.toContain(content.cvUploadError.submitWithoutCv)
+  })
+
+  it('should never show the uploading label when no CV is chosen', async () => {
+    const { submitter } = pendingSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await submitValid(wrapper)
+
+    expect(wrapper.find('button[type="submit"]').text()).toBe(content.sending)
+  })
+})
+
+describe('ApplicationForm · immediate file checks', () => {
+  it('should show the format error immediately and send nothing when a non-PDF is selected', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const submitter = stubSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await attachCv(wrapper)
+    await selectFile(
+      wrapper,
+      new File(['x'], 'cv.docx', {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      })
+    )
+
+    expect(wrapper.text()).toContain(content.fields.cv.errorFormat)
+    expect(wrapper.find('#cv').attributes('aria-invalid')).toBe('true')
+    expect(wrapper.text()).toContain(content.fields.cv.placeholder)
+    expect(wrapper.text()).not.toContain('cv.pdf')
+    expect(submitter.submit).not.toHaveBeenCalled()
+    expect(submitter.engage).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('should show the size error immediately and send nothing when a PDF over 5242880 bytes is selected', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const submitter = stubSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await selectFile(wrapper, sizedFile(CV_MAX_BYTES + 1))
+
+    expect(wrapper.text()).toContain(content.fields.cv.errorSize)
+    expect(wrapper.text()).toContain(content.fields.cv.placeholder)
+    expect(submitter.submit).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('should accept a PDF of exactly 5242880 bytes', async () => {
+    const wrapper = mountForm()
+
+    await selectFile(wrapper, sizedFile(CV_MAX_BYTES))
+
+    expect(CV_MAX_BYTES).toBe(5_242_880)
+    expect(wrapper.text()).not.toContain(content.fields.cv.errorSize)
+    expect(wrapper.text()).toContain('big.pdf')
+  })
+
+  it('should clear the refusal when a valid PDF is then selected', async () => {
+    const wrapper = mountForm()
+
+    await selectFile(wrapper, sizedFile(CV_MAX_BYTES + 1))
+    await attachCv(wrapper)
+
+    expect(wrapper.text()).not.toContain(content.fields.cv.errorSize)
+    expect(wrapper.text()).toContain('cv.pdf')
   })
 })
 
@@ -393,6 +620,24 @@ describe('ApplicationForm · previewState is a Storybook-only display override',
     expect(wrapper.text()).not.toContain(content.sending)
     expect(wrapper.find('[role="status"]').exists()).toBe(false)
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+  })
+
+  it('should show the uploading label on a disabled button when previewState is uploading', () => {
+    const wrapper = mountForm({ previewState: 'uploading' })
+    const button = wrapper.find('button[type="submit"]')
+
+    expect(button.attributes('disabled')).toBe('')
+    expect(button.text()).toBe(content.uploading)
+    expect(wrapper.find('#name').attributes('readonly')).toBe('')
+  })
+
+  it('should show the CV error with both actions when previewState is cv-upload-error', () => {
+    const wrapper = mountForm({ previewState: 'cv-upload-error' })
+
+    expect(wrapper.find('form').exists()).toBe(true)
+    expect(wrapper.find('[role="alert"]').text()).toContain(
+      content.cvUploadError.message
+    )
   })
 
   it('should disable the submit control and mark fields read-only when previewState is sending', () => {

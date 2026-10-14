@@ -1,20 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { ApplicationFormContent } from '@/features/forms/data/applicationFields'
-import {
-  type ApplicationSubmitter,
-  MIN_FILL_TIME_MS,
-} from '@/features/forms/data/submissionContract'
+import type { ApplicationSubmitter } from '@/features/forms/data/submissionContract'
 import ApplicationForm from './ApplicationForm.vue'
 
 /**
  * Every state is reachable on the shipped page since feature 029. The
- * catalogue pins `Sending`, `Success*` and `ServerError` through the
- * Storybook-only `previewState` display override, because a story cannot
- * drive a real network flow. No page or section passes that prop.
+ * catalogue pins `Uploading`, `Sending`, `Success`, `ServerError` and
+ * `CvUploadError*` through the Storybook-only `previewState` display
+ * override, because a story cannot drive a real network flow. No page or
+ * section passes that prop.
  *
  * Every story gets a stub `submitter`; nothing here reaches the network or
- * S3. `SuccessWithCvNote` uses a stub that reports the CV as not attached and
- * submits for real, so the note appears exactly as it does on the page.
+ * S3. The `CvUploadError*` visuals are UNVERIFIED against the `.pen`
+ * (feature 031 spec OA-5).
  */
 const meta = {
   title: 'Forms/ApplicationForm',
@@ -28,21 +26,13 @@ type Story = StoryObj<typeof meta>
 /** Long enough to see the sending state, short enough not to bore. */
 const STUB_REPLY_MS = 1_200
 
-function stubSubmitter(cvAttached: boolean): ApplicationSubmitter {
-  return {
-    engage: () => undefined,
-    submit: () =>
-      new Promise(resolve =>
-        setTimeout(
-          () => resolve({ kind: 'success', cvAttached }),
-          STUB_REPLY_MS
-        )
-      ),
-  }
+const attaching: ApplicationSubmitter = {
+  engage: () => undefined,
+  submit: () =>
+    new Promise(resolve =>
+      setTimeout(() => resolve({ kind: 'success' }), STUB_REPLY_MS)
+    ),
 }
-
-const attaching = stubSubmitter(true)
-const losingCv = stubSubmitter(false)
 
 const areas = {
   it: 'IT',
@@ -103,11 +93,16 @@ const spanish: ApplicationFormContent = {
   },
   submit: 'Enviar',
   sending: 'Enviando…',
+  uploading: 'Subiendo CV…',
+  cvUploadError: {
+    message:
+      'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
+    retry: 'Reintentar subida',
+    submitWithoutCv: 'Enviar sin CV',
+  },
   success: {
     title:
       'Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes.',
-    cvNote:
-      'Tu perfil llegó, pero no pudimos adjuntar tu CV. Si quieres, mándalo a support@muush.dev.',
   },
   error: {
     title:
@@ -164,6 +159,10 @@ export const CvAttached: Story = {
   }),
 }
 
+export const Uploading: Story = {
+  args: { content: spanish, submitter: attaching, previewState: 'uploading' },
+}
+
 export const Sending: Story = {
   args: { content: spanish, submitter: attaching, previewState: 'sending' },
 }
@@ -185,58 +184,30 @@ const english: ApplicationFormContent = {
   ...spanish,
   submit: 'Submit',
   sending: 'Sending…',
+  uploading: 'Uploading CV…',
+  cvUploadError: {
+    message: "We couldn't upload your CV. Try again or submit without a CV.",
+    retry: 'Retry upload',
+    submitWithoutCv: 'Submit without CV',
+  },
   success: {
     title:
       "Thanks, we've got your profile. We'll reach out when there's a project that fits.",
-    cvNote:
-      "Your profile came through, but we couldn't attach your CV. If you'd like, send it to support@muush.dev.",
   },
 }
 
-/**
- * Fills the form, attaches a PDF and presses Enviar once the minimum fill
- * time has passed — what a visitor does — against a stub whose upload
- * "fails". The note is real state (`cvNoteVisible`), not a display override,
- * so this story takes about five seconds to settle.
- */
-function submitWithCv(root: HTMLElement): void {
-  const setValue = (selector: string, value: string, event: string) => {
-    const control = root.querySelector(selector) as HTMLInputElement | null
-    if (!control) return
-    control.value = value
-    control.dispatchEvent(new Event(event))
-  }
-  setValue('#name', 'Ana Ruiz', 'input')
-  setValue('#email', 'ana@muush.dev', 'input')
-  setValue('#areaRole', 'it:backend', 'change')
-  const cv = root.querySelector('#cv') as HTMLInputElement | null
-  if (cv) {
-    const file = new File(['%PDF-1.4'], 'ana-cv.pdf', {
-      type: 'application/pdf',
-    })
-    Object.defineProperty(cv, 'files', { value: [file] })
-    cv.dispatchEvent(new Event('change'))
-  }
-  setTimeout(
-    () => root.querySelector('form')?.requestSubmit(),
-    MIN_FILL_TIME_MS
-  )
+export const CvUploadError: Story = {
+  args: {
+    content: spanish,
+    submitter: attaching,
+    previewState: 'cv-upload-error',
+  },
 }
 
-function successWithCvNote(content: ApplicationFormContent): Story {
-  return {
-    args: { content, submitter: losingCv },
-    render: args => ({
-      components: { ApplicationForm },
-      setup: () => ({ args }),
-      mounted() {
-        submitWithCv(this.$el as HTMLElement)
-      },
-      template: '<ApplicationForm v-bind="args" />',
-    }),
-  }
+export const CvUploadErrorEnglish: Story = {
+  args: {
+    content: english,
+    submitter: attaching,
+    previewState: 'cv-upload-error',
+  },
 }
-
-export const SuccessWithCvNote: Story = successWithCvNote(spanish)
-
-export const SuccessWithCvNoteEnglish: Story = successWithCvNote(english)

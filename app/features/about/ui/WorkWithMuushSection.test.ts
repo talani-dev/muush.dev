@@ -72,9 +72,15 @@ const formContent: ApplicationFormContent = {
   },
   submit: 'Enviar',
   sending: 'Enviando…',
+  uploading: 'Subiendo CV…',
+  cvUploadError: {
+    message:
+      'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
+    retry: 'Reintentar subida',
+    submitWithoutCv: 'Enviar sin CV',
+  },
   success: {
     title: 'Gracias, ya tenemos tu perfil.',
-    cvNote: 'No pudimos adjuntar tu CV.',
   },
   error: { title: 'No pudimos enviarlo.', fallback: 'support@muush.dev' },
 }
@@ -82,7 +88,7 @@ const formContent: ApplicationFormContent = {
 /** Never reaches the network: the section only passes it through. */
 const formSubmitter: ApplicationSubmitter = {
   engage: () => undefined,
-  submit: async () => ({ kind: 'success', cvAttached: true }),
+  submit: async () => ({ kind: 'success' }),
 }
 
 const props = {

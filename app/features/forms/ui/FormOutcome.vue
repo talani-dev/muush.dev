@@ -16,17 +16,15 @@ import { onMounted, useTemplateRef } from 'vue'
  *
  * Classes are the ones the success/error markup already used inside both
  * forms before this extraction — no new token (Constitution Article VII).
- * The note has no frame in the design file; it reuses the body copy role.
  */
 interface Props {
   kind: 'success' | 'server-error'
   message: string
-  note?: string
   /** The support address shown as the error's alternate route. */
   errorFallback: string
 }
 
-const { kind, message, note, errorFallback } = defineProps<Props>()
+const { kind, message, errorFallback } = defineProps<Props>()
 
 const confirmation = useTemplateRef<HTMLElement>('confirmation')
 
@@ -47,9 +45,6 @@ onMounted(() => {
       class="font-instrument text-body-lg text-bone-100 focus-visible:outline-red-400"
     >
       {{ message }}
-    </p>
-    <p v-if="note" class="font-instrument text-body-sm text-ink-100">
-      {{ note }}
     </p>
   </div>
 

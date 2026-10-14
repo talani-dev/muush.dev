@@ -41,6 +41,9 @@ interface Props {
   placeholder: string
   accept?: string
   error?: string
+  /** Extra element id(s) describing the input, e.g. the application form's
+   * CV upload error (feature 031). Appended to the field's own error id. */
+  describedBy?: string
   required?: boolean
   readonly?: boolean
 }
@@ -52,6 +55,7 @@ const {
   placeholder,
   accept = 'application/pdf',
   error,
+  describedBy,
   required = false,
   readonly = false,
 } = defineProps<Props>()
@@ -59,9 +63,10 @@ const {
 const emit = defineEmits<{
   'update:modelValue': [file: File | null]
   /** Emitted instead of `update:modelValue` when the local check rejects the
-   * selection — the parent's own validation (`useApplicationForm`) re-checks
-   * independently; this is what lets the control show an immediate message
-   * without waiting on the parent's next tick. */
+   * selection. Since feature 031 `ApplicationForm` listens: it empties the
+   * field and shows the format/size error at once, with no request
+   * (`useApplicationForm`'s `onCvReject`, spec FR-013). The size limit is
+   * contract § 4's 5 MiB, no longer a proposal. */
   reject: [kind: FileFieldRejection]
 }>()
 
@@ -98,6 +103,13 @@ function formatFileSize(bytes: number): string {
   return `${(kb / 1024).toFixed(1)} MB`
 }
 
+const ariaDescribedBy = computed(
+  () =>
+    [error ? `${id}-error` : undefined, describedBy]
+      .filter(Boolean)
+      .join(' ') || undefined
+)
+
 const fileSummary = computed(() =>
   modelValue ? `${modelValue.name} · ${formatFileSize(modelValue.size)}` : null
 )
@@ -127,7 +139,7 @@ const fileSummary = computed(() =>
         :required="required && !modelValue"
         :disabled="readonly"
         :aria-invalid="Boolean(error)"
-        :aria-describedby="error ? `${id}-error` : undefined"
+        :aria-describedby="ariaDescribedBy"
         class="sr-only"
         @change="onChange"
       >

@@ -62,7 +62,7 @@ const formContent: ContactFormContent = {
 /** Never reaches the network: the section only passes it through. */
 const formSubmitter: ContactSubmitter = {
   engage: () => undefined,
-  submit: async () => ({ kind: 'success', cvAttached: true }),
+  submit: async () => ({ kind: 'success' }),
 }
 
 const props = {

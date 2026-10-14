@@ -102,8 +102,8 @@ export { WHATSAPP_MX_DIGIT_COUNT } from '@/features/forms/data/contactFields'
  */
 export const CV_REQUIRED = false
 
-/** `ui-map.md` § 9: "máximo 5MB propuesto" — a proposal, not a confirmed
- * value (spec Assumptions). */
+/** 5 MiB = 5 242 880 bytes, the maximum `contentLength` of
+ * `form-api-contract.md` § 4. A file of exactly this size is accepted. */
 export const CV_MAX_BYTES = 5 * 1024 * 1024
 
 export const CV_ACCEPTED_TYPE = 'application/pdf'
@@ -228,8 +228,11 @@ export interface ApplicationFormContent {
   submit: string
   /** The submit label while a request is in flight (feature 029, FR-019). */
   sending: string
-  /** `cvNote` is shown under `title` only when a chosen CV did not attach
-   * (contract § 9, spec OA-2). */
-  success: { title: string; cvNote: string }
+  /** The submit label while the CV is being authorized/uploaded (feature
+   * 031, FR-012). */
+  uploading: string
+  success: { title: string }
+  /** The CV error and its two actions (feature 031, FR-003). */
+  cvUploadError: { message: string; retry: string; submitWithoutCv: string }
   error: { title: string; fallback: string }
 }

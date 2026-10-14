@@ -11,8 +11,9 @@ import {
   toFieldOptions,
 } from '@/features/forms/logic/selectOptions'
 import { useApplicationForm } from '@/features/forms/logic/useApplicationForm'
+import type { SubmitState } from '@/features/forms/logic/useFormSubmitState'
 import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
-import FileField from './FileField.vue'
+import CvField from './CvField.vue'
 import FormOutcome from './FormOutcome.vue'
 import HoneypotField from './HoneypotField.vue'
 import RadioPillGroup from './RadioPillGroup.vue'
@@ -31,11 +32,14 @@ import WhatsappField from './WhatsappField.vue'
  * "Área y rol" values are qualified `${area}:${roleId}` because `sales` is
  * both an area and a role; the payload builder converts them to the bare
  * role id the API accepts (research R7).
+ *
+ * Feature 031: `CvField` shows a failed CV upload (the application was not
+ * sent) with its two actions, and the CV's immediate format/size refusals.
  */
 interface Props {
   content: ApplicationFormContent
   submitter: ApplicationSubmitter
-  previewState?: 'sending' | 'success' | 'server-error'
+  previewState?: Exclude<SubmitState, 'idle' | 'invalid'>
 }
 
 const { content, submitter, previewState } = defineProps<Props>()
@@ -46,19 +50,28 @@ const {
   values,
   errors,
   state,
-  cvNoteVisible,
+  cvRejection,
   honeypot,
   markInteractive,
   onEngage,
   onSubmit,
   onContactPreferenceChange,
   onCvChange,
+  onCvReject,
+  onRetryCvUpload,
+  onSubmitWithoutCv,
 } = useApplicationForm({ submitter, challengeHost })
 
 onMounted(markInteractive)
 
 const shownState = computed(() => previewState ?? state.value)
-const readonly = computed(() => shownState.value === 'sending')
+const readonly = computed(
+  () => shownState.value === 'uploading' || shownState.value === 'sending'
+)
+const submitLabel = computed(() => {
+  if (shownState.value === 'uploading') return content.uploading
+  return shownState.value === 'sending' ? content.sending : content.submit
+})
 
 const contactPreferenceOptions = computed(() =>
   toFieldOptions(content.fields.contactPreference.options)
@@ -81,7 +94,7 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
       v-if="shownState !== 'success'"
       novalidate
       class="flex flex-col gap-form-gap"
-      :aria-busy="shownState === 'sending'"
+      :aria-busy="readonly"
       @submit="onSubmit"
       @focusin="onEngage"
     >
@@ -128,15 +141,20 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
         :error="errorFor('linkedin')"
         :readonly="readonly"
       />
-      <FileField
+      <CvField
         id="cv"
         :model-value="values.cv"
-        :label="content.fields.cv.label"
-        :placeholder="content.fields.cv.placeholder"
+        :content="content.fields.cv"
+        :upload-error-content="content.cvUploadError"
         :error="errorFor('cv')"
+        :rejection="cvRejection"
+        :upload-failed="shownState === 'cv-upload-error'"
         :readonly="readonly"
         :required="CV_REQUIRED"
         @update:model-value="onCvChange"
+        @reject="onCvReject"
+        @retry="onRetryCvUpload"
+        @submit-without-cv="onSubmitWithoutCv"
       />
       <RadioPillGroup
         id="contactPreference"
@@ -162,7 +180,7 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
         :disabled="readonly"
         class="lg:w-btn-submit-w lg:self-center"
       >
-        {{ readonly ? content.sending : content.submit }}
+        {{ submitLabel }}
       </BotonPrimario>
     </form>
 
@@ -172,7 +190,6 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
       :message="
         shownState === 'success' ? content.success.title : content.error.title
       "
-      :note="cvNoteVisible ? content.success.cvNote : undefined"
       :error-fallback="content.error.fallback"
     />
 

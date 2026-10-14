@@ -114,11 +114,16 @@ const spanishForm: ApplicationFormContent = {
   },
   submit: 'Enviar',
   sending: 'Enviando…',
+  uploading: 'Subiendo CV…',
+  cvUploadError: {
+    message:
+      'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
+    retry: 'Reintentar subida',
+    submitWithoutCv: 'Enviar sin CV',
+  },
   success: {
     title:
       'Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes.',
-    cvNote:
-      'Tu perfil llegó, pero no pudimos adjuntar tu CV. Si quieres, mándalo a support@muush.dev.',
   },
   error: {
     title:
@@ -139,18 +144,22 @@ const englishForm: ApplicationFormContent = {
   },
   submit: 'Send',
   sending: 'Sending…',
+  uploading: 'Uploading CV…',
+  cvUploadError: {
+    message: "We couldn't upload your CV. Try again or submit without a CV.",
+    retry: 'Retry upload',
+    submitWithoutCv: 'Submit without CV',
+  },
   success: {
     title:
       "Thanks, we've got your profile. We'll reach out when there's a project that fits.",
-    cvNote:
-      "Your profile came through, but we couldn't attach your CV. If you'd like, send it to support@muush.dev.",
   },
 }
 
 /** Never reaches the network: the section only passes it through. */
 const formSubmitter: ApplicationSubmitter = {
   engage: () => undefined,
-  submit: async () => ({ kind: 'success', cvAttached: true }),
+  submit: async () => ({ kind: 'success' }),
 }
 
 const spanish = {

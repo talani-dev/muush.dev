@@ -657,6 +657,32 @@
       "sdd": false,
       "status": "pending",
       "depends_on": [29]
+    },
+    {
+      "id": 31,
+      "name": "cv_upload_no_silent_loss",
+      "title": "El formulario de talento nunca pierde un CV en silencio: si /careers/upload o el PUT a S3 fallan, no se envía /careers y la persona decide entre reintentar o enviar sin CV",
+      "description": "Hotfix pedido por Roberto el 2026-10-13. En producción el PUT directo a S3 falla (falta CORS en el bucket; infra lo corrige por su lado) y el sitio, siguiendo la decisión de form-api-contract.md § 9 del 2026-10-05, envía igual la postulación sin cvId: la persona cree que adjuntó su CV y el equipo recibe 'no adjuntó CV'. Roberto revierte esa decisión: nunca se degrada a 'sin CV' sin que la persona lo decida. Contrato del backend sin cambios (form-api-contract.md § 4): /careers/upload devuelve { cvId, uploadUrl, method: 'PUT', headers: { content-type, content-length }, expiresInSeconds }; el PUT manda el File original sin transformar con Content-Type exactamente igual a headers['content-type'] y SIN setear Content-Length (header prohibido en fetch; el navegador lo calcula del body y debe coincidir con el tamaño declarado). Éxito del PUT = 200 de S3; cualquier otra cosa (403, error de red/CORS, timeout) es fallo. Solo tras un PUT 200 se envía /careers con cvId. Ante fallo: no se envía /careers, se muestra un error junto al campo del CV (es: 'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.' / en: 'We couldn't upload your CV. Try again or submit without a CV.') con dos acciones explícitas: 'Reintentar subida' y 'Enviar sin CV' (limpia el archivo y envía sin cvId). Cada reintento pide un uploadUrl nuevo a /careers/upload y usa un token de Turnstile nuevo por llamada. Validación previa en cliente (UX): solo PDF y máximo 5242880 bytes, error inmediato sin llamar a /careers/upload. uploadUrl es una credencial temporal: nunca se loguea en consola, analytics ni Sentry, ni tampoco datos personales del formulario. NOTA: el pedido original dice 'POST /upload'; el contrato vigente y el código de la feature 29 usan /careers/upload, que es el mismo endpoint — el contrato no cambia. Esta feature sustituye el criterio de la feature 29 'si falla cualquier paso del upload, se envía sin cvId y el éxito muestra la nota aprobada' y la última viñeta de form-api-contract.md § 9 y § 7.5; docs/business/ es solo-humano, así que esa actualización la hace o autoriza Roberto.",
+      "acceptance": [
+        "Si la persona eligió un CV y /careers/upload o el PUT fallan (403, error de red/CORS, timeout, cualquier status distinto de 200), NO se envía POST /careers",
+        "El fallo muestra un error junto al campo del CV en el idioma del sitio, con el copy ES/EN aprobado, y dos acciones: 'Reintentar subida' / 'Enviar sin CV' (y su par en inglés)",
+        "'Enviar sin CV' limpia el archivo y envía /careers sin cvId; ningún otro camino envía la postulación sin cvId cuando había un CV elegido",
+        "Cada intento de subida pide un uploadUrl nuevo a /careers/upload; nunca se reutiliza un uploadUrl anterior",
+        "Cada llamada a /careers/upload y a /careers usa un token de Turnstile nuevo, también en los reintentos",
+        "El PUT manda el File original sin transformar, con Content-Type exactamente igual a headers['content-type'] y sin setear Content-Length manualmente",
+        "/careers solo lleva cvId después de un PUT con respuesta 200",
+        "Mientras sube, el botón de enviar está deshabilitado y se muestra 'Subiendo CV…' (con su par en inglés)",
+        "Un archivo que no es PDF o que supera 5242880 bytes da error inmediato en el cliente y no genera ninguna petición a /careers/upload",
+        "uploadUrl y los datos personales del formulario no aparecen en console.*, analytics ni Sentry",
+        "Se elimina la nota de éxito 'no se pudo adjuntar el CV' de la feature 29, que deja de tener camino que la muestre",
+        "Paridad i18n ES/EN para todo copy nuevo",
+        "Componentes de ui/ no llaman a fetch; toda la red vive en composables de logic/ (Constitución Art. V)",
+        "Pruebas unitarias con fetch mockeado cubren: fallo de /careers/upload, PUT 403, error de red del PUT, que /careers no se llama tras un fallo, reintento con uploadUrl y tokens nuevos, 'Enviar sin CV', validación de tipo y tamaño sin petición, y el flujo feliz con cvId",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "done",
+      "depends_on": [29]
     }
   ]
 }

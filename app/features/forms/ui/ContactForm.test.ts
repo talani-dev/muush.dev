@@ -82,10 +82,7 @@ afterEach(() => {
 
 /** A submitter that never touches the network: it records and answers. */
 function stubSubmitter(
-  outcome: SubmissionOutcome<ContactFieldId> = {
-    kind: 'success',
-    cvAttached: true,
-  }
+  outcome: SubmissionOutcome<ContactFieldId> = { kind: 'success' }
 ) {
   return {
     engage: vi.fn<ContactSubmitter['engage']>(),
