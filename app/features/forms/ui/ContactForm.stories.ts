@@ -30,10 +30,7 @@ const stubSubmitter: ContactSubmitter = {
   engage: () => undefined,
   submit: () =>
     new Promise(resolve =>
-      setTimeout(
-        () => resolve({ kind: 'success', cvAttached: true }),
-        STUB_REPLY_MS
-      )
+      setTimeout(() => resolve({ kind: 'success' }), STUB_REPLY_MS)
     ),
 }
 

@@ -11,6 +11,7 @@ import type {
   ApiResult,
   SiteLocale,
   SubmissionOutcome,
+  SubmissionProgress,
 } from '@/features/forms/data/submissionContract'
 import type { FormsApiClient } from './formsApiClient'
 import { sendWithFreshToken } from './sendWithFreshToken'
@@ -41,10 +42,9 @@ export interface FlowDeps {
 
 function toOutcome<F extends string>(
   result: ApiResult<unknown>,
-  visibleFields: (serverFields: string[]) => F[] | undefined,
-  cvAttached: boolean
+  visibleFields: (serverFields: string[]) => F[] | undefined
 ): SubmissionOutcome<F> {
-  if (result.kind === 'ok') return { kind: 'success', cvAttached }
+  if (result.kind === 'ok') return { kind: 'success' }
   if (result.kind === 'validation') {
     const fields = visibleFields(result.fields)
     if (fields) return { kind: 'field-errors', fields }
@@ -60,10 +60,8 @@ export async function submitContactFlow(
     const result = await sendWithFreshToken(getToken, token =>
       client.postContact(buildContactPayload(values, locale, token))
     )
-    return toOutcome<ContactFieldId>(
-      result,
-      fields => resolveServerFields(fields, CONTACT_SERVER_ERROR_KEYS, values),
-      true
+    return toOutcome<ContactFieldId>(result, fields =>
+      resolveServerFields(fields, CONTACT_SERVER_ERROR_KEYS, values)
     )
   } catch {
     return { kind: 'failure' }
@@ -71,10 +69,12 @@ export async function submitContactFlow(
 }
 
 /**
- * Upload authorization → S3 PUT → `cvId`, or `undefined` if any step fails.
- * Every failure here — including a `validation` on the upload request — is
- * swallowed: losing the attachment is acceptable, losing the candidate is not
- * (contract § 7.5).
+ * Upload authorization → S3 PUT → `cvId`, or `undefined` if any step fails
+ * (a grant that is not `ok` after its single 403 retry, a malformed grant, a
+ * PUT that did not answer 200). The caller turns `undefined` into
+ * `cv-upload-failed` and sends nothing else: a chosen CV is never dropped in
+ * silence (feature 031 FR-001/FR-002, Roberto's decision of 2026-10-13,
+ * which supersedes contract § 7.5 / § 9).
  */
 async function uploadCv(
   file: File,
@@ -92,25 +92,42 @@ async function uploadCv(
   return upload === 'uploaded' ? grant.body.cvId : undefined
 }
 
+function sendApplication(
+  values: ApplicationFormValues,
+  deps: FlowDeps,
+  cvId: string | undefined
+): Promise<SubmissionOutcome<ApplicationFieldId>> {
+  return sendWithFreshToken(deps.getToken, token =>
+    deps.client.postCareers(
+      buildCareersPayload(values, deps.locale, token, cvId)
+    )
+  ).then(result =>
+    toOutcome<ApplicationFieldId>(result, fields =>
+      resolveServerFields(fields, APPLICATION_SERVER_ERROR_KEYS, values)
+    )
+  )
+}
+
+/**
+ * One self-contained attempt. Nothing (grant, `uploadUrl`, `cvId`, token)
+ * survives the call, so every retry necessarily gets a new grant and new
+ * tokens (feature 031 FR-007/FR-008, research R5).
+ */
 export async function submitApplicationFlow(
   values: ApplicationFormValues,
-  deps: FlowDeps
+  deps: FlowDeps,
+  progress?: SubmissionProgress
 ): Promise<SubmissionOutcome<ApplicationFieldId>> {
   try {
-    const cvId = values.cv ? await uploadCv(values.cv, deps) : undefined
+    if (values.cv === null)
+      return await sendApplication(values, deps, undefined)
+    /* Even a throwing client step ends as a CV failure, never as a send. */
+    const cvId = await uploadCv(values.cv, deps).catch(() => undefined)
+    if (cvId === undefined) return { kind: 'cv-upload-failed' }
+    progress?.cvUploaded()
     /* The application's token is requested only now, after the PUT settled:
-       never in parallel with a slow upload (spec Edge Cases). */
-    const result = await sendWithFreshToken(deps.getToken, token =>
-      deps.client.postCareers(
-        buildCareersPayload(values, deps.locale, token, cvId)
-      )
-    )
-    return toOutcome<ApplicationFieldId>(
-      result,
-      fields =>
-        resolveServerFields(fields, APPLICATION_SERVER_ERROR_KEYS, values),
-      values.cv === null || cvId !== undefined
-    )
+       never in parallel with a slow upload (feature 029 spec Edge Cases). */
+    return await sendApplication(values, deps, cvId)
   } catch {
     return { kind: 'failure' }
   }

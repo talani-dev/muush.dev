@@ -61,6 +61,7 @@ export function useApplicationSubmitter(): ApplicationSubmitter {
   const { deps, engage } = useFlowDeps()
   return {
     engage,
-    submit: values => submitApplicationFlow(values, deps()),
+    submit: (values, progress) =>
+      submitApplicationFlow(values, deps(), progress),
   }
 }

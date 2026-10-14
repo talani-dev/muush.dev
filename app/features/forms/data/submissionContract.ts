@@ -43,13 +43,18 @@ export interface CvUploadRequest {
   turnstileToken: string
 }
 
-/** `POST /careers/upload` success body — contract § 4. `headers` is signed
- * and is passed to the PUT as the very same object (spec FR-015). */
+/**
+ * `POST /careers/upload` success body — contract § 4 — narrowed to what the
+ * S3 PUT uses (feature 031, data-model § 1). `contentType` is the body's
+ * `headers['content-type']`, sent verbatim; the signed `content-length` is
+ * deliberately not kept, because the browser derives it from the untouched
+ * `File` (feature 031 research R2). `uploadUrl` is a temporary credential:
+ * used for exactly one PUT, never stored past its attempt, never logged.
+ */
 export interface CvUploadGrant {
   cvId: string
   uploadUrl: string
-  method: string
-  headers: Record<string, string>
+  contentType: string
 }
 
 /** `POST /careers` body — contract § 5. Optional keys are absent, not
@@ -74,13 +79,25 @@ export type ApiResult<T> =
   | { kind: 'challenge' }
   | { kind: 'failure' }
 
-/** What a form receives from its submitter (data-model § 3). */
+/**
+ * What a form receives from its submitter (data-model § 3). No outcome means
+ * "sent without the CV the visitor chose" (feature 031 FR-001, FR-006).
+ */
 export type SubmissionOutcome<F extends string = string> =
-  /** `cvAttached` is `false` only when a CV was chosen and a CV step failed. */
-  | { kind: 'success'; cvAttached: boolean }
+  | { kind: 'success' }
   /** Every name maps to a visible input; otherwise the outcome is `failure`. */
   | { kind: 'field-errors'; fields: F[] }
+  /** A chosen CV could not be uploaded; the application was NOT sent. Only
+   * the application flow produces it (feature 031 FR-002). */
+  | { kind: 'cv-upload-failed' }
   | { kind: 'failure' }
+
+/** Lets the application flow tell the form the CV is uploaded and the
+ * application itself is now being sent (feature 031 FR-012). */
+export interface SubmissionProgress {
+  /** Called once, right after a PUT answered 200 and before `/careers`. */
+  cvUploaded(): void
+}
 
 /**
  * The seam between pages and forms (contracts/form-submitter.md). `engage`
@@ -94,7 +111,8 @@ export interface ContactSubmitter {
 export interface ApplicationSubmitter {
   engage(host: HTMLElement): void
   submit(
-    values: ApplicationFormValues
+    values: ApplicationFormValues,
+    progress?: SubmissionProgress
   ): Promise<SubmissionOutcome<ApplicationFieldId>>
 }
 
@@ -112,8 +130,17 @@ export const TURNSTILE_SCRIPT_URL =
 /** Bounds an API call that never answers (research R6). */
 export const API_REQUEST_TIMEOUT_MS = 15_000
 
-/** Bounds the S3 PUT: 5 MiB at ~1 Mbit/s is ≈ 42 s (research R6). */
+/** Bounds the S3 PUT: 5 MiB at ~1 Mbit/s is ≈ 42 s. Approved at the
+ * feature 031 gate on 2026-10-13 (spec OA-3); exceeding it is a CV upload
+ * failure, never a silent send without the CV. */
 export const CV_PUT_TIMEOUT_MS = 60_000
+
+/** Contract § 4: the only upload method a grant may carry. */
+export const CV_UPLOAD_METHOD = 'PUT'
+
+/** The only S3 answer that confirms the upload (feature 031 description);
+ * any other status, 2xx included, is a failure. */
+export const S3_PUT_SUCCESS_STATUS = 200
 
 /** Bounds a Turnstile token that never arrives (research R6). */
 export const TURNSTILE_TOKEN_TIMEOUT_MS = 20_000

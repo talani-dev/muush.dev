@@ -9,6 +9,8 @@ import {
   API_PATHS,
   API_REQUEST_TIMEOUT_MS,
   CV_PUT_TIMEOUT_MS,
+  CV_UPLOAD_METHOD,
+  S3_PUT_SUCCESS_STATUS,
 } from '@/features/forms/data/submissionContract'
 
 /**
@@ -83,24 +85,33 @@ export function classifyApiResponse(
   return FAILURE
 }
 
-/** `undefined` when any field the PUT needs is missing or mistyped. */
+const CONTENT_TYPE_HEADER = 'content-type'
+
+/** The grant's `content-type` value, its key matched ignoring case so a
+ * server that re-cases it is not a false CV failure (research R2). */
+function readContentType(headers: unknown): string | undefined {
+  if (!isRecord(headers)) return undefined
+  const key = Object.keys(headers).find(
+    name => name.toLowerCase() === CONTENT_TYPE_HEADER
+  )
+  const value = key === undefined ? undefined : headers[key]
+  return typeof value === 'string' && value !== '' ? value : undefined
+}
+
+/**
+ * `undefined` (→ a CV upload failure) when any field the PUT needs is missing
+ * or mistyped, or the method is not `PUT` (feature 031, data-model § 1). The
+ * signed `content-length` and `expiresInSeconds` are ignored on purpose.
+ */
 export function parseUploadGrant(body: unknown): CvUploadGrant | undefined {
   if (!isRecord(body)) return undefined
   const { cvId, uploadUrl, method, headers } = body
   if (typeof cvId !== 'string' || cvId === '') return undefined
   if (typeof uploadUrl !== 'string' || uploadUrl === '') return undefined
-  if (typeof method !== 'string' || method === '') return undefined
-  if (!isRecord(headers)) return undefined
-  if (!Object.values(headers).every(value => typeof value === 'string')) {
-    return undefined
-  }
-  return {
-    cvId,
-    uploadUrl,
-    method,
-    /* The same object, never a copy: the headers are signed (FR-015). */
-    headers: headers as Record<string, string>,
-  }
+  if (method !== CV_UPLOAD_METHOD) return undefined
+  const contentType = readContentType(headers)
+  if (contentType === undefined) return undefined
+  return { cvId, uploadUrl, contentType }
 }
 
 async function readJsonBody(
@@ -173,12 +184,20 @@ export function createFormsApiClient({
     try {
       return await withTimeout(putTimeoutMs, async signal => {
         const response = await fetchImpl(grant.uploadUrl, {
-          method: grant.method,
-          headers: grant.headers,
+          method: CV_UPLOAD_METHOD,
+          /* Only `content-type`, verbatim from the grant. `content-length` is
+             signed too but is a forbidden request header in browsers: setting
+             it is silently ignored, and the browser derives it from the
+             untouched `File`, whose size is exactly the `contentLength`
+             declared to /careers/upload, so the signature still matches
+             (feature 031 research R2). */
+          headers: { [CONTENT_TYPE_HEADER]: grant.contentType },
+          /* The visitor's original File: never read, sliced or re-wrapped,
+             or its length would no longer match the signature. */
           body: file,
           signal,
         })
-        return response.ok ? 'uploaded' : 'failed'
+        return response.status === S3_PUT_SUCCESS_STATUS ? 'uploaded' : 'failed'
       })
     } catch {
       return 'failed'

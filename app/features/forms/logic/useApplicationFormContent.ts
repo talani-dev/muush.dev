@@ -87,9 +87,14 @@ export function useApplicationFormContent(): ComputedRef<ApplicationFormContent>
     },
     submit: t('forms.application.submit'),
     sending: t('forms.application.sending'),
+    uploading: t('forms.application.uploading'),
     success: {
       title: t('forms.application.success.title'),
-      cvNote: t('forms.application.success.cvNote'),
+    },
+    cvUploadError: {
+      message: t('forms.application.cvUploadError.message'),
+      retry: t('forms.application.cvUploadError.retry'),
+      submitWithoutCv: t('forms.application.cvUploadError.submitWithoutCv'),
     },
     error: {
       title: t('forms.application.error.title'),

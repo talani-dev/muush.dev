@@ -29,13 +29,18 @@ import { type SubmitState, useFormSubmitState } from './useFormSubmitState'
  *
  * The CV is sent only through the presigned S3 upload in
  * `submissionFlows.ts`, never inside a JSON payload, never as `FormData`.
- * `cvNoteVisible` is true only after a success in which that upload failed
- * (spec FR-016).
+ * Since feature 031 a failed upload is never a silent "sent without CV": it
+ * is the `cv-upload-error` state, which the visitor resolves with
+ * `onRetryCvUpload`, `onSubmitWithoutCv`, a new submit, or a file change.
+ * A file `FileField` refuses on selection lands in `cvRejection` (FR-013).
  *
  * Plain Vue, no Nuxt composable, so it runs in a bare `mount()` and in
  * Storybook with no runtime present.
  */
 export type ApplicationSubmitState = SubmitState
+
+/** Why `FileField` refused a selection (mirrors its `reject` event). */
+export type CvRejection = 'format' | 'size'
 
 export interface UseApplicationFormOptions {
   submitter: ApplicationSubmitter
@@ -51,13 +56,18 @@ export interface UseApplicationFormReturn {
   errors: ComputedRef<ApplicationFormErrors>
   state: Ref<ApplicationSubmitState>
   firstInvalidFieldId: ComputedRef<ApplicationFieldId | undefined>
-  cvNoteVisible: ComputedRef<boolean>
+  /** The immediate format/size refusal of the last selection, if any. */
+  cvRejection: Ref<CvRejection | null>
+  cvUploadFailed: ComputedRef<boolean>
   honeypot: Ref<string>
   markInteractive: () => void
   onEngage: () => void
   onSubmit: (event: Event) => Promise<void>
   onContactPreferenceChange: (value: ContactPreference) => void
   onCvChange: (file: File | null) => void
+  onCvReject: (kind: CvRejection) => void
+  onRetryCvUpload: () => Promise<void>
+  onSubmitWithoutCv: () => Promise<void>
 }
 
 /**
@@ -158,10 +168,12 @@ export function useApplicationForm(
     submitter: options.submitter,
     challengeHost: options.challengeHost ?? ref(null),
     now: options.now,
+    busyStateFor: snapshot => (snapshot.cv ? 'uploading' : 'sending'),
   })
 
-  const cvNoteVisible = computed(
-    () => submission.state.value === 'success' && !submission.cvAttached.value
+  const cvRejection = ref<CvRejection | null>(null)
+  const cvUploadFailed = computed(
+    () => submission.state.value === 'cv-upload-error'
   )
 
   /**
@@ -177,9 +189,39 @@ export function useApplicationForm(
   }
 
   /** Stores the raw `File | null`. It leaves the browser only through the
-   * presigned upload of `submissionFlows.ts`. */
+   * presigned upload of `submissionFlows.ts`. Changing or removing the file
+   * dismisses the CV error: the next submit runs for what is now chosen. */
   function onCvChange(file: File | null): void {
     values.value.cv = file
+    cvRejection.value = null
+    dismissCvUploadError()
+  }
+
+  function dismissCvUploadError(): void {
+    if (cvUploadFailed.value) submission.state.value = 'idle'
+  }
+
+  /** A refused selection leaves the field empty, so what it shows is always
+   * what would be sent. Sends nothing (spec FR-013). */
+  function onCvReject(kind: CvRejection): void {
+    values.value.cv = null
+    cvRejection.value = kind
+    dismissCvUploadError()
+  }
+
+  /** "Reintentar subida": a whole new attempt with the same file, so a new
+   * grant, upload address and tokens (spec FR-007/FR-008, OA-4). */
+  function onRetryCvUpload(): Promise<void> {
+    return submission.attemptSubmit()
+  }
+
+  /** "Enviar sin CV": the visitor's explicit choice, the only path that
+   * drops a chosen CV (spec FR-004). Offered only from the CV error, so it
+   * can never empty the field under an attempt in flight. */
+  async function onSubmitWithoutCv(): Promise<void> {
+    if (!cvUploadFailed.value) return
+    values.value.cv = null
+    await submission.attemptSubmit()
   }
 
   return {
@@ -187,12 +229,16 @@ export function useApplicationForm(
     errors: submission.errors,
     state: submission.state,
     firstInvalidFieldId: submission.firstInvalidFieldId,
-    cvNoteVisible,
+    cvRejection,
+    cvUploadFailed,
     honeypot: submission.honeypot,
     markInteractive: submission.markInteractive,
     onEngage: submission.onEngage,
     onSubmit: submission.onSubmit,
     onContactPreferenceChange,
     onCvChange,
+    onCvReject,
+    onRetryCvUpload,
+    onSubmitWithoutCv,
   }
 }

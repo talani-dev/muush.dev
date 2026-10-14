@@ -48,7 +48,9 @@ interface ApplicationFormsCopy {
   }
   submit: string
   sending: string
-  success: { title: string; cvNote: string }
+  uploading: string
+  cvUploadError: { message: string; retry: string; submitWithoutCv: string }
+  success: { title: string }
   error: { title: string; fallback: string }
 }
 
@@ -207,15 +209,29 @@ describe('forms copy · forms.application.*', () => {
     )
   })
 
-  it('should carry the approved CV note verbatim, with the "@" escaped, in each locale', () => {
-    /* Feature 029, spec OA-2, approved at the gate on 2026-10-05. The `@` is
-       written `{'@'}` (`rules.md` § R26); this file reads the raw JSON. */
-    expect(es.forms.application.success.cvNote).toBe(
-      "Tu perfil llegó, pero no pudimos adjuntar tu CV. Si quieres, mándalo a support{'@'}muush.dev."
-    )
-    expect(en.forms.application.success.cvNote).toBe(
-      "Your profile came through, but we couldn't attach your CV. If you'd like, send it to support{'@'}muush.dev."
-    )
+  it('should carry no CV note in the success copy when a CV upload fails', () => {
+    /* Feature 031 FR-006: feature 029's "CV could not be attached" note is
+       gone, together with every path that showed it. */
+    expect(es.forms.application.success).not.toHaveProperty('cvNote')
+    expect(en.forms.application.success).not.toHaveProperty('cvNote')
+  })
+
+  it('should carry the CV upload error and uploading copy verbatim in each locale', () => {
+    /* Feature 031, copy given by Roberto and approved at the gate on
+       2026-10-13 (spec OA-2). */
+    expect(es.forms.application.uploading).toBe('Subiendo CV…')
+    expect(en.forms.application.uploading).toBe('Uploading CV…')
+    expect(es.forms.application.cvUploadError).toEqual({
+      message:
+        'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
+      retry: 'Reintentar subida',
+      submitWithoutCv: 'Enviar sin CV',
+    })
+    expect(en.forms.application.cvUploadError).toEqual({
+      message: "We couldn't upload your CV. Try again or submit without a CV.",
+      retry: 'Retry upload',
+      submitWithoutCv: 'Submit without CV',
+    })
   })
 
   it('should escape the literal "@" in the error fallback the same way forms.contact does', () => {

@@ -1,5 +1,8 @@
 import { type ComputedRef, computed, type Ref, ref, toRaw } from 'vue'
-import type { SubmissionOutcome } from '@/features/forms/data/submissionContract'
+import type {
+  SubmissionOutcome,
+  SubmissionProgress,
+} from '@/features/forms/data/submissionContract'
 import { focusField } from './focusField'
 import {
   activeServerErrors,
@@ -17,15 +20,27 @@ import { useSpamGuard } from './useSpamGuard'
  * server-field map; everything about *submitting* lives here once
  * (Constitution Article VIII).
  *
- * | From                         | Event / guard           | To           |
- * |------------------------------|-------------------------|--------------|
- * | idle · invalid · server-error | submit, errors exist    | invalid      |
- * | idle · invalid · server-error | submit, spam guard trips | server-error |
- * | idle · invalid · server-error | submit, valid           | sending      |
- * | sending                      | submit                  | (ignored)    |
- * | sending                      | outcome success         | success      |
- * | sending                      | outcome field-errors    | invalid      |
- * | sending                      | outcome failure         | server-error |
+ * "attempt" = form submit (Enviar), the application's "Reintentar subida",
+ * or its "Enviar sin CV" after clearing the file. All three run
+ * `attemptSubmit()` (feature 031, data-model § 4). "ready" = idle · invalid ·
+ * server-error · cv-upload-error.
+ *
+ * | From                 | Event / guard             | To              |
+ * |----------------------|---------------------------|-----------------|
+ * | ready                | attempt, errors exist     | invalid         |
+ * | ready                | attempt, spam guard trips | server-error    |
+ * | ready                | attempt, valid            | busyStateFor(v) |
+ * | uploading            | progress.cvUploaded()     | sending         |
+ * | uploading · sending  | attempt                   | (ignored)       |
+ * | uploading · sending  | outcome success           | success         |
+ * | uploading · sending  | outcome field-errors      | invalid         |
+ * | uploading            | outcome cv-upload-failed  | cv-upload-error |
+ * | uploading · sending  | outcome failure           | server-error    |
+ *
+ * `busyStateFor` is `sending` unless the form says otherwise (the
+ * application form says `uploading` when a CV is chosen). Leaving
+ * `cv-upload-error` because the file changed is the application form's own
+ * transition (`useApplicationForm.ts`).
  *
  * `success` is reachable only from a `success` outcome, which the flows
  * produce only from a 200 with `ok: true` (spec FR-012). A tripped spam guard
@@ -35,13 +50,20 @@ import { useSpamGuard } from './useSpamGuard'
 export type SubmitState =
   | 'idle'
   | 'invalid'
+  | 'uploading'
   | 'sending'
   | 'success'
   | 'server-error'
+  | 'cv-upload-error'
+
+export type BusyState = 'uploading' | 'sending'
 
 export interface FormSubmitter<V, F extends string> {
   engage(host: HTMLElement): void
-  submit(values: V): Promise<SubmissionOutcome<F>>
+  submit(
+    values: V,
+    progress?: SubmissionProgress
+  ): Promise<SubmissionOutcome<F>>
 }
 
 export interface FormSubmitStateOptions<
@@ -55,18 +77,20 @@ export interface FormSubmitStateOptions<
   submitter: FormSubmitter<V, F>
   challengeHost: Readonly<Ref<HTMLElement | null>>
   now?: () => number
+  /** The busy state a valid attempt enters; `sending` by default. */
+  busyStateFor?: (values: V) => BusyState
 }
 
 export interface FormSubmitStateReturn<F extends string> {
   state: Ref<SubmitState>
   errors: ComputedRef<Partial<Record<F, string>>>
   firstInvalidFieldId: ComputedRef<F | undefined>
-  /** `false` only after a success in which a chosen CV did not attach. */
-  cvAttached: Ref<boolean>
   honeypot: Ref<string>
   markInteractive: () => void
   onEngage: () => void
   onSubmit: (event: Event) => Promise<void>
+  /** Runs one submission attempt; ignored while busy or after success. */
+  attemptSubmit: () => Promise<void>
 }
 
 export function useFormSubmitState<V extends MarkableValues, F extends string>(
@@ -74,8 +98,9 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
 ): FormSubmitStateReturn<F> {
   const { values, validate, fieldOrder, serverErrorKeys, submitter } = options
   const guard = useSpamGuard(options.now)
+  const busyStateFor: (values: V) => BusyState =
+    options.busyStateFor ?? (() => 'sending')
   const state = ref<SubmitState>('idle')
-  const cvAttached = ref(true)
   const serverMarks = ref({}) as Ref<ServerMarks<F>>
 
   const errors = computed(() =>
@@ -96,8 +121,11 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
 
   function applyOutcome(outcome: SubmissionOutcome<F>): void {
     if (outcome.kind === 'success') {
-      cvAttached.value = outcome.cvAttached
       state.value = 'success'
+      return
+    }
+    if (outcome.kind === 'cv-upload-failed') {
+      state.value = 'cv-upload-error'
       return
     }
     if (outcome.kind === 'field-errors') {
@@ -113,9 +141,24 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
     state.value = 'server-error'
   }
 
-  async function onSubmit(event: Event): Promise<void> {
-    event.preventDefault()
-    if (state.value === 'sending' || state.value === 'success') return
+  function isLocked(): boolean {
+    return (
+      state.value === 'uploading' ||
+      state.value === 'sending' ||
+      state.value === 'success'
+    )
+  }
+
+  /* Moves the form to `sending` once the CV is confirmed uploaded; a no-op
+     unless the attempt is still uploading. */
+  const progress: SubmissionProgress = {
+    cvUploaded: () => {
+      if (state.value === 'uploading') state.value = 'sending'
+    },
+  }
+
+  async function attemptSubmit(): Promise<void> {
+    if (isLocked()) return
 
     if (firstInvalidFieldId.value) {
       state.value = 'invalid'
@@ -128,15 +171,21 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
     }
 
     onEngage()
-    state.value = 'sending'
-    applyOutcome(await submitSafely({ ...toRaw(values.value) }))
+    const snapshot = { ...toRaw(values.value) }
+    state.value = busyStateFor(snapshot)
+    applyOutcome(await submitSafely(snapshot))
+  }
+
+  async function onSubmit(event: Event): Promise<void> {
+    event.preventDefault()
+    await attemptSubmit()
   }
 
   /* The submitter contract says `submit` never throws; this keeps a broken
      one from leaving the form in "Enviando…" forever. */
   async function submitSafely(snapshot: V): Promise<SubmissionOutcome<F>> {
     try {
-      return await submitter.submit(snapshot)
+      return await submitter.submit(snapshot, progress)
     } catch {
       return { kind: 'failure' }
     }
@@ -146,10 +195,10 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
     state,
     errors,
     firstInvalidFieldId,
-    cvAttached,
     honeypot: guard.honeypot,
     markInteractive: guard.markInteractive,
     onEngage,
     onSubmit,
+    attemptSubmit,
   }
 }

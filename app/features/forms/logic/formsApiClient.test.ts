@@ -60,8 +60,17 @@ const contactPayload: ContactPayload = {
 const grant: CvUploadGrant = {
   cvId: '6f1b-cv',
   uploadUrl: 'https://bucket.s3.test.invalid/signed?X-Amz-Signature=abc',
+  contentType: 'application/pdf',
+}
+
+/** The `/careers/upload` body as contract § 4 shapes it. */
+const grantBody = {
+  ok: true,
+  cvId: grant.cvId,
+  uploadUrl: grant.uploadUrl,
   method: 'PUT',
   headers: { 'content-type': 'application/pdf', 'content-length': '4' },
+  expiresInSeconds: 600,
 }
 
 afterEach(() => {
@@ -205,23 +214,46 @@ describe('createFormsApiClient · JSON posts', () => {
 })
 
 describe('parseUploadGrant', () => {
-  const valid = { ok: true, ...grant, expiresInSeconds: 600 }
+  it('should extract cvId, uploadUrl and content-type when the body is well formed', () => {
+    expect(parseUploadGrant(grantBody)).toEqual(grant)
+  })
 
-  it('should return the grant with the very same headers object when well formed', () => {
-    const parsed = parseUploadGrant(valid)
+  it('should find content-type regardless of key casing', () => {
+    const parsed = parseUploadGrant({
+      ...grantBody,
+      headers: { 'Content-Type': 'application/pdf' },
+    })
 
-    expect(parsed?.cvId).toBe(grant.cvId)
-    expect(parsed?.headers).toBe(valid.headers)
+    expect(parsed?.contentType).toBe('application/pdf')
   })
 
   it.each([
-    ['cvId missing', { ...valid, cvId: undefined }],
-    ['uploadUrl not a string', { ...valid, uploadUrl: 42 }],
-    ['method missing', { ...valid, method: undefined }],
-    ['headers missing', { ...valid, headers: undefined }],
-    ['headers with a non-string value', { ...valid, headers: { a: 1 } }],
+    ['POST', 'POST'],
+    ['lower-case put', 'put'],
+    ['missing', undefined],
+  ])(
+    'should return undefined when method is not PUT (%s)',
+    (_label, method) => {
+      expect(parseUploadGrant({ ...grantBody, method })).toBeUndefined()
+    }
+  )
+
+  it.each([
+    ['missing', { 'content-length': '4' }],
+    ['empty', { 'content-type': '' }],
+    ['not a string', { 'content-type': 7 }],
+    ['headers absent', undefined],
+  ])('should return undefined when content-type is %s', (_label, headers) => {
+    expect(parseUploadGrant({ ...grantBody, headers })).toBeUndefined()
+  })
+
+  it.each([
+    ['cvId missing', { ...grantBody, cvId: undefined }],
+    ['cvId empty', { ...grantBody, cvId: '' }],
+    ['uploadUrl missing', { ...grantBody, uploadUrl: undefined }],
+    ['uploadUrl not a string', { ...grantBody, uploadUrl: 42 }],
     ['not an object', 'grant'],
-  ])('should reject the grant when %s', (_label, body) => {
+  ])('should return undefined when %s', (_label, body) => {
     expect(parseUploadGrant(body)).toBeUndefined()
   })
 })
@@ -229,31 +261,35 @@ describe('parseUploadGrant', () => {
 describe('createFormsApiClient · putCv', () => {
   const file = new File(['%PDF'], 'cv.pdf', { type: 'application/pdf' })
 
-  it('should PUT the file with exactly the grant method and the same headers object', async () => {
+  it('should PUT the original file with only the grant content-type when uploading', async () => {
     const fetchImpl = mockFetch(jsonResponse(200, {}))
     const client = createFormsApiClient({ baseUrl: BASE_URL, fetchImpl })
 
     expect(await client.putCv(grant, file)).toBe('uploaded')
 
     const [url, init] = fetchImpl.mock.calls[0] ?? []
+    const headers = (init?.headers ?? {}) as Record<string, string>
     expect(url).toBe(grant.uploadUrl)
     expect(init?.method).toBe('PUT')
-    expect(init?.headers).toBe(grant.headers)
-    expect(Object.keys(init?.headers ?? {})).toEqual([
-      'content-type',
-      'content-length',
-    ])
+    expect(Object.keys(headers)).toEqual(['content-type'])
+    expect(headers['content-type']).toBe(grant.contentType)
+    expect(
+      Object.keys(headers).some(key => key.toLowerCase() === 'content-length')
+    ).toBe(false)
     expect(init?.body).toBe(file)
   })
 
-  it('should report failed when S3 answers non-2xx', async () => {
-    const client = createFormsApiClient({
-      baseUrl: BASE_URL,
-      fetchImpl: mockFetch(jsonResponse(403, {})),
-    })
+  it.each([204, 403, 500])(
+    'should report failed when S3 answers %i',
+    async status => {
+      const client = createFormsApiClient({
+        baseUrl: BASE_URL,
+        fetchImpl: mockFetch(jsonResponse(status, {})),
+      })
 
-    expect(await client.putCv(grant, file)).toBe('failed')
-  })
+      expect(await client.putCv(grant, file)).toBe('failed')
+    }
+  )
 
   it('should report failed when the PUT rejects', async () => {
     const client = createFormsApiClient({
