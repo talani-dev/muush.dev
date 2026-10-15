@@ -708,6 +708,25 @@
       "sdd": true,
       "status": "done",
       "depends_on": [29]
+    },
+    {
+      "id": 33,
+      "name": "ip_locale_root_redirect",
+      "title": "Redirección del home raíz (/) al idioma según el país por IP: países hispanohablantes → /es, el resto → /en",
+      "description": "Pedido de Roberto el 2026-10-14: según la IP del visitante, mandarlo al idioma correspondiente. Se mapean los países de habla hispana a /es; cualquier otro país va a /en. CAMBIA una decisión vigente de docs/business/landing/ui-map.md § 1 ('no se detecta idioma por IP ni por Accept-Language'); Roberto la revoca solo para el home raíz; ui-map.md es solo-humano y lo actualiza él. Principio que se conserva de ui-map.md § 1: un link directo nunca se sobrescribe — solo se redirige `/`, jamás /es/..., /en/... ni anclas compartidas. Hoy `/` es el public/index.html estático (meta refresh a /es, rules.md § R25). Propuestas del leader para el gate (Roberto no las ha decidido): (a) la redirección la hace en el borde la función viewer-request request-router de muush-foundation con un 302 desde `/` según cloudfront-viewer-country (sin parpadeo, sin JS, mismo mecanismo de país que /__geo de la feature 32); se entrega como contrato en specs/<feature>/contracts/ para muush-foundation, este repo no edita ese repositorio; sin la pieza de borde, public/index.html sigue mandando a /es (degradación de la Constitución Art. IV); (b) país desconocido o ausente → /es (default actual) vs /en — a decidir; (c) la elección manual del toggle de idioma debe ganarle a la IP en visitas siguientes a `/`: el borde no lee localStorage, así que el spec evalúa una cookie propia de primera parte sin PII (p. ej. solo 'es'/'en') escrita por el toggle, con sus implicaciones; (d) SEO: `/` sigue noindex con hreflang, 302 (no 301) y sin caché compartida de la respuesta por país; bots no deben quedar sin acceso a /es; (e) la lista de países hispanohablantes vive en un solo lugar y el spec la enumera para el gate (incluir/excluir US y Guinea Ecuatorial es decisión de Roberto). Sin terceros, sin permiso de ubicación, sin registrar ni reenviar la IP.",
+      "acceptance": [
+        "Una visita a / desde un país hispanohablante de la lista aprobada termina en /es; desde cualquier otro país conocido, en /en",
+        "País ausente o desconocido sigue la regla aprobada en el gate",
+        "Solo / se redirige; /es, /en, rutas internas y anclas nunca se redirigen por IP",
+        "La elección manual de idioma (toggle) le gana a la IP en visitas siguientes a / según el mecanismo aprobado",
+        "Sin la pieza de borde desplegada, / sigue llevando a /es como hoy",
+        "Ninguna petición a terceros, sin permiso de ubicación, sin registrar la IP",
+        "El contrato para muush-foundation queda en specs/<feature>/contracts/ con casos de prueba",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [32]
     }
   ]
 }
