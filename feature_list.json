@@ -753,6 +753,28 @@
       "sdd": true,
       "status": "done",
       "depends_on": []
+    },
+    {
+      "id": 35,
+      "name": "technical_seo_indexing",
+      "title": "SEO técnico para indexación en Google: title/description traducidos por página, Open Graph/Twitter, JSON-LD Organization, sitemap.xml y robots.txt",
+      "description": "Pedido de Roberto el 2026-10-15. Objetivo: que Google indexe las 4 páginas (/es, /en, /es/nosotros, /en/about) ligadas por idioma y asocie la marca 'muush' con https://muush.dev. Hoy Google indexa el home dos veces con el mismo título. AUDITORÍA del leader (build local, 2026-10-15): lang, canonical absoluto, hreflang (en, es-MX, es, x-default→es) y og:locale/og:url YA los emite @nuxtjs/i18n 10.6.0 vía useHead(useLocaleHead()) en app/layouts/default.vue — no duplicarlos. Falta: meta description, og:title/description/image/type/site_name, twitter card, JSON-LD, sitemap.xml, robots.txt. El title del home es idéntico y en inglés en ambos locales (site.title = 'muush · Technology Solution Studio'). El HTML ya está prerenderizado (ssr:true + nitro static + pnpm generate). DECISIONES de Roberto (2026-10-15): (1) Módulos sueltos, NO el meta-paquete @nuxtjs/seo (Art. VIII): @nuxtjs/sitemap y nuxt-schema-org en su major ANTERIOR (sitemap 8.6.x, schema-org 6.4.x; las majors 9.x/7.x exigen nuxt ^4.6.0 y el repo está en 4.5.2; no se sube Nuxt). Ambos traen nuxt-site-config: site.url='https://muush.dev', site.name='muush'. (2) robots.txt lo genera @nuxtjs/robots en su major ANTERIOR compatible con Nuxt 4.5.2 (6.2.x; la 7.x exige ^4.6.0) — revisión de Roberto 2026-10-15, reemplaza la decisión previa de archivo estático. Permite todo y referencia el sitemap. Trae @fingerprintjs/botd (dependencia desde 5.3.0): el spec verifica si llega al bundle del cliente y, si es configurable, desactiva la detección de bots en runtime. (3) i18n: el locale en pasa de language 'en' a 'en-US'; public/index.html tiene hreflang escritos a mano y debe actualizarse para coincidir. (4) Title formato '<Página> · muush', único y traducido por página desde i18n/locales/*.json con useSeoMeta; el home en español va en español. El copy (title + description por página y locale) lo redacta el spec_author como BORRADOR para que Roberto lo apruebe en el gate — docs/business es solo-humano, el copy aprobado se cita en el spec. (5) JSON-LD Organization global (useSchemaOrg + defineOrganization): name 'muush', alternateName 'muush.dev', url 'https://muush.dev', logo 'https://assets.muush.dev/brand/logo/ink500.png' (PNG 1710×1020, verificado 200; la versión bone es invisible sobre blanco), sameAs = Instagram, LinkedIn y TikTok tomados de app/features/shell/data/socialProfiles.ts (fuente única, no reescribir URLs). (6) og:image: TODO — https://assets.muush.dev/brand/cover/muush.png NO sirve (4060×1016, 4:1, 2.8 MB, el logo queda fuera del recorte 1.91:1); Roberto subirá una de 1200×630; el spec deja el valor en un solo lugar para que agregarla sea cambiar una URL; mientras tanto twitter:card = summary (no summary_large_image sin imagen). (7) Sitemap con las 4 URLs y sus xhtml:link alternates (en-US, es-MX, x-default); `/` (public/index.html, noindex) NO va en el sitemap. RESTRICCIONES: no cambiar diseño, contenido visible ni rutas; no tocar infraestructura (muush-foundation); no desplegar. El registro npm global del dispositivo apunta a un CodeArtifact corporativo con token vencido: Roberto lo resuelve él antes de la instalación — si pnpm install falla por registro, el implementer se detiene y reporta, NO edita .npmrc ni la configuración global. Relación: feature 33 (pendiente) también toca `/`. Al cerrar, reportar la lista de rutas */index.html del output (CloudFront necesita reescritura a index.html — solo reportarlo, no implementarlo).",
+      "acceptance": [
+        "Cada una de /es, /en, /es/nosotros y /en/about tiene un <title> único y traducido con formato '<Página> · muush'; el de /es está en español",
+        "Cada página tiene meta description única y traducida, tomada de i18n/locales/*.json (paridad es/en)",
+        "lang, canonical absoluto y hreflang (en-US, es-MX, x-default) aparecen exactamente una vez por página, sin duplicados con lo que ya emite @nuxtjs/i18n",
+        "El locale en declara language 'en-US' y public/index.html usa los mismos valores de hreflang",
+        "Cada página tiene og:title, og:description, og:type, og:site_name, og:url y twitter:card; og:image queda como TODO documentado en un solo lugar",
+        "Todas las páginas incluyen un JSON-LD Organization con name 'muush', alternateName 'muush.dev', url 'https://muush.dev', logo 'https://assets.muush.dev/brand/logo/ink500.png' y sameAs con Instagram, LinkedIn y TikTok, tomados de socialProfiles.ts",
+        ".output/public/sitemap.xml lista las 4 URLs con sus alternates hreflang; no incluye / ni 200.html/404.html",
+        ".output/public/robots.txt, generado por @nuxtjs/robots 6.x, permite todo y referencia https://muush.dev/sitemap.xml; no se envía detección de bots al navegador (o, si no es evitable, queda documentado y aprobado en el gate)",
+        "Solo se agregan @nuxtjs/sitemap (8.x), @nuxtjs/robots (6.x) y nuxt-schema-org (6.x) como dependencias; Nuxt sigue en 4.5.x; no se agrega @nuxtjs/seo ni nuxt-og-image",
+        "Las 4 páginas siguen prerenderizadas como HTML con contenido (no shells SPA); sin cambios visuales ni de rutas",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "reviewing",
+      "depends_on": []
     }
   ]
 }

@@ -986,3 +986,19 @@ vuelven a rasterizar los glows `bg-radial-*` de toda la página con
 diferencias de ±3 a 8 por canal, aun a más de 1000 px del puntero. Un
 cambio de estilo inocuo no lo provoca. Al comparar "con y sin spotlight" no
 hay que confundir eso con un glow.
+
+### R71 · `nuxt-schema-org` 6.4.3 no se elimina del bundle de cliente por sí solo
+
+Medido en la feature 35 (Nuxt 4.5.2). El módulo registra `useSchemaOrg`,
+`defineOrganization`, etc. en `optimization.treeShake.composables.client`,
+pero el plugin de Nuxt que hace ese tree-shake corre `enforce: 'post'`,
+después de que unimport reescribió el auto-import a una ruta absoluta, y solo
+reconoce los specifiers `'nuxt-schema-org'` o `#imports`. Resultado: la
+llamada sobrevivía y ~35 KB de nodos de schema-org (`ReadAction`,
+`primaryImageOfPage`, `#identity`) llegaban a `.output/public/_nuxt/`.
+
+**Qué hacer:** toda llamada a `useSchemaOrg` va dentro de
+`if (import.meta.server)`. Con `reactive: false` (producción) la llamada no
+hace nada en cliente de todos modos, así que el HTML prerenderizado no cambia.
+Ver `app/features/shell/logic/usePageSeo.ts`. `tests/seo-output.test.ts`
+falla si el grafo vuelve a aparecer en `_nuxt/`.
