@@ -9,9 +9,11 @@ import type {
   ContactPayload,
   SiteLocale,
 } from '@/features/forms/data/submissionContract'
+import { dialCodeOf } from './countryOptions'
 
 /**
- * Form values → contract-exact JSON bodies (form-api-contract.md §§ 3, 5).
+ * Form values → contract-exact JSON bodies (form-api-contract.md §§ 3, 5,
+ * plus feature 32's `whatsappDialCode`, derived from the stored country).
  *
  * Built key by key from the values, never from the `<form>` element, so
  * nothing the DOM holds — the honeypot, a Turnstile hidden input, the file —
@@ -65,6 +67,7 @@ export function buildContactPayload(
     need: values.need.trim(),
     contactPreference: values.contactPreference,
     ...(values.contactPreference === 'whatsapp' && {
+      whatsappDialCode: dialCodeOf(values.whatsappCountry),
       whatsapp: whatsappDigits(values.whatsapp),
     }),
     locale,
@@ -89,6 +92,7 @@ export function buildCareersPayload(
     ...(linkedin !== '' && { linkedin }),
     contactPreference: values.contactPreference,
     ...(values.contactPreference === 'whatsapp' && {
+      whatsappDialCode: dialCodeOf(values.whatsappCountry),
       whatsapp: whatsappDigits(values.whatsapp),
     }),
     locale,

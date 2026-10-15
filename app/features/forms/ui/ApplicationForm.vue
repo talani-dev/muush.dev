@@ -56,6 +56,7 @@ const {
   onEngage,
   onSubmit,
   onContactPreferenceChange,
+  onWhatsappCountryChange,
   onCvChange,
   onCvReject,
   onRetryCvUpload,
@@ -78,8 +79,7 @@ const contactPreferenceOptions = computed(() =>
 )
 const areaRoleGroups = computed(() => toAreaRoleGroups(content.fields.areaRole))
 
-/** Error treatment appears only once a submit was attempted (`ui-map.md`
- * § 7: the idle form shows no errors at all). */
+/** Errors show only after a submit attempt (`ui-map.md` § 7). */
 function errorFor(field: keyof typeof errors.value): string | undefined {
   if (state.value !== 'invalid') return undefined
   return fieldErrorMessage(errors.value[field], content.fields[field])
@@ -166,14 +166,14 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
       />
       <WhatsappField
         v-model="values.whatsapp"
+        :country="values.whatsappCountry"
         :visible="values.contactPreference === 'whatsapp'"
-        :label="content.fields.whatsapp.label"
-        :error="errorFor('whatsapp')"
+        :content="content.fields"
+        :errors="{ number: errorFor('whatsapp'), country: errorFor('whatsappCountry') }"
         :readonly="readonly"
+        @update:country="onWhatsappCountryChange"
       />
       <HoneypotField v-model="honeypot" />
-
-      <!-- Same `lg:`-scoped width and centring as `ContactForm.vue`. -->
       <BotonPrimario
         variant="submit"
         type="submit"

@@ -117,10 +117,14 @@
             "whatsapp": "WhatsApp"
           }
         },
+        "whatsappCountry": {
+          "label": "Country code",
+          "errorInvalid": "Choose your country code"
+        },
         "whatsapp": {
           "label": "WhatsApp number",
           "errorRequired": "Enter your number",
-          "errorDigits": "Must be 10 digits"
+          "errorDigits": "Must be 6 to 14 digits"
         }
       },
       "submit": "Send",
@@ -223,10 +227,14 @@
             "whatsapp": "WhatsApp"
           }
         },
+        "whatsappCountry": {
+          "label": "Country code",
+          "errorInvalid": "Choose your country code"
+        },
         "whatsapp": {
           "label": "WhatsApp number",
           "errorRequired": "Enter your number",
-          "errorDigits": "Must be 10 digits"
+          "errorDigits": "Must be 6 to 14 digits"
         }
       },
       "submit": "Send",

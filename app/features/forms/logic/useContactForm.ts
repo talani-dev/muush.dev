@@ -9,10 +9,13 @@ import {
   initialContactFormValues,
   NAME_MIN_LENGTH,
   NEED_MIN_LENGTH,
-  WHATSAPP_MX_DIGIT_COUNT,
+  WHATSAPP_MAX_DIGITS,
+  WHATSAPP_MIN_DIGITS,
 } from '@/features/forms/data/contactFields'
+import type { CountryCode } from '@/features/forms/data/countries'
 import type { ContactSubmitter } from '@/features/forms/data/submissionContract'
 import { CONTACT_SERVER_ERROR_KEYS } from './serverFieldErrors'
+import { useDefaultCountry } from './useDefaultCountry'
 import { type SubmitState, useFormSubmitState } from './useFormSubmitState'
 
 /**
@@ -51,6 +54,7 @@ export interface UseContactFormReturn {
   onEngage: () => void
   onSubmit: (event: Event) => Promise<void>
   onContactPreferenceChange: (value: ContactPreference) => void
+  onWhatsappCountryChange: (code: CountryCode) => void
 }
 
 /**
@@ -96,7 +100,10 @@ export function validateContactForm(
     const digits = values.whatsapp.replaceAll(/\D/g, '')
     if (digits.length === 0) {
       errors.whatsapp = 'forms.contact.fields.whatsapp.errorRequired'
-    } else if (digits.length !== WHATSAPP_MX_DIGIT_COUNT) {
+    } else if (
+      digits.length < WHATSAPP_MIN_DIGITS ||
+      digits.length > WHATSAPP_MAX_DIGITS
+    ) {
       errors.whatsapp = 'forms.contact.fields.whatsapp.errorDigits'
     }
   }
@@ -122,17 +129,37 @@ export function useContactForm(
     now: options.now,
   })
 
+  const defaultCountry = useDefaultCountry({
+    values,
+    lookupCountry: options.submitter.lookupCountry,
+  })
+
+  /** The first focus in the form also asks the site's edge for the visitor's
+   * country (feature 32 Amendment A1, IP-3), next to the Turnstile engage. */
+  function onEngage(): void {
+    submission.onEngage()
+    defaultCountry.requestDefaultCountry()
+  }
+
   /**
    * Resets `whatsapp` to `''` the moment the visitor leaves that branch, so a
    * later re-mount of the field always starts empty — the value was never
    * retained, rather than reset on unmount (FR-011, spec US3). A server mark
-   * on `whatsapp` goes with the value.
+   * on `whatsapp` goes with the value. The country is kept (feature 32 spec
+   * OA-9).
+   *
+   * Entering WhatsApp asks for the default country too (a no-op once asked),
+   * for a visitor who reaches the radio without focusing the form first. It
+   * never resets the country: Mexico, the reported one or the visitor's pick
+   * stays (feature 32 Amendment A1).
    */
   function onContactPreferenceChange(value: ContactPreference): void {
     values.value.contactPreference = value
     if (value !== 'whatsapp') {
       values.value.whatsapp = ''
+      return
     }
+    defaultCountry.requestDefaultCountry()
   }
 
   return {
@@ -142,8 +169,9 @@ export function useContactForm(
     firstInvalidFieldId: submission.firstInvalidFieldId,
     honeypot: submission.honeypot,
     markInteractive: submission.markInteractive,
-    onEngage: submission.onEngage,
+    onEngage,
     onSubmit: submission.onSubmit,
     onContactPreferenceChange,
+    onWhatsappCountryChange: defaultCountry.onWhatsappCountryChange,
   }
 }

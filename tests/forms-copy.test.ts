@@ -37,6 +37,7 @@ interface ContactFormsCopy {
       label: string
       options: Record<'email' | 'whatsapp', string>
     }
+    whatsappCountry: { label: string; errorInvalid: string }
     whatsapp: { label: string; errorRequired: string; errorDigits: string }
   }
   submit: string
@@ -151,6 +152,24 @@ describe('forms copy · forms.contact.*', () => {
     expect(es.forms.contact.error.title).toContain('No pudimos enviarlo.')
     expect(es.forms.contact.error.fallback).toBe("support{'@'}muush.dev")
     expect(en.forms.contact.error.fallback).toBe("support{'@'}muush.dev")
+  })
+
+  it('should carry the feature 32 WhatsApp copy verbatim in each locale', () => {
+    /* Approved at the feature 32 gate (spec OA-8, 2026-10-14). */
+    expect(es.forms.contact.fields.whatsappCountry).toEqual({
+      label: 'Lada del país',
+      errorInvalid: 'Elige la lada de tu país',
+    })
+    expect(en.forms.contact.fields.whatsappCountry).toEqual({
+      label: 'Country code',
+      errorInvalid: 'Choose your country code',
+    })
+    expect(es.forms.contact.fields.whatsapp.errorDigits).toBe(
+      'Deben ser entre 6 y 14 dígitos'
+    )
+    expect(en.forms.contact.fields.whatsapp.errorDigits).toBe(
+      'Must be 6 to 14 digits'
+    )
   })
 
   it('should translate every field label and error message between locales', () => {

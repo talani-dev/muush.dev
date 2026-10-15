@@ -50,4 +50,56 @@ describe('TextField', () => {
 
     expect(wrapper.find('input').element.value).toBe('A')
   })
+
+  it('should render the leading slot before the input when provided', () => {
+    const wrapper = mount(TextField, {
+      props: { id: 'whatsapp', label: 'Número', modelValue: '' },
+      slots: { leading: '<select id="lead"></select>' },
+    })
+    const row = wrapper.find('#lead').element.parentElement
+
+    expect(row?.children[0]?.id).toBe('lead')
+    expect(row?.children[1]?.id).toBe('whatsapp')
+    expect(row?.className).toContain('flex')
+  })
+
+  it('should keep the input as the label target when a leading slot is provided', () => {
+    const wrapper = mount(TextField, {
+      props: { id: 'whatsapp', label: 'Número', modelValue: '' },
+      slots: { leading: '<select id="lead"></select>' },
+    })
+
+    expect(wrapper.find('label').attributes('for')).toBe('whatsapp')
+    expect(wrapper.find('input').attributes('id')).toBe('whatsapp')
+  })
+
+  it('should render the leading error before the input error when both are given', () => {
+    const wrapper = mount(TextField, {
+      props: {
+        id: 'whatsapp',
+        label: 'Número',
+        modelValue: '',
+        error: 'Número inválido',
+      },
+      slots: {
+        leading: '<select id="lead"></select>',
+        'leading-error': '<p id="lead-error">Lada inválida</p>',
+      },
+    })
+    const html = wrapper.html()
+
+    expect(html.indexOf('lead-error')).toBeLessThan(
+      html.indexOf('id="whatsapp-error"')
+    )
+  })
+
+  it('should not lay out a row when no leading slot is provided', () => {
+    const wrapper = mount(TextField, {
+      props: { id: 'name', label: 'Nombre', modelValue: '' },
+    })
+
+    expect(wrapper.find('input').element.parentElement?.className).toBe(
+      'contents'
+    )
+  })
 })

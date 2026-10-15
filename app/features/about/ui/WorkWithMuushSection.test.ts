@@ -64,10 +64,19 @@ const formContent: ApplicationFormContent = {
       label: '¿Cómo prefieres que te contactemos?',
       options: { email: 'Correo', whatsapp: 'WhatsApp' },
     },
+    whatsappCountry: {
+      label: 'Lada del país',
+      errorInvalid: 'Elige la lada de tu país',
+      options: [
+        { code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴' },
+        { code: 'MX', name: 'México', dialCode: '+52', flag: '🇲🇽' },
+        { code: 'US', name: 'Estados Unidos', dialCode: '+1', flag: '🇺🇸' },
+      ],
+    },
     whatsapp: {
       label: 'Número de WhatsApp',
       errorRequired: 'Escribe tu número',
-      errorDigits: 'Deben ser 10 dígitos',
+      errorDigits: 'Deben ser entre 6 y 14 dígitos',
     },
   },
   submit: 'Enviar',
