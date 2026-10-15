@@ -47,6 +47,7 @@ const {
   onEngage,
   onSubmit,
   onContactPreferenceChange,
+  onWhatsappCountryChange,
 } = useContactForm({ submitter, challengeHost })
 
 onMounted(markInteractive)
@@ -132,10 +133,12 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
       />
       <WhatsappField
         v-model="values.whatsapp"
+        :country="values.whatsappCountry"
         :visible="values.contactPreference === 'whatsapp'"
-        :label="content.fields.whatsapp.label"
-        :error="errorFor('whatsapp')"
+        :content="content.fields"
+        :errors="{ number: errorFor('whatsapp'), country: errorFor('whatsappCountry') }"
         :readonly="readonly"
+        @update:country="onWhatsappCountryChange"
       />
       <HoneypotField v-model="honeypot" />
 

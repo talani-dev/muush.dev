@@ -1,4 +1,9 @@
 import type { ContactPreference } from '@/features/forms/data/contactFields'
+import {
+  type CountryCode,
+  type CountryOption,
+  DEFAULT_COUNTRY,
+} from '@/features/forms/data/countries'
 
 /**
  * The application form's field model — the "Work with muush" section's eight
@@ -8,7 +13,8 @@ import type { ContactPreference } from '@/features/forms/data/contactFields'
  *
  * Plain types and named constants only — no Vue, no Nuxt, no validation
  * logic. `logic/useApplicationForm.ts` imports this; this file imports
- * nothing but `contactFields.ts`'s `ContactPreference`, re-exported rather
+ * nothing but `countries.ts` and `contactFields.ts`'s `ContactPreference`,
+ * the latter re-exported rather
  * than redeclared so the two forms' radio share one type
  * (Constitution Article II — `data/` never imports from `logic/`/`ui/`, and
  * `contactFields.ts` is itself a `data/` file, so this stays within the same
@@ -23,6 +29,7 @@ export type ApplicationFieldId =
   | 'linkedin'
   | 'cv'
   | 'contactPreference'
+  | 'whatsappCountry'
   | 'whatsapp'
 
 export type { ContactPreference } from '@/features/forms/data/contactFields'
@@ -47,6 +54,8 @@ export interface ApplicationFormValues {
    * PUT of `logic/submissionFlows.ts` (feature 029). */
   cv: File | null
   contactPreference: ContactPreference
+  /** Same field as `ContactFormValues.whatsappCountry` (feature 32). */
+  whatsappCountry: CountryCode
   /** `''` unless `contactPreference === 'whatsapp'` (FR-013). */
   whatsapp: string
 }
@@ -62,6 +71,7 @@ export const APPLICATION_FIELD_ORDER: readonly ApplicationFieldId[] = [
   'linkedin',
   'cv',
   'contactPreference',
+  'whatsappCountry',
   'whatsapp',
 ]
 
@@ -74,6 +84,7 @@ export function initialApplicationFormValues(): ApplicationFormValues {
     linkedin: '',
     cv: null,
     contactPreference: 'email',
+    whatsappCountry: DEFAULT_COUNTRY,
     whatsapp: '',
   }
 }
@@ -87,11 +98,14 @@ export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /**
  * `ui-map.md` § 9 says "mismo campo condicional" for the WhatsApp number,
- * without restating a digit count for this form specifically — reused by
- * symmetry from `contactFields.ts`'s `WHATSAPP_MX_DIGIT_COUNT` (spec
- * Assumptions), not redeclared as a second, coincidentally-equal constant.
+ * and the 2026-10-14 backend agreement (feature 32) applies one 6–14 digit
+ * range to both endpoints — re-exported from `contactFields.ts`, not
+ * redeclared as a second, coincidentally-equal pair of constants.
  */
-export { WHATSAPP_MX_DIGIT_COUNT } from '@/features/forms/data/contactFields'
+export {
+  WHATSAPP_MAX_DIGITS,
+  WHATSAPP_MIN_DIGITS,
+} from '@/features/forms/data/contactFields'
 
 /**
  * ⚠️ Open business decision — `docs/business/landing/decisions-open.md` #7,
@@ -201,6 +215,7 @@ export interface ApplicationFormFieldContent {
   errorFormat?: string
   errorSize?: string
   errorDigits?: string
+  errorInvalid?: string
 }
 
 export interface ApplicationFormContent {
@@ -222,6 +237,12 @@ export interface ApplicationFormContent {
     cv: ApplicationFormFieldContent & { placeholder: string }
     contactPreference: ApplicationFormFieldContent & {
       options: Record<ContactPreference, string>
+    }
+    /** Same shape as `ContactFormContent.fields.whatsappCountry`. */
+    whatsappCountry: {
+      label: string
+      errorInvalid: string
+      options: CountryOption[]
     }
     whatsapp: ApplicationFormFieldContent
   }

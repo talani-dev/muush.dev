@@ -117,10 +117,14 @@
             "whatsapp": "WhatsApp"
           }
         },
+        "whatsappCountry": {
+          "label": "Lada del país",
+          "errorInvalid": "Elige la lada de tu país"
+        },
         "whatsapp": {
           "label": "Número de WhatsApp",
           "errorRequired": "Escribe tu número",
-          "errorDigits": "Deben ser 10 dígitos"
+          "errorDigits": "Deben ser entre 6 y 14 dígitos"
         }
       },
       "submit": "Enviar",
@@ -223,10 +227,14 @@
             "whatsapp": "WhatsApp"
           }
         },
+        "whatsappCountry": {
+          "label": "Lada del país",
+          "errorInvalid": "Elige la lada de tu país"
+        },
         "whatsapp": {
           "label": "Número de WhatsApp",
           "errorRequired": "Escribe tu número",
-          "errorDigits": "Deben ser 10 dígitos"
+          "errorDigits": "Deben ser entre 6 y 14 dígitos"
         }
       },
       "submit": "Enviar",

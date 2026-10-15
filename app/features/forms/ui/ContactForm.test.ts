@@ -10,6 +10,7 @@ import {
   MIN_FILL_TIME_MS,
   type SubmissionOutcome,
 } from '@/features/forms/data/submissionContract'
+import { buildCountryOptions } from '@/features/forms/logic/countryOptions'
 import ContactForm from './ContactForm.vue'
 
 /** Fixture content — already-translated, the shape `useContactContent`-style
@@ -44,10 +45,15 @@ const content: ContactFormContent = {
       label: '¿Cómo prefieres que te contactemos?',
       options: { email: 'Correo', whatsapp: 'WhatsApp' },
     },
+    whatsappCountry: {
+      label: 'Lada del país',
+      errorInvalid: 'Elige la lada de tu país',
+      options: buildCountryOptions('es-MX'),
+    },
     whatsapp: {
       label: 'Número de WhatsApp',
       errorRequired: 'Escribe tu número',
-      errorDigits: 'Deben ser 10 dígitos',
+      errorDigits: 'Deben ser entre 6 y 14 dígitos',
     },
   },
   submit: 'Enviar',
@@ -218,6 +224,125 @@ describe('ContactForm · the WhatsApp field', () => {
     expect((wrapper.find('#whatsapp').element as HTMLInputElement).value).toBe(
       ''
     )
+  })
+})
+
+describe('ContactForm · the dial-code selector (feature 32)', () => {
+  async function chooseWhatsapp(wrapper: VueWrapper): Promise<void> {
+    await wrapper
+      .find('input[name="contactPreference"][value="whatsapp"]')
+      .setValue(true)
+  }
+
+  /* Feature 32 Amendment A1, without the edge (dev, preview, Storybook): a
+     submitter with no `lookupCountry` keeps Mexico and requests nothing. */
+  it('should show Mexico and request nothing when the submitter has no country lookup', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const wrapper = mountForm()
+
+    await wrapper.find('#name').trigger('focusin')
+    await chooseWhatsapp(wrapper)
+    await flushPromises()
+
+    expect(
+      (wrapper.find('#whatsappCountry').element as HTMLSelectElement).value
+    ).toBe('MX')
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('should show the reported country when the submitter lookup answers Colombia', async () => {
+    const wrapper = mountForm({
+      submitter: { ...stubSubmitter(), lookupCountry: async () => 'CO' },
+    })
+
+    await wrapper.find('#name').trigger('focusin')
+    await chooseWhatsapp(wrapper)
+    await flushPromises()
+
+    expect(
+      (wrapper.find('#whatsappCountry').element as HTMLSelectElement).value
+    ).toBe('CO')
+  })
+
+  it('should show the selector before the number when switching to WhatsApp', async () => {
+    const wrapper = mountForm()
+
+    expect(wrapper.find('#whatsappCountry').exists()).toBe(false)
+    await chooseWhatsapp(wrapper)
+
+    const ids = wrapper.findAll('select, input').map(node => node.element.id)
+    expect(ids.indexOf('whatsappCountry')).toBe(ids.indexOf('whatsapp') - 1)
+    expect(wrapper.find('#whatsappCountry').attributes('aria-label')).toBe(
+      content.fields.whatsappCountry.label
+    )
+  })
+
+  it('should pass the picked country and the typed number to the submitter when submitted', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await chooseWhatsapp(wrapper)
+    await wrapper.find('#whatsappCountry').setValue('CO')
+    await wrapper.find('#whatsapp').setValue('300 123 4567')
+    await submitValid(wrapper)
+
+    expect(submitter.submit.mock.calls[0]?.[0]).toMatchObject({
+      contactPreference: 'whatsapp',
+      whatsappCountry: 'CO',
+      whatsapp: '300 123 4567',
+    })
+  })
+
+  it('should show the 6 to 14 digit message and send nothing when the number is too short', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = mountForm({ submitter })
+
+    await chooseWhatsapp(wrapper)
+    await wrapper.find('#whatsapp').setValue('12345')
+    await submitValid(wrapper)
+
+    expect(wrapper.text()).toContain(content.fields.whatsapp.errorDigits)
+    expect(submitter.submit).not.toHaveBeenCalled()
+  })
+
+  it('should keep the picked country when switching to email and back', async () => {
+    const wrapper = mountForm()
+
+    await chooseWhatsapp(wrapper)
+    await wrapper.find('#whatsappCountry').setValue('CO')
+    await wrapper
+      .find('input[name="contactPreference"][value="email"]')
+      .setValue(true)
+    await chooseWhatsapp(wrapper)
+
+    expect(
+      (wrapper.find('#whatsappCountry').element as HTMLSelectElement).value
+    ).toBe('CO')
+  })
+
+  it('should mark and focus the selector when the server rejects the dial code, and clear it on another pick', async () => {
+    const wrapper = mountForm({
+      submitter: stubSubmitter({
+        kind: 'field-errors',
+        fields: ['whatsappCountry'],
+      }),
+    })
+
+    await chooseWhatsapp(wrapper)
+    await wrapper.find('#whatsappCountry').setValue('CO')
+    await wrapper.find('#whatsapp').setValue('3001234567')
+    await submitValid(wrapper)
+
+    const select = wrapper.find('#whatsappCountry')
+    expect(select.attributes('aria-invalid')).toBe('true')
+    expect(wrapper.find('#whatsappCountry-error').text()).toBe(
+      'Elige la lada de tu país'
+    )
+    expect(document.activeElement?.id).toBe('whatsappCountry')
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+
+    await select.setValue('MX')
+    expect(wrapper.find('#whatsappCountry-error').exists()).toBe(false)
   })
 })
 

@@ -22,8 +22,9 @@ import type {
 
 export type SiteLocale = 'es' | 'en'
 
-/** `POST /contact` body — contract § 3. `whatsapp` exists only when the
- * preference is WhatsApp; the server rejects any other key (§ 6). */
+/** `POST /contact` body — contract § 3. `whatsappDialCode` and `whatsapp`
+ * exist only when the preference is WhatsApp; the server rejects any other
+ * key (§ 6). */
 export interface ContactPayload {
   name: string
   email: string
@@ -31,6 +32,14 @@ export interface ContactPayload {
   identity: IdentityOption
   need: string
   contactPreference: ContactPreference
+  /**
+   * Feature 32 (backend agreement of 2026-10-14, not yet in
+   * `form-api-contract.md`, spec OA-1): present only with WhatsApp, format
+   * `DIAL_CODE_PATTERN` of `countries.ts`. A server that does not know the
+   * key rejects it (§ 6), so this version ships only after the backend
+   * accepts it (spec OA-2).
+   */
+  whatsappDialCode?: string
   whatsapp?: string
   locale: SiteLocale
   turnstileToken: string
@@ -66,6 +75,8 @@ export interface CareersPayload {
   portfolio?: string
   linkedin?: string
   contactPreference: ContactPreference
+  /** Same rule as `ContactPayload.whatsappDialCode`. */
+  whatsappDialCode?: string
   whatsapp?: string
   locale: SiteLocale
   cvId?: string
@@ -106,6 +117,11 @@ export interface SubmissionProgress {
 export interface ContactSubmitter {
   engage(host: HTMLElement): void
   submit(values: ContactFormValues): Promise<SubmissionOutcome<ContactFieldId>>
+  /** Amendment A1 of feature 32: the visitor's country as reported by the
+   * site's own edge (`GET /__geo`), raw and unvalidated. Optional: a port
+   * without it (stories, tests) means "unknown", so the form stays on Mexico
+   * and makes no request. */
+  lookupCountry?: () => Promise<string | undefined>
 }
 
 export interface ApplicationSubmitter {
@@ -114,6 +130,8 @@ export interface ApplicationSubmitter {
     values: ApplicationFormValues,
     progress?: SubmissionProgress
   ): Promise<SubmissionOutcome<ApplicationFieldId>>
+  /** Same optional port as `ContactSubmitter.lookupCountry`. */
+  lookupCountry?: () => Promise<string | undefined>
 }
 
 /** Contract § 1. Appended to `runtimeConfig.public.formsApiBaseUrl`. */

@@ -1,5 +1,5 @@
 import { flushPromises } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import {
   type ContactFieldId,
@@ -99,7 +99,10 @@ describe('validateContactForm', () => {
     expect(errors.whatsapp).toBe('forms.contact.fields.whatsapp.errorRequired')
   })
 
-  it('should reject a whatsapp number with the wrong digit count for Mexico', () => {
+  it.each([
+    ['12345', 'five'],
+    ['123456789012345', 'fifteen'],
+  ])('should reject %s when the number has %s digits', whatsapp => {
     const errors = validateContactForm({
       ...initialContactFormValues(),
       name: 'Ana',
@@ -107,13 +110,30 @@ describe('validateContactForm', () => {
       identity: 'company',
       need: 'Necesitamos un rediseño completo del sitio.',
       contactPreference: 'whatsapp',
-      whatsapp: '123',
+      whatsapp,
     })
 
     expect(errors.whatsapp).toBe('forms.contact.fields.whatsapp.errorDigits')
   })
 
-  it('should accept a ten-digit whatsapp number for Mexico', () => {
+  it.each([['123456'], ['12345678901234'], ['(55) 4433-2211'], ['5639060739']])(
+    'should accept %s when the digit count is within 6 to 14',
+    whatsapp => {
+      const errors = validateContactForm({
+        ...initialContactFormValues(),
+        name: 'Ana',
+        email: 'ana@muush.dev',
+        identity: 'company',
+        need: 'Necesitamos un rediseño completo del sitio.',
+        contactPreference: 'whatsapp',
+        whatsapp,
+      })
+
+      expect(errors).toEqual({})
+    }
+  )
+
+  it('should count digits only when the number carries separators', () => {
     const errors = validateContactForm({
       ...initialContactFormValues(),
       name: 'Ana',
@@ -121,10 +141,10 @@ describe('validateContactForm', () => {
       identity: 'company',
       need: 'Necesitamos un rediseño completo del sitio.',
       contactPreference: 'whatsapp',
-      whatsapp: '5639060739',
+      whatsapp: '(12) 3-4',
     })
 
-    expect(errors.whatsapp).toBeUndefined()
+    expect(errors.whatsapp).toBe('forms.contact.fields.whatsapp.errorDigits')
   })
 })
 
@@ -326,6 +346,26 @@ describe('useContactForm · server field errors', () => {
     expect(Object.keys(form.errors.value)).toEqual(['whatsapp'])
   })
 
+  it('should mark and focus-order the selector first when the server rejects the dial code and the number', async () => {
+    const form = await rejected(['whatsappCountry', 'whatsapp'])
+
+    expect(form.errors.value).toEqual({
+      whatsappCountry: 'forms.contact.fields.whatsappCountry.errorInvalid',
+      whatsapp: 'forms.contact.fields.whatsapp.errorDigits',
+    })
+    expect(form.firstInvalidFieldId.value).toBe('whatsappCountry')
+  })
+
+  it('should clear the dial-code mark when another country is picked', async () => {
+    const form = await rejected(['whatsappCountry'])
+
+    form.onWhatsappCountryChange(
+      form.values.value.whatsappCountry === 'CO' ? 'MX' : 'CO'
+    )
+
+    expect(form.errors.value).toEqual({})
+  })
+
   it('should drop the whatsapp mark with the value when switching to email', async () => {
     const form = await rejected(['whatsapp'])
 
@@ -388,5 +428,154 @@ describe('useContactForm · the WhatsApp field discards its value', () => {
     onContactPreferenceChange('whatsapp')
 
     expect(values.value.whatsapp).toBe('5639060739')
+  })
+})
+
+describe('useContactForm · the default country (feature 32 Amendment A1)', () => {
+  /** A stub port whose `/__geo` answer the test releases by hand. */
+  function formWithLookup() {
+    let answer: (value: string | undefined) => void = () => undefined
+    const lookupCountry = vi.fn(
+      () =>
+        new Promise<string | undefined>(resolve => {
+          answer = resolve
+        })
+    )
+    const form = useContactForm({
+      submitter: { ...stubSubmitter(), lookupCountry },
+    })
+    const resolve = async (value: string | undefined) => {
+      answer(value)
+      await flushPromises()
+    }
+    return { form, lookupCountry, resolve }
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('should select the reported country when the visitor engages and switches to whatsapp', async () => {
+    const { form, resolve } = formWithLookup()
+
+    form.onEngage()
+    form.onContactPreferenceChange('whatsapp')
+    await resolve('CO')
+
+    expect(form.values.value.whatsappCountry).toBe('CO')
+  })
+
+  it.each([[undefined], ['xx'], ['ZZ']])(
+    'should stay on Mexico when the lookup answers %j',
+    async raw => {
+      const { form, resolve } = formWithLookup()
+
+      form.onEngage()
+      form.onContactPreferenceChange('whatsapp')
+      await resolve(raw)
+
+      expect(form.values.value.whatsappCountry).toBe('MX')
+    }
+  )
+
+  it('should stay on Mexico when the submitter has no lookup port', async () => {
+    const form = useContactForm({ submitter: stubSubmitter() })
+
+    form.onEngage()
+    form.onContactPreferenceChange('whatsapp')
+    await flushPromises()
+
+    expect(form.values.value.whatsappCountry).toBe('MX')
+  })
+
+  it('should ignore the browser language when the edge reports Mexico', async () => {
+    vi.stubGlobal('navigator', { languages: ['en-US'] })
+    const { form, resolve } = formWithLookup()
+
+    form.onContactPreferenceChange('whatsapp')
+    await resolve('MX')
+
+    expect(form.values.value.whatsappCountry).toBe('MX')
+  })
+
+  it('should not look up the country before the visitor engages or switches', () => {
+    const { form, lookupCountry } = formWithLookup()
+
+    expect(lookupCountry).not.toHaveBeenCalled()
+    expect(form.values.value.whatsappCountry).toBe('MX')
+  })
+
+  it('should look up once when the visitor focuses, switches and switches back', () => {
+    const { form, lookupCountry } = formWithLookup()
+
+    form.onEngage()
+    form.onEngage()
+    form.onContactPreferenceChange('whatsapp')
+    form.onContactPreferenceChange('email')
+    form.onContactPreferenceChange('whatsapp')
+
+    expect(lookupCountry).toHaveBeenCalledTimes(1)
+  })
+
+  it('should never call the global fetch when a lookup port is injected', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const { form, resolve } = formWithLookup()
+
+    form.onEngage()
+    form.onContactPreferenceChange('whatsapp')
+    await resolve('CO')
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('should keep the pick when the answer arrives after the visitor picked', async () => {
+    const { form, resolve } = formWithLookup()
+
+    form.onContactPreferenceChange('whatsapp')
+    form.onWhatsappCountryChange('PE')
+    await resolve('CO')
+
+    expect(form.values.value.whatsappCountry).toBe('PE')
+  })
+
+  it('should keep a picked country and empty the number when switching to email and back', async () => {
+    const { form, resolve } = formWithLookup()
+
+    form.onContactPreferenceChange('whatsapp')
+    await resolve('CO')
+    form.onWhatsappCountryChange('PE')
+    form.values.value.whatsapp = '987654321'
+    form.onContactPreferenceChange('email')
+    form.onContactPreferenceChange('whatsapp')
+
+    expect(form.values.value.whatsappCountry).toBe('PE')
+    expect(form.values.value.whatsapp).toBe('')
+  })
+
+  it('should apply the reported country when the visitor only typed a number', async () => {
+    const { form, resolve } = formWithLookup()
+
+    form.onContactPreferenceChange('whatsapp')
+    form.values.value.whatsapp = '3001234567'
+    await resolve('CO')
+
+    expect(form.values.value.whatsappCountry).toBe('CO')
+  })
+
+  it('should send the picked country to the submitter when submitted', async () => {
+    const { form, submitter } = readyForm({
+      ...VALID,
+      contactPreference: 'whatsapp',
+      whatsapp: '300 123 4567',
+    })
+
+    form.onWhatsappCountryChange('CO')
+    await form.onSubmit(new Event('submit'))
+
+    expect(submitter.submit.mock.calls[0]?.[0]).toMatchObject({
+      whatsappCountry: 'CO',
+      whatsapp: '300 123 4567',
+    })
   })
 })

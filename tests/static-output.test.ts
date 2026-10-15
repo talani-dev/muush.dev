@@ -1486,13 +1486,14 @@ describe('static output · form submission (feature 029)', () => {
     }
   })
 
-  it('should compile exactly one fetch( and no API host literal into the form chunk(s)', () => {
+  it('should compile exactly two fetch( and no API host literal into the form chunk(s)', () => {
     /*
      * The artefact half of the network guard (the source half is in
-     * `tests/forms-config.test.ts`). The client's single call site,
-     * `globalThis.fetch(` in `forms/logic/formsApiClient.ts`, is bundled
-     * into the form chunk(s). One more `fetch(` there means a second call
-     * site reached the browser.
+     * `tests/forms-config.test.ts`). The two call sites, `globalThis.fetch(`
+     * in `forms/logic/formsApiClient.ts` and in `forms/logic/edgeCountry.ts`
+     * (feature 32 Amendment A1, same-origin `/__geo`), are bundled into the
+     * form chunk(s). One more `fetch(` there means a third call site reached
+     * the browser.
      *
      * The host check is scoped to the form chunk(s) ON PURPOSE. The base
      * URL default lives in `runtimeConfig.public.formsApiBaseUrl`
@@ -1524,7 +1525,7 @@ describe('static output · form submission (feature 029)', () => {
       (count, source) => count + [...source.matchAll(/\bfetch\s*\(/g)].length,
       0
     )
-    expect(fetchCalls).toBe(1)
+    expect(fetchCalls).toBe(2)
     for (const source of formChunks) {
       expect(source.includes(host)).toBe(false)
     }
@@ -1536,6 +1537,78 @@ describe('static output · form submission (feature 029)', () => {
         /<div aria-hidden="true" class="sr-only"><input type="text" name="muush_website"[^>]*tabindex="-1"[^>]*autocomplete="off"/
       )
     }
+  })
+})
+
+describe('static output · default country from the edge (feature 32 Amendment A1)', () => {
+  /*
+   * The default dial code comes from a same-origin `GET /__geo` answered by
+   * muush-foundation's CloudFront function, never from the browser's
+   * language, the Geolocation API or a third party (spec FR-A04..FR-A10).
+   * The site ships no stand-in for that path: without the edge it is a 404
+   * and the form stays on Mexico.
+   */
+  const scripts = () =>
+    everyEmittedFile(join(OUTPUT, '_nuxt'))
+      .filter(path => path.endsWith('.js'))
+      .map(path => ({ path, source: readFileSync(path, 'utf8') }))
+  const hostsIn = (source: string) =>
+    [...source.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(match =>
+      (match[1] ?? '').toLowerCase()
+    )
+
+  it('should compile the relative /__geo path into a client chunk', () => {
+    /* The path as a whole quoted literal: relative, never part of a URL. */
+    const withGeo = scripts().filter(
+      ({ source }) =>
+        source.includes('`/__geo`') ||
+        source.includes("'/__geo'") ||
+        source.includes('"/__geo"')
+    )
+    expect(withGeo.length).toBeGreaterThan(0)
+    for (const { source } of withGeo) {
+      expect(source).not.toMatch(/https?:\/\/[^"'`\s]*\/__geo/)
+    }
+  })
+
+  it('should ship no Geolocation API call in any emitted script', () => {
+    for (const { path, source } of scripts()) {
+      expect(source, path).not.toContain('navigator.geolocation')
+      expect(source, path).not.toContain('getCurrentPosition')
+    }
+  })
+
+  it('should read no browser language in the chunk that asks for the country', () => {
+    /* Scoped to the chunk(s) holding `/__geo`: the i18n module's own entry
+       chunk carries a `navigator.languages` helper that the forms never
+       use, and that is outside this feature. */
+    const withGeo = scripts().filter(({ source }) => source.includes('/__geo'))
+    expect(withGeo.length).toBeGreaterThan(0)
+    for (const { path, source } of withGeo) {
+      expect(source, path).not.toContain('navigator.languages')
+    }
+  })
+
+  it('should prerender no country into any document', () => {
+    for (const route of ROUTES) {
+      expect(documentFor(route), route).not.toContain('"country":')
+    }
+  })
+
+  it('should reach no geo or IP lookup host from any emitted script', () => {
+    const hosts = new Set(scripts().flatMap(({ source }) => hostsIn(source)))
+    for (const host of hosts) {
+      expect(host).not.toMatch(/geo|(^|[.-])ip([.-]|$)/)
+    }
+  })
+
+  it('should ship no /__geo file in the output or in public/', () => {
+    const fixtures = [
+      ...everyEmittedFile(),
+      ...everyEmittedFile(join(process.cwd(), 'public')),
+    ].filter(path => path.includes('__geo'))
+
+    expect(fixtures).toEqual([])
   })
 })
 

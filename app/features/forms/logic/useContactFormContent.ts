@@ -1,5 +1,6 @@
 import { type ComputedRef, computed } from 'vue'
 import type { ContactFormContent } from '@/features/forms/data/contactFields'
+import { buildCountryOptions } from './countryOptions'
 
 /**
  * Resolves `forms.contact.*` into the shape `ContactForm.vue` renders.
@@ -12,7 +13,13 @@ import type { ContactFormContent } from '@/features/forms/data/contactFields'
  * `forms/logic/` directly (plan.md D-1, D-4).
  */
 export function useContactFormContent(): ComputedRef<ContactFormContent> {
-  const { t } = useI18n()
+  const { t, locale, localeProperties } = useI18n()
+  /* Country names come from the browser in the page language (`es-MX` /
+     `en`, the locale's `language` in `nuxt.config.ts`), not from locale
+     keys: one source for both languages (feature 32 research R2). */
+  const countryOptions = computed(() =>
+    buildCountryOptions(localeProperties.value.language ?? locale.value)
+  )
 
   return computed<ContactFormContent>(() => ({
     fields: {
@@ -57,6 +64,11 @@ export function useContactFormContent(): ComputedRef<ContactFormContent> {
             'forms.contact.fields.contactPreference.options.whatsapp'
           ),
         },
+      },
+      whatsappCountry: {
+        label: t('forms.contact.fields.whatsappCountry.label'),
+        errorInvalid: t('forms.contact.fields.whatsappCountry.errorInvalid'),
+        options: countryOptions.value,
       },
       whatsapp: {
         label: t('forms.contact.fields.whatsapp.label'),

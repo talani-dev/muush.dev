@@ -68,6 +68,36 @@ describe('resolveServerFields · contact (research R9)', () => {
     ).toBeUndefined()
   })
 
+  it('should map whatsappDialCode to the selector when the preference is whatsapp', () => {
+    expect(
+      resolveServerFields(
+        ['whatsappDialCode'],
+        CONTACT_SERVER_ERROR_KEYS,
+        contactValues({ contactPreference: 'whatsapp' })
+      )
+    ).toEqual(['whatsappCountry'])
+  })
+
+  it('should refuse whatsappDialCode as a site defect when the preference is email', () => {
+    expect(
+      resolveServerFields(
+        ['whatsappDialCode'],
+        CONTACT_SERVER_ERROR_KEYS,
+        contactValues({ contactPreference: 'email' })
+      )
+    ).toBeUndefined()
+  })
+
+  it('should refuse the form id whatsappCountry when the server names it, since the server never does', () => {
+    expect(
+      resolveServerFields(
+        ['whatsappCountry'],
+        CONTACT_SERVER_ERROR_KEYS,
+        contactValues({ contactPreference: 'email' })
+      )
+    ).toBeUndefined()
+  })
+
   it('should refuse an empty field list, which marks nothing the visitor can fix', () => {
     expect(
       resolveServerFields([], CONTACT_SERVER_ERROR_KEYS, contactValues())
@@ -93,6 +123,19 @@ describe('resolveServerFields · application (research R9)', () => {
     expect(
       resolveServerFields(fields, APPLICATION_SERVER_ERROR_KEYS, values)
     ).toEqual(fields)
+  })
+
+  it('should map whatsappDialCode to the selector on the application form too', () => {
+    expect(
+      resolveServerFields(
+        ['whatsappDialCode', 'whatsapp'],
+        APPLICATION_SERVER_ERROR_KEYS,
+        {
+          ...initialApplicationFormValues(),
+          contactPreference: 'whatsapp' as const,
+        }
+      )
+    ).toEqual(['whatsappCountry', 'whatsapp'])
   })
 
   it('should refuse cvId, locale and contactPreference on the application form', () => {
@@ -154,6 +197,79 @@ describe('server marks', () => {
         whatsapp: '',
       })
     ).toEqual({})
+  })
+})
+
+describe('server marks · dial code (feature 32)', () => {
+  const rejected = contactValues({
+    contactPreference: 'whatsapp',
+    whatsappCountry: 'CO',
+    whatsapp: '3001234567',
+  })
+
+  it('should carry the dial-code message while the country is unchanged', () => {
+    const marks = createServerMarks<ContactFieldId>(
+      ['whatsappCountry'],
+      CONTACT_SERVER_ERROR_KEYS,
+      rejected
+    )
+
+    expect(activeServerErrors(marks, rejected)).toEqual({
+      whatsappCountry: 'forms.contact.fields.whatsappCountry.errorInvalid',
+    })
+  })
+
+  it('should drop the dial-code mark when another country is picked', () => {
+    const marks = createServerMarks<ContactFieldId>(
+      ['whatsappCountry', 'whatsapp'],
+      CONTACT_SERVER_ERROR_KEYS,
+      rejected
+    )
+
+    expect(
+      activeServerErrors(marks, { ...rejected, whatsappCountry: 'MX' })
+    ).toEqual({ whatsapp: 'forms.contact.fields.whatsapp.errorDigits' })
+  })
+
+  it('should keep the number mark when only the country changes', () => {
+    const marks = createServerMarks<ContactFieldId>(
+      ['whatsapp'],
+      CONTACT_SERVER_ERROR_KEYS,
+      rejected
+    )
+
+    expect(
+      activeServerErrors(marks, { ...rejected, whatsappCountry: 'MX' })
+    ).toEqual({ whatsapp: 'forms.contact.fields.whatsapp.errorDigits' })
+  })
+
+  it('should hide the dial-code mark when the preference is email, though the country is kept', () => {
+    const marks = createServerMarks<ContactFieldId>(
+      ['whatsappCountry'],
+      CONTACT_SERVER_ERROR_KEYS,
+      rejected
+    )
+
+    expect(
+      activeServerErrors(marks, {
+        ...rejected,
+        contactPreference: 'email',
+        whatsapp: '',
+      })
+    ).toEqual({})
+  })
+
+  it('should put the selector before the number when both are marked', () => {
+    const merged = mergeErrors<ContactFieldId>(
+      {},
+      {
+        whatsapp: 'forms.contact.fields.whatsapp.errorDigits',
+        whatsappCountry: 'forms.contact.fields.whatsappCountry.errorInvalid',
+      },
+      CONTACT_FIELD_ORDER
+    )
+
+    expect(Object.keys(merged)).toEqual(['whatsappCountry', 'whatsapp'])
   })
 })
 

@@ -44,6 +44,7 @@ interface ApplicationFormsCopy {
       label: string
       options: Record<'email' | 'whatsapp', string>
     }
+    whatsappCountry: { label: string; errorInvalid: string }
     whatsapp: { label: string; errorRequired: string; errorDigits: string }
   }
   submit: string
@@ -241,6 +242,24 @@ describe('forms copy · forms.application.*', () => {
     expect(en.forms.application.error.fallback).toBe("support{'@'}muush.dev")
   })
 
+  it('should carry the feature 32 WhatsApp copy verbatim in each locale', () => {
+    /* Approved at the feature 32 gate (spec OA-8, 2026-10-14). */
+    expect(es.forms.application.fields.whatsappCountry).toEqual({
+      label: 'Lada del país',
+      errorInvalid: 'Elige la lada de tu país',
+    })
+    expect(en.forms.application.fields.whatsappCountry).toEqual({
+      label: 'Country code',
+      errorInvalid: 'Choose your country code',
+    })
+    expect(es.forms.application.fields.whatsapp.errorDigits).toBe(
+      'Deben ser entre 6 y 14 dígitos'
+    )
+    expect(en.forms.application.fields.whatsapp.errorDigits).toBe(
+      'Must be 6 to 14 digits'
+    )
+  })
+
   it('should translate every field label and error message between locales', () => {
     const esFields = es.forms.application.fields
     const enFields = en.forms.application.fields
@@ -252,7 +271,7 @@ describe('forms copy · forms.application.*', () => {
     expect(en.forms.application.submit).not.toBe(es.forms.application.submit)
   })
 
-  it('should reuse the exact WhatsApp digit-count copy forms.contact already ships', () => {
+  it('should reuse the exact WhatsApp digit-range copy forms.contact already ships', () => {
     /* Assumption (spec.md): the WhatsApp number's validation rule is reused
        by symmetry from `forms.contact` — the copy is reused the same way. */
     const contactWhatsapp = (locale: typeof es) =>

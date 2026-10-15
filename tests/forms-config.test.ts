@@ -96,27 +96,33 @@ describe('forms config · ui/ never touches the network (FR-025)', () => {
   })
 })
 
-describe('forms config · one network call site in all of app/ (Article V, FR-011/FR-025)', () => {
+describe('forms config · two network call sites in all of app/ (Article V, FR-011/FR-025)', () => {
   /*
    * Feature 029 made the forms submit, so "no fetch anywhere" no longer
    * holds. What replaces it is narrower and stricter. Across every
    * application source (tests and stories excluded), `fetch(` appears in
-   * exactly one file, the API client. No `ui/` folder in any feature or in
-   * `shared/` reaches for a Nuxt or browser network primitive. A stray call
-   * in another `logic/` file, in a section that hosts a form, or in any
-   * other `ui/` fails here.
+   * exactly two files: the API client, and the same-origin `GET /__geo` of
+   * feature 32 Amendment A1 (`edgeCountry.ts`, data-model § 8.2). No `ui/`
+   * folder in any feature or in `shared/` reaches for a Nuxt or browser
+   * network primitive. A stray call in another `logic/` file, in a section
+   * that hosts a form, or in any other `ui/` fails here.
    */
-  const CLIENT = join('app', 'features', 'forms', 'logic', 'formsApiClient.ts')
+  const LOGIC = join('app', 'features', 'forms', 'logic')
+  const CALL_SITES = [
+    join(LOGIC, 'edgeCountry.ts'),
+    join(LOGIC, 'formsApiClient.ts'),
+  ]
   const appSources = APP_SOURCES.filter(
     ({ path }) => !/\.(test|stories)\.ts$/.test(path)
   )
 
-  it('should find fetch( only in forms/logic/formsApiClient.ts', () => {
+  it('should find fetch( only in forms/logic/formsApiClient.ts and forms/logic/edgeCountry.ts', () => {
     const callers = appSources
       .filter(({ source }) => /\bfetch\s*\(/.test(source))
       .map(({ path }) => path)
+      .sort()
 
-    expect(callers).toEqual([CLIENT])
+    expect(callers).toEqual(CALL_SITES)
   })
 
   it('should find no $fetch, useFetch or XMLHttpRequest under any ui/ folder', () => {

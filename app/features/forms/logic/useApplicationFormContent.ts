@@ -3,6 +3,7 @@ import {
   type ApplicationFormContent,
   ROLE_CATALOG,
 } from '@/features/forms/data/applicationFields'
+import { buildCountryOptions } from './countryOptions'
 
 /**
  * Resolves `forms.application.*` into the shape `ApplicationForm.vue` renders
@@ -12,7 +13,13 @@ import {
  * barrel and never reaches into `forms/logic/` directly (plan.md D-1, D-4).
  */
 export function useApplicationFormContent(): ComputedRef<ApplicationFormContent> {
-  const { t } = useI18n()
+  const { t, locale, localeProperties } = useI18n()
+  /* Country names come from the browser in the page language (`es-MX` /
+     `en`, the locale's `language` in `nuxt.config.ts`), not from locale
+     keys: one source for both languages (feature 32 research R2). */
+  const countryOptions = computed(() =>
+    buildCountryOptions(localeProperties.value.language ?? locale.value)
+  )
 
   return computed<ApplicationFormContent>(() => ({
     fields: {
@@ -78,6 +85,13 @@ export function useApplicationFormContent(): ComputedRef<ApplicationFormContent>
             'forms.application.fields.contactPreference.options.whatsapp'
           ),
         },
+      },
+      whatsappCountry: {
+        label: t('forms.application.fields.whatsappCountry.label'),
+        errorInvalid: t(
+          'forms.application.fields.whatsappCountry.errorInvalid'
+        ),
+        options: countryOptions.value,
       },
       whatsapp: {
         label: t('forms.application.fields.whatsapp.label'),

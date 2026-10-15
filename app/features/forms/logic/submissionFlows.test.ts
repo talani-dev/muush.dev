@@ -216,6 +216,105 @@ describe('submitContactFlow · real client classification over a mocked fetch', 
   })
 })
 
+describe('WhatsApp dial code over a mocked fetch (feature 32)', () => {
+  const API = 'https://api.test.invalid'
+
+  function answering(status: number, body: unknown) {
+    const fetchImpl = vi.fn<FetchLike>().mockResolvedValue({
+      ok: status >= 200 && status < 300,
+      status,
+      text: async () => JSON.stringify(body),
+    })
+    return {
+      fetchImpl,
+      client: createFormsApiClient({ baseUrl: API, fetchImpl }),
+    }
+  }
+
+  function sentBody(
+    fetchImpl: ReturnType<typeof vi.fn<FetchLike>>
+  ): Record<string, unknown> {
+    return JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body))
+  }
+
+  const viaWhatsapp = {
+    contactPreference: 'whatsapp',
+    whatsappCountry: 'CO',
+    whatsapp: '300 123 4567',
+  } as const
+
+  it('should post the dial code and the digits only when /contact is sent with WhatsApp', async () => {
+    const { client, fetchImpl } = answering(200, { ok: true })
+
+    await submitContactFlow(
+      { ...contact, ...viaWhatsapp },
+      { client, getToken: countingTokens(), locale: 'es' }
+    )
+
+    expect(sentBody(fetchImpl)).toMatchObject({
+      whatsappDialCode: '+57',
+      whatsapp: '3001234567',
+    })
+  })
+
+  it('should post neither WhatsApp key when /contact is sent with email', async () => {
+    const { client, fetchImpl } = answering(200, { ok: true })
+
+    await submitContactFlow(
+      { ...contact, whatsappCountry: 'CO', whatsapp: '3001234567' },
+      { client, getToken: countingTokens(), locale: 'es' }
+    )
+
+    expect(sentBody(fetchImpl)).not.toHaveProperty('whatsappDialCode')
+    expect(sentBody(fetchImpl)).not.toHaveProperty('whatsapp')
+  })
+
+  it('should post the dial code when /careers is sent with WhatsApp', async () => {
+    const { client, fetchImpl } = answering(200, { ok: true })
+
+    await submitApplicationFlow(application(viaWhatsapp), {
+      client,
+      getToken: countingTokens(),
+      locale: 'en',
+    })
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe(`${API}/careers`)
+    expect(sentBody(fetchImpl)).toMatchObject({
+      whatsappDialCode: '+57',
+      whatsapp: '3001234567',
+    })
+  })
+
+  it('should mark the selector when the server rejects whatsappDialCode', async () => {
+    const { client } = answering(400, {
+      ok: false,
+      error: { code: 'validation_failed', fields: ['whatsappDialCode'] },
+    })
+
+    expect(
+      await submitContactFlow(
+        { ...contact, ...viaWhatsapp },
+        { client, getToken: countingTokens(), locale: 'es' }
+      )
+    ).toEqual({ kind: 'field-errors', fields: ['whatsappCountry'] })
+  })
+
+  it('should fail generically when the server names whatsappDialCode while the preference is email', async () => {
+    const { client } = answering(400, {
+      ok: false,
+      error: { code: 'validation_failed', fields: ['whatsappDialCode'] },
+    })
+
+    expect(
+      await submitApplicationFlow(application(), {
+        client,
+        getToken: countingTokens(),
+        locale: 'es',
+      })
+    ).toEqual(FAILURE)
+  })
+})
+
 describe('submitApplicationFlow', () => {
   it('should send one application without cvId and no upload when cv is null', async () => {
     const { client, log, careersPayloads } = fakeClient({})

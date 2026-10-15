@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { ApplicationFormContent } from '@/features/forms/data/applicationFields'
 import type { ApplicationSubmitter } from '@/features/forms/data/submissionContract'
+import { buildCountryOptions } from '@/features/forms/logic/countryOptions'
 import ApplicationForm from './ApplicationForm.vue'
 
 /**
@@ -85,10 +86,15 @@ const spanish: ApplicationFormContent = {
       label: '¿Cómo prefieres que te contactemos?',
       options: { email: 'Correo', whatsapp: 'WhatsApp' },
     },
+    whatsappCountry: {
+      label: 'Lada del país',
+      errorInvalid: 'Elige la lada de tu país',
+      options: buildCountryOptions('es-MX'),
+    },
     whatsapp: {
       label: 'Número de WhatsApp',
       errorRequired: 'Escribe tu número',
-      errorDigits: 'Deben ser 10 dígitos',
+      errorDigits: 'Deben ser entre 6 y 14 dígitos',
     },
   },
   submit: 'Enviar',
@@ -210,4 +216,30 @@ export const CvUploadErrorEnglish: Story = {
     submitter: attaching,
     previewState: 'cv-upload-error',
   },
+}
+
+/**
+ * Feature 32 Amendment A1: a stub port that reports Colombia, as the site's
+ * edge would for a visitor there (`GET /__geo`). The form switches to
+ * WhatsApp on mount, the way a visitor would, and the selector moves from
+ * Mexico to Colombia. The other stories omit `lookupCountry` on purpose:
+ * that is Storybook without the edge, so Mexico and no request.
+ */
+export const ReportedCountryColombia: Story = {
+  args: {
+    content: spanish,
+    submitter: { ...attaching, lookupCountry: async () => 'CO' },
+  },
+  render: args => ({
+    components: { ApplicationForm },
+    setup: () => ({ args }),
+    mounted() {
+      ;(
+        (this.$el as HTMLElement).querySelector(
+          'input[name="contactPreference"][value="whatsapp"]'
+        ) as HTMLInputElement | null
+      )?.click()
+    },
+    template: '<ApplicationForm v-bind="args" />',
+  }),
 }

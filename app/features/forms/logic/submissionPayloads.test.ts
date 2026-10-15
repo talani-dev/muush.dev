@@ -99,7 +99,7 @@ describe('buildContactPayload', () => {
     expect(payload).not.toHaveProperty('whatsapp')
   })
 
-  it('should carry exactly nine keys with the digits only when the preference is whatsapp', () => {
+  it('should carry exactly ten keys with the digits only when the preference is whatsapp', () => {
     const payload = buildContactPayload(
       contactValues({
         contactPreference: 'whatsapp',
@@ -109,18 +109,66 @@ describe('buildContactPayload', () => {
       'tok-1'
     )
 
-    expect(Object.keys(payload)).toHaveLength(9)
+    expect(Object.keys(payload)).toHaveLength(10)
     expect(payload.whatsapp).toBe('5512345678')
   })
 
-  it('should drop a stale whatsapp value when the preference is email', () => {
+  it.each([
+    ['MX', '+52', '(55) 4433-2211', '5544332211'],
+    ['CO', '+57', '300 123 4567', '3001234567'],
+    ['CA', '+1', '876-555-1234', '8765551234'],
+  ])(
+    'should send the dial code of %s before the digits when the preference is whatsapp',
+    (country, dialCode, typed, digits) => {
+      const payload = buildContactPayload(
+        contactValues({
+          contactPreference: 'whatsapp',
+          whatsappCountry: country,
+          whatsapp: typed,
+        }),
+        'es',
+        'tok-1'
+      )
+      const keys = Object.keys(payload)
+      const at = keys.indexOf('contactPreference')
+
+      expect(keys.slice(at, at + 3)).toEqual([
+        'contactPreference',
+        'whatsappDialCode',
+        'whatsapp',
+      ])
+      expect(payload.whatsappDialCode).toBe(dialCode)
+      expect(payload.whatsapp).toBe(digits)
+    }
+  )
+
+  it('should drop a stale whatsapp value and the dial code when the preference is email', () => {
     const payload = buildContactPayload(
-      contactValues({ contactPreference: 'email', whatsapp: '5512345678' }),
+      contactValues({
+        contactPreference: 'email',
+        whatsappCountry: 'CO',
+        whatsapp: '5512345678',
+      }),
       'es',
       'tok-1'
     )
 
     expect(payload).not.toHaveProperty('whatsapp')
+    expect(payload).not.toHaveProperty('whatsappDialCode')
+  })
+
+  it('should throw when the country is not listed, since the selector only offers listed ones', () => {
+    expect(() =>
+      buildContactPayload(
+        contactValues({
+          contactPreference: 'whatsapp',
+          whatsappCountry: 'QQ',
+          whatsapp: '5544332211',
+        }),
+        'es',
+        't'
+      )
+    ).toThrow()
   })
 
   it('should send company as an empty string when it is empty', () => {
@@ -224,6 +272,61 @@ describe('buildCareersPayload', () => {
 
     expect(viaWhatsapp.whatsapp).toBe('5512345678')
     expect(viaEmail).not.toHaveProperty('whatsapp')
+    expect(viaEmail).not.toHaveProperty('whatsappDialCode')
+  })
+
+  it.each([
+    ['MX', '+52'],
+    ['CO', '+57'],
+    ['CA', '+1'],
+  ])(
+    'should send the dial code of %s right before whatsapp when the preference is whatsapp',
+    (country, dialCode) => {
+      const payload = buildCareersPayload(
+        applicationValues({
+          contactPreference: 'whatsapp',
+          whatsappCountry: country,
+          whatsapp: '300 123 4567',
+        }),
+        'es',
+        't'
+      )
+      const keys = Object.keys(payload)
+      const at = keys.indexOf('contactPreference')
+
+      expect(keys.slice(at, at + 3)).toEqual([
+        'contactPreference',
+        'whatsappDialCode',
+        'whatsapp',
+      ])
+      expect(payload.whatsappDialCode).toBe(dialCode)
+      expect(payload.whatsapp).toBe('3001234567')
+    }
+  )
+
+  it('should leave out the dial code when the preference is email even with a country chosen', () => {
+    const payload = buildCareersPayload(
+      applicationValues({ whatsappCountry: 'CO', whatsapp: '3001234567' }),
+      'es',
+      't'
+    )
+
+    expect(payload).not.toHaveProperty('whatsappDialCode')
+    expect(payload).not.toHaveProperty('whatsapp')
+  })
+
+  it('should throw when the country is not listed', () => {
+    expect(() =>
+      buildCareersPayload(
+        applicationValues({
+          contactPreference: 'whatsapp',
+          whatsappCountry: 'QQ',
+          whatsapp: '3001234567',
+        }),
+        'es',
+        't'
+      )
+    ).toThrow()
   })
 
   it('should add cvId only when one is given', () => {

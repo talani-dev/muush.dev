@@ -3,6 +3,7 @@ import type {
   ContactSubmitter,
   SiteLocale,
 } from '@/features/forms/data/submissionContract'
+import { createEdgeCountryLookup } from './edgeCountry'
 import { createFormsApiClient } from './formsApiClient'
 import {
   type FlowDeps,
@@ -22,6 +23,11 @@ import { createTurnstileTokenSource } from './useTurnstile'
  * Creating a submitter touches neither the network nor the DOM: Turnstile
  * loads on the form's first `engage()`, from a DOM event, so nothing here
  * runs during prerender.
+ *
+ * Feature 32 Amendment A1: each submitter also carries `lookupCountry`, the
+ * same-origin `GET /__geo` of `edgeCountry.ts`, memoized per submitter (one
+ * per page). It is browser-only by construction: the form calls it from its
+ * first focus or the switch to WhatsApp, never at setup.
  */
 
 function toSiteLocale(code: string): SiteLocale {
@@ -54,6 +60,7 @@ export function useContactSubmitter(): ContactSubmitter {
   return {
     engage,
     submit: values => submitContactFlow(values, deps()),
+    lookupCountry: createEdgeCountryLookup(),
   }
 }
 
@@ -63,5 +70,6 @@ export function useApplicationSubmitter(): ApplicationSubmitter {
     engage,
     submit: (values, progress) =>
       submitApplicationFlow(values, deps(), progress),
+    lookupCountry: createEdgeCountryLookup(),
   }
 }

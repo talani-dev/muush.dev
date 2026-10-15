@@ -1,10 +1,16 @@
+import {
+  type CountryCode,
+  type CountryOption,
+  DEFAULT_COUNTRY,
+} from '@/features/forms/data/countries'
+
 /**
  * The contact form's field model. Source of truth:
  * `docs/business/landing/ui-map.md` § 7.
  *
  * Plain types and named constants only — no Vue, no Nuxt, no validation
- * logic. `logic/useContactForm.ts` imports this; this file imports nothing
- * (Constitution Article II).
+ * logic. `logic/useContactForm.ts` imports this; this file imports only
+ * `countries.ts`, a sibling `data/` file (Constitution Article II).
  */
 
 export type ContactFieldId =
@@ -14,6 +20,7 @@ export type ContactFieldId =
   | 'identity'
   | 'need'
   | 'contactPreference'
+  | 'whatsappCountry'
   | 'whatsapp'
 
 /**
@@ -61,6 +68,10 @@ export interface ContactFormValues {
   identity: IdentityOption | ''
   need: string
   contactPreference: ContactPreference
+  /** The dial-code selector's country (feature 32). Never empty; kept when
+   * the preference goes to email and back (spec OA-9), sent only as the
+   * derived `whatsappDialCode` and only with WhatsApp. */
+  whatsappCountry: CountryCode
   /** `''` unless `contactPreference === 'whatsapp'` (FR-010, FR-011). */
   whatsapp: string
 }
@@ -77,6 +88,7 @@ export const CONTACT_FIELD_ORDER: readonly ContactFieldId[] = [
   'identity',
   'need',
   'contactPreference',
+  'whatsappCountry',
   'whatsapp',
 ]
 
@@ -87,10 +99,14 @@ export const NAME_MIN_LENGTH = 2
 export const NEED_MIN_LENGTH = 10
 
 /**
- * `docs/business/landing/ui-map.md` § 7: "10 dígitos para +52, default
- * México" (spec A-03 — no other country is offered in this feature).
+ * The national number's length, dial code excluded, counted after removing
+ * every non-digit: 6 to 14 digits. Agreed by Roberto with the backend on
+ * 2026-10-14 (feature 32); supersedes the "10 dígitos para +52" rule of
+ * `form-api-contract.md` § 3 and `ui-map.md` § 7 until those documents are
+ * rewritten by a human (feature 32 spec OA-1).
  */
-export const WHATSAPP_MX_DIGIT_COUNT = 10
+export const WHATSAPP_MIN_DIGITS = 6
+export const WHATSAPP_MAX_DIGITS = 14
 
 /** Same-shape check as the native `type="email"` constraint (FR-008, spec
  * data-model.md § 1) — not RFC-complete, and not meant to be. */
@@ -109,6 +125,7 @@ export interface ContactFormFieldContent {
   errorFormat?: string
   errorLength?: string
   errorDigits?: string
+  errorInvalid?: string
 }
 
 export interface ContactFormContent {
@@ -122,6 +139,13 @@ export interface ContactFormContent {
     need: ContactFormFieldContent
     contactPreference: ContactFormFieldContent & {
       options: Record<ContactPreference, string>
+    }
+    /** `label` is the selector's accessible name; `options` are already
+     * localized and sorted (`logic/countryOptions.ts`). */
+    whatsappCountry: {
+      label: string
+      errorInvalid: string
+      options: CountryOption[]
     }
     whatsapp: ContactFormFieldContent
   }
@@ -142,6 +166,7 @@ export function initialContactFormValues(): ContactFormValues {
     identity: '',
     need: '',
     contactPreference: 'email',
+    whatsappCountry: DEFAULT_COUNTRY,
     whatsapp: '',
   }
 }
