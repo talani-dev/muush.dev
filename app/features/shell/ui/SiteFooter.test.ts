@@ -79,6 +79,13 @@ describe('SiteFooter', () => {
     expect(mountFooter().find('footer').exists()).toBe(true)
   })
 
+  it('should paint its own flat ink-500 surface when rendered', () => {
+    /* Feature 34, A2 revision 1 (Roberto, 2026-10-15): the footer keeps its
+       flat ink-500 and covers the dotted paper and the spotlight's red dots.
+       Removing the class is a design change, not a fix. */
+    expect(mountFooter().find('footer').classes()).toContain('bg-ink-500')
+  })
+
   it('should render exactly four columns when rendered', () => {
     /* Asserted by count so a silently dropped column fails rather than
        quietly narrowing the footer. */

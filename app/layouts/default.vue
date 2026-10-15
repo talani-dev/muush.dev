@@ -28,8 +28,12 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
  * | ink-500 base | this element's own background |
  * | section glow groups · `--layer-glow` (-3) | inside each section |
  * | dotted paper · `--layer-dots` (-2), page-wide | `<DotGrid />`, once, here |
- * | cursor spotlight · `--layer-spotlight` (-1) | `<CursorSpotlight />`, here, after mount |
+ * | cursor spotlight (red lit dots, no light) · `--layer-spotlight` (-1) | `<CursorSpotlight />`, here, after mount |
  * | nav, page content, footer | normal flow |
+ *
+ * Nothing in normal flow paints an opaque surface over these layers except
+ * the footer (flat ink-500, Roberto, feature 34 A2 revision 1, 2026-10-15)
+ * and the form cards' glass; both cover the dots and the spotlight by design.
  *
  * The root element is the page's **single stacking context** (`isolate`) and
  * is positioned (`relative`), which is what lets all three negative levels
@@ -41,7 +45,8 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
  * `SectionBackdrop.vue`'s doc comment.
  *
  * The two existing levels were renumbered rather than reordered: the spotlight
- * has to paint **above** the dots to brighten them (`ui-map.md:271`) and there
+ * has to paint **above** the dots to recolour them (`ui-map.md:271`; red since
+ * feature 34's A2) and there
  * is no integer between -1 and 0. Both keep their token names, so `DotGrid`,
  * `SectionBackdrop` and `SectionGlow` did not change a line.
  *
@@ -49,7 +54,7 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
  * that absence is mechanical rather than promised: `isActive` is `false` on the
  * server and stays `false` until the first mouse event, so the element cannot
  * appear in the artefact, the first client render agrees with the server's, and
- * no red blob is painted in the corner before the pointer has moved
+ * no red dots are painted in the corner before the pointer has moved
  * (feature 008 `research.md` § R7). It is also the no-JS fallback `ui-map.md`
  * § 10 specifies — "fondo normal, sin glow — no se pierde contenido" — with
  * nothing written to arrange it.

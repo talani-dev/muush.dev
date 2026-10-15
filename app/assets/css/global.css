@@ -67,8 +67,11 @@
   --dot-paper-step: 1.5rem;
 
   /*
-   * Spotlight del cursor (feature 008, frame `gViAx` "DEMO spotlight cursor"
-   * leído por el líder — rules.md § R32 — y contrastado con ui-map.md § 10).
+   * Spotlight del cursor (feature 008; enmienda A2 de la feature 34, Roberto
+   * 2026-10-14): ya NO pinta luz propia. Solo los puntos del papel cerca del
+   * puntero cambian de tono, y se desvanecen con la distancia hasta el punto
+   * normal. El glow (dos radial-gradient de red-400 al 42/17/37%) y sus cinco
+   * tokens se eliminaron por decisión de Roberto (A2-1).
    *
    * ⚠️ NO se llaman `--color-spotlight-*` ni `--spacing-spotlight-*`, y sobre
    * todo NO `--color-glow-*` ni `--spacing-glow-*`: ese namespace es cerrado y
@@ -77,61 +80,27 @@
    * alcanzable desde sus props (rules.md § R36). Van en :root y no en
    * `@theme inline` porque los lee CSS escrito a mano (§ R18).
    *
-   * Los tres colores son el mismo red-400 del frame (#CF3147) a tres alfas,
-   * cada una derivada del hex de 8 dígitos que dibuja el diseño:
-   *   #CF31476B → 0x6B = 107 ÷ 255 = 41.96% → 42%  (confirmado por ui-map:270)
-   *   #CF31472B → 0x2B =  43 ÷ 255 = 16.86% → 17%  (solo el frame — ver D-01)
-   *   #CF31475E → 0x5E =  94 ÷ 255 = 36.86% → 37%  (confirmado por ui-map:270)
+   * Radio del efecto ≈120px (A2-3, Roberto 2026-10-14; 7.5rem es la elección
+   * A2-S2 del spec de la feature 34). En rem y no en px por lo mismo que el
+   * papel punteado (feature 006, su A-03): la hoja iluminada tiene que seguir
+   * a la retícula exactamente, así que si el visitante agranda la letra las
+   * dos crecen juntas. Es el ÚNICO número que se toca para recalibrar: el haz,
+   * la ventana, la hoja iluminada y la posición de respaldo de
+   * CursorSpotlight.vue se derivan de él. Reemplaza a `--spotlight-outer-size`
+   * (20.625rem, cuya máscara llegaba a 165px).
    */
-  --spotlight-red-400-42: color-mix(in srgb, var(--red-400) 42%, transparent);
-  --spotlight-red-400-17: color-mix(in srgb, var(--red-400) 17%, transparent);
-  --spotlight-red-400-37: color-mix(in srgb, var(--red-400) 37%, transparent);
+  --spotlight-lit-radius: 7.5rem;
 
   /*
-   * ⚠️ POSICIÓN de la parada intermedia del campo exterior, no una opacidad.
-   * El frame la coloca en 0.42 y la opacidad del centro vale 42%: son dos
-   * números sin relación que comparten dígitos (spec § D-01). Tratarlos como
-   * uno solo es un error, y por eso son dos tokens con dos comentarios.
+   * Color del punto iluminado: red-400 al 100%, decisión de Roberto (A2-2,
+   * 2026-10-14; opacidad plena = elección A2-S1 del spec). Bajo el puntero el
+   * punto es exactamente #CF3147; la máscara lineal lo funde hasta el punto
+   * normal en el radio. Una opacidad parcial sobre ink-500 se vería como un
+   * granate que no es tono de marca. Si hiciera falta suavizarlo, el respaldo
+   * es `color-mix(in srgb, var(--red-400) N%, transparent)` en ESTE mismo
+   * token, nunca un rojo nuevo.
    */
-  --spotlight-stop-mid: 42%;
-
-  /*
-   * Diámetros del frame `gViAx`: 660×660 el campo exterior y 180×180 el
-   * núcleo. 660 ÷ 16 = 41.25 y 180 ÷ 16 = 11.25. ui-map.md:270 los confirma
-   * por su radio (~330 y ~90, que son justo la mitad de cada uno).
-   *
-   * En rem y no en px por lo mismo que el papel punteado (feature 006, su
-   * A-03): la hoja iluminada tiene que seguir a la retícula exactamente, así
-   * que si el visitante agranda la letra las dos crecen juntas (spec A-10).
-   *
-   * ⚠️ DIVERGENCIA HUMANA registrada (feature 26, 2026-09-09), no una
-   * corrección del `.pen`. Roberto percibió el efecto como "más de un
-   * gradiente" y pidió reducir/quitar el más grande — el campo exterior —
-   * dejando el núcleo tal cual. `--spotlight-outer-size` se redujo A LA
-   * MITAD del valor confirmado del frame (41.25rem → 20.625rem, 660px →
-   * 330px); `--spotlight-core-size` NO se toca. Roberto mismo no tenía una
-   * medida exacta en mente: esta es una primera pasada de calibración,
-   * verificada con capturas CDP antes/después, no un valor final. Si hace
-   * falta otra pasada, es este único número el que cambia — `.window` y
-   * `.lit` en CursorSpotlight.vue derivan su tamaño de él, así que nada más
-   * se toca para recalibrar.
-   */
-  --spotlight-outer-size: 20.625rem;
-  --spotlight-core-size: 11.25rem;
-
-  /*
-   * ⚠️ UNVERIFIED — dueño: Clau (spec A-03, rules.md § R38). Nadie documenta
-   * qué tan brillante queda un punto iluminado, y un mockup estático **no
-   * puede dibujarlo**: el frame `gViAx` muestra los dos círculos sobre un campo
-   * de puntos normal. No es documentación vieja (§ R32), es una imposibilidad
-   * estructural, y por eso se registra en vez de inventar un porcentaje.
-   *
-   * La capa del spotlight vuelve a pintar la MISMA receta, así que dentro del
-   * radio el punto queda en 1 − (1 − 0.12)² = 22.6% — un valor DERIVADO, no
-   * elegido. Este token existe para que el día que Clau dé una cifra cueste
-   * una línea.
-   */
-  --dot-paper-lit-color: var(--dot-paper-color);
+  --dot-paper-lit-color: var(--red-400);
 
   /*
    * ⚠️ UNVERIFIED — dueño: Clau (spec A-08). El diseño no especifica timing
@@ -152,7 +121,7 @@
    * | fondo del elemento raíz  | base ink-500                 | el layout          |
    * | --layer-glow    (-3)     | glows de cada sección        | dentro de cada una |
    * | --layer-dots    (-2)     | papel punteado, página entera| el layout, una vez |
-   * | --layer-spotlight (-1)   | spotlight: luz + puntos vivos| el layout, al montar |
+   * | --layer-spotlight (-1)   | puntos rojos bajo el puntero | el layout, al montar |
    * | flujo normal             | nav, contenido, footer       | en todas partes    |
    *
    * **La relación es el contrato, no los números.** Glows debajo de puntos
@@ -161,7 +130,7 @@
    * número— no cambian una sola línea (spec FR-018).
    *
    * Se renumeró en vez de agregar un nivel libre porque el spotlight tiene que
-   * pintar ENCIMA de los puntos para poder iluminarlos (ui-map.md:271) y **no
+   * pintar ENCIMA de los puntos para poder teñirlos (ui-map.md:271) y **no
    * existe un entero entre -1 y 0**.
    *
    * ⚠️ Tienen que ser DISTINTOS. Si dos compartieran nivel, el desempate sería
@@ -363,8 +332,8 @@
    * El radar tiene dos intensidades, más tenue en reposo y más brillante al
    * revelarse, pero los tres radares del frame son byte-idénticos: el archivo
    * guarda UN estado y no puede decir cuál. No es documentación vieja
-   * (§ R32), es una imposibilidad estructural, igual que
-   * --dot-paper-lit-color.
+   * (§ R32), es una imposibilidad estructural, como lo fue el brillo de
+   * --dot-paper-lit-color hasta que Roberto lo resolvió (feature 34, A2).
    *
    * El valor es una DERIVACIÓN, no una medida: es la media de las dos únicas
    * razones reposo:hover que el frame sí contiene, que son las de la propia

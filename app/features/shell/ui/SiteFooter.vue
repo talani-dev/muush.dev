@@ -9,6 +9,10 @@ import FooterColumn from './FooterColumn.vue'
  * one per page — § 9.bis verified the footer is byte-identical between the
  * Landing and About frames in both viewports.
  *
+ * The flat ink-500 is Roberto's decision (feature 34, A2 revision 1,
+ * 2026-10-15): it covers the dotted paper and the cursor spotlight's red dots
+ * by design. Removing it is a design change, not a fix.
+ *
  * Every `lg:` below changes **layout** and nothing else: four columns become
  * two rows of two, and the bottom bar's two texts stop sharing a row. No
  * `clamp()` can express a change of order and count; a size, padding, radius
