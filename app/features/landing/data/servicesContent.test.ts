@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   connectorEndpoints,
+  connectorFloatVars,
   SERVICE_NODE_CENTRES,
   SERVICE_NODES,
 } from './servicesContent'
@@ -59,5 +60,30 @@ describe('SERVICE_NODES · services.md order', () => {
 
   it('should hold one radar centre per node, in the same order', () => {
     expect(SERVICE_NODE_CENTRES).toHaveLength(SERVICE_NODES.length)
+  })
+})
+
+describe('connectorFloatVars · each line floats with the two nodes it joins (feature 34)', () => {
+  it('should carry the resting x ends and both node indices when given the real connectors', () => {
+    const vars = connectorEndpoints(SERVICE_NODE_CENTRES).map(
+      (connector, index) => connectorFloatVars(connector, index)
+    )
+
+    expect(vars).toEqual([
+      { '--x1': '150', '--x2': '430', '--i-a': '0', '--i-b': '1' },
+      { '--x1': '430', '--x2': '690', '--i-a': '1', '--i-b': '2' },
+      { '--x1': '690', '--x2': '950', '--i-a': '2', '--i-b': '3' },
+      { '--x1': '950', '--x2': '1150', '--i-a': '3', '--i-b': '4' },
+    ])
+  })
+
+  it('should echo the given connector numbers when given a synthetic connector', () => {
+    /* Proves the helper reads its input rather than a literal table. */
+    expect(connectorFloatVars({ x1: 7, y1: 8, x2: 19, y2: 2 }, 9)).toEqual({
+      '--x1': '7',
+      '--x2': '19',
+      '--i-a': '9',
+      '--i-b': '10',
+    })
   })
 })

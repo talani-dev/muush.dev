@@ -34,16 +34,27 @@ const declarations = (source.split('<style scoped>')[1] ?? '').replaceAll(
  * alone is worth anything.
  */
 const SPOTLIGHT_TOKENS = [
-  '--spotlight-red-400-42',
-  '--spotlight-red-400-17',
-  '--spotlight-red-400-37',
-  '--spotlight-stop-mid',
-  '--spotlight-outer-size',
-  '--spotlight-core-size',
+  '--spotlight-lit-radius',
   '--dot-paper-lit-color',
   '--duration-spotlight-fade',
   '--layer-spotlight',
 ] as const
+
+/** Tokens of the glow amendment A2 removed (feature 34, FR-022, FR-024). */
+const REMOVED_TOKENS = [
+  '--spotlight-red-400-',
+  '--spotlight-stop-mid',
+  '--spotlight-core-size',
+  '--spotlight-outer-size',
+] as const
+
+/** The body of the first rule whose selector is exactly `selector`. */
+function ruleBody(selector: string): string {
+  const escaped = selector.replaceAll('.', '\\.')
+  return (
+    declarations.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))?.[1] ?? ''
+  )
+}
 
 /** Shared with `DotGrid`, and the reason the two sheets cannot drift apart. */
 const DOT_PAPER_TOKENS = [
@@ -126,6 +137,49 @@ describe('CursorSpotlight', () => {
       expect(declarations, token).toContain(`var(${token}`)
       expect(globalCss, token).toContain(`${token}:`)
     }
+  })
+
+  it('should paint no light of its own when rendered', () => {
+    /*
+     * Feature 34, amendment A2-1 (Roberto, 2026-10-14): the glow is gone.
+     * Neither the root nor the beam paints anything; the only colour on the
+     * layer is the lit sheet's dot recipe. The other `radial-gradient(` is
+     * the mask, which carries alpha only.
+     */
+    for (const selector of ['.cursor-spotlight', '.cursor-spotlight__beam']) {
+      const body = ruleBody(selector)
+      expect(body, selector).not.toBe('')
+      expect(body, selector).not.toMatch(/background(-image)?\s*:/)
+    }
+
+    const colourGradients = [
+      ...declarations.matchAll(/radial-gradient\(\s*([\s\S]*?)\)\s*;/g),
+    ]
+      .map(match => match[1] ?? '')
+      .filter(args => /var\(--(?!spotlight-lit-radius)[\w-]*colou?r/.test(args))
+
+    expect(colourGradients).toHaveLength(1)
+    expect(colourGradients[0]).toContain('var(--dot-paper-lit-color)')
+    expect(ruleBody('.cursor-spotlight__lit')).toContain(
+      'var(--dot-paper-lit-color)'
+    )
+    for (const token of REMOVED_TOKENS) {
+      expect(declarations, token).not.toContain(token)
+      expect(source, token).not.toContain(token)
+    }
+  })
+
+  it('should fade the lit dots out at the lit radius when rendered', () => {
+    /* A2-3: alpha 1 − d/R, reaching 0 exactly at R, so no hard edge
+       (feature 008 FR-008). Both the prefixed and the standard mask. */
+    const windowRule = ruleBody('.cursor-spotlight__window')
+    const masks = windowRule.match(
+      /mask-image:\s*radial-gradient\(\s*circle var\(--spotlight-lit-radius\) at center,\s*black 0%,\s*transparent 100%\s*\)/g
+    )
+
+    expect(masks).toHaveLength(2)
+    expect(windowRule).toMatch(/-webkit-mask-repeat:\s*no-repeat/)
+    expect(windowRule).toMatch(/(^|[^-])mask-repeat:\s*no-repeat/)
   })
 
   it('should resolve the lit dots from the same dot-paper tokens as DotGrid', () => {

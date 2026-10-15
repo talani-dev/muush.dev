@@ -274,14 +274,30 @@ describe('static output · the layout wraps every page', () => {
 
     for (const token of [
       '--layer-spotlight:',
-      '--spotlight-outer-size:',
+      '--spotlight-lit-radius:',
       '--dot-paper-lit-color:',
     ]) {
       expect(css, token).toContain(token)
     }
+    /* Feature 34, amendment A2-1: the glow and its tokens are gone. */
+    expect(css).not.toContain('--spotlight-outer-size:')
+    expect(css).not.toContain('--spotlight-red-400-')
 
     expect(documentFor('/es')).toContain('.cursor-spotlight')
   })
+
+  for (const route of ['/es', '/en/about'] as const) {
+    it(`should render the footer on its own ink-500 surface when the page is ${route}`, () => {
+      /* Feature 34, A2 revision 1 (Roberto, 2026-10-15): the footer keeps its
+         flat ink-500, which covers the dotted paper and the red lit dots. */
+      const tag = documentFor(route).match(/<footer[^>]*>/)?.[0]
+
+      expect(tag, route).toBeDefined()
+      expect(tag?.match(/class="([^"]*)"/)?.[1] ?? '', route).toMatch(
+        /\bbg-ink-500\b/
+      )
+    })
+  }
 
   it('should render the same nav markup on the landing and on About', () => {
     /*

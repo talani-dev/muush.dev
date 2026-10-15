@@ -168,4 +168,32 @@ useServicesLyrics(timelineItems)
     opacity: 1;
   }
 }
+
+/*
+ * Feature 34 · D-3 mobile float trial. Revert: delete this block and
+ * `ServicesTimeline.float.test.ts`. Spine static: rows move parallel to it.
+ */
+.canvas {
+  animation: services-float var(--duration-services-float) linear infinite;
+}
+
+.item {
+  translate: 0
+    calc(
+      var(--services-float-amplitude) *
+      sin(
+        var(--services-float-phase) +
+        var(--i) *
+        var(--services-float-phase-step)
+      ) *
+      var(--services-frame-px)
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas {
+    animation: none;
+  }
+}
+/* end D-3 */
 </style>

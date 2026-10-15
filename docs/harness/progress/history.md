@@ -2684,3 +2684,60 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
   § Amendment A1. Reviewer:
   `docs/harness/progress/review_whatsapp_dial_code_selector_a1.md`.
 - `feature_list.json`: feature id 32 status `reviewing` → `done`.
+
+## 2026-10-15 — Feature 34: services_float_and_custom_cursor (done)
+
+- **Float (desktop):** the five Services nodes float vertically in
+  "zero gravity", out of phase, driven by one shared CSS clock (registered
+  `@property` angle + `sin()`). Text moves with its radar, the radar ping is
+  kept, and the connector ends stay on the radar centres (headless Chrome:
+  ≤0.0001 px at 1024/1280/1440/1920 and at a 20 px root). Connectors were
+  extracted to `ServicesConnectors.vue`. This also fixes the pre-existing
+  OA-3 misalignment at 1024–1439 px. With reduced motion, nothing floats.
+- **Float (mobile/tablet trial, D-3):** `ServicesTimeline.vue` rows float
+  too, in a fenced block with its own test. Roberto reviewed it locally and
+  decided to KEEP it (T024).
+- **Brand cursor:** `public/cursor/you.svg` (from Roberto's `01-Mouse.svg`,
+  white `<rect>` removed) at 64×64 with hotspot `1 9`. It is used for the
+  default and pointer states, falls back to the native cursors, and text
+  fields keep the native I-beam. Touch is unaffected.
+- **Amendment A2 (spotlight):** the red glow that followed the cursor is
+  removed, along with its tokens. The paper dots near the pointer now turn
+  `--red-400` (`--dot-paper-lit-color: var(--red-400)`), fading with
+  distance over `--spotlight-lit-radius: 7.5rem`. No new colour token.
+- **A2 revision 1 (footer):** Roberto reversed footer option A. The footer
+  keeps its flat `bg-ink-500`, so the red dots do not show over it. OA-9 is
+  moot.
+- `./init.sh` exit 0 (83 files / 1169 tests). Reviewer APPROVED in round 3
+  after Roberto's acceptance ("me encanta cierra la tarea", relayed by the
+  leader).
+- Deviations accepted at review:
+  - Each connector gets one frame-sized outer `<svg>` that carries the
+    shear. A CSS transform on an SVG `<line>` forced a layout every frame
+    in Chromium (findings § R67).
+  - `brand-cursor.test.ts` accepts the build's `url(../cursor/you.svg)`
+    rewrite. An extra test resolves it against the stylesheet
+    (findings § R69).
+  - An XML-comment `--` defect in the cursor asset was fixed, with a guard
+    test (findings § R68).
+  - The cursor rule lists `input` whole, and a later rule takes the text
+    types back.
+  - The `CursorSpotlight` story demo sentence now reads "se vuelven
+    rojos", and a `global.css` comment was reworded ("teñirlos").
+- **Still open:**
+  - The per-browser matrix is UNVERIFIED: Safari/Firefox, Retina/3× DPR,
+    high contrast, reduced motion and the cursor URL on nested routes.
+    T013, T015, T020, T039 and T046 were closed on Roberto's acceptance,
+    with only Chrome evidence behind them.
+  - For Roberto to edit in `docs/business/`: `rules.md` § R37
+    (`--layer-spotlight` row), `rules.md` § R38 (lit-dot brightness), and
+    `landing/ui-map.md` § 10 (spotlight row and the *Spotlight del cursor
+    (receta)* paragraph). They still describe the glow.
+  - The `.pen` frame `gViAx` "DEMO spotlight cursor" still draws the two
+    removed red circles at the old size. Roberto and the leader decide
+    whether to update it.
+  - Two stale "light" comments in `app/shared/logic/useCursorSpotlight.ts`
+    (lines 142 and 170) need a later comment-only sweep.
+- Implementer: `docs/harness/progress/impl_services_float_and_custom_cursor.md`.
+  Reviewer: `docs/harness/progress/review_services_float_and_custom_cursor.md`.
+- `feature_list.json`: feature id 34 status `reviewing` → `done`.

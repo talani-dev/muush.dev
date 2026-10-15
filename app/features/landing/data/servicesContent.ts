@@ -133,3 +133,29 @@ export function connectorEndpoints(
 
   return endpoints
 }
+
+/** The inline custom properties one floating connector line reads. */
+export type ConnectorFloatVars = Record<
+  '--x1' | '--x2' | '--i-a' | '--i-b',
+  string
+>
+
+/**
+ * Feature 34 · the inputs connector `index` needs to follow the float of the
+ * two radars it joins (spec FR-008): its resting x ends and the indices of
+ * node `index` and node `index + 1`. The CSS in `ServicesConnectors.vue` turns
+ * them into the exact vertical shear of the line, from the same clock the
+ * nodes read. Built only from `connectorEndpoints` output, never from
+ * literals.
+ */
+export function connectorFloatVars(
+  connector: ConnectorEndpoints,
+  index: number
+): ConnectorFloatVars {
+  return {
+    '--x1': String(connector.x1),
+    '--x2': String(connector.x2),
+    '--i-a': String(index),
+    '--i-b': String(index + 1),
+  }
+}

@@ -921,3 +921,68 @@ Consecuencia práctica: `useFormSubmitState.ts` le pasa al submitter
 `{ ...toRaw(values.value) }`, de modo que el `File` que llega al `PUT` de S3
 es el objeto crudo en cualquier entorno, y una prueba que compara identidad
 del archivo tiene que usar `toRaw(...)`.
+
+## Feature 034 · Services float y cursor propio — hallazgos de implementación (2026-10-14)
+
+> Medido con Chrome 155 headless vía CDP (`Performance.getMetrics`,
+> `getScreenCTM`, `getComputedStyle`) contra `.output/public` servido en
+> local. Safari y Firefox no estaban disponibles en la sesión.
+
+### R67 · Un `transform` CSS sobre un hijo de SVG fuerza layout en cada frame; sobre el `<svg>` externo, no
+
+Animar (vía una custom property heredada) el `transform` de un `<line>` hizo
+que Chromium corriera **un layout por frame** (241 layouts en ~4 s, contra 0
+del build anterior). El mismo `transform` sobre el `<svg>` **externo** —una
+caja CSS, como cualquier elemento HTML— da **0 layouts**; el `translate` de
+los nodos HTML tampoco causa ninguno. Aislado inyectando
+`transform: none !important` a cada parte por separado.
+
+**Consecuencia:** si una línea o figura SVG tiene que moverse cada frame, va
+en su propio `<svg>` y la transformación se aplica a ese `<svg>`
+(`ServicesConnectors.vue` lo hace así: un `<svg>` del tamaño del frame por
+conector).
+
+Costo restante, para quien optimice después: animar una propiedad
+registrada **heredable** en el lienzo recalcula estilo de sus 48
+descendientes en cada frame, ≈1.7 ms/frame en headless (M4 Pro), contra
+≈0.37 ms/frame si la misma propiedad no hereda. Es el precio del reloj único
+(OA-1); no hay layout.
+
+### R68 · `--` dentro de un comentario XML deja un SVG sin decodificar, en silencio
+
+Un comentario `<!-- … --red-400 … -->` en `public/cursor/you.svg` hizo que
+Chrome **rechazara la imagen** (`Image.onerror`), con el archivo servido 200
+y `image/svg+xml`. `--` está prohibido dentro de un comentario XML, así que el
+archivo deja de ser XML bien formado. Como cursor, eso cae al cursor de
+sistema sin ningún error visible. Cualquier nombre de token CSS escrito en un
+comentario de un SVG lo provoca. `tests/brand-cursor.test.ts` lo vigila.
+
+### R69 · Nuxt reescribe `url("/…")` de `public/` a `url(../…)` en el CSS emitido, también dentro de custom properties
+
+`--cursor-brand: url("/cursor/you.svg") …` sale como
+`url(../cursor/you.svg)`, relativo a `_nuxt/`. Chrome resuelve la URL de una
+custom property contra la hoja de estilo, así que llega a `/cursor/you.svg`
+en todas las rutas, incluida `/es/nosotros/` con diagonal final. Una prueba que
+busque la ruta literal del código fuente en el CSS emitido falla por esto; la
+de `brand-cursor.test.ts` resuelve la URL emitida contra su hoja y comprueba
+que cae en el archivo. Firefox y Safari: **sin verificar**.
+
+### R70 · Evidencia por CDP: `clip` va en coordenadas de documento, y pausar animaciones no es instantáneo
+
+Dos trampas al medir píxeles con `Page.captureScreenshot` (enmienda A2,
+2026-10-15):
+
+- `clip.x/y` se interpretan en coordenadas del **documento**, no del viewport.
+  Con la página desplazada, un `clip` armado con `getBoundingClientRect()`
+  fotografía otra zona, y la comparación sale "sin diferencias" sin ningún
+  error. Hay que sumar `scrollY`, y conviene tener una prueba de cordura que
+  demuestre que el método sí detecta un cambio conocido.
+- `Animation.setPlaybackRate({ playbackRate: 0 })` no detiene el cuadro
+  enseguida. Si se captura justo después, el flotado de Servicios todavía se
+  mueve entre las dos capturas. Funcionó esperar unos 400 ms.
+
+Aparte, y sin arreglo: si cambia lo que pinta la capa del spotlight, se
+vuelven a rasterizar los glows `bg-radial-*` de toda la página con
+diferencias de ±3 a 8 por canal, aun a más de 1000 px del puntero. Un
+cambio de estilo inocuo no lo provoca. Al comparar "con y sin spotlight" no
+hay que confundir eso con un glow.

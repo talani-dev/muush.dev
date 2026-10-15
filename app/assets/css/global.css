@@ -67,8 +67,11 @@
   --dot-paper-step: 1.5rem;
 
   /*
-   * Spotlight del cursor (feature 008, frame `gViAx` "DEMO spotlight cursor"
-   * leído por el líder — rules.md § R32 — y contrastado con ui-map.md § 10).
+   * Spotlight del cursor (feature 008; enmienda A2 de la feature 34, Roberto
+   * 2026-10-14): ya NO pinta luz propia. Solo los puntos del papel cerca del
+   * puntero cambian de tono, y se desvanecen con la distancia hasta el punto
+   * normal. El glow (dos radial-gradient de red-400 al 42/17/37%) y sus cinco
+   * tokens se eliminaron por decisión de Roberto (A2-1).
    *
    * ⚠️ NO se llaman `--color-spotlight-*` ni `--spacing-spotlight-*`, y sobre
    * todo NO `--color-glow-*` ni `--spacing-glow-*`: ese namespace es cerrado y
@@ -77,61 +80,27 @@
    * alcanzable desde sus props (rules.md § R36). Van en :root y no en
    * `@theme inline` porque los lee CSS escrito a mano (§ R18).
    *
-   * Los tres colores son el mismo red-400 del frame (#CF3147) a tres alfas,
-   * cada una derivada del hex de 8 dígitos que dibuja el diseño:
-   *   #CF31476B → 0x6B = 107 ÷ 255 = 41.96% → 42%  (confirmado por ui-map:270)
-   *   #CF31472B → 0x2B =  43 ÷ 255 = 16.86% → 17%  (solo el frame — ver D-01)
-   *   #CF31475E → 0x5E =  94 ÷ 255 = 36.86% → 37%  (confirmado por ui-map:270)
+   * Radio del efecto ≈120px (A2-3, Roberto 2026-10-14; 7.5rem es la elección
+   * A2-S2 del spec de la feature 34). En rem y no en px por lo mismo que el
+   * papel punteado (feature 006, su A-03): la hoja iluminada tiene que seguir
+   * a la retícula exactamente, así que si el visitante agranda la letra las
+   * dos crecen juntas. Es el ÚNICO número que se toca para recalibrar: el haz,
+   * la ventana, la hoja iluminada y la posición de respaldo de
+   * CursorSpotlight.vue se derivan de él. Reemplaza a `--spotlight-outer-size`
+   * (20.625rem, cuya máscara llegaba a 165px).
    */
-  --spotlight-red-400-42: color-mix(in srgb, var(--red-400) 42%, transparent);
-  --spotlight-red-400-17: color-mix(in srgb, var(--red-400) 17%, transparent);
-  --spotlight-red-400-37: color-mix(in srgb, var(--red-400) 37%, transparent);
+  --spotlight-lit-radius: 7.5rem;
 
   /*
-   * ⚠️ POSICIÓN de la parada intermedia del campo exterior, no una opacidad.
-   * El frame la coloca en 0.42 y la opacidad del centro vale 42%: son dos
-   * números sin relación que comparten dígitos (spec § D-01). Tratarlos como
-   * uno solo es un error, y por eso son dos tokens con dos comentarios.
+   * Color del punto iluminado: red-400 al 100%, decisión de Roberto (A2-2,
+   * 2026-10-14; opacidad plena = elección A2-S1 del spec). Bajo el puntero el
+   * punto es exactamente #CF3147; la máscara lineal lo funde hasta el punto
+   * normal en el radio. Una opacidad parcial sobre ink-500 se vería como un
+   * granate que no es tono de marca. Si hiciera falta suavizarlo, el respaldo
+   * es `color-mix(in srgb, var(--red-400) N%, transparent)` en ESTE mismo
+   * token, nunca un rojo nuevo.
    */
-  --spotlight-stop-mid: 42%;
-
-  /*
-   * Diámetros del frame `gViAx`: 660×660 el campo exterior y 180×180 el
-   * núcleo. 660 ÷ 16 = 41.25 y 180 ÷ 16 = 11.25. ui-map.md:270 los confirma
-   * por su radio (~330 y ~90, que son justo la mitad de cada uno).
-   *
-   * En rem y no en px por lo mismo que el papel punteado (feature 006, su
-   * A-03): la hoja iluminada tiene que seguir a la retícula exactamente, así
-   * que si el visitante agranda la letra las dos crecen juntas (spec A-10).
-   *
-   * ⚠️ DIVERGENCIA HUMANA registrada (feature 26, 2026-09-09), no una
-   * corrección del `.pen`. Roberto percibió el efecto como "más de un
-   * gradiente" y pidió reducir/quitar el más grande — el campo exterior —
-   * dejando el núcleo tal cual. `--spotlight-outer-size` se redujo A LA
-   * MITAD del valor confirmado del frame (41.25rem → 20.625rem, 660px →
-   * 330px); `--spotlight-core-size` NO se toca. Roberto mismo no tenía una
-   * medida exacta en mente: esta es una primera pasada de calibración,
-   * verificada con capturas CDP antes/después, no un valor final. Si hace
-   * falta otra pasada, es este único número el que cambia — `.window` y
-   * `.lit` en CursorSpotlight.vue derivan su tamaño de él, así que nada más
-   * se toca para recalibrar.
-   */
-  --spotlight-outer-size: 20.625rem;
-  --spotlight-core-size: 11.25rem;
-
-  /*
-   * ⚠️ UNVERIFIED — dueño: Clau (spec A-03, rules.md § R38). Nadie documenta
-   * qué tan brillante queda un punto iluminado, y un mockup estático **no
-   * puede dibujarlo**: el frame `gViAx` muestra los dos círculos sobre un campo
-   * de puntos normal. No es documentación vieja (§ R32), es una imposibilidad
-   * estructural, y por eso se registra en vez de inventar un porcentaje.
-   *
-   * La capa del spotlight vuelve a pintar la MISMA receta, así que dentro del
-   * radio el punto queda en 1 − (1 − 0.12)² = 22.6% — un valor DERIVADO, no
-   * elegido. Este token existe para que el día que Clau dé una cifra cueste
-   * una línea.
-   */
-  --dot-paper-lit-color: var(--dot-paper-color);
+  --dot-paper-lit-color: var(--red-400);
 
   /*
    * ⚠️ UNVERIFIED — dueño: Clau (spec A-08). El diseño no especifica timing
@@ -152,7 +121,7 @@
    * | fondo del elemento raíz  | base ink-500                 | el layout          |
    * | --layer-glow    (-3)     | glows de cada sección        | dentro de cada una |
    * | --layer-dots    (-2)     | papel punteado, página entera| el layout, una vez |
-   * | --layer-spotlight (-1)   | spotlight: luz + puntos vivos| el layout, al montar |
+   * | --layer-spotlight (-1)   | puntos rojos bajo el puntero | el layout, al montar |
    * | flujo normal             | nav, contenido, footer       | en todas partes    |
    *
    * **La relación es el contrato, no los números.** Glows debajo de puntos
@@ -161,7 +130,7 @@
    * número— no cambian una sola línea (spec FR-018).
    *
    * Se renumeró en vez de agregar un nivel libre porque el spotlight tiene que
-   * pintar ENCIMA de los puntos para poder iluminarlos (ui-map.md:271) y **no
+   * pintar ENCIMA de los puntos para poder teñirlos (ui-map.md:271) y **no
    * existe un entero entre -1 y 0**.
    *
    * ⚠️ Tienen que ser DISTINTOS. Si dos compartieran nivel, el desempate sería
@@ -363,8 +332,8 @@
    * El radar tiene dos intensidades, más tenue en reposo y más brillante al
    * revelarse, pero los tres radares del frame son byte-idénticos: el archivo
    * guarda UN estado y no puede decir cuál. No es documentación vieja
-   * (§ R32), es una imposibilidad estructural, igual que
-   * --dot-paper-lit-color.
+   * (§ R32), es una imposibilidad estructural, como lo fue el brillo de
+   * --dot-paper-lit-color hasta que Roberto lo resolvió (feature 34, A2).
    *
    * El valor es una DERIVACIÓN, no una medida: es la media de las dos únicas
    * razones reposo:hover que el frame sí contiene, que son las de la propia
@@ -520,6 +489,63 @@
   --duration-services-lyrics: 0.3s;
 
   /*
+   * Feature 34 · the "zero gravity" float of the five Services nodes, shared
+   * by the desktop constellation and the mobile timeline (spec FR-001). The
+   * `.pen` cannot draw motion; these are Roberto's ranges (D-4) narrowed at
+   * the gate (OA-2, 2026-10-14). Node *i* sits at
+   * `amplitude × sin(phase + i × step)` design pixels from its rest position,
+   * where `phase` is the shared clock `--services-float-phase` (below, with
+   * the `@property` / `@keyframes` at the end of this file).
+   *
+   * Amplitude: unitless DESIGN pixels, not a length — each line's slope
+   * divides one offset by an x distance, and typed length division is not
+   * broadly supported (research R1). `--services-frame-px` turns it into a
+   * length for the HTML nodes; inside the SVG one user unit already is one
+   * design pixel.
+   */
+  --services-float-amplitude: 7;
+  /* One shared period for all five nodes (OA-2), middle of D-4's 5–7 s. */
+  --duration-services-float: 6s;
+  /* Golden angle: node phases 0°, 137.5°, 275°, 52.5°, 190°. An even 72° step
+     would read left to right as a travelling wave; this scatters the peaks
+     so neighbours never rise together (research R2). */
+  --services-float-phase-step: 137.5deg;
+  /* One 1440-frame design pixel at 16 px per rem — the unit every
+     `--services-node-*` token above is authored in. */
+  --services-frame-px: 0.0625rem;
+
+  /*
+   * Feature 34 · the site's own cursor (Roberto's red arrow with the "You"
+   * pill). Defined once here and read by every cursor rule below the `html`
+   * block (spec FR-019).
+   *
+   * - Size and hotspot (amendment A1, 2026-10-14): the asset renders at
+   *   64×64 CSS px (root `width`/`height` 64, `viewBox` still 0 0 32 32, so
+   *   ×2), sized from Roberto's reference screenshot. Hotspots are integer
+   *   CSS px, in the rendered 64×64 space. The arrow vertex (1, 5) scales to
+   *   (2, 10) and the drawn miter tip (≈0.1, 4.1) to ≈(0.2, 8.2); `1 9` sits
+   *   on the tip's bisector between them, inside the painted miter (1.1 px
+   *   from the drawn tip, 1.4 px from the vertex), whereas `2 10`, the bare
+   *   vertex, is 2.5 px behind the visible tip.
+   *   Research R6 + A1. Must stay ≤128 px (browser limit).
+   * - The file lives in `public/` and is referenced root-relative: under
+   *   `app/assets` Vite would inline a 2 KB SVG as a `data:` URI, and a
+   *   relative `url()` inside a custom property resolves against a base that
+   *   is easy to get wrong (research R8). Storybook serves `public/` under
+   *   `/brand`, so the catalogue shows system cursors; accepted.
+   *   ⚠️ The build still emits it stylesheet-relative, `url(../cursor/you.svg)`
+   *   from `_nuxt/`. Chrome 155 resolves that against the stylesheet, so it
+   *   reaches `/cursor/you.svg` on every route, `/es/nosotros/` included;
+   *   other engines are in the manual matrix. `tests/brand-cursor.test.ts`
+   *   checks where the emitted URL lands.
+   * - Fallback keywords: if the image cannot load or decode, the system
+   *   arrow (`auto`) in general and the system hand (`pointer`) on links and
+   *   buttons, exactly what the site showed before (spec US4-4).
+   */
+  --cursor-brand: url("/cursor/you.svg") 1 9, auto;
+  --cursor-brand-pointer: url("/cursor/you.svg") 1 9, pointer;
+
+  /*
    * Contacto · CTA final (feature 016). Read by hand-written CSS (the
    * WhatsApp field's `<Transition>` in `ContactForm.vue`), so it goes in
    * `:root` and NOT in `@theme inline` — Tailwind v4 has no theme namespace
@@ -592,6 +618,18 @@
 }
 
 /*
+ * Feature 34 · D-5: reduced motion means no float at all. Zeroing the
+ * amplitude puts every node AND every connector end at its rest position in
+ * one place (both read it); each canvas also drops its clock animation in
+ * its own `<style scoped>`, so nothing ticks either.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --services-float-amplitude: 0;
+  }
+}
+
+/*
  * EL LIENZO. La base ink-500 vive en la raíz del layout (`bg-ink-500` en
  * default.vue), que es un `<div>` y por lo tanto NO pinta el lienzo del
  * documento. Donde ese div no llega, no pinta nadie y el navegador muestra su
@@ -616,6 +654,64 @@
  */
 html {
   background-color: var(--ink-500);
+}
+
+/*
+ * Feature 34 · the brand cursor, site-wide (D-1, OA-5). Unlayered for the
+ * same reason as the `html` rule above: an unlayered rule beats every
+ * Tailwind layer regardless of specificity, so it overrides the
+ * `cursor-pointer` utility several components declare, and, as an author
+ * rule, the user-agent `cursor: default` of a native `<button>` (findings
+ * § R56). `:where()` keeps every selector at zero specificity, so the order
+ * of the four rules alone decides, top to bottom:
+ *
+ * 1. the document: inherited by everything that sets nothing;
+ * 2. controls whose user-agent style sets their own cursor: brand image,
+ *    arrow fallback (`input` is listed whole; rule 4 takes the text types
+ *    back);
+ * 3. pointer-state elements (links, enabled buttons, `cursor-pointer`): the
+ *    SAME image, Roberto's explicit choice, with the hand as fallback;
+ * 4. text entry keeps the system I-beam (D-1; the list is OA-5).
+ *
+ * One consequence, accepted in research R9: the country selector's layered
+ * `disabled:cursor-default` no longer changes anything visible; a disabled
+ * button falls to rule 2, the same image with only an unused fallback
+ * differing.
+ *
+ * `forced-colors: none` (OA-8): with Windows High Contrast (or any forced
+ * colours mode) on, none of this applies and the OS's own cursors show.
+ * Touch devices need nothing: `cursor` has no effect without a hovering
+ * pointer.
+ */
+@media (forced-colors: none) {
+  html {
+    cursor: var(--cursor-brand);
+  }
+
+  :where(button, select, summary, label, input) {
+    cursor: var(--cursor-brand);
+  }
+
+  :where(:any-link, button:enabled, [role="button"], .cursor-pointer) {
+    cursor: var(--cursor-brand-pointer);
+  }
+
+  :where(
+    input:not([type]),
+    input:is(
+      [type="text"],
+      [type="email"],
+      [type="url"],
+      [type="tel"],
+      [type="search"],
+      [type="number"],
+      [type="password"]
+    ),
+    textarea,
+    [contenteditable]:not([contenteditable="false"])
+  ) {
+    cursor: text;
+  }
 }
 
 @theme inline {
@@ -1924,5 +2020,36 @@ html {
   to {
     opacity: 0;
     transform: scale(3);
+  }
+}
+
+/*
+ * Feature 34 · the ONE clock of the Services float (research R1, OA-1). Each
+ * Services canvas animates this angle once per `--duration-services-float`;
+ * it inherits, so every node offset and every connector end under that
+ * canvas is a pure `sin()` of the same value in the same style pass. That is
+ * what keeps a line end on its radar in every frame: there is no second
+ * timeline to drift from.
+ *
+ * Degradation (spec FR-005): without `@property` the angle is not
+ * interpolable and jumps discretely between 0deg and 360deg — and
+ * `sin(0 + φ) = sin(360deg + φ)`, so the layout is simply static (each node
+ * at a constant offset), lines still glued. Without CSS trig the offset
+ * declarations are invalid at computed-value time and nodes and lines sit
+ * at rest, also glued. Same "where it is missing it just does not move"
+ * contract as `--led-angle` above.
+ */
+@property --services-float-phase {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes services-float {
+  from {
+    --services-float-phase: 0deg;
+  }
+  to {
+    --services-float-phase: 360deg;
   }
 }

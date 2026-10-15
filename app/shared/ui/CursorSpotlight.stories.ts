@@ -6,35 +6,35 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
 
 /**
  * The one component in this system whose whole point is invisible in a
- * screenshot: a light that only exists while a pointer is moving.
+ * screenshot: red dots that only exist while a pointer is moving.
  *
  * The design file had the same problem and solved it the same way. Frame
  * `gViAx` "DEMO spotlight cursor" draws **three static positions** with the
  * legend *"el seguimiento lo programa Roberto"* — three samples of one
  * continuous behaviour, not three states to build. **Pinned** below is that
  * idea carried into the catalogue: the complete recipe held still, with no
- * pointer and no runtime, so the gradient falloff can be compared against the
- * frame at rest. **Live** is the same layer with the real tracking attached.
+ * pointer and no runtime, so the falloff can be reviewed at rest. **Live** is
+ * the same layer with the real tracking attached.
+ *
+ * Since feature 34's amendment A2 (Roberto, 2026-10-14) the layer paints **no
+ * light**: the frame's two red circles were removed on purpose, so this story
+ * no longer matches `gViAx` and must not be "fixed" to match it.
  *
  * What to look for:
  *
- * 1. **The falloff.** A wide, gentle field about 660px across, dense at the
- *    centre, with a second denser core 180px across inside it. The mid stop at
- *    0.42 is what makes it fall away slowly and then quickly; a two-stop
- *    gradient reads visibly harder.
- * 2. **The dots inside the radius**, which is the hard half of the feature.
- *    They must be brighter **and more distinct** than the dots outside — a
- *    plain translucent light *veils* dots rather than lifting them, which is
- *    why `ui-map.md:271` states the requirement separately.
+ * 1. **No field, no core.** The space between dots stays ink-500 everywhere;
+ *    there is no haze and no ring around the pointer.
+ * 2. **Red dots.** The dot nearest the pointer is red-400; dots get
+ *    progressively less red outward and, about 120px away
+ *    (`--spotlight-lit-radius`), they are the normal grey dot again. The fade
+ *    is linear.
  * 3. **The boundary.** No doubled dot, no half-step dot, no hard circular edge
  *    in the paper. A registration bug shows here first, and nothing errors
  *    when it happens.
  *
- * ⚠️ Two values in these stories are **UNVERIFIED, owner Clau**: how bright a
- * lit dot should be (`--dot-paper-lit-color`, spec A-03 — no static mockup can
- * draw a pointer-dependent brightness, so it is derived as the base recipe
- * painted twice) and the fade duration (`--duration-spotlight-fade`, spec
- * A-08). Both are single tokens, so a value from Clau costs one line.
+ * The lit colour is red-400, Roberto 2026-10-14 (feature 34, A2). The fade
+ * duration (`--duration-spotlight-fade`, spec A-08) is still **UNVERIFIED,
+ * owner Clau**; it is a single token, so a value costs one line.
  */
 const meta = {
   title: 'Shared/UI/CursorSpotlight',
@@ -57,8 +57,8 @@ const COPY =
   'mx-auto max-w-shell-max px-page py-24 font-instrument text-bone-100'
 
 /**
- * Frame `gViAx`, `Estado 2`: both circles centred on (900, 180) of the
- * 1440-wide page. These two numbers are the frame's own coordinates, held
+ * Frame `gViAx`, `Estado 2`: the pointer at (900, 180) of the 1440-wide page
+ * (where the frame centres its now-removed circles). These two numbers are the frame's own coordinates, held
  * still so the recipe can be reviewed — they are a story's stand-in for a
  * pointer, not a design value any component carries.
  *
@@ -80,7 +80,7 @@ export const Pinned: Story = {
         <div :class="COPY">
           <p class="text-display">Hablamos negocio y código.</p>
           <p class="max-w-2xl pt-6 text-body-lg text-bone-300">
-            Los puntos dentro del radio suben de brillo; los de afuera no.
+            Los puntos dentro del radio se vuelven rojos; los de afuera no.
             Compara el borde: no debe haber un punto doble ni un canto duro.
           </p>
         </div>
@@ -94,14 +94,15 @@ export const Pinned: Story = {
  * the story's own `setup()`, against the wrapper's ref, exactly as
  * `app/layouts/default.vue` calls it.
  *
- * Move the pointer over the canvas: the light follows it, the dots under it
- * lift, and nothing on the canvas can be clicked into or selected differently
- * than before. Leave the canvas and the light fades rather than freezing.
+ * Move the pointer over the canvas: the dots under it turn red and the effect
+ * follows it, and nothing on the canvas can be clicked into or selected
+ * differently than before. Leave the canvas and the red dots fade rather than
+ * freezing.
  *
  * It also demonstrates the guards, because they are not simulated here: with
  * the catalogue's own `prefers-reduced-motion` emulation on, or on a
  * touch-only device, the element never mounts and the canvas is exactly the
- * **Pinned** story's background minus the light.
+ * **Pinned** story's background minus the red dots.
  */
 export const Live: Story = {
   render: () => ({

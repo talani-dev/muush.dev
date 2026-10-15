@@ -174,6 +174,19 @@ async function submitValid(wrapper: VueWrapper): Promise<void> {
   await flushPromises()
 }
 
+describe('ApplicationForm · the card surface (feature 34, A2)', () => {
+  it('should keep its glass card covering the page when rendered', () => {
+    /* Feature 34, amendment A2 (Roberto, 2026-10-14): the form cards keep
+       their glass and keep covering the dots and the spotlight's red dots,
+       as the footer's flat ink-500 does (A2 revision 1, 2026-10-15). A
+       regression guard: it passes today. */
+    const classes = mountForm().classes()
+
+    expect(classes).toContain('bg-glass-dark-contact')
+    expect(classes).toContain('backdrop-blur-glass-dark')
+  })
+})
+
 describe('ApplicationForm · the eight fields', () => {
   it('should render the seven always-present controls in ui-map.md § 9 order', () => {
     const wrapper = mountForm()
