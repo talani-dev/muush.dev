@@ -9,6 +9,7 @@ import {
   useApplicationFormContent,
   useApplicationSubmitter,
 } from '@/features/forms'
+import { usePageSeo } from '@/features/shell'
 
 /**
  * About — `/es/nosotros` and `/en/about` from this one file. The translated
@@ -29,14 +30,19 @@ import {
  * `mt-section-gap` on `WorkWithMuushSection` (feature 23, items 3/8) —
  * same reasoning as `index.vue`'s own comment on the same class.
  */
-const { t } = useI18n()
 const aboutHero = useAboutHeroContent()
 const work = useWorkContent()
 const applicationFormContent = useApplicationFormContent()
 /* Feature 029: same seam as `index.vue`'s `useContactSubmitter()`. */
 const applicationSubmitter = useApplicationSubmitter()
 
-useHead({ title: t('pages.about.title') })
+/* `AboutPage` in both locales: the schema-org default would give it only to
+   `/en/about`, from its URL segment (feature 35, FR-010). */
+usePageSeo({
+  titleKey: 'pages.about.title',
+  descriptionKey: 'pages.about.description',
+  pageType: 'AboutPage',
+})
 </script>
 
 <template>

@@ -10,6 +10,7 @@ import {
   usePurposeContent,
   useServicesContent,
 } from '@/features/landing'
+import { usePageSeo } from '@/features/shell'
 
 /**
  * The landing. A thin wrapper (Constitution Article I): it composes the
@@ -17,7 +18,8 @@ import {
  *
  * The placeholder `<h1>` that used to live here is gone rather than kept
  * alongside — the Hero's headline is the page's `<h1>` and a page has one
- * (spec FR-004). `site.title` stays: it is the document title and unrelated.
+ * (spec FR-004). The document title and description are the page's own,
+ * from the locale files, through `usePageSeo` (feature 35).
  *
  * `05 Proyectos` (feature 15) is `blocked` indefinitely, so `ContactSection`
  * renders directly after `ServicesSection` rather than after Proyectos as the
@@ -33,7 +35,6 @@ import {
  * gap Roberto asked for is a margin added at this composition layer rather
  * than a change to any of those calibrated paddings.
  */
-const { t } = useI18n()
 const hero = useHeroContent()
 const purpose = usePurposeContent()
 const services = useServicesContent()
@@ -44,7 +45,10 @@ const contactForm = useContactFormContent()
    the form. */
 const contactSubmitter = useContactSubmitter()
 
-useHead({ title: t('site.title') })
+usePageSeo({
+  titleKey: 'pages.home.title',
+  descriptionKey: 'pages.home.description',
+})
 </script>
 
 <template>
