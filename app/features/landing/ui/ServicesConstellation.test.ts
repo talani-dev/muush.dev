@@ -2,9 +2,14 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ServiceNodeContent } from '@/features/landing/data/servicesContent'
+import {
+  connectorEndpoints,
+  SERVICE_NODE_CENTRES,
+  type ServiceNodeContent,
+} from '@/features/landing/data/servicesContent'
 import Radar from '@/shared/ui/Radar.vue'
 import ServiceItem from './ServiceItem.vue'
+import ServicesConnectors from './ServicesConnectors.vue'
 import ServicesConstellation from './ServicesConstellation.vue'
 
 /**
@@ -14,7 +19,8 @@ import ServicesConstellation from './ServicesConstellation.vue'
  * are observable here — that is measured in Chrome against `.output/public`
  * and recorded in the implementation report. What this file proves is the
  * **structure** the geometry depends on: five nodes, four connectors, and no
- * five/four literal coordinates anywhere in the source.
+ * five/four literal coordinates anywhere in the source. Since feature 34 the
+ * connector `<svg>` lives in `ServicesConnectors.vue` and is asserted there.
  */
 const nodes: ServiceNodeContent[] = [
   { id: 'consulting', index: 0, name: 'Consulting', brief: 'Brief 1.' },
@@ -43,7 +49,7 @@ function mountConstellation() {
   return wrapper
 }
 
-/** The `<style scoped>` block with its comments stripped. */
+/** The `<style scoped>` block, comments stripped, whitespace collapsed. */
 function styleDeclarations(): string {
   const source = readFileSync(
     join(
@@ -56,9 +62,14 @@ function styleDeclarations(): string {
     ),
     'utf8'
   )
+  /* Whitespace collapsed, so the formatter's line wrapping of a long
+     `calc(… sin(…))` cannot break an assertion on the expression. */
   return source
     .slice(source.lastIndexOf('<style scoped>'))
     .replaceAll(/\/\*[\s\S]*?\*\//g, '')
+    .replaceAll(/\s+/g, ' ')
+    .replaceAll('( ', '(')
+    .replaceAll(' )', ')')
 }
 
 describe('ServicesConstellation · the five nodes', () => {
@@ -143,38 +154,67 @@ describe('ServicesConstellation · nothing is a measured pixel', () => {
     expect(style).toContain('--services-node-5-x')
   })
 
-  it('should render exactly four connector lines when mounted', () => {
-    const svg = mountConstellation().find('svg')
+  it('should hand the connectors the four lines generated from the confirmed centres', () => {
+    /* The line geometry itself is asserted in `ServicesConnectors.test.ts`
+       (feature 34 extracted it); here only the hand-off is. */
+    const connectorLayers =
+      mountConstellation().findAllComponents(ServicesConnectors)
 
-    expect(svg.exists()).toBe(true)
-    expect(svg.findAll('line')).toHaveLength(4)
+    expect(connectorLayers).toHaveLength(1)
+    expect(connectorLayers[0]?.props('connectors')).toEqual(
+      connectorEndpoints(SERVICE_NODE_CENTRES)
+    )
+  })
+})
+
+describe('ServicesConstellation · the float (feature 34)', () => {
+  /** The declarations of the first rule whose selector is exactly `selector`. */
+  function rule(selector: string): string {
+    const escaped = selector.replaceAll('.', '\\.')
+    return (
+      styleDeclarations().match(
+        new RegExp(`${escaped}\\s*\\{([^}]*)\\}`)
+      )?.[1] ?? ''
+    )
+  }
+
+  it('should give each node its own index when mounted', () => {
+    const nodeElements = mountConstellation().findAll('.node')
+
+    expect(nodeElements).toHaveLength(5)
+    nodeElements.forEach((node, index) => {
+      expect((node.element as HTMLElement).style.getPropertyValue('--i')).toBe(
+        String(nodes[index]?.index)
+      )
+    })
   })
 
-  it('should bind each connector to the pair of confirmed radar centres it joins', () => {
-    /* Unlike the radar/text CSS positions, these ARE plain attributes and
-       directly observable here — Biome's `noUnknownProperty` correctly
-       rejects `x1`/`y1`/`x2`/`y2` as CSS declarations, so the geometry is
-       bound from `connectorEndpoints` instead (spec FR-008). */
-    const lines = mountConstellation().findAll('line')
+  it('should offset every node by the shared sine of the one clock', () => {
+    const node = rule('.node')
 
-    expect(
-      lines.map(line => ({
-        x1: line.attributes('x1'),
-        y1: line.attributes('y1'),
-        x2: line.attributes('x2'),
-        y2: line.attributes('y2'),
-      }))
-    ).toEqual([
-      { x1: '150', y1: '330', x2: '430', y2: '200' },
-      { x1: '430', y1: '200', x2: '690', y2: '440' },
-      { x1: '690', y1: '440', x2: '950', y2: '250' },
-      { x1: '950', y1: '250', x2: '1150', y2: '480' },
-    ])
+    expect(node).toContain(
+      'sin(var(--services-float-phase) + var(--i) * var(--services-float-phase-step))'
+    )
+    expect(node).toMatch(/translate:[^;]*var\(--services-frame-px\)/)
   })
 
-  it('should mark the connector svg as decorative when mounted', () => {
-    expect(mountConstellation().find('svg').attributes('aria-hidden')).toBe(
-      'true'
+  it('should only translate the nodes, never rotate, scale, blur or fade them', () => {
+    const node = rule('.node')
+
+    for (const property of ['rotate', 'scale', 'filter', 'opacity']) {
+      expect(node, property).not.toContain(property)
+    }
+  })
+
+  it('should run the clock once on the canvas', () => {
+    expect(rule('.canvas')).toContain(
+      'animation: services-float var(--duration-services-float) linear infinite'
+    )
+  })
+
+  it('should stop the clock when reduced motion is requested', () => {
+    expect(styleDeclarations()).toMatch(
+      /@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{\s*\.canvas\s*\{\s*animation:\s*none;?\s*\}/
     )
   })
 })

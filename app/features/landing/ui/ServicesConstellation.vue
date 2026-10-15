@@ -7,6 +7,7 @@ import {
 import Pill from '@/shared/ui/Pill.vue'
 import Radar from '@/shared/ui/Radar.vue'
 import ServiceItem from './ServiceItem.vue'
+import ServicesConnectors from './ServicesConnectors.vue'
 
 /**
  * The desktop composition: five always-visible nodes, hand-placed and joined
@@ -20,20 +21,16 @@ import ServiceItem from './ServiceItem.vue'
  * (`data-model.md` § 2).
  *
  * Every node's radar centre and its text block are generated from the same
- * five `--services-node-{n}-x/-y` token pairs (CSS). The four connectors read
- * the **same five confirmed centres**, but as numbers rather than CSS custom
- * properties: `x1/y1/x2/y2` are SVG geometry attributes, not CSS properties —
- * Biome's `noUnknownProperty` correctly rejects them written as CSS
- * declarations, so `connectorEndpoints(SERVICE_NODE_CENTRES)` (a pure
- * function over the same five centres, `data/servicesContent.ts`) is bound
- * directly onto each `<line>`. Either way there are no four independent
- * shapes, only one relation over five known points (spec FR-008).
+ * five `--services-node-{n}-x/-y` token pairs (CSS). The four connectors
+ * (`ServicesConnectors.vue`) read the **same five confirmed centres** as
+ * numbers, through `connectorEndpoints(SERVICE_NODE_CENTRES)`: one relation
+ * over five known points, never four independent shapes (spec FR-008).
  *
- * The `<svg>`'s `viewBox` is the canvas's own fixed frame (1440×910, feature
- * 23 round 3 — see the `<style scoped>` note on `.canvas`), so a raw
- * attribute number and the `rem`-token position of the same node agree
- * pixel-for-pixel — both ultimately come from the same confirmed centre
- * (`data-model.md` § 2.1), just read through two different consumption paths.
+ * Feature 34 · the float. `.canvas` runs ONE clock (`--services-float-phase`,
+ * global.css); each node is offset by `amplitude × sin(phase + i × step)` and
+ * each connector end by the very same expression for the node it touches, so
+ * nodes and lines share one value on one thread and cannot separate in any
+ * frame. No script, no client state (research R1).
  *
  * No hover-reveal state exists here at all — every node is always visible, so
  * unlike Propósito's constellation this carries no interaction and no
@@ -61,6 +58,7 @@ const connectors = connectorEndpoints(SERVICE_NODE_CENTRES)
       :key="node.id"
       class="node absolute"
       :class="`node-${node.index + 1}`"
+      :style="{ '--i': String(node.index) }"
     >
       <Radar
         size="md"
@@ -73,26 +71,8 @@ const connectors = connectorEndpoints(SERVICE_NODE_CENTRES)
       />
     </div>
 
-    <!--
-      Decorative. Each endpoint pair is the output of `connectorEndpoints`
-      over the five confirmed radar centres — a straight line between two
-      known points, not a fifth measured quantity (spec FR-008).
-    -->
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 1440 910"
-      class="connectors pointer-events-none absolute inset-0 size-full"
-    >
-      <line
-        v-for="(connector, index) in connectors"
-        :key="index"
-        :x1="connector.x1"
-        :y1="connector.y1"
-        :x2="connector.x2"
-        :y2="connector.y2"
-        class="connector"
-      />
-    </svg>
+    <!-- Decorative; after the nodes so the lines paint over them, as before. -->
+    <ServicesConnectors :connectors="connectors" />
 
     <!--
       Pill-then-copy on ONE row (feature 23, item 5 — `.pen` frame `Giamn`
@@ -112,32 +92,16 @@ const connectors = connectorEndpoints(SERVICE_NODE_CENTRES)
 
 <style scoped>
 /*
- * Feature 23, item 4 — round 3, the real fix. The leader read the `.pen`
- * node directly (`GiLTU`, 1440×1020, `Landing ES · v4 (radiales)`, confirmed
- * — not the `DEMO spotlight cursor` copy): the canvas's own coordinate space
- * is the FULL 1440px frame, not the 1280px `--services-closer-w` box nested
- * 80px in from each edge inside it. Rounds 1 and 2 both reused
- * `--services-closer-w` for `.canvas` itself — conflating two different
- * boxes in the design — and centred that 1280px (or fluid-shrunk) box
- * inside `<main>`'s *padded* content box. That is 80px narrower than the
- * frame, which is exactly why node 5's confirmed text (`--services-node-5-x`
- * + `--spacing-services-text-w`, both correct and untouched) rendered 18px
- * past the viewport at 1440: it was positioned correctly relative to the
- * 1440px frame, inside a canvas that was itself wrongly anchored 80px too
- * far right.
+ * Feature 23, item 4 (round 3). The canvas's coordinate space is the FULL
+ * 1440px frame (`.pen` node `GiLTU`, read by the leader), not the 1280px
+ * `--services-closer-w` box nested inside it — earlier rounds conflated the
+ * two and rendered node 5's text 18px past the viewport at 1440.
  *
- * The fix breaks `.canvas` out of `<main>`'s `--spacing-page` padding —
- * approved by Roberto as a documented, one-section exception to the
- * "no horizontal padding, inherits `<main>`'s `px-page`" contract feature 14
- * already reviewed. `calc(100% + 2 * var(--spacing-page))` re-adds the
- * padding this element's own containing block (this section's content box,
- * itself `<main>`'s content box — the section carries no padding of its
- * own) had already subtracted, yielding `<main>`'s own BORDER box width at
- * any viewport; `min()` against the fixed 1440px frame width caps it there
- * once `<main>` is itself capped by `max-w-shell-max`. The matching
- * `margin-inline: calc(-1 * var(--spacing-page))` shifts the box left/right
- * by exactly the padding this formula added back, landing its rendered edges
- * on `<main>`'s own border box — not its content box — at every width:
+ * So `.canvas` breaks out of `<main>`'s `--spacing-page` padding (approved by
+ * Roberto as a one-section exception to feature 14's "inherits `px-page`"
+ * contract): `calc(100% + 2 * var(--spacing-page))` re-adds the padding the
+ * containing block subtracted, `min()` caps it at the frame, and the matching
+ * negative `margin-inline` lands its edges on `<main>`'s BORDER box:
  *
  * | Viewport | `<main>` border box | `.canvas` (this formula) |
  * |---|---|---|
@@ -145,20 +109,43 @@ const connectors = connectorEndpoints(SERVICE_NODE_CENTRES)
  * | 1440 (frame) | 0 → 1440 | 0 → 1440 (matches the `.pen` exactly) |
  * | 1536/1600/1920 (capped, centred) | e.g. 48 → 1488 | 48 → 1488 (matches) |
  *
- * Every node/Pill/closer offset keeps reading the SAME tokens as before
- * (`--services-node-*-x/-y`, `--services-pill-x/-y`, `--services-closer-*`)
- * — they were already authored relative to the 1440px frame's own origin,
- * which is now exactly where `.canvas`'s local (0,0) lands.
+ * Every node/Pill/closer token is authored from that frame's origin, which is
+ * exactly `.canvas`'s local (0,0). The canvas also runs the float clock
+ * (feature 34): one animation per canvas, read by every node and line in it.
  */
 .canvas {
   width: min(var(--services-canvas-w), calc(100% + 2 * var(--spacing-page)));
   height: var(--services-canvas-h);
   margin-inline: calc(-1 * var(--spacing-page));
+  animation: services-float var(--duration-services-float) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas {
+    animation: none;
+  }
 }
 
 .eyebrow {
   left: var(--services-pill-x);
   top: var(--services-pill-y);
+}
+
+/*
+ * Feature 34 · the float: translate the whole node (radar + text as one
+ * piece, spec FR-002). `translate` on `.node` does not collide with the
+ * radar's own centring, which is on the `.radar` child.
+ */
+.node {
+  --float-dy: calc(
+    var(--services-float-amplitude) *
+    sin(
+      var(--services-float-phase) +
+      var(--i) *
+      var(--services-float-phase-step)
+    )
+  );
+  translate: 0 calc(var(--float-dy) * var(--services-frame-px));
 }
 
 /*
@@ -199,11 +186,6 @@ const connectors = connectorEndpoints(SERVICE_NODE_CENTRES)
 .text {
   left: calc(var(--node-x) + var(--services-text-offset-x));
   top: calc(var(--node-y) + var(--services-text-offset-y));
-}
-
-.connector {
-  stroke: var(--services-link-color);
-  stroke-width: var(--services-link-w);
 }
 
 /* Delivery closer: Pill + copy, full content width, plain text (FR-005). */

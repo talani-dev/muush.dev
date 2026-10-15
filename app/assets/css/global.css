@@ -520,6 +520,63 @@
   --duration-services-lyrics: 0.3s;
 
   /*
+   * Feature 34 · the "zero gravity" float of the five Services nodes, shared
+   * by the desktop constellation and the mobile timeline (spec FR-001). The
+   * `.pen` cannot draw motion; these are Roberto's ranges (D-4) narrowed at
+   * the gate (OA-2, 2026-10-14). Node *i* sits at
+   * `amplitude × sin(phase + i × step)` design pixels from its rest position,
+   * where `phase` is the shared clock `--services-float-phase` (below, with
+   * the `@property` / `@keyframes` at the end of this file).
+   *
+   * Amplitude: unitless DESIGN pixels, not a length — each line's slope
+   * divides one offset by an x distance, and typed length division is not
+   * broadly supported (research R1). `--services-frame-px` turns it into a
+   * length for the HTML nodes; inside the SVG one user unit already is one
+   * design pixel.
+   */
+  --services-float-amplitude: 7;
+  /* One shared period for all five nodes (OA-2), middle of D-4's 5–7 s. */
+  --duration-services-float: 6s;
+  /* Golden angle: node phases 0°, 137.5°, 275°, 52.5°, 190°. An even 72° step
+     would read left to right as a travelling wave; this scatters the peaks
+     so neighbours never rise together (research R2). */
+  --services-float-phase-step: 137.5deg;
+  /* One 1440-frame design pixel at 16 px per rem — the unit every
+     `--services-node-*` token above is authored in. */
+  --services-frame-px: 0.0625rem;
+
+  /*
+   * Feature 34 · the site's own cursor (Roberto's red arrow with the "You"
+   * pill). Defined once here and read by every cursor rule below the `html`
+   * block (spec FR-019).
+   *
+   * - Size and hotspot (amendment A1, 2026-10-14): the asset renders at
+   *   64×64 CSS px (root `width`/`height` 64, `viewBox` still 0 0 32 32, so
+   *   ×2), sized from Roberto's reference screenshot. Hotspots are integer
+   *   CSS px, in the rendered 64×64 space. The arrow vertex (1, 5) scales to
+   *   (2, 10) and the drawn miter tip (≈0.1, 4.1) to ≈(0.2, 8.2); `1 9` sits
+   *   on the tip's bisector between them, inside the painted miter (1.1 px
+   *   from the drawn tip, 1.4 px from the vertex), whereas `2 10`, the bare
+   *   vertex, is 2.5 px behind the visible tip.
+   *   Research R6 + A1. Must stay ≤128 px (browser limit).
+   * - The file lives in `public/` and is referenced root-relative: under
+   *   `app/assets` Vite would inline a 2 KB SVG as a `data:` URI, and a
+   *   relative `url()` inside a custom property resolves against a base that
+   *   is easy to get wrong (research R8). Storybook serves `public/` under
+   *   `/brand`, so the catalogue shows system cursors; accepted.
+   *   ⚠️ The build still emits it stylesheet-relative, `url(../cursor/you.svg)`
+   *   from `_nuxt/`. Chrome 155 resolves that against the stylesheet, so it
+   *   reaches `/cursor/you.svg` on every route, `/es/nosotros/` included;
+   *   other engines are in the manual matrix. `tests/brand-cursor.test.ts`
+   *   checks where the emitted URL lands.
+   * - Fallback keywords: if the image cannot load or decode, the system
+   *   arrow (`auto`) in general and the system hand (`pointer`) on links and
+   *   buttons, exactly what the site showed before (spec US4-4).
+   */
+  --cursor-brand: url("/cursor/you.svg") 1 9, auto;
+  --cursor-brand-pointer: url("/cursor/you.svg") 1 9, pointer;
+
+  /*
    * Contacto · CTA final (feature 016). Read by hand-written CSS (the
    * WhatsApp field's `<Transition>` in `ContactForm.vue`), so it goes in
    * `:root` and NOT in `@theme inline` — Tailwind v4 has no theme namespace
@@ -589,6 +646,18 @@
    * block beyond `--work-stack-gap`).
    */
   --work-form-y-offset: 1.875rem;
+}
+
+/*
+ * Feature 34 · D-5: reduced motion means no float at all. Zeroing the
+ * amplitude puts every node AND every connector end at its rest position in
+ * one place (both read it); each canvas also drops its clock animation in
+ * its own `<style scoped>`, so nothing ticks either.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --services-float-amplitude: 0;
+  }
 }
 
 /*
@@ -1924,5 +1993,36 @@ html {
   to {
     opacity: 0;
     transform: scale(3);
+  }
+}
+
+/*
+ * Feature 34 · the ONE clock of the Services float (research R1, OA-1). Each
+ * Services canvas animates this angle once per `--duration-services-float`;
+ * it inherits, so every node offset and every connector end under that
+ * canvas is a pure `sin()` of the same value in the same style pass. That is
+ * what keeps a line end on its radar in every frame: there is no second
+ * timeline to drift from.
+ *
+ * Degradation (spec FR-005): without `@property` the angle is not
+ * interpolable and jumps discretely between 0deg and 360deg — and
+ * `sin(0 + φ) = sin(360deg + φ)`, so the layout is simply static (each node
+ * at a constant offset), lines still glued. Without CSS trig the offset
+ * declarations are invalid at computed-value time and nodes and lines sit
+ * at rest, also glued. Same "where it is missing it just does not move"
+ * contract as `--led-angle` above.
+ */
+@property --services-float-phase {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes services-float {
+  from {
+    --services-float-phase: 0deg;
+  }
+  to {
+    --services-float-phase: 360deg;
   }
 }
