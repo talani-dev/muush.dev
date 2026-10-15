@@ -687,6 +687,64 @@ html {
   background-color: var(--ink-500);
 }
 
+/*
+ * Feature 34 · the brand cursor, site-wide (D-1, OA-5). Unlayered for the
+ * same reason as the `html` rule above: an unlayered rule beats every
+ * Tailwind layer regardless of specificity, so it overrides the
+ * `cursor-pointer` utility several components declare, and, as an author
+ * rule, the user-agent `cursor: default` of a native `<button>` (findings
+ * § R56). `:where()` keeps every selector at zero specificity, so the order
+ * of the four rules alone decides, top to bottom:
+ *
+ * 1. the document: inherited by everything that sets nothing;
+ * 2. controls whose user-agent style sets their own cursor: brand image,
+ *    arrow fallback (`input` is listed whole; rule 4 takes the text types
+ *    back);
+ * 3. pointer-state elements (links, enabled buttons, `cursor-pointer`): the
+ *    SAME image, Roberto's explicit choice, with the hand as fallback;
+ * 4. text entry keeps the system I-beam (D-1; the list is OA-5).
+ *
+ * One consequence, accepted in research R9: the country selector's layered
+ * `disabled:cursor-default` no longer changes anything visible; a disabled
+ * button falls to rule 2, the same image with only an unused fallback
+ * differing.
+ *
+ * `forced-colors: none` (OA-8): with Windows High Contrast (or any forced
+ * colours mode) on, none of this applies and the OS's own cursors show.
+ * Touch devices need nothing: `cursor` has no effect without a hovering
+ * pointer.
+ */
+@media (forced-colors: none) {
+  html {
+    cursor: var(--cursor-brand);
+  }
+
+  :where(button, select, summary, label, input) {
+    cursor: var(--cursor-brand);
+  }
+
+  :where(:any-link, button:enabled, [role="button"], .cursor-pointer) {
+    cursor: var(--cursor-brand-pointer);
+  }
+
+  :where(
+    input:not([type]),
+    input:is(
+      [type="text"],
+      [type="email"],
+      [type="url"],
+      [type="tel"],
+      [type="search"],
+      [type="number"],
+      [type="password"]
+    ),
+    textarea,
+    [contenteditable]:not([contenteditable="false"])
+  ) {
+    cursor: text;
+  }
+}
+
 @theme inline {
   --color-bone-100: var(--bone-100);
   --color-bone-200: var(--bone-200);
