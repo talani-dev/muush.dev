@@ -16,6 +16,8 @@ export type {
   ShellRouteName,
 } from './data/types'
 export { useMobileMenu } from './logic/useMobileMenu'
+export { usePageSeo } from './logic/usePageSeo'
 export { useShellNavigation } from './logic/useShellNavigation'
+export { useSiteSeo } from './logic/useSiteSeo'
 export { default as SiteFooter } from './ui/SiteFooter.vue'
 export { default as SiteNav } from './ui/SiteNav.vue'

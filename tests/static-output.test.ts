@@ -99,6 +99,12 @@ describe('static output · routes', () => {
       /<link rel="canonical" href="https:\/\/muush\.dev\/es"/
     )
     expect(root).toContain('<a href="/es">')
+    /* Feature 35: the hand-written alternates mirror the i18n `language`
+       tags, and the object stays out of the index. */
+    expect(root).toContain(
+      '<link rel="alternate" hreflang="en-US" href="https://muush.dev/en" />'
+    )
+    expect(root).toContain('<meta name="robots" content="noindex" />')
   })
 
   it('should resolve the About page at both localized paths from one page', () => {
@@ -176,6 +182,15 @@ describe('static output · locale equivalence', () => {
     )
     expect(html).toContain(
       '<link id="i18n-alt-es" rel="alternate" href="https://muush.dev/es/nosotros" hreflang="es">'
+    )
+    /* The regional tags (feature 35, D3). The language-only `en`/`es` lines
+       above are i18n's catch-alls and are still emitted next to them
+       (spec A-04, research U-4 — measured, not assumed). */
+    expect(html).toContain(
+      '<link id="i18n-alt-en-US" rel="alternate" href="https://muush.dev/en/about" hreflang="en-US">'
+    )
+    expect(html).toContain(
+      '<link id="i18n-alt-es-MX" rel="alternate" href="https://muush.dev/es/nosotros" hreflang="es-MX">'
     )
   })
 })

@@ -4,6 +4,7 @@ import {
   SiteNav,
   useMobileMenu,
   useShellNavigation,
+  useSiteSeo,
 } from '@/features/shell'
 import { useCursorSpotlight } from '@/shared/logic/useCursorSpotlight'
 import CursorSpotlight from '@/shared/ui/CursorSpotlight.vue'
@@ -139,8 +140,14 @@ const { isActive: isSpotlightActive } = useCursorSpotlight(layoutRoot)
  * i18n route table the locale toggle resolves against, so an alternate can
  * never name a page that does not exist — the failure Constitution
  * Article VI calls out by name (spec FR-022).
+ *
+ * Where each head tag comes from (feature 35, research R7) — each exactly once:
+ * - i18n (`useLocaleHead`, here): lang, canonical, hreflang, og:locale, og:url
+ * - `useSiteSeo` (here): og:type, og:site_name, twitter:card, the JSON-LD Organization
+ * - each page, via `usePageSeo`: title, description, og:title, og:description
  */
 useHead(useLocaleHead())
+useSiteSeo()
 </script>
 
 <template>

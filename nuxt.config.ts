@@ -1,6 +1,14 @@
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 
+/*
+ * The canonical origin, declared once (feature 35, research R8). It feeds
+ * both `site.url` (sitemap, robots, structured data) and `i18n.baseUrl`
+ * (canonical, hreflang); `nuxt-site-config` logs an error when the two hosts
+ * differ, so they must never be two literals.
+ */
+const SITE_URL = 'https://muush.dev'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-06',
@@ -34,7 +42,88 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['@nuxtjs/i18n', '@nuxt/fonts'],
+  modules: [
+    '@nuxtjs/i18n',
+    '@nuxt/fonts',
+    '@nuxtjs/sitemap',
+    '@nuxtjs/robots',
+    'nuxt-schema-org',
+  ],
+
+  /*
+   * Feature 35 · technical SEO. The site identity the three SEO modules share
+   * through `nuxt-site-config`. Pinned to sitemap 8.6.x / robots 6.2.x /
+   * schema-org 6.4.x: their next majors require Nuxt ^4.6 (spec D1/D2).
+   *
+   * `indexable: true` is explicit on purpose (research R5.4): left unset,
+   * indexability falls back to the build environment's name, and a build
+   * that does not call itself `production` would ship
+   * `User-agent: * / Disallow: /`. The site has one target, so robots.txt
+   * must not depend on how a shell names its environment
+   * (tests/seo-output.test.ts asserts no `Disallow: /`).
+   *
+   * Never set `NUXT_SEO_PRO_KEY`: it enables a build-time request to
+   * nuxtseo.com (research R1).
+   */
+  site: {
+    url: SITE_URL,
+    name: 'muush',
+    indexable: true,
+  },
+
+  sitemap: {
+    /*
+     * With i18n + `strategy: 'prefix'` the default is one sitemap per locale
+     * behind `/sitemap_index.xml`, with `/sitemap.xml` as a route-rule
+     * redirect — which writes no file a static host could serve. `false`
+     * yields one prerendered `sitemap.xml` with inline hreflang alternates
+     * (research R2.3).
+     */
+    sitemaps: false,
+    /*
+     * Raw XML only, and only the 4 URLs plus their alternates: no
+     * stylesheet file, no `<image:image>`/`<video:video>` entries scraped
+     * from the pages (research R2.5).
+     */
+    xsl: false,
+    discoverImages: false,
+    discoverVideos: false,
+    /*
+     * Measured on 8.6.2 (feature 35, research U-2): with `i18n.pages` set,
+     * `/es/nosotros` and `/en/about` arrive twice — from the
+     * `@nuxtjs/i18n:pages` source, tagged `_sitemap: 'es-MX'|'en-US'`, and
+     * from `nuxt:prerender`, untagged. The dedupe key includes `_sitemap`, so
+     * the pairs never merge and the sitemap listed each About URL twice.
+     * Dropping the i18n-pages source leaves the prerendered pages (all four
+     * are crawled), which still get their es-MX/en-US/x-default alternates
+     * from the i18n config. tests/seo-output.test.ts asserts exactly 4 URLs.
+     */
+    excludeAppSources: ['@nuxtjs/i18n:pages'],
+  },
+
+  /*
+   * No `robots.sitemap` entry: the sitemap module registers `/sitemap.xml`
+   * itself, and adding it here would print the line twice (research R2.6).
+   */
+  robots: {
+    /*
+     * Off so `@fingerprintjs/botd` can never reach the browser bundle; the
+     * module then swaps `useBotDetection` for a mock (research R5.7).
+     */
+    botDetection: false,
+    /*
+     * `X-Robots-Tag` is written into Nitro route rules, which a static S3
+     * host never sees — config that promises headers nobody sends
+     * (research R5.8, docs/business/rules.md § R25).
+     */
+    header: false,
+    /*
+     * With the default `true`, a `public/robots.txt` would be RENAMED inside
+     * the repository to `public/_robots.txt` on build (research R5.5). The
+     * generated file is the only robots.txt; never add one under `public/`.
+     */
+    mergeWithRobotsTxtPath: false,
+  },
 
   /*
    * Feature 029 · the Form Submission API (docs/business/landing/
@@ -112,18 +201,23 @@ export default defineNuxtConfig({
    * docs/business/landing/decisions-open.md. The About segment stays
    * translated (nosotros ↔ about), so the locale switcher resolves routes
    * through i18n, never by swapping the prefix.
+   *
+   * `language` is the BCP 47 tag, and it feeds `<html lang>`, the
+   * `hreflang` alternates, `og:locale` and the sitemap alternates. English
+   * is `en-US` since feature 35 (D3); `public/index.html` mirrors both tags
+   * by hand.
    */
   i18n: {
     locales: [
       { code: 'es', language: 'es-MX', name: 'Español', file: 'es.json' },
-      { code: 'en', language: 'en', name: 'English', file: 'en.json' },
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
     ],
     /*
      * The canonical origin, needed for the `hreflang` alternates to be
      * absolute — a relative alternate is ignored by search engines. It is a
      * public domain, not configuration that varies by environment.
      */
-    baseUrl: 'https://muush.dev',
+    baseUrl: SITE_URL,
     defaultLocale: 'es',
     strategy: 'prefix',
     langDir: 'locales',

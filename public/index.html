@@ -15,7 +15,9 @@
 
   Spanish is the default and the language is never detected from IP or
   `Accept-Language` (docs/business/landing/ui-map.md § 1), so `x-default`
-  points at `/es` too.
+  points at `/es` too. Since feature 35 the hreflang values mirror the i18n
+  `language` tags in nuxt.config.ts (`es-MX`, `en-US`); this file stays
+  `noindex` and is never listed in the sitemap.
 
   ## The instant before the refresh fires (feature 27, 2026-09-09)
 
@@ -61,7 +63,7 @@
     <title>muush · Technology Solution Studio</title>
     <link rel="canonical" href="https://muush.dev/es" />
     <link rel="alternate" hreflang="es-MX" href="https://muush.dev/es" />
-    <link rel="alternate" hreflang="en" href="https://muush.dev/en" />
+    <link rel="alternate" hreflang="en-US" href="https://muush.dev/en" />
     <link rel="alternate" hreflang="x-default" href="https://muush.dev/es" />
     <style>
       body {

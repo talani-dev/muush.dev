@@ -1,10 +1,12 @@
 {
-  "site": {
-    "title": "muush · Technology Solution Studio"
-  },
   "pages": {
+    "home": {
+      "title": "Hablamos negocio y código · muush",
+      "description": "muush es un technology solution studio. Diseñamos y construimos soluciones digitales alrededor de tu negocio, del problema de negocio a la solución técnica."
+    },
     "about": {
-      "title": "Nosotros · muush"
+      "title": "Nosotros · muush",
+      "description": "Conoce al equipo de muush: reunimos al talento indicado para cada proyecto. Si trabajas en tecnología, diseño o producción, súmate a nuestro talent pool."
     }
   },
   "about": {
