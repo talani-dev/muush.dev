@@ -2597,3 +2597,90 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - Implementer: `docs/harness/progress/impl_cv_upload_no_silent_loss.md`.
   Reviewer: `docs/harness/progress/review_cv_upload_no_silent_loss.md`.
 - `feature_list.json`: feature id 31 status `reviewing` → `done`.
+
+## 2026-10-14 — Feature 32: whatsapp_dial_code_selector (done)
+
+- Both forms show a dial-code selector before the WhatsApp number. It is a
+  native `<select>` with a face showing the emoji flag and the dial code.
+  The list has 245 countries in a static module (`forms/data/countries.ts`).
+  Names come from `Intl.DisplayNames` in the page language and are sorted
+  with that language's collation. No new dependency.
+- The default country comes from the region of `navigator.languages`, read
+  on the first switch to WhatsApp, never at setup. Fallback is Mexico (+52).
+  No network request. A country the visitor picked is kept across
+  email↔WhatsApp; the number is still discarded.
+- New contract (backend agreement 2026-10-14): `whatsappDialCode`
+  (`^\+[1-9]\d{0,3}$`) is sent before `whatsapp`, only with WhatsApp.
+  `whatsapp` is 6–14 digits without the dial code. A 400 `validation_failed`
+  naming `whatsappDialCode` marks the selector (alias to `whatsappCountry`).
+  With preference email it is a generic error. A country mark is ignored
+  while the preference is email.
+- Copy (OA-8): "Lada del país" / "Country code", "Elige la lada de tu país" /
+  "Choose your country code", "Deben ser entre 6 y 14 dígitos" / "Must be 6
+  to 14 digits".
+- `./init.sh` exit 0 (76 files / 1072 tests, generate, storybook build). No
+  new origin in `.output/public`. `ApplicationForm.vue` at 199 lines.
+- Gate: Roberto approved the baseline proposals on 2026-10-14 (OA-3..OA-9;
+  OA-6 C not built). Reviewer APPROVED.
+- **Still open:**
+  - OA-1: `docs/business/landing/form-api-contract.md` § 3/§ 5 and
+    `ui-map.md` § 7 still describe the 10-digit rule. They need a human
+    rewrite.
+  - OA-2: do not deploy before the backend accepts `whatsappDialCode`.
+  - OA-10: the selector's visuals are unverified against the `.pen`.
+  - T036 (VoiceOver/keyboard pass) and T044 (manual quickstart in
+    `pnpm dev`, Windows flag rendering) are still pending as manual checks.
+  - The face's focus-ring colour (`outline: auto` + red-400) still needs a
+    visual check in Safari and Firefox.
+  - Dial codes were checked from knowledge only, not against the ITU-T
+    E.164 list.
+- Implementer: `docs/harness/progress/impl_whatsapp_dial_code_selector.md`.
+  Reviewer: `docs/harness/progress/review_whatsapp_dial_code_selector.md`.
+- `feature_list.json`: feature id 32 status `reviewing` → `done`.
+
+## 2026-10-14 — Feature 32 Amendment A1: default country from `GET /__geo` (done)
+
+- The WhatsApp dial-code selector defaults to Mexico. It switches to the
+  country from a same-origin `GET /__geo` when that answer is a valid ISO
+  alpha-2 code in the list. The request goes out on the first focus in the
+  form or on switching to WhatsApp, at most once, and is aborted after 3 s.
+  It sends no credentials and goes to no third party. A late answer never
+  overwrites a country the visitor picked. The browser language is no longer
+  read. Null, malformed or unknown answers, errors and timeouts all leave
+  Mexico in place silently.
+- Code: `forms/logic/edgeCountry.ts` (the only new `fetch(` site),
+  `forms/logic/useDefaultCountry.ts` (shared rule), and an optional
+  `lookupCountry?` port on both submitters. No `.vue`, copy or dependency
+  change. Without the edge (dev, preview, Storybook, tests), `/__geo` returns
+  404 and the default is Mexico.
+- `./init.sh` exit 0 (78 files / 1120 tests). Reviewer APPROVED.
+- Deviations accepted at review:
+  - `tests/forms-config.test.ts` now allows exactly two `fetch(` sites.
+  - The `navigator.languages` artifact check is scoped to the `/__geo`
+    chunk, because the `@nuxtjs/i18n` entry chunk ships its own helper.
+- **Still open:**
+  - OA-1: `docs/business/landing/form-api-contract.md` § 3/§ 5 and
+    `ui-map.md` § 7 (10-digit rule and "default México") need a human
+    rewrite.
+  - OA-2: the backend must accept `whatsappDialCode` before this front is
+    deployed.
+  - OA-10: the selector's visuals are unverified against the `.pen`.
+  - Browser-only checks are still pending:
+    - T036: VoiceOver/keyboard.
+    - T044: manual quickstart and Windows flags.
+    - T066: the browser parts (Network panel, DevTools override of
+      `/__geo`, the slow-network "pick first" check).
+    - The focus ring in Safari and Firefox.
+  - `contracts/edge-geo-endpoint.md` still has to be handed off to
+    muush-foundation. Until that ships, every visitor gets Mexico.
+  - Dial codes have not been checked against the ITU-T E.164 file.
+  - Reviewer notes (non-blocking):
+    - `/__geo` is requested once per page view, so client-side navigation
+      can request it again. That is looser than a strict reading of FR-A08
+      ("once per page load").
+    - An optional test pinning `detectBrowserLanguage: false` would be
+      useful.
+- Implementer: `docs/harness/progress/impl_whatsapp_dial_code_selector.md`
+  § Amendment A1. Reviewer:
+  `docs/harness/progress/review_whatsapp_dial_code_selector_a1.md`.
+- `feature_list.json`: feature id 32 status `reviewing` → `done`.

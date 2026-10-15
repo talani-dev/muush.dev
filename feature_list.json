@@ -683,6 +683,31 @@
       "sdd": true,
       "status": "done",
       "depends_on": [29]
+    },
+    {
+      "id": 32,
+      "name": "whatsapp_dial_code_selector",
+      "title": "Selector de lada (bandera + código de país) antes del input de WhatsApp en los formularios de contacto y talento",
+      "description": "Pedido de Roberto el 2026-10-14: los clientes no siempre son de México (+52). Antes del input del número de WhatsApp va un selector que muestra una bandera; por defecto la del país de la persona y, si no se puede detectar, México (+52). Al abrirlo muestra la lista de países con bandera y lada para escoger la lada. Aplica a ContactForm y ApplicationForm (mismo campo condicional, ui-map.md § 9). CAMBIO DE CONTRATO acordado por Roberto con el backend el 2026-10-14 (el backend lo está implementando; form-api-contract.md todavía no lo refleja y docs/business es solo-humano): nuevo campo `whatsappDialCode` (string) en POST /contact y POST /careers, presente solo cuando contactPreference es 'whatsapp' y vacío/ausente cuando es 'email' (misma regla que `whatsapp`), formato ^\\+[1-9]\\d{0,3}$ con el '+' incluido (ej. '+52', '+1', '+57'). La regla de `whatsapp` cambia de exactamente 10 dígitos a 6–14 dígitos tras quitar lo que no sea dígito, SIN la lada. Ejemplo: { contactPreference: 'whatsapp', whatsappDialCode: '+52', whatsapp: '5544332211' }. Como el servidor rechaza campos desconocidos (contrato § 6), el front no puede desplegarse antes que el backend. Propuestas del leader para el gate (Roberto no las ha decidido): (a) detección del país sin peticiones a terceros, desde la región de navigator.languages (es-MX → MX, en-US → US), fallback México — sin geolocalización por IP; (b) lista completa de países con búsqueda dentro del selector; (c) formato de banderas (emoji vs SVG locales) a decidir en el spec con trade-offs; (d) los datos de países/ladas viven en data/ como módulo estático del repo, sin dependencia nueva salvo que el spec justifique una (si propone una librería, debe evaluarla: publisher, tamaño, licencia, mantenimiento). El diseño visual del selector viene del .pen (solo el leader lo lee); hoy no está verificado. AMPLIACIÓN 2026-10-14 (Roberto, misma feature, sin feature nueva): el país por defecto ya NO sale de navigator.languages. Por defecto es México (+52); si CloudFront conoce el país del visitante por IP, se usa ese. El dato llega mismo-origen por GET /__geo, respondido por la función viewer-request request-router existente en muush-foundation (contrato en specs/032-whatsapp-dial-code-selector/contracts/edge-geo-endpoint.md, entregable para infra; este repo no edita muush-foundation). Sin la pieza de borde, todos ven México. Una respuesta tardía nunca sobreescribe un país elegido por la persona. Sin terceros, sin permiso de ubicación, sin enviar la IP a nadie. Roberto aprobó la lectura de que cumple la Constitución Art. IV (degrada a México sin cómputo de borde).",
+      "acceptance": [
+        "ContactForm y ApplicationForm muestran, cuando contactPreference es whatsapp, un selector de lada antes del input del número",
+        "Por defecto el selector es México (+52); si GET /__geo devuelve un país ISO alpha-2 válido y presente en la lista, se usa ese; ausente, null, malformado, desconocido, error o timeout → México sin error visible",
+        "El idioma del navegador ya no se usa para elegir el país; no se pide permiso de ubicación; la única fuente del país es /__geo mismo-origen",
+        "Una respuesta de /__geo que llega después de que la persona eligió un país no lo sobreescribe",
+        "La detección del país solo hace una petición mismo-origen a /__geo; ninguna a terceros",
+        "Al abrir el selector se ve la lista de países con bandera, nombre y lada; la selección actualiza bandera y lada",
+        "El selector es accesible: operable con teclado, con rol y nombre accesible, y anuncia la opción seleccionada",
+        "Los nombres de países y todo copy nuevo tienen paridad i18n ES/EN",
+        "POST /contact y POST /careers mandan whatsappDialCode con formato ^\\+[1-9]\\d{0,3}$ solo cuando contactPreference es whatsapp; con email no se manda ni whatsappDialCode ni whatsapp",
+        "whatsapp se valida en el cliente como 6–14 dígitos tras quitar lo que no sea dígito, sin la lada, y se manda sin la lada",
+        "Un 400 validation_failed con whatsappDialCode en fields[] marca el selector",
+        "Componentes de ui/ no llaman a fetch y no hay peticiones a terceros nuevas (Constitución)",
+        "Pruebas unitarias cubren: default México, país desde /__geo (válido, null, inválido, error, timeout), respuesta tardía que no sobreescribe, selección de país, payloads de contact y careers con y sin whatsapp, validación de largo",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "done",
+      "depends_on": [29]
     }
   ]
 }
