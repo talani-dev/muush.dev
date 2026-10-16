@@ -111,3 +111,55 @@
 - 2026-10-15 · Implementer fixed review items (payload test, 16 test names, plan rows, report). init.sh exit 0. Status → reviewing; reviewer round 2.
 - 2026-10-15 · Reviewer (36) round 2: APPROVED. Leader fixed stale data-model/tasks lines. Reviewer reported accidentally deleting node_modules/.cache (build cache only; init.sh passed after).
 - 2026-10-15 · Feature 36 → done, explicitly authorized by Roberto ("ponla en done"); reviewer APPROVED round 2.
+- 2026-10-15 · Roberto: switch to feature 33 (ip_locale_root_redirect) before 37. Branch feat/ip-locale-root-redirect; spec_author launched.
+
+## Feature 33 · `ip_locale_root_redirect` — spec_author (2026-10-15)
+
+- Package written: `specs/033-ip-locale-root-redirect/` (spec, plan, research R1–R10, data-model, quickstart, tasks T001–T016,
+  contracts/{edge-root-locale-redirect,locale-preference-cookie}.md, checklists/requirements.md). No `[NEEDS CLARIFICATION]`;
+  clarify skipped. Leader proposals (a)–(e) plus the 2026-10-15 context are gate questions G1–G8 with recommendations
+  (spec § Gate questions); none decided.
+- Recommendations: edge 302 in `request-router`; unknown country → /en; feature 33 leaves public/index.html, rootRedirect and
+  x-default untouched (feature 37 moves them to /en) and the "sin borde → /es" acceptance item is reworded; cookie
+  `muush_locale` (es|en, Path=/, host-only, Secure, Lax, 365 d) written by the toggle; list of 20 codes, GQ include, US exclude,
+  living only in the edge contract; replace the 301 in the same change and accept cached 301s; 302 + private, no-store, no Vary.
+- Repo scope: `shell/data/localePreference.ts`, `shell/logic/localePreference.ts` (+test), `LanguageToggle.vue` (+test),
+  `tests/locale-preference-output.test.ts`. CONFIRMED: nothing in `app/` reads/writes localStorage or cookies today
+  (ui-map § 1 claims localStorage memory). Existing tests pin `/` → /es (static-output:97) and x-default → /es (seo-output:368).
+- spec-kit scripts reject branch `feat/...`; ran them with `SPECIFY_FEATURE=033-ip-locale-root-redirect`. `.specify/feature.json`
+  now points at specs/033 (written by /speckit-specify). CLAUDE.md has no SPECKIT markers → agent-context step skipped.
+- Status → `spec_ready`. ⏸ Roberto answers G1–G8; edge contract is his to apply in muush-foundation.
+- 2026-10-15 · ⏸ Gate passed (feature 33): Roberto approved G1–G8 as recommended (US → /en, GQ → /es, cookie muush_locale). Acceptance item reworded per G3. Status → in_progress; implementer launched.
+
+## Feature 33 · `ip_locale_root_redirect` — implementer (2026-10-15)
+
+- T001 baseline: `./init.sh` exit 0 before any change (93 files / 1326 tests; typecheck, check, generate,
+  storybook OK). `grep -rn "document.cookie\|localStorage" app/` prints nothing (spec C4 CONFIRMED).
+  Baseline `.output/public` copied to the session scratchpad (7 HTML docs incl. both 404s, 11 `_nuxt` files).
+- T002/T009: gate answers applied to the spec package. Edge contract § 3 now has 21 codes (+GQ; US excluded), reference
+  `SPANISH_SPEAKING`, R-2/R-3, G2 = en. Both contracts and the data model are marked agreed. Spec status line set to
+  approved (the gate section already existed).
+- T003–T008: `shell/data/localePreference.ts`, `shell/logic/localePreference.ts` (+7 unit tests incl. a type guard with a
+  negative control), `LanguageToggle.vue` (`onToggleClick` writes first, then the unchanged `preserveAnchor`; +6 component
+  tests, the 11 existing ones textually unchanged), `tests/locale-preference-output.test.ts`. Tests were red before the code.
+- T010–T012/T015: `git diff master` is empty for pages/layouts/plugins/i18n/nuxt.config/public/index.html/package.json/lockfile
+  and the 35/36 output tests. Same-environment control build: all 6 docs + both 404s + index.html/sitemap/robots are
+  equal apart from build tokens. Only one JS chunk changed (+184 B raw / +90 B gzip).
+- T014: headless Chrome 155 against a 127.0.0.1-only static server (both stopped afterwards). Cookie `muush_locale` is
+  host-only, Path=/, Secure, SameSite=Lax, 365 d. Toggle navigation is unchanged (incl. /es/nosotros#work → /en/about#work).
+  ⌘-click writes, middle-click does not, no-JS writes nothing, `/` → /es (G3).
+- Finding: a scratch git worktree with symlinked node_modules builds into the MAIN repo's `node_modules/.cache/nuxt/.nuxt`
+  (this repo's buildDir). Nothing was deleted; the symlink was unlinked before the worktree was removed; the cache was
+  rebuilt by later runs.
+- Final `./init.sh` exit 0 (95 files / 1341 tests). Report: `specs/033-ip-locale-root-redirect/implementation-report.md`.
+  Status left `in_progress` for the leader.
+- 2026-10-15 · Implementer finished feature 33 (init.sh exit 0, 1341 tests). Leader added findings R73. Status → reviewing.
+- 2026-10-15 · Reviewer (33): CHANGES_REQUESTED — flaky cookie-cleanup test (back to implementer); FR-006/013/019/020 wording updated to approved values by leader. Status → in_progress.
+- 2026-10-15 · implementer, review round 1 (finding 1, flaky cookie cleanup): happy-dom treats `Max-Age=0` as "expires
+  now", which is not strictly in the past. Added a shared helper `shell/logic/localePreference.testing.ts` that expires
+  the cookie at the epoch, used by both test files. The "only rendered → no cookie" assertion is unchanged. New
+  same-millisecond regression test (fake timers) fails with `Max-Age=0` (negative control) and passes with the fix.
+  The two files looped 25×: 25/25 pass. `./init.sh` ×2: exit 0 both times (1342 tests). spec.md untouched. Status in_progress.
+- 2026-10-15 · Implementer fixed flaky cookie cleanup (25/25 loops, init.sh exit 0 ×2). Status → reviewing; reviewer round 2.
+- 2026-10-15 · Reviewer (33) round 2: APPROVED. Leader wrote the missing history.md entries for 35 and 36 (C6).
+- 2026-10-15 · Feature 33 → done, explicitly authorized by Roberto ("si, te autorizo"); history entry written. Next: /commit-flow with bump 1.6.0 on the branch.

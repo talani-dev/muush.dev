@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { ShellLocale } from '@/features/shell/data/types'
+import { rememberLocalePreference } from '@/features/shell/logic/localePreference'
 
 /**
  * The language toggle of frame `tGVGq` (Banda 1) — feature 21's redesign of
@@ -77,6 +78,20 @@ function preserveAnchor(event: MouseEvent) {
   event.preventDefault()
   window.location.assign(`${href}#${fragment}`)
 }
+
+/**
+ * Feature 33: every click is an explicit language choice, so the
+ * destination locale is recorded **first**, before `preserveAnchor`'s early
+ * returns — a ⌘/Ctrl-click that opens a new tab is still a choice
+ * (`specs/033-ip-locale-root-redirect/contracts/locale-preference-cookie.md`
+ * § 2). The edge reads it only at `/`; nothing on this page reads it, so the
+ * link's navigation and markup are unchanged. With no scripting nothing is
+ * written and the link still navigates (accepted degradation).
+ */
+function onToggleClick(event: MouseEvent) {
+  rememberLocalePreference(otherLocale.value)
+  preserveAnchor(event)
+}
 </script>
 
 <template>
@@ -86,7 +101,7 @@ function preserveAnchor(event: MouseEvent) {
     :lang="otherLocale"
     :aria-label="switchLabel"
     class="inline-grid size-lang-circle place-items-center rounded-full border border-glass-line bg-glass-dark font-instrument text-lang font-semibold text-bone-100 focus-visible:outline-red-400"
-    @click="preserveAnchor"
+    @click="onToggleClick"
   >
     {{ locale.toUpperCase() }}
   </NuxtLink>

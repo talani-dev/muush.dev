@@ -1026,3 +1026,9 @@ en una ruta sin match (solo canonical, hreflang y `og:url` desaparecen).
 la que se prerenderizó necesita la comprobación de navegador de
 `specs/036-not-found-page/quickstart.md` § 3; los tests de salida no pueden
 ver ninguno de los dos efectos.
+
+## Feature 033 · Raíz por país — hallazgo de entorno (2026-10-15)
+
+### R73 · Un worktree con `node_modules` enlazado escribe en la caché de build del repo real
+
+Nuxt en este repo genera `.nuxt` dentro de `node_modules/.cache/nuxt/.nuxt`. Un `git worktree` con `node_modules` como symlink al repo principal (para comparar contra otra rama) escribe ahí, y un borrado recursivo del worktree antes de quitar el symlink borra la caché del repo real (ya pasó una vez en la feature 36). Regla: quitar el symlink **antes** de `git worktree remove`, y correr `./init.sh` en el repo real después para regenerar la caché.

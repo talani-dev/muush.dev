@@ -719,13 +719,13 @@
         "País ausente o desconocido sigue la regla aprobada en el gate",
         "Solo / se redirige; /es, /en, rutas internas y anclas nunca se redirigen por IP",
         "La elección manual de idioma (toggle) le gana a la IP en visitas siguientes a / según el mecanismo aprobado",
-        "Sin la pieza de borde desplegada, / sigue llevando a /es como hoy",
+        "Sin la pieza de borde desplegada, / va a donde indique public/index.html (/es hoy; /en tras la feature 37) — gate G3, Roberto 2026-10-15",
         "Ninguna petición a terceros, sin permiso de ubicación, sin registrar la IP",
         "El contrato para muush-foundation queda en specs/<feature>/contracts/ con casos de prueba",
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
       ],
       "sdd": true,
-      "status": "pending",
+      "status": "done",
       "depends_on": [32]
     },
     {
