@@ -2760,3 +2760,10 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - Review: round 1 CHANGES_REQUESTED (G6 doc alignment, payload test, test names) → round 2 APPROVED. Closed `done` on Roberto's explicit authorization.
 - Deploy risk: `deploy.yml` runs `s3 sync --delete`, so `200.html`/`404.html` leave the bucket on the next deploy; Stage 1 must be applied right after.
 
+## 2026-10-15 — Feature 33: ip_locale_root_redirect (done)
+
+- This repository's part: the language toggle writes the first-party cookie `muush_locale=<es|en>; Path=/; Max-Age=31536000; SameSite=Lax; Secure` on an explicit click only (never on load; no PII; without JS the toggle is still a plain link). Shared test helper `localePreference.testing.ts` (past `Expires`) fixed a happy-dom flake with `Max-Age=0`.
+- Edge part (Roberto applies in muush-foundation): `contracts/edge-root-locale-redirect.md` — `/` only, 302 from `request-router` via `cloudfront-viewer-country`, cookie beats country, `/es` for AR BO CL CO CR CU DO EC ES GT HN MX NI PA PE PR PY SV UY VE GQ (US excluded), anything else → `/en`, `cache-control: private, no-store`, replaces today's reported 301 (step 0: record its headers). Never reads, logs or forwards the IP.
+- Gate G1–G8 approved as recommended (Roberto, 2026-10-15). Feature 37 (English default) untouched: `/` still → `/es` via `public/index.html` until 37.
+- Review: round 1 CHANGES_REQUESTED (flaky cookie-cleanup test; FR wording) → round 2 APPROVED. Closed `done` on Roberto's explicit authorization. `./init.sh` exit 0, 95 files / 1342 tests.
+- Open for Roberto (`docs/business/`, human-only): `ui-map.md` § 1 (no-IP rule revoked for `/`; localStorage memory never built), `ui-map.md`/`decisions-open.md` root → `/es`, `messaging.md` rule 4; where the country list lives as a business rule. Privacy notice: the site has none while forms collect personal data — proposed as a separate feature, not yet registered.
