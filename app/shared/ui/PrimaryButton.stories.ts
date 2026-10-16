@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import BotonPrimario, {
+import PrimaryButton, {
   type ButtonVariant,
-} from '@/shared/ui/BotonPrimario.vue'
+} from '@/shared/ui/PrimaryButton.vue'
 
 /**
  * The site's single animated control, from
@@ -30,15 +30,15 @@ import BotonPrimario, {
  * used to set a cursor at all (`docs/harness/findings.md` § R56).
  */
 const meta = {
-  title: 'Shared/UI/BotonPrimario',
-  component: BotonPrimario,
+  title: 'Shared/UI/PrimaryButton',
+  component: PrimaryButton,
   render: args => ({
-    components: { BotonPrimario },
+    components: { PrimaryButton },
     setup: () => ({ args }),
     template:
-      '<BotonPrimario v-bind="args">Cuéntanos tu proyecto</BotonPrimario>',
+      '<PrimaryButton v-bind="args">Cuéntanos tu proyecto</PrimaryButton>',
   }),
-} satisfies Meta<typeof BotonPrimario>
+} satisfies Meta<typeof PrimaryButton>
 
 export default meta
 type Story = StoryObj<typeof meta>
@@ -53,21 +53,21 @@ export const Submit: Story = { args: { variant: 'submit' } }
 export const AsLink: Story = {
   args: { variant: 'hero', href: '#contacto' },
   render: args => ({
-    components: { BotonPrimario },
+    components: { PrimaryButton },
     setup: () => ({ args }),
     template:
-      '<BotonPrimario v-bind="args">Tell us about your project</BotonPrimario>',
+      '<PrimaryButton v-bind="args">Tell us about your project</PrimaryButton>',
   }),
 }
 
 export const AllVariants: Story = {
   render: () => ({
-    components: { BotonPrimario },
+    components: { PrimaryButton },
     setup: () => ({ allVariants }),
     template: `
       <div class="flex flex-wrap items-center gap-8 font-instrument">
         <figure v-for="variant in allVariants" :key="variant" class="flex flex-col items-start gap-2">
-          <BotonPrimario :variant="variant">Cuéntanos tu proyecto</BotonPrimario>
+          <PrimaryButton :variant="variant">Cuéntanos tu proyecto</PrimaryButton>
           <figcaption class="text-meta text-bone-300">{{ variant }}</figcaption>
         </figure>
       </div>

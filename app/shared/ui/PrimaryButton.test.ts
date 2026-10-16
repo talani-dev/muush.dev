@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import BotonPrimario, {
+import PrimaryButton, {
   type ButtonVariant,
-} from '@/shared/ui/BotonPrimario.vue'
-import buttonSource from '@/shared/ui/BotonPrimario.vue?raw'
+} from '@/shared/ui/PrimaryButton.vue'
+import buttonSource from '@/shared/ui/PrimaryButton.vue?raw'
 
 /*
  * Read as a file rather than imported: the Tailwind Vite plugin claims every
@@ -26,16 +26,16 @@ const sizeByVariant: Record<ButtonVariant, string[]> = {
   submit: ['py-btn-y', 'px-btn-submit-x', 'text-button'],
 }
 
-describe('BotonPrimario', () => {
+describe('PrimaryButton', () => {
   it('should render a button when no href is given', () => {
-    const wrapper = mount(BotonPrimario)
+    const wrapper = mount(PrimaryButton)
 
     expect(wrapper.element.tagName).toBe('BUTTON')
     expect(wrapper.attributes('href')).toBeUndefined()
   })
 
   it('should render a link when an href is given', () => {
-    const wrapper = mount(BotonPrimario, { props: { href: '#contacto' } })
+    const wrapper = mount(PrimaryButton, { props: { href: '#contacto' } })
 
     expect(wrapper.element.tagName).toBe('A')
     expect(wrapper.attributes('href')).toBe('#contacto')
@@ -43,19 +43,19 @@ describe('BotonPrimario', () => {
   })
 
   it('should default its type to submit when the variant is submit', () => {
-    const wrapper = mount(BotonPrimario, { props: { variant: 'submit' } })
+    const wrapper = mount(PrimaryButton, { props: { variant: 'submit' } })
 
     expect(wrapper.attributes('type')).toBe('submit')
   })
 
   it('should default its type to button when the variant is not submit', () => {
-    const wrapper = mount(BotonPrimario, { props: { variant: 'nav' } })
+    const wrapper = mount(PrimaryButton, { props: { variant: 'nav' } })
 
     expect(wrapper.attributes('type')).toBe('button')
   })
 
   it('should honour an explicit type when one is given', () => {
-    const wrapper = mount(BotonPrimario, {
+    const wrapper = mount(PrimaryButton, {
       props: { variant: 'submit', type: 'button' },
     })
 
@@ -64,7 +64,7 @@ describe('BotonPrimario', () => {
 
   for (const [variant, expectedClasses] of Object.entries(sizeByVariant)) {
     it(`should emit its documented padding and label size when the variant is ${variant}`, () => {
-      const wrapper = mount(BotonPrimario, {
+      const wrapper = mount(PrimaryButton, {
         props: { variant: variant as ButtonVariant },
       })
 
@@ -131,14 +131,14 @@ describe('BotonPrimario', () => {
     /* The user agent would give an `<a href>` a pointer anyway; it is declared
        so the two branches stop depending on which element they happen to be
        (`findings.md` § R56). */
-    const wrapper = mount(BotonPrimario, { props: { href: '#contacto' } })
+    const wrapper = mount(PrimaryButton, { props: { href: '#contacto' } })
 
     expect(wrapper.classes()).toContain('cursor-pointer')
   })
 
   it('should offer a pointer when it renders as a form submit', () => {
     /* A submit always does something: submitting is native to the element. */
-    const wrapper = mount(BotonPrimario, { props: { variant: 'submit' } })
+    const wrapper = mount(PrimaryButton, { props: { variant: 'submit' } })
 
     expect(wrapper.classes()).toContain('cursor-pointer')
   })
@@ -150,7 +150,7 @@ describe('BotonPrimario', () => {
          does nothing when clicked. `ui-map.md` § 6 rules on exactly this shape
          — "un espacio reservado que parece clickeable y no lleva a nada se lee
          como sitio roto". */
-      const wrapper = mount(BotonPrimario, { props: { variant } })
+      const wrapper = mount(PrimaryButton, { props: { variant } })
 
       expect(wrapper.element.tagName).toBe('BUTTON')
       expect(wrapper.classes()).not.toContain('cursor-pointer')
@@ -160,7 +160,7 @@ describe('BotonPrimario', () => {
   it('should offer no pointer when a submit variant is overridden to a plain button', () => {
     /* The override makes it inert, so the cursor follows the resolved type and
        not the variant name. */
-    const wrapper = mount(BotonPrimario, {
+    const wrapper = mount(PrimaryButton, {
       props: { variant: 'submit', type: 'button' },
     })
 
@@ -168,7 +168,7 @@ describe('BotonPrimario', () => {
   })
 
   it('should render the caller-supplied label when slot content is given', () => {
-    const wrapper = mount(BotonPrimario, {
+    const wrapper = mount(PrimaryButton, {
       slots: { default: 'Cuéntanos tu proyecto' },
     })
 

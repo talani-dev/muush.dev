@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 /**
- * BotonPrimario — the conversion control of the site: dark glass, a pill
+ * PrimaryButton — the conversion control of the site: dark glass, a pill
  * silhouette and a conic LED ring at `--stroke-led`. Sizes from
  * docs/business/landing/design-extract.md § 4.
  *

@@ -1987,7 +1987,7 @@ html {
      control del diseño: lo pide FormField (design-extract.md § FormField,
      cornerRadius 12) cuando se construyan los formularios. Este comentario no
      es lo que lo protege: lo guarda una aserción en
-     app/shared/ui/BotonPrimario.test.ts, porque un token sin consumidor
+     app/shared/ui/PrimaryButton.test.ts, porque un token sin consumidor
      defendido solo con prosa es como la variante '920' de SectionGlow estuvo a
      punto de irse por código muerto. */
   --radius-panel: clamp(1.125rem, 1.0321rem + 0.381vw, 1.375rem);

@@ -189,7 +189,7 @@
  * also what clips the lit sheet's deliberate overflow below.
  *
  * The mask's black carries no design meaning — only its alpha is read, the
- * same convention `BotonPrimario.vue` uses for the LED ring.
+ * same convention `PrimaryButton.vue` uses for the LED ring.
  */
 .cursor-spotlight__window {
   position: absolute;
@@ -247,7 +247,7 @@
  * future miswiring cannot make a desktop-only, motion-sensitive decoration
  * appear where `ui-map.md` says it must not. Two independent mechanisms for
  * one accessibility requirement is proportionate: § *Movimiento reducido*
- * lists the spotlight first. Precedent: `Radar.vue`, `BotonPrimario.vue`.
+ * lists the spotlight first. Precedent: `Radar.vue`, `PrimaryButton.vue`.
  */
 @media (prefers-reduced-motion: reduce) {
   .cursor-spotlight {

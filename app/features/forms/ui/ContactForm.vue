@@ -5,7 +5,7 @@ import type { ContactSubmitter } from '@/features/forms/data/submissionContract'
 import { fieldErrorMessage } from '@/features/forms/logic/fieldErrorMessage'
 import { toFieldOptions } from '@/features/forms/logic/selectOptions'
 import { useContactForm } from '@/features/forms/logic/useContactForm'
-import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
+import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
 import FormOutcome from './FormOutcome.vue'
 import HoneypotField from './HoneypotField.vue'
 import RadioPillGroup from './RadioPillGroup.vue'
@@ -147,14 +147,14 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
         node `bTYw7`, feature 025), so both classes stay scoped to `lg:` and
         mobile keeps stretching to the form's width.
       -->
-      <BotonPrimario
+      <PrimaryButton
         variant="submit"
         type="submit"
         :disabled="readonly"
         class="lg:w-btn-submit-w lg:self-center"
       >
         {{ readonly ? content.sending : content.submit }}
-      </BotonPrimario>
+      </PrimaryButton>
     </form>
 
     <FormOutcome

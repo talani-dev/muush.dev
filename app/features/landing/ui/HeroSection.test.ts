@@ -219,7 +219,7 @@ describe('HeroSection · the pointer cursor', () => {
   })
 
   it('should offer a pointer on the primary call to action once it has a destination', () => {
-    /* And it arrives with the destination, from `BotonPrimario`, with no edit
+    /* And it arrives with the destination, from `PrimaryButton`, with no edit
        to this component — the same mechanism that lit the secondary CTA. */
     const link = mountHero({ contactHref: '/es#contacto' })
       .findAll('a')

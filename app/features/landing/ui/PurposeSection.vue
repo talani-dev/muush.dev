@@ -111,7 +111,7 @@ import PurposeConstellation from './PurposeConstellation.vue'
  * | raw lines (`wc -l`) | 198 | 248 | 312 | 366 |
  * | non-comment, non-blank | 82 | 87 | 91 | 104 |
  *
- * Measured the same way `BotonPrimario.vue`'s own recorded exception does:
+ * Measured the same way `PrimaryButton.vue`'s own recorded exception does:
  * strip block comments, HTML comments and line comments, then drop blank
  * lines. The second row is the number that matters and it stays well under
  * 200 across all three rounds — round 3's own +13 is one wrapper `<div>` in
@@ -119,7 +119,7 @@ import PurposeConstellation from './PurposeConstellation.vue'
  * added in round 3 is prose.
  *
  * **Do not "fix" this by extracting sub-components.** Same reasoning
- * `BotonPrimario.vue`'s exception already recorded: Article V's remedy names
+ * `PrimaryButton.vue`'s exception already recorded: Article V's remedy names
  * sub-component extraction as the cure for *structural* complexity, and there
  * is none here to extract — one clip-path declaration, one positioned
  * wrapper and one composable call don't split into files that then have to

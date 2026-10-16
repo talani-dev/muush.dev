@@ -126,7 +126,7 @@ describe('SiteNav', () => {
 
   it('should render the pill container classes on the desktop row', async () => {
     /* spec FR-001/FR-002 — the floating dark-glass pill, reusing the same
-       glass/pill vocabulary `Pill` and `BotonPrimario` already declare. No
+       glass/pill vocabulary `Pill` and `PrimaryButton` already declare. No
        new glass-surface token or variant. */
     const row = (await mountNav()).find('nav > div')
 
@@ -157,7 +157,7 @@ describe('SiteNav', () => {
   })
 
   it('should carry a trailing arrow as a separate aria-hidden element', async () => {
-    /* spec FR-012 — composed by this caller inside BotonPrimario's existing
+    /* spec FR-012 — composed by this caller inside PrimaryButton's existing
        slot, never baked into the translated string (same discipline as
        feature 9's `LinkArrow`, FR-010). Feature 23 item 1: the `.pen`
        (frames `Rm6Wu`/`WGhSI`) draws `Texto → Flecha`, text first. */
@@ -196,7 +196,7 @@ describe('SiteNav', () => {
   })
 
   it('should offer a pointer on the primary call to action when rendered', async () => {
-    /* It carries an href, so `BotonPrimario` marks it clickable. */
+    /* It carries an href, so `PrimaryButton` marks it clickable. */
     const button = ctaLink(await mountNav())
 
     expect(button?.classes()).toContain('cursor-pointer')

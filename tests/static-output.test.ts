@@ -716,7 +716,7 @@ describe('static output · the landing hero', () => {
        * type="button">` into a real link — no substitute destination, the
        * section this key was always reserved for (spec FR-002). It carries a
        * pointer cursor because it now does something when clicked
-       * (`BotonPrimario.vue`'s `isClickable`).
+       * (`PrimaryButton.vue`'s `isClickable`).
        */
       const hero = heroSection(route)
       const primary = hero?.match(
@@ -770,7 +770,7 @@ describe('static output · the landing hero', () => {
      *
      * The class, not a pixel value: `happy-dom` paints nothing, so the rendered
      * band was reviewed in Chrome against `.output/public` instead (see
-     * `BotonPrimario.vue`'s note on the ring). What this catches is the
+     * `PrimaryButton.vue`'s note on the ring). What this catches is the
      * regression a test can catch — the old radius coming back.
      */
     for (const route of ROUTES) {
