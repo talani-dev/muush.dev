@@ -1002,3 +1002,27 @@ llamada sobrevivía y ~35 KB de nodos de schema-org (`ReadAction`,
 hace nada en cliente de todos modos, así que el HTML prerenderizado no cambia.
 Ver `app/features/shell/logic/usePageSeo.ts`. `tests/seo-output.test.ts`
 falla si el grafo vuelve a aparecer en `_nuxt/`.
+
+## Feature 036 · Página 404 — hallazgos de implementación (2026-10-15)
+
+### R72 · Un documento prerenderizado servido en otra URL: i18n y el router lo "corrigen" al hidratar
+
+Medido en headless Chrome contra un simulador del edge (Nuxt 4.5.2,
+@nuxtjs/i18n 10.6.0). Si el edge sirve el HTML de `/en/404` en `/es/nada`:
+
+- el router reemplaza la barra de direcciones por `payload.path` (`/en/404`)
+  salvo que ese campo se borre en el servidor (`useNotFoundDocument.ts`);
+- `@nuxtjs/i18n` detecta el locale **por el prefijo de la URL servida**
+  (`es`), no por el del documento, y cambia de idioma antes de hidratar:
+  "Hydration completed but contains mismatches", copy en español y el botón
+  de idioma apuntando al idioma ya visible. Rutas sin prefijo (`/xyz`) no se
+  ven afectadas. Se corrige con el hook público `i18n:beforeLocaleSwitch`
+  solo durante la hidratación (`app/features/shell/logic/notFoundLocale.ts`).
+
+Además, `useLocaleHead()` emite `og:locale` y `og:locale:alternate` también
+en una ruta sin match (solo canonical, hreflang y `og:url` desaparecen).
+
+**Qué hacer:** cualquier documento que el edge sirva en una URL distinta de
+la que se prerenderizó necesita la comprobación de navegador de
+`specs/036-not-found-page/quickstart.md` § 3; los tests de salida no pueden
+ver ninguno de los dos efectos.

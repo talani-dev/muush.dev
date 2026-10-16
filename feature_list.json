@@ -775,6 +775,29 @@
       "sdd": true,
       "status": "done",
       "depends_on": []
+    },
+    {
+      "id": 36,
+      "name": "not_found_page",
+      "title": "Página 404 en español e inglés, con nav y footer del sitio, pill 'Error 404', LED 'Volver al inicio', atajos y radar vacío de tres anillos",
+      "description": "Pedido de Roberto el 2026-10-15. FUENTE VISUAL Y DE COPY: /Users/betonajera/Documents/Muush/Landing Page/Error 404/muush-404/404.html y su README.md (Roberto: 'el HTML y su README' son la fuente de verdad para esta página; no hay frame en el .pen). Del HTML importa solo el contenido del <main>: el header y el footer que trae se ignoran porque el sitio ya los tiene (layout default: SiteNav, SiteFooter, DotGrid, CursorSpotlight). El README habla de Astro: el sitio es Nuxt, se traduce a sus componentes. CONTENIDO: Pill 'Error 404' (mismo texto en ambos idiomas), h1 'No encontramos esta página.' / 'We couldn't find this page.', subtítulo 'Puede que el link venga mal escrito o que la página haya cambiado de lugar.' / 'The link may be mistyped, or the page may have moved.', botón LED 'Volver al inicio' / 'Back to home' → /es | /en, atajos 'Propósito · Servicios · Nosotros' / 'Purpose · Services · About us' → #proposito, #servicios (existen en ambos locales: mismo componente) y la ruta de Nosotros/About resuelta por el router i18n. La traducción EN es la que ya trae el HTML en data-en (propuesta del leader; confirmar en el gate). REUTILIZAR: app/shared/ui/Pill.vue (punto + píldora), BotonPrimario.vue (LED), tokens existentes; lo único nuevo es la decoración de tres anillos concéntricos sin puntos (escritorio 700/500/300 px, móvil 420/300/180 px; interior Red 400 al 24 %, exteriores Bone 100 al 12 % y 8 %) mapeada a tokens. Reglas del README: un solo LED por pantalla (el nav del 404 no muestra CTA LED si lo tuviera); el botón de idioma lleva al inicio del otro idioma (/en o /es) porque no hay página equivalente; noindex. DECISIONES de Roberto (2026-10-15): (1) IDIOMA: se generan DOS archivos, uno por locale (p. ej. /es/404.html y /en/404.html), cada uno prerenderizado en su idioma, sin script que cambie el idioma en el cliente. Qué archivo sirve CloudFront según el prefijo de la ruta lo decide una función del repo de infraestructura (muush-foundation), que este repo NO edita: el spec entrega un contrato en specs/<feature>/contracts/ para ese repo. Hay que definir el fallback para rutas sin prefijo (p. ej. /xyz → versión es, el idioma por defecto). (2) CÓDIGO HTTP: la 404 debe responder con 404, no 200. Roberto no sabe cómo está configurado CloudFront hoy: el contrato incluye las respuestas de error personalizadas 403 y 404 → archivo 404 del locale con código 404 (S3 con OAC devuelve 403 para llaves inexistentes). El spec analiza el 200.html (shell SPA de respaldo que hoy genera el build y que lleva index, follow desde la feature 35) y propone qué hacer con él y con el 404.html actual. SEO (feature 35): las páginas 404 llevan noindex, no aparecen en el sitemap y no rompen los tests de seo-output. RESTRICCIONES: sin cambios en las demás páginas; sin dependencias nuevas; no se toca infraestructura ni se despliega.",
+      "acceptance": [
+        "El build genera una página 404 por locale, cada una prerenderizada en su idioma (sin cambio de idioma por script en el cliente)",
+        "Cada 404 muestra el nav y el footer del sitio vía el layout existente, sin duplicarlos",
+        "El contenido coincide con el HTML de referencia: Pill 'Error 404' reutilizando Pill.vue, h1, subtítulo, botón LED reutilizando BotonPrimario.vue y los tres atajos, en ambos idiomas con el copy aprobado",
+        "Los atajos llevan a #proposito y #servicios del inicio del mismo locale y a Nosotros/About resuelto por i18n; el botón LED lleva a /es o /en",
+        "El botón de idioma en la 404 lleva al inicio del otro locale",
+        "Los tres anillos concéntricos se ven con los tamaños y colores del README (escritorio y móvil) usando tokens; son decorativos (aria-hidden)",
+        "Un solo LED por pantalla en la 404",
+        "Las 404 llevan noindex, no aparecen en sitemap.xml y no tienen canonical ni hreflang que las indexen",
+        "specs/<feature>/contracts/ incluye el contrato para muush-foundation: elección del archivo 404 por prefijo de ruta, fallback para rutas sin prefijo, y respuestas de error 403/404 → 404 con código HTTP 404",
+        "El spec decide qué pasa con 200.html y el 404.html actual, y lo justifica",
+        "Las demás páginas no cambian; sin dependencias nuevas",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "done",
+      "depends_on": [35]
     }
   ]
 }
