@@ -798,6 +798,26 @@
       "sdd": true,
       "status": "done",
       "depends_on": [35]
+    },
+    {
+      "id": 37,
+      "name": "english_default_locale",
+      "title": "Idioma por defecto del sitio pasa de español a inglés (defaultLocale en, rootRedirect /en, x-default → /en)",
+      "description": "Pedido de Roberto el 2026-10-15, como continuación de la feature 35, en feature aparte y DESPUÉS de cerrar la 36. Contexto que da Roberto: CloudFront ya redirige '/' con 301 a https://muush.dev/en y el sitio debe ser coherente con eso (UNVERIFIED desde este repo: la infraestructura vive en muush-foundation). Cambios pedidos: (1) i18n `defaultLocale: 'en'` y `rootRedirect: '/en'`; (2) site config `defaultLocale` 'en-US' si está declarado (el repo NO usa @nuxtjs/seo: usa @nuxtjs/sitemap, @nuxtjs/robots y nuxt-schema-org con nuxt-site-config — aplicar donde corresponda); (3) ANTES de cambiarlo, buscar y REPORTAR todo lo que asume 'es' como default: enlaces '/es' hardcodeados (logo/home), fallbacks, middleware, x-default, public/index.html (meta refresh a /es, canonical, x-default y lang escritos a mano), docs/business/landing/ui-map.md § 1 y decisions-open.md (human-only: se reportan, no se editan), tests que fijen 'es' como default, el locale de la 404 (feature 36: fallback inglés ya decidido) y la feature 33 ip_locale_root_redirect (pending), que queda en conflicto o obsoleta si CloudFront ya manda '/' a /en; (4) sin cambios de rutas, contenido, traducciones ni diseño. Verificación: build/generate; en /en y /es `hreflang=\"x-default\"` → https://muush.dev/en; cada página conserva su canonical y su lang; sitemap con exactamente /en, /es, /en/about, /es/nosotros; JSON-LD presente y válido. Restricciones: rama aparte, sin deploy ni merge; Roberto aprueba.",
+      "acceptance": [
+        "Antes de cambiar nada se entrega a Roberto la lista de todo lo que asume 'es' como default (código, public/index.html, tests, docs human-only, feature 33) y él aprueba el alcance",
+        "i18n defaultLocale = 'en' y rootRedirect = '/en'; site config defaultLocale en-US si aplica",
+        "En /en y /es, hreflang x-default apunta a https://muush.dev/en",
+        "Cada página conserva su canonical absoluto y su lang (en-US / es-MX)",
+        "sitemap.xml lista exactamente /en, /es, /en/about y /es/nosotros con sus alternates",
+        "El JSON-LD sigue presente y válido en las 4 páginas",
+        "Sin cambios de rutas, contenido, traducciones ni diseño",
+        "Rama aparte; sin deploy ni merge",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "pending",
+      "depends_on": [35, 36]
     }
   ]
 }
