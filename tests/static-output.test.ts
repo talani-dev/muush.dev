@@ -9,7 +9,7 @@ import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
  * SC-001 ("4 routes resolve and `/` reaches the Spanish home"), SC-003 ("the
  * toggle resolves correctly from all 4 routes in both directions") and
  * acceptance criterion 6 ("a layout renders the shell on every page;
- * `nosotros.vue` resolves at `/es/nosotros` and `/en/about`") are all claims
+ * `about.vue` resolves at `/es/nosotros` and `/en/about`") are all claims
  * about what `pnpm generate` writes. None of them is observable from a
  * mounted component: a component test cannot tell you that a route produced a
  * file, and the pure resolver's unit tests deliberately feed it hand-written
@@ -115,7 +115,7 @@ describe('static output · routes', () => {
       file => file !== 'index.vue'
     )
 
-    expect(aboutPages).toEqual(['nosotros.vue'])
+    expect(aboutPages).toEqual(['about.vue'])
     expect(documentFor('/es/nosotros')).toContain('id="work"')
     expect(documentFor('/en/about')).toContain('id="work"')
   })
@@ -716,7 +716,7 @@ describe('static output · the landing hero', () => {
        * type="button">` into a real link — no substitute destination, the
        * section this key was always reserved for (spec FR-002). It carries a
        * pointer cursor because it now does something when clicked
-       * (`BotonPrimario.vue`'s `isClickable`).
+       * (`PrimaryButton.vue`'s `isClickable`).
        */
       const hero = heroSection(route)
       const primary = hero?.match(
@@ -770,7 +770,7 @@ describe('static output · the landing hero', () => {
      *
      * The class, not a pixel value: `happy-dom` paints nothing, so the rendered
      * band was reviewed in Chrome against `.output/public` instead (see
-     * `BotonPrimario.vue`'s note on the ring). What this catches is the
+     * `PrimaryButton.vue`'s note on the ring). What this catches is the
      * regression a test can catch — the old radius coming back.
      */
     for (const route of ROUTES) {

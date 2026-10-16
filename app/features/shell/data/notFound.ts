@@ -38,7 +38,7 @@ export const NOT_FOUND_SHORTCUTS: ShellItem[] = [
   },
   {
     labelKey: 'shell.notFound.shortcuts.about',
-    destination: { kind: 'route', name: 'nosotros' },
+    destination: { kind: 'route', name: 'about' },
   },
 ]
 

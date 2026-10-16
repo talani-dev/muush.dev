@@ -12,7 +12,7 @@ import {
 } from '@/features/forms/logic/selectOptions'
 import { useApplicationForm } from '@/features/forms/logic/useApplicationForm'
 import type { SubmitState } from '@/features/forms/logic/useFormSubmitState'
-import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
+import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
 import CvField from './CvField.vue'
 import FormOutcome from './FormOutcome.vue'
 import HoneypotField from './HoneypotField.vue'
@@ -174,14 +174,14 @@ function errorFor(field: keyof typeof errors.value): string | undefined {
         @update:country="onWhatsappCountryChange"
       />
       <HoneypotField v-model="honeypot" />
-      <BotonPrimario
+      <PrimaryButton
         variant="submit"
         type="submit"
         :disabled="readonly"
         class="lg:w-btn-submit-w lg:self-center"
       >
         {{ submitLabel }}
-      </BotonPrimario>
+      </PrimaryButton>
     </form>
 
     <FormOutcome

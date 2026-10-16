@@ -961,7 +961,7 @@ feature 003.
 |---|---|---|
 | Ítem de lista sin destino (`FAQ`, `Blog`, `Agenda una llamada` del footer) | `<span class="text-ink-300">`. Sin ancla, sin cursor, sin hover | feature 003, `FooterColumn.vue` |
 | **Texto suelto sin destino** (CTA secundario del Hero) | Igual: `<span>` en `ink-300`, **y sin la flecha** | feature 009 |
-| **Control con caja sin destino** (CTA primario del Hero) | Conserva su caja, su anillo LED y su etiqueta, y **no lleva `href`**: `BotonPrimario` renderiza un `<button type="button">` real. No emite fragmento al HTML | feature 009 |
+| **Control con caja sin destino** (CTA primario del Hero) | Conserva su caja, su anillo LED y su etiqueta, y **no lleva `href`**: `PrimaryButton` renderiza un `<button type="button">` real. No emite fragmento al HTML | feature 009 |
 
 **Por qué el estado muerto no lleva flecha.** Una flecha es la señal de que
 algo lleva a alguna parte, y esto no lleva a ninguna. Además la misma frase ya

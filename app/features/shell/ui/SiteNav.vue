@@ -7,8 +7,8 @@ import type {
 } from '@/features/shell/data/types'
 import { useMobileMenu } from '@/features/shell/logic/useMobileMenu'
 import { useNavScrollReveal } from '@/features/shell/logic/useNavScrollReveal'
-import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
 import Lockup from '@/shared/ui/Lockup.vue'
+import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
 import LanguageToggle from './LanguageToggle.vue'
 import MobileMenu from './MobileMenu.vue'
 
@@ -294,14 +294,14 @@ watch(isOpen, opened => {
             as the token gap rather than the collapsed template whitespace
             the old order relied on.
           -->
-          <BotonPrimario variant="nav" :href="cta.href">
+          <PrimaryButton variant="nav" :href="cta.href">
             {{ cta.label }}
             <span
               aria-hidden="true"
               class="ml-nav-cta-arrow-gap inline-block transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none"
               >→</span
             >
-          </BotonPrimario>
+          </PrimaryButton>
         </div>
 
         <!--

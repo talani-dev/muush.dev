@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
 import { useHeroSentinel } from '@/shared/logic/useNavCtaReveal'
-import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
 import HeroStack from '@/shared/ui/HeroStack.vue'
 import LinkArrow from '@/shared/ui/LinkArrow.vue'
+import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
 import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/SectionGlow.vue'
 
@@ -149,9 +149,9 @@ useHeroSentinel(root)
       <div
         class="flex flex-col items-start gap-hero-cta-gap pt-hero-cta-top lg:flex-row lg:items-center"
       >
-        <BotonPrimario variant="hero" :href="contactHref">
+        <PrimaryButton variant="hero" :href="contactHref">
           {{ ctaPrimary }}
-        </BotonPrimario>
+        </PrimaryButton>
 
         <!--
           Two branches, and a single data value decides which one renders.

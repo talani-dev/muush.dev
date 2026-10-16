@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import isotipo from '@/assets/logo/isotipo-on-ink.svg?raw'
+import isotipo from '@/assets/logo/logomark-on-ink.svg?raw'
 import Wordmark, { type WordmarkForm } from './Wordmark.vue'
 
 /**

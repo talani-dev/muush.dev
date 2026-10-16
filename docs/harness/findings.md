@@ -228,7 +228,7 @@ en mosaico** sobre la caja del elemento. En una máscara de recorte circular eso
 no da un círculo: da una retícula de círculos, y lo que sobresale de la caja
 queda visible en vez de recortado.
 
-No es teórico: el CSS emitido de `BotonPrimario.vue` lleva
+No es teórico: el CSS emitido de `PrimaryButton.vue` lleva
 `mask-repeat: repeat, repeat`. Ahí no molesta porque su máscara es
 `linear-gradient(black 0 0)`, uniforme, así que teselarla es idéntico a no
 hacerlo. La primera máscara **no uniforme** del repositorio es la de
@@ -559,7 +559,7 @@ especificación de CSS, y casi nunca lo que se quiere en una web.
 **Por qué costó verlo.** El síntoma no es un error ni una regla que falla: es
 que la mitad de los controles se ven bien *por accidente del agente de usuario*
 y la otra mitad no, sin que nada en el repositorio diga una palabra sobre el
-tema. `BotonPrimario` renderiza `<a>` o `<button>` según tenga `href`
+tema. `PrimaryButton` renderiza `<a>` o `<button>` según tenga `href`
 (línea 43), así que el mismo componente se comportaba distinto en el nav y en
 el Hero.
 
@@ -571,7 +571,7 @@ link ni hover (un espacio reservado que parece clickeable y no lleva a nada se
 lee como sitio roto)"*— y aplica igual al CTA primario del Hero mientras la
 sección 05 no exista.
 
-**Trampa de al lado, encontrada al escribirlo:** `BotonPrimario.test.ts` hace
+**Trampa de al lado, encontrada al escribirlo:** `PrimaryButton.test.ts` hace
 grep del código fuente crudo buscando `/@(click|mouseenter|mouseleave)/` para
 probar que el componente no lleva script de cliente. Un **comentario** que
 mencione `@click` en prosa rompe esa prueba. La salida correcta es reescribir
@@ -680,7 +680,7 @@ Reproducido para verificar el mensaje —`NUXT_LOCK=1 pnpm dev` de fondo y
 
 ### R59 · Un anillo enmascarado sobrevive a un radio de píldora, y la razón es que `mask-clip: content-box` redondea
 
-El anillo LED de `BotonPrimario` se pinta con un pseudo-elemento de
+El anillo LED de `PrimaryButton` se pinta con un pseudo-elemento de
 `padding: 1.5px` y `mask-composite: exclude` entre una máscara de `border-box` y
 otra de `content-box`. La duda razonable al pasar de r12 a píldora era si la
 banda se adelgazaría o se cortaría en las tapas — un agujero **rectangular**
@@ -1032,3 +1032,9 @@ ver ninguno de los dos efectos.
 ### R73 · Un worktree con `node_modules` enlazado escribe en la caché de build del repo real
 
 Nuxt en este repo genera `.nuxt` dentro de `node_modules/.cache/nuxt/.nuxt`. Un `git worktree` con `node_modules` como symlink al repo principal (para comparar contra otra rama) escribe ahí, y un borrado recursivo del worktree antes de quitar el symlink borra la caché del repo real (ya pasó una vez en la feature 36). Regla: quitar el symlink **antes** de `git worktree remove`, y correr `./init.sh` en el repo real después para regenerar la caché.
+
+## Feature 030 · Nombres de archivo en inglés — hallazgo de build (2026-10-16)
+
+### R74 · `cached-locale-configs` de i18n sale vacío en `/es` y `/en` según el orden del prerender
+
+En el payload prerenderizado de `/es` y `/en`, el estado `cached-locale-configs` de `@nuxtjs/i18n` a veces es `{}` y a veces viene lleno. El implementer de la feature 30 lo reprodujo en `HEAD` sin cambios: salió lleno en 1 de 3 builds. Depende del orden del prerender en paralelo y existía antes de la feature 30. **Qué hacer:** al comparar la salida de dos builds, no tomar una diferencia en esa clave como regresión; normalizarla o compararla aparte. Impacto en runtime: UNVERIFIED.

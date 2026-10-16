@@ -20,7 +20,7 @@ export type ShellLocale = (typeof SHELL_LOCALES)[number]
  * under `i18n.pages`. Adding a page adds a member here and an entry there —
  * never a path literal in a component (spec FR-018).
  */
-export type ShellRouteName = 'index' | 'nosotros'
+export type ShellRouteName = 'index' | 'about'
 
 /**
  * Where a shell item points. Four kinds, and `none` is a real state rather

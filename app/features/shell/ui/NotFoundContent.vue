@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ResolvedShellItem } from '@/features/shell/data/types'
-import BotonPrimario from '@/shared/ui/BotonPrimario.vue'
 import Pill from '@/shared/ui/Pill.vue'
+import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
 import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/SectionGlow.vue'
 import NotFoundRings from './NotFoundRings.vue'
@@ -20,7 +20,7 @@ import NotFoundRings from './NotFoundRings.vue'
  * Existing pieces are reused and win over the reference by a few px:
  * `Pill` (padding start −2, gap +1, 7 px pinging dot instead of 8 px static
  * glowing dot), `text-display` for the heading (+2 px at 390, +10 px at 1440),
- * `BotonPrimario variant="hero"` (~55 px tall at 1440 vs 48), `text-body-sm`
+ * `PrimaryButton variant="hero"` (~55 px tall at 1440 vs 48), `text-body-sm`
  * for the subtitle (line-height +0.05), `text-footer-item` for the shortcuts
  * (+1 px at 1440). Horizontal padding is the layout's `px-page`.
  *
@@ -85,9 +85,9 @@ const { eyebrow, headline, body, cta, shortcutsLabel, shortcuts } =
         {{ body }}
       </p>
 
-      <BotonPrimario variant="hero" :href="cta.href">
+      <PrimaryButton variant="hero" :href="cta.href">
         {{ cta.label }}
-      </BotonPrimario>
+      </PrimaryButton>
 
       <nav
         :aria-label="shortcutsLabel"

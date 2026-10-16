@@ -9,7 +9,7 @@ import { WORK_KEYS, type WorkContent } from '@/features/about/data/workContent'
  *
  * The eight-field form's own content comes from `forms/useApplicationFormContent`
  * — a sibling call, resolved by whoever composes the page
- * (`app/pages/nosotros.vue`), never by this composable or by
+ * (`app/pages/about.vue`), never by this composable or by
  * `WorkWithMuushSection.vue` itself (Constitution Article III).
  *
  * It performs no fetch, holds no state, registers no listener, and resolves

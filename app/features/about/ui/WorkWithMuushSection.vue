@@ -20,7 +20,7 @@ import SectionGlow from '@/shared/ui/SectionGlow.vue'
  * `logic/useWorkContent.ts`, the same discipline `AboutHeroSection.vue` and
  * `ContactSection.vue` already follow (`rules.md` § R23). The form's own
  * content (`formContent`) is resolved by whoever composes this section
- * (`app/pages/nosotros.vue`) calling `useApplicationFormContent` from the
+ * (`app/pages/about.vue`) calling `useApplicationFormContent` from the
  * `forms` barrel directly — never by this component, keeping this file
  * mountable with no Nuxt runtime present and keeping `forms/` from depending
  * on an `about.*` key (plan.md D-1, D-4).

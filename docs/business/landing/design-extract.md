@@ -293,7 +293,7 @@ Todos `$font-display` (Instrument Sans) salvo el Wordmark.
 
 **Desktop** = `Lockup` (fill_container, gap 12) + `Nav right` (gap 30):
 - `Proyectos` · `Nosotros` → `$bone-300` · 15px/500
-- `CTA nav` → BotonPrimario variante `nav` (padding `[13,24]`, fs 14)
+- `CTA nav` → PrimaryButton variante `nav` (padding `[13,24]`, fs 14)
 - `Idioma` → gap 6: `ES` `$bone-100` 13/600 ls 0.8 · `/` `$ink-300` 13 · `EN` `$ink-200` 13/500 ls 0.8
 
 **Móvil** = `Lockup` (fill_container, gap 9) + `Nav right` (gap 14):

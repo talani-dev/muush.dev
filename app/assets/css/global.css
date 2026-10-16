@@ -1987,7 +1987,7 @@ html {
      control del diseño: lo pide FormField (design-extract.md § FormField,
      cornerRadius 12) cuando se construyan los formularios. Este comentario no
      es lo que lo protege: lo guarda una aserción en
-     app/shared/ui/BotonPrimario.test.ts, porque un token sin consumidor
+     app/shared/ui/PrimaryButton.test.ts, porque un token sin consumidor
      defendido solo con prosa es como la variante '920' de SectionGlow estuvo a
      punto de irse por código muerto. */
   --radius-panel: clamp(1.125rem, 1.0321rem + 0.381vw, 1.375rem);
@@ -2024,7 +2024,7 @@ html {
    * el `.pen` dibuja las secciones a ras (una termina exactamente donde
    * empieza la siguiente), y Roberto pidió calibrarlo. Un solo token,
    * consumido como `mt-section-gap` en `app/pages/index.vue`,
-   * `app/pages/nosotros.vue` (entre secciones) y en el `<SiteFooter>` de
+   * `app/pages/about.vue` (entre secciones) y en el `<SiteFooter>` de
    * `app/layouts/default.vue` (antes del footer) — nunca como padding
    * dentro de una sección, para no tocar los `pt-*-top` ya calibrados
    * contra el diseño (rules.md § R49). Escala fluida 32px → 80px, misma
