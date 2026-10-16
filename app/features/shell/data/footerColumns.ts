@@ -65,7 +65,7 @@ export const FOOTER_COLUMNS: FooterColumnModel[] = [
       },
       {
         labelKey: 'shell.footer.nav.about',
-        destination: { kind: 'route', name: 'nosotros' },
+        destination: { kind: 'route', name: 'about' },
       },
     ],
   },
@@ -102,7 +102,7 @@ export const FOOTER_COLUMNS: FooterColumnModel[] = [
         labelKey: 'shell.footer.muush.work',
         destination: {
           kind: 'anchor',
-          name: 'nosotros',
+          name: 'about',
           hash: SHELL_ANCHORS.work,
         },
       },

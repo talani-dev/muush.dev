@@ -40,7 +40,7 @@ describe('not-found content model', () => {
       name: 'index',
       hash: SHELL_ANCHORS.services,
     })
-    expect(about?.destination).toEqual({ kind: 'route', name: 'nosotros' })
+    expect(about?.destination).toEqual({ kind: 'route', name: 'about' })
   })
 
   it('should carry the reference robots value when read', () => {

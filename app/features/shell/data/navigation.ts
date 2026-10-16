@@ -54,7 +54,7 @@ export const NAV_ITEMS: ShellItem[] = [
   },
   {
     labelKey: 'shell.nav.about',
-    destination: { kind: 'route', name: 'nosotros' },
+    destination: { kind: 'route', name: 'about' },
   },
 ]
 
@@ -94,6 +94,6 @@ export const MENU_ITEMS: ShellItem[] = [
   },
   {
     labelKey: 'shell.menu.about',
-    destination: { kind: 'route', name: 'nosotros' },
+    destination: { kind: 'route', name: 'about' },
   },
 ]

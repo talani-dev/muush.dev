@@ -9,7 +9,7 @@ import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
  * SC-001 ("4 routes resolve and `/` reaches the Spanish home"), SC-003 ("the
  * toggle resolves correctly from all 4 routes in both directions") and
  * acceptance criterion 6 ("a layout renders the shell on every page;
- * `nosotros.vue` resolves at `/es/nosotros` and `/en/about`") are all claims
+ * `about.vue` resolves at `/es/nosotros` and `/en/about`") are all claims
  * about what `pnpm generate` writes. None of them is observable from a
  * mounted component: a component test cannot tell you that a route produced a
  * file, and the pure resolver's unit tests deliberately feed it hand-written
@@ -115,7 +115,7 @@ describe('static output · routes', () => {
       file => file !== 'index.vue'
     )
 
-    expect(aboutPages).toEqual(['nosotros.vue'])
+    expect(aboutPages).toEqual(['about.vue'])
     expect(documentFor('/es/nosotros')).toContain('id="work"')
     expect(documentFor('/en/about')).toContain('id="work"')
   })

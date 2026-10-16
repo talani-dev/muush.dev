@@ -12,7 +12,7 @@ import {
  */
 const PATHS: Record<ShellRouteName, string> = {
   index: '/es',
-  nosotros: '/es/nosotros',
+  about: '/es/nosotros',
 }
 
 const COPY: Record<string, string> = {
@@ -66,12 +66,12 @@ describe('createShellItemResolver', () => {
   })
 
   it('should mark current when the destination route is the active route', () => {
-    const { resolveItem } = createShellItemResolver(stubDeps('nosotros'))
+    const { resolveItem } = createShellItemResolver(stubDeps('about'))
 
     expect(
       resolveItem({
         labelKey: 'shell.nav.about',
-        destination: { kind: 'route', name: 'nosotros' },
+        destination: { kind: 'route', name: 'about' },
       })
     ).toEqual({
       label: 'Nosotros',
@@ -87,7 +87,7 @@ describe('createShellItemResolver', () => {
     expect(
       resolveItem({
         labelKey: 'shell.nav.about',
-        destination: { kind: 'route', name: 'nosotros' },
+        destination: { kind: 'route', name: 'about' },
       }).current
     ).toBe(false)
   })

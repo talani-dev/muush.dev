@@ -284,7 +284,7 @@ export default defineNuxtConfig({
      */
     customRoutes: 'config',
     pages: {
-      nosotros: {
+      about: {
         es: '/nosotros',
         en: '/about',
       },
