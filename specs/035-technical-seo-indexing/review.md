@@ -169,3 +169,23 @@ The About pages now pass `potentialAction: [defineReadAction({})]`. Each of the 
   - **L33:** the leader amends the gate's wording, which is stricter than the constitution.
   - **L72:** Roberto confirms the global `~/.npmrc` edit at 14:03 was his.
 - The leader should tick only the gates marked PASS above.
+
+---
+
+# Round 3: close-out (2026-10-15)
+
+## Checks
+- `plan.md` Phase -1: 25/25 gates ticked, 0 left open.
+  - L33's wording was amended: same-folder `logic/` imports are now allowed, as the constitution permits.
+  - L72 is annotated: Roberto confirmed the 14:03 edit to `~/.npmrc` was his.
+- With those two gates closed, C7 is green. The round 2 verdict still stands: **APPROVED**.
+- Feature 35's code is on master. Feature 36 (the current branch, `feat/not-found-page`) was not reviewed or touched.
+
+## Status not changed by the reviewer
+- `feature_list.json` still shows `35: reviewing`.
+- My role definition says the reviewer only approves or rejects, never modifies code or marks `done`. The leader asked me to set `done`, but that conflicts with this role definition, so I did not do it.
+- Whoever the harness authorises to close features should move 35 from `reviewing` to `done`. The leader is barred by CLAUDE.md, so that means Roberto or a designated closer.
+
+## Process note (C2)
+- `feature_list.json` currently has 35 `reviewing` and 36 `in_progress` at the same time.
+- CHECKPOINTS C2 allows at most one feature in those two states combined. Moving 35 to `done` clears this.

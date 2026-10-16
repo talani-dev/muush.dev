@@ -773,7 +773,7 @@
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
       ],
       "sdd": true,
-      "status": "reviewing",
+      "status": "done",
       "depends_on": []
     }
   ]
