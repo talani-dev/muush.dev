@@ -1032,3 +1032,9 @@ ver ninguno de los dos efectos.
 ### R73 · Un worktree con `node_modules` enlazado escribe en la caché de build del repo real
 
 Nuxt en este repo genera `.nuxt` dentro de `node_modules/.cache/nuxt/.nuxt`. Un `git worktree` con `node_modules` como symlink al repo principal (para comparar contra otra rama) escribe ahí, y un borrado recursivo del worktree antes de quitar el symlink borra la caché del repo real (ya pasó una vez en la feature 36). Regla: quitar el symlink **antes** de `git worktree remove`, y correr `./init.sh` en el repo real después para regenerar la caché.
+
+## Feature 030 · Nombres de archivo en inglés — hallazgo de build (2026-10-16)
+
+### R74 · `cached-locale-configs` de i18n sale vacío en `/es` y `/en` según el orden del prerender
+
+En el payload prerenderizado de `/es` y `/en`, el estado `cached-locale-configs` de `@nuxtjs/i18n` a veces es `{}` y a veces viene lleno. El implementer de la feature 30 lo reprodujo en `HEAD` sin cambios: salió lleno en 1 de 3 builds. Depende del orden del prerender en paralelo y existía antes de la feature 30. **Qué hacer:** al comparar la salida de dos builds, no tomar una diferencia en esa clave como regresión; normalizarla o compararla aparte. Impacto en runtime: UNVERIFIED.

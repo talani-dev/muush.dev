@@ -2767,3 +2767,11 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - Gate G1–G8 approved as recommended (Roberto, 2026-10-15). Feature 37 (English default) untouched: `/` still → `/es` via `public/index.html` until 37.
 - Review: round 1 CHANGES_REQUESTED (flaky cookie-cleanup test; FR wording) → round 2 APPROVED. Closed `done` on Roberto's explicit authorization. `./init.sh` exit 0, 95 files / 1342 tests.
 - Open for Roberto (`docs/business/`, human-only): `ui-map.md` § 1 (no-IP rule revoked for `/`; localStorage memory never built), `ui-map.md`/`decisions-open.md` root → `/es`, `messaging.md` rule 4; where the country list lives as a business rule. Privacy notice: the site has none while forms collect personal data — proposed as a separate feature, not yet registered.
+
+## 2026-10-16 — Feature 30: english_file_names (done)
+
+- Pure rename via `git mv`: `app/pages/nosotros.vue` → `about.vue`, `app/shared/ui/BotonPrimario.*` → `PrimaryButton.*`, `app/assets/logo/isotipo-on-*.svg` → `logomark-on-*.svg`. i18n route key `nosotros` → `about`; public URLs `/es/nosotros` and `/en/about` unchanged. Story title `Shared/UI/PrimaryButton`.
+- Built HTML identical to the baseline modulo build hashes (one scoped `<style>` block reordered, no shared selectors). Current docs updated; `docs/business/` edited only for the three PrimaryButton renames (authorized by Roberto). Closed specs, history and earlier feature entries untouched.
+- Review: APPROVED round 1. Closed `done` on Roberto's explicit authorization. `./init.sh` exit 0, 1342 tests.
+- Open: "isotipo" remains in the `--spacing-isotipo` token, comments and SVG `<title>` text (out of scope — possible separate feature). Findings R74: pre-existing i18n `cached-locale-configs` prerender nondeterminism.
+- Implementer: `docs/harness/progress/impl_english_file_names.md`. Reviewer: `docs/harness/progress/review_english_file_names.md`.
