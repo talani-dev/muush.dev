@@ -1,6 +1,21 @@
 import { mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { rememberLocalePreference } from '@/features/shell/logic/localePreference'
+import { clearLocalePreferenceCookie } from '@/features/shell/logic/localePreference.testing'
 import LanguageToggle from './LanguageToggle.vue'
+
+/* Feature 33: the writer is wrapped in a spy that still calls through, so
+   one suite can count calls and another can read the real cookie jar. */
+vi.mock('@/features/shell/logic/localePreference', async importOriginal => {
+  const actual =
+    await importOriginal<
+      typeof import('@/features/shell/logic/localePreference')
+    >()
+  return {
+    ...actual,
+    rememberLocalePreference: vi.fn(actual.rememberLocalePreference),
+  }
+})
 
 const ENGLISH_ABOUT = '/en/about'
 const SWITCH_TO_ENGLISH = 'Cambiar a inglés'
@@ -125,5 +140,78 @@ describe('LanguageToggle', () => {
     await mountToggle().find('a').trigger('click', { button: 1 })
 
     expect(assign).not.toHaveBeenCalled()
+  })
+})
+
+describe('LanguageToggle · locale preference (feature 33)', () => {
+  const remember = vi.mocked(rememberLocalePreference)
+
+  beforeEach(() => {
+    remember.mockClear()
+    clearLocalePreferenceCookie()
+  })
+
+  afterEach(() => {
+    window.location.hash = ''
+    clearLocalePreferenceCookie()
+  })
+
+  it('should record English once when a plain click leaves the Spanish page', async () => {
+    await mountToggle({ locale: 'es' })
+      .find('a')
+      .trigger('click', { button: 0 })
+
+    expect(remember).toHaveBeenCalledTimes(1)
+    expect(remember).toHaveBeenCalledWith('en')
+  })
+
+  it('should record Spanish once when a plain click leaves the English page', async () => {
+    await mountToggle({ locale: 'en' })
+      .find('a')
+      .trigger('click', { button: 0 })
+
+    expect(remember).toHaveBeenCalledTimes(1)
+    expect(remember).toHaveBeenCalledWith('es')
+  })
+
+  it('should still record the destination when a modifier key opens a new tab', async () => {
+    /* contract locale-preference-cookie.md § 2: a ⌘/Ctrl-click is an
+       explicit choice too, so the write precedes the modifier early return. */
+    await mountToggle().find('a').trigger('click', { button: 0, metaKey: true })
+    await mountToggle().find('a').trigger('click', { button: 0, ctrlKey: true })
+
+    expect(remember).toHaveBeenCalledTimes(2)
+    expect(remember).toHaveBeenNthCalledWith(1, 'en')
+    expect(remember).toHaveBeenNthCalledWith(2, 'en')
+  })
+
+  it('should record once and still carry the fragment when a hash is present', async () => {
+    const assign = vi
+      .spyOn(window.location, 'assign')
+      .mockImplementation(() => undefined)
+    window.location.hash = '#work'
+
+    await mountToggle().find('a').trigger('click', { button: 0 })
+
+    expect(remember).toHaveBeenCalledTimes(1)
+    expect(remember).toHaveBeenCalledWith('en')
+    expect(assign).toHaveBeenCalledWith(`${ENGLISH_ABOUT}#work`)
+    assign.mockRestore()
+  })
+
+  it('should never record a preference when the toggle is only rendered', () => {
+    mountToggle()
+    mountToggle({ locale: 'en' })
+
+    expect(remember).not.toHaveBeenCalled()
+    expect(document.cookie).not.toContain('muush_locale')
+  })
+
+  it('should leave the preference in the real cookie jar when clicked', async () => {
+    /* happy-dom reads back name=value only; the attributes are asserted on
+       the serialised string in logic/localePreference.test.ts. */
+    await mountToggle().find('a').trigger('click', { button: 0 })
+
+    expect(document.cookie).toContain('muush_locale=en')
   })
 })
