@@ -15,7 +15,8 @@
       "!.data",
       "!.nitro",
       "!storybook-static",
-      "!dist"
+      "!dist",
+      "!specs/**/reference"
     ]
   },
   "formatter": {
