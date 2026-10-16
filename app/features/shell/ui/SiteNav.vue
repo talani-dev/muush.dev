@@ -95,7 +95,13 @@ import MobileMenu from './MobileMenu.vue'
 interface Props {
   /** Proyectos and Nosotros. */
   items: ResolvedShellItem[]
-  cta: ResolvedShellItem
+  /**
+   * The LED call to action. Absent while an error is shown (feature 36): the
+   * not-found page carries its own LED button and a screen gets one. When
+   * absent, neither the button's wrapper nor its `<noscript>` override
+   * renders — removed, not hidden, so no-scripting cannot bring it back.
+   */
+  cta?: ResolvedShellItem
   /**
    * Whether the call to action is showing. Resolved by `logic/`, like every
    * other value here: the component never asks which route it is on.
@@ -254,7 +260,17 @@ watch(isOpen, opened => {
         </li>
       </ul>
 
-      <div class="nav-row__end flex items-center gap-nav-end-gap">
+      <!--
+        Without a CTA (the not-found page, feature 36) the tallest item left
+        is the 44px language circle, and the pill would shrink from 72 to 68.
+        `lg:min-h-nav-cta-h` holds the group at the CTA's own height so the
+        pill keeps 72 on every page (Roberto, 2026-10-15). Bound only when
+        `cta` is absent, so pages with a CTA render byte-identical markup.
+      -->
+      <div
+        class="nav-row__end flex items-center gap-nav-end-gap"
+        :class="{ 'lg:min-h-nav-cta-h': !cta }"
+      >
         <!--
           No CTA below `lg`. It does not collapse into the menu either: on
           mobile the only call to action is the social row inside the open
@@ -266,6 +282,7 @@ watch(isOpen, opened => {
           is still focusable and still clickable is not hidden (FR-048).
         -->
         <div
+          v-if="cta"
           class="site-nav__cta hidden lg:block"
           :class="showCta ? 'visible opacity-100' : 'invisible opacity-0'"
         >
@@ -315,7 +332,7 @@ watch(isOpen, opened => {
           overrides that instead (FR-046). Shipping it visible and hiding it on
           mount is exactly the flash FR-045 forbids.
         -->
-        <noscript v-html="NOSCRIPT_CTA_OVERRIDE" />
+        <noscript v-if="cta" v-html="NOSCRIPT_CTA_OVERRIDE" />
 
         <!--
           `cursor-pointer` is declared because nothing else does: a native

@@ -7,6 +7,9 @@
     "about": {
       "title": "Nosotros · muush",
       "description": "Conoce al equipo de muush: reunimos al talento indicado para cada proyecto. Si trabajas en tecnología, diseño o producción, súmate a nuestro talent pool."
+    },
+    "notFound": {
+      "title": "Página no encontrada · muush"
     }
   },
   "about": {
@@ -303,6 +306,18 @@
       },
       "social": {
         "title": "Redes"
+      }
+    },
+    "notFound": {
+      "eyebrow": "Error 404",
+      "headline": "No encontramos esta página.",
+      "body": "Puede que el link venga mal escrito o que la página haya cambiado de lugar.",
+      "cta": "Volver al inicio",
+      "shortcutsLabel": "Atajos",
+      "shortcuts": {
+        "purpose": "Propósito",
+        "services": "Servicios",
+        "about": "Nosotros"
       }
     }
   }

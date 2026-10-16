@@ -15,9 +15,16 @@ export type {
   ShellLocale,
   ShellRouteName,
 } from './data/types'
+export { applyNotFoundLocaleRule } from './logic/notFoundLocale'
 export { useMobileMenu } from './logic/useMobileMenu'
+export {
+  type NotFoundContentProps,
+  useNotFoundContent,
+} from './logic/useNotFoundContent'
+export { useNotFoundDocument } from './logic/useNotFoundDocument'
 export { usePageSeo } from './logic/usePageSeo'
 export { useShellNavigation } from './logic/useShellNavigation'
 export { useSiteSeo } from './logic/useSiteSeo'
+export { default as NotFoundContent } from './ui/NotFoundContent.vue'
 export { default as SiteFooter } from './ui/SiteFooter.vue'
 export { default as SiteNav } from './ui/SiteNav.vue'

@@ -48,11 +48,23 @@ export function useShellNavigation() {
   const home = computed(() => localePath({ name: 'index' }))
   const currentRouteName = computed(() => routeBaseName(route))
   const { resolveItem } = useShellItemResolver()
+  const error = useError()
 
   const navItems = computed<ResolvedShellItem[]>(() =>
     NAV_ITEMS.map(resolveItem)
   )
-  const navCta = computed<ResolvedShellItem>(() => resolveItem(NAV_CTA))
+  /**
+   * Absent — not hidden — while an error is shown (feature 36). The not-found
+   * page carries its own LED button, and the reference README allows one LED
+   * per screen ("un solo LED por pantalla"). Hiding it with classes would not
+   * do: `SiteNav`'s `<noscript>` override forces `.site-nav__cta` visible
+   * without scripting (`specs/036-not-found-page/research.md` R4 F24–F25).
+   * `useError()` is reactive, so the button returns as soon as the visitor
+   * leaves the error page (R1 F11).
+   */
+  const navCta = computed<ResolvedShellItem | undefined>(() =>
+    error.value ? undefined : resolveItem(NAV_CTA)
+  )
   const menuItems = computed<ResolvedShellItem[]>(() =>
     MENU_ITEMS.map(resolveItem)
   )
