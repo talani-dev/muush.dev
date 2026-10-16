@@ -121,7 +121,7 @@ interface Props {
 No slot. Composes `<Radar size="sm" />`. One real prop, exactly as
 design-extract § 3 concludes.
 
-## BotonPrimario
+## PrimaryButton
 
 ```ts
 export type ButtonVariant = 'nav' | 'hero' | 'submit'
