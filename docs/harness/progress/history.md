@@ -2741,3 +2741,22 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - Implementer: `docs/harness/progress/impl_services_float_and_custom_cursor.md`.
   Reviewer: `docs/harness/progress/review_services_float_and_custom_cursor.md`.
 - `feature_list.json`: feature id 34 status `reviewing` → `done`.
+
+## 2026-10-15 — Feature 35: technical_seo_indexing (done)
+
+*(Entry written late, at the close-out of feature 33: features 35 and 36 were merged without their history entry — C6 gap, recorded rather than backdated.)*
+
+- Per-page translated title/description (`usePageSeo`), Open Graph + `twitter:card summary`, global JSON-LD `Organization` (logo `https://assets.muush.dev/brand/logo/ink500.png`, `sameAs` from `socialProfiles.ts`), `sitemap.xml` with hreflang alternates and `robots.txt`.
+- Modules: `@nuxtjs/sitemap` ~8.6.2, `@nuxtjs/robots` ~6.2.4, `nuxt-schema-org` ~6.4.3 — the majors before the ones requiring Nuxt ^4.6 (repo on 4.5.2). English locale `en` → `en-US`.
+- Review: round 1 CHANGES_REQUESTED (ReadAction asymmetry between `/es/nosotros` and `/en/about`; no cross-locale JSON-LD test) → round 2 APPROVED. Deviations accepted: `sitemap.excludeAppSources` (duplicate About URLs), `useSchemaOrg` server-only (~35 KB kept off the client).
+- Closed `done` on Roberto's explicit authorization. Still open: `og:image` (1200×630) TODO in `siteIdentity.ts`; "technology solution studio"/"talent pool" stay English in both locales (business rule for `docs/business/`).
+
+## 2026-10-15 — Feature 36: not_found_page (done)
+
+*(Entry written late — see the note on feature 35.)*
+
+- `app/error.vue` prerenders `es/404/index.html` and `en/404/index.html`, reusing `Pill`, `BotonPrimario`, the layout and the existing glow, plus new `NotFoundRings`. noindex, no canonical/hreflang/og:url/og:locale; the visitor's URL is kept (`payload.path` removed server-side, guarded by an output test). Nav CTA absent on the error page; nav kept at 72 px. `200.html`/`404.html` no longer written.
+- Language: Stage 1 at the edge serves the English 404 for every missing path (G5); a runtime-rendered 404 picks `/es…` → es, anything else → en (G6). Edge contract `specs/036-not-found-page/contracts/edge-not-found.md` is Roberto's to apply in muush-foundation.
+- Review: round 1 CHANGES_REQUESTED (G6 doc alignment, payload test, test names) → round 2 APPROVED. Closed `done` on Roberto's explicit authorization.
+- Deploy risk: `deploy.yml` runs `s3 sync --delete`, so `200.html`/`404.html` leave the bucket on the next deploy; Stage 1 must be applied right after.
+
