@@ -327,6 +327,44 @@
   --purpose-arc-w: 0.0625rem;
 
   /*
+   * ═══ Not-found page · the empty radar (feature 36) ═══
+   *
+   * Three concentric rings with no dot, from Roberto's reference
+   * (specs/036-not-found-page/reference/README.md): 700/500/300 px at 1440,
+   * 420/300/180 px at 390; inner Red 400 @24 %, middle Bone 100 @12 %, outer
+   * Bone 100 @8 %. Derivations in research.md R6.
+   *
+   * In `:root`, NOT `@theme inline`: only hand-written CSS
+   * (`NotFoundRings.vue`'s `<style scoped>`) reads them (rules.md § R18).
+   * Not in the closed `glow` namespace (§ R36).
+   */
+  /* Outer diameter 420 → 700: slope 280/1050; 420 − 0.266667×390 = 316 px. */
+  --not-found-rings: clamp(26.25rem, 19.75rem + 26.6667vw, 43.75rem);
+  /* (700 − 500)/2/700 = (420 − 300)/2/420 — the same ratio in both frames. */
+  --not-found-ring-mid-inset: 14.2857%;
+  /* (700 − 300)/2/700 = (420 − 180)/2/420. */
+  --not-found-ring-inner-inset: 28.5714%;
+  /* 1 px stroke. Same role as --purpose-arc-w, own name to avoid coupling. */
+  --not-found-ring-w: 0.0625rem;
+  /* Equal by value to --color-divider-menu; a menu divider must not govern a ring. */
+  --not-found-ring-outer-color: color-mix(
+    in srgb,
+    var(--bone-100) 8%,
+    transparent
+  );
+  /* Equal by value to --color-hairline-footer; same reason. */
+  --not-found-ring-mid-color: color-mix(
+    in srgb,
+    var(--bone-100) 12%,
+    transparent
+  );
+  --not-found-ring-inner-color: color-mix(
+    in srgb,
+    var(--red-400) 24%,
+    transparent
+  );
+
+  /*
    * ⚠️ UNVERIFIED — dueño: Roberto / Clau (spec O-01, rules.md § R38).
    *
    * El radar tiene dos intensidades, más tenue en reposo y más brillante al
@@ -1208,6 +1246,20 @@ html {
   --spacing-nav-pill-w: 80rem;
   --spacing-nav-pill-y: 1.5rem;
   --spacing-nav-pill-py: 0.6875rem;
+  /*
+   * Feature 36 — the height of the nav's CTA box, derived from the tokens
+   * that already produce it (2 × --spacing-btn-nav-y + one line of
+   * --text-button-sm = 15 + 15 + 18 = 48px), never retyped. It is the
+   * content height the 72px pill above is computed from; `SiteNav.vue`
+   * holds its end group at it when a page drops the CTA (the not-found
+   * page), so the pill stays 72 there too.
+   */
+  --spacing-nav-cta-h: calc(
+    var(--spacing-btn-nav-y) *
+    2 +
+    var(--text-button-sm) *
+    var(--text-button-sm--line-height)
+  );
 
   /*
    * Feature 025. `px-page` was doing two jobs on `.nav-row` at once: (i)
@@ -1979,6 +2031,61 @@ html {
    * técnica clamp() que el resto del archivo (390 ↔ 1440).
    */
   --spacing-section-gap: clamp(2rem, 0.8857rem + 4.5714vw, 5rem);
+
+  /*
+   * ═══ Not-found page (feature 36) ═══
+   *
+   * From the `<main>` of Roberto's reference
+   * (specs/036-not-found-page/reference/404.html): desktop rules as the 1440
+   * extreme, its `@media (max-width: 760px)` block as the 390 extreme
+   * (rules.md § R5). Only the extremes are design; widths in between are
+   * interpolation (spec A-05). Derivations in research.md R6 / R6b.
+   * Consumed as utilities (`pt-not-found-top`, `max-w-not-found-measure`, …,
+   * findings.md § R47). None is named `--spacing-glow-*` (rules.md § R36).
+   */
+  /* Section top padding 72 → 96. */
+  --spacing-not-found-top: clamp(4.5rem, 3.9429rem + 2.2857vw, 6rem);
+  /* Reference bottom 96/120 minus the layout's mt-section-gap before the
+     footer (32/80): 64 at 390 → 40 at 1440. */
+  --spacing-not-found-bottom: clamp(2.5rem, 4.5571rem - 2.2857vw, 4rem);
+  /* Reference min-height 600/664 minus the same gap: 568 → 584. */
+  --spacing-not-found-min-h: clamp(35.5rem, 35.1286rem + 1.5238vw, 36.5rem);
+  /* Content column max-width 720. */
+  --spacing-not-found-content: 45rem;
+  /* Subtitle max-width 480 (--spacing-hero-measure is 600). */
+  --spacing-not-found-measure: 30rem;
+  /* Pill → heading 28. */
+  --spacing-not-found-pill-gap: 1.75rem;
+  /* Heading → subtitle 20. */
+  --spacing-not-found-title-gap: 1.25rem;
+  /* Subtitle → button 36. */
+  --spacing-not-found-body-gap: 2.25rem;
+  /* Button → shortcuts 28. */
+  --spacing-not-found-cta-gap: 1.75rem;
+  /* Shortcuts row: column gap 14, row gap 10. */
+  --spacing-not-found-shortcut-gap-x: 0.875rem;
+  --spacing-not-found-shortcut-gap-y: 0.625rem;
+  /* Shortcut link padding 6 × 2 (touch target). */
+  --spacing-not-found-shortcut-x: 0.125rem;
+  --spacing-not-found-shortcut-y: 0.375rem;
+
+  /*
+   * The red background glow's centre (gate G4, research.md R6b), relative to
+   * the not-found section's box and anchored by its centre (rules.md § R48).
+   *
+   * Reference `.bg__blob--red`: 1440 px circle at top −480 / right −560 of
+   * the page → centre at page (viewport − 160, 240).
+   *   x: minus the page margin (80 / 24) → 1200 at 1440, 206 at 390.
+   *   y: minus the site nav's IN-FLOW height, measured on the built page
+   *      in headless Chrome (rules.md § R49): 72 at 1440 (the pill, held at
+   *      its CTA height by --spacing-nav-cta-h even without the CTA) and 78
+   *      at 390 → 168 at 1440, 162 at 390. Replaces research R6b's 144 / 164,
+   *      derived from the reference's 96 / 76 header, which put the centre
+   *      at page-y 212 instead of 240 at 1440
+   *      (specs/036-not-found-page/implementation-report.md § Measurements).
+   */
+  --spacing-not-found-glow-x: clamp(12.875rem, -10.2rem + 94.6667vw, 75rem);
+  --spacing-not-found-glow-y: clamp(10.125rem, 9.9857rem + 0.5714vw, 10.5rem);
 }
 
 /*

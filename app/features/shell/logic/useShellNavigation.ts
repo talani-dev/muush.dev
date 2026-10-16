@@ -10,17 +10,19 @@ import type {
   ResolvedFooterColumn,
   ResolvedShellItem,
   ResolvedSocial,
-  ShellItem,
   ShellLocale,
 } from '@/features/shell/data/types'
 import { useNavCtaReveal } from '@/shared/logic/useNavCtaReveal'
 import { resolveLocaleDestination } from './resolveLocaleDestination'
+import { useShellItemResolver } from './useShellItemResolver'
 
 /**
  * The single seam between the Nuxt runtime and the presentational layer.
  *
- * This is the only file in the module that reads `useI18n`, `useLocalePath`,
- * `useSwitchLocalePath`, `useRouteBaseName` or `useRoute`. Everything it
+ * Only `logic/` reads `useI18n`, `useLocalePath`, `useSwitchLocalePath`,
+ * `useRouteBaseName` or `useRoute` — here and in `useShellItemResolver`, which
+ * holds the destination resolver this file shares with the not-found page
+ * (feature 36). Everything it
  * returns is inert data, which is what lets every `ui/` component render with
  * no router and no i18n instance present — and what makes Storybook able to
  * detect a component that cheats (spec FR-008, research § R4).
@@ -45,58 +47,24 @@ export function useShellNavigation() {
 
   const home = computed(() => localePath({ name: 'index' }))
   const currentRouteName = computed(() => routeBaseName(route))
-
-  /**
-   * An anchor always resolves to the locale's home **plus** the hash, never
-   * to a bare fragment: the footer renders on the About page too, where
-   * `#proyectos` on its own points at nothing (spec FR-041).
-   */
-  function resolveHref(item: ShellItem): string | undefined {
-    const { destination } = item
-
-    switch (destination.kind) {
-      case 'none':
-        return undefined
-      case 'route':
-        return localePath({ name: destination.name })
-      case 'anchor':
-        return `${localePath({ name: destination.name })}${destination.hash}`
-      case 'external': {
-        const { href, messageKey } = destination
-        if (!messageKey) return href
-        return `${href}?text=${encodeURIComponent(t(messageKey))}`
-      }
-    }
-  }
-
-  function resolveItem(item: ShellItem): ResolvedShellItem {
-    const { destination } = item
-    const href = resolveHref(item)
-
-    return {
-      label: t(item.labelKey),
-      /*
-       * The key is omitted rather than set to `undefined`, so an item with no
-       * destination is structurally a label and nothing else (spec FR-039).
-       */
-      ...(href === undefined ? {} : { href }),
-      /*
-       * A `mailto:` deliberately stays in the same browsing context: a new
-       * tab for a mail link leaves the visitor staring at a blank page.
-       */
-      external:
-        destination.kind === 'external' &&
-        !destination.href.startsWith('mailto:'),
-      current:
-        destination.kind === 'route' &&
-        destination.name === currentRouteName.value,
-    }
-  }
+  const { resolveItem } = useShellItemResolver()
+  const error = useError()
 
   const navItems = computed<ResolvedShellItem[]>(() =>
     NAV_ITEMS.map(resolveItem)
   )
-  const navCta = computed<ResolvedShellItem>(() => resolveItem(NAV_CTA))
+  /**
+   * Absent — not hidden — while an error is shown (feature 36). The not-found
+   * page carries its own LED button, and the reference README allows one LED
+   * per screen ("un solo LED por pantalla"). Hiding it with classes would not
+   * do: `SiteNav`'s `<noscript>` override forces `.site-nav__cta` visible
+   * without scripting (`specs/036-not-found-page/research.md` R4 F24–F25).
+   * `useError()` is reactive, so the button returns as soon as the visitor
+   * leaves the error page (R1 F11).
+   */
+  const navCta = computed<ResolvedShellItem | undefined>(() =>
+    error.value ? undefined : resolveItem(NAV_CTA)
+  )
   const menuItems = computed<ResolvedShellItem[]>(() =>
     MENU_ITEMS.map(resolveItem)
   )

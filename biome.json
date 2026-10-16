@@ -15,7 +15,8 @@
       "!.data",
       "!.nitro",
       "!storybook-static",
-      "!dist"
+      "!dist",
+      "!specs/**/reference"
     ]
   },
   "formatter": {
@@ -64,7 +65,8 @@
       "includes": [
         "app/pages/**/*.vue",
         "app/layouts/**/*.vue",
-        "app/shared/ui/**/*.vue"
+        "app/shared/ui/**/*.vue",
+        "app/error.vue"
       ],
       "linter": {
         "rules": {

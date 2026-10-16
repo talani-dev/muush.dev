@@ -9,6 +9,22 @@ import tailwindcss from '@tailwindcss/vite'
  */
 const SITE_URL = 'https://muush.dev'
 
+/*
+ * The two not-found documents (feature 36), one per locale — keep in step
+ * with `i18n.locales` below. Each renders `app/error.vue` in its own language
+ * and is written as `<locale>/404/index.html`; which one a visitor gets is
+ * decided at the edge (specs/036-not-found-page/contracts/edge-not-found.md).
+ */
+const NOT_FOUND_ROUTES = ['/es/404', '/en/404']
+
+/*
+ * Nuxt adds these SSR-less SPA shells to every static build. Neither ships
+ * (feature 36, specs/036-not-found-page/research.md R2): `200.html` would be
+ * a soft 404 carrying `index, follow`, and the root `404.html` renders
+ * nothing without scripting and picks its language on the client.
+ */
+const SPA_SHELL_ROUTES = ['/200.html', '/404.html']
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-06',
@@ -22,6 +38,27 @@ export default defineNuxtConfig({
   ssr: true,
   nitro: {
     preset: 'static',
+    prerender: { routes: NOT_FOUND_ROUTES },
+    hooks: {
+      'prerender:generate'(route) {
+        /*
+         * Nitro never writes a route that rendered with a non-200 status, and
+         * Nuxt's `failOnError` then fails the build on it (research R1 F1–F2).
+         * This hook runs after the status check and before the error is acted
+         * on (F3), so clearing the 404 here — for exactly these two routes —
+         * writes the rendered not-found document. Any other failing route
+         * still fails the build.
+         */
+        if (
+          NOT_FOUND_ROUTES.includes(route.route) &&
+          route.error?.statusCode === 404
+        ) {
+          delete route.error
+        }
+        // research R2 F15: logged as `(skipped)`, nothing else changes.
+        if (SPA_SHELL_ROUTES.includes(route.route)) route.skip = true
+      },
+    },
   },
 
   css: ['~/assets/css/global.css'],
@@ -224,8 +261,7 @@ export default defineNuxtConfig({
     detectBrowserLanguage: false,
     /*
      * `/` has no page of its own. This governs it wherever a Nuxt runtime is
-     * present — `nuxt dev`, and the client router when the host serves
-     * `200.html` as an SPA fallback.
+     * present — `nuxt dev`.
      *
      * It does NOT produce a file. Verified by running it: with
      * `rootRedirect: '/es'` AND `'/'` in `nitro.prerender.routes`, the route

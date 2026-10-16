@@ -69,7 +69,7 @@ Add per-page translated `<title>`/description and social tags through `useSeoMet
 #### XI. Configuration & Credential Hygiene (NON-NEGOTIABLE)
 - [x] No secret is introduced; all new values are public URLs/names.
 - [x] `NUXT_SEO_PRO_KEY` is never set (research R1: it would make a build-time POST to nuxtseo.com).
-- [ ] `.npmrc` and global package-manager config are not edited, even if install fails.
+- [x] `.npmrc` and global package-manager config are not edited, even if install fails. *(Repo has no `.npmrc`; the 2026-10-15 14:03 edit to `~/.npmrc` was made by Roberto himself — confirmed by him 2026-10-15.)*
 
 #### XII. Absolute Imports via Alias
 - [x] New files import via `@/features/...`/`@/shared/...`; relative imports only within the same directory.

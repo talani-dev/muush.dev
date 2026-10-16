@@ -7,6 +7,9 @@
     "about": {
       "title": "About us · muush",
       "description": "Meet the muush team: we bring together the right talent for each project. If you work in technology, design or production, join our talent pool."
+    },
+    "notFound": {
+      "title": "Page not found · muush"
     }
   },
   "about": {
@@ -303,6 +306,18 @@
       },
       "social": {
         "title": "Social"
+      }
+    },
+    "notFound": {
+      "eyebrow": "Error 404",
+      "headline": "We couldn't find this page.",
+      "body": "The link may be mistyped, or the page may have moved.",
+      "cta": "Back to home",
+      "shortcutsLabel": "Shortcuts",
+      "shortcuts": {
+        "purpose": "Purpose",
+        "services": "Services",
+        "about": "About us"
       }
     }
   }

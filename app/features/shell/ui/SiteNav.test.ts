@@ -306,6 +306,39 @@ describe('SiteNav', () => {
     expect(difference(hidden)).toEqual(['invisible', 'opacity-0'])
   })
 
+  it('should render neither the call to action nor its noscript override when cta is absent', async () => {
+    const wrapper = await mountNav({ cta: undefined })
+
+    expect(ctaWrapper(wrapper).exists()).toBe(false)
+    expect(wrapper.find('noscript').exists()).toBe(false)
+    expect(wrapper.findAll('.led')).toHaveLength(0)
+  })
+
+  it('should hold the end group at the CTA height when cta is absent, so the pill stays 72px', async () => {
+    const withCta = await mountNav()
+    const withoutCta = await mountNav({ cta: undefined })
+
+    expect(withoutCta.find('.nav-row__end').classes()).toContain(
+      'lg:min-h-nav-cta-h'
+    )
+    expect(withCta.find('.nav-row__end').classes()).not.toContain(
+      'lg:min-h-nav-cta-h'
+    )
+    /* The token is derived from these two utilities of the CTA's own box
+       (global.css --spacing-nav-cta-h); if the CTA stops using them, the
+       derivation is stale. */
+    const cta = withCta.find('.site-nav__cta .led')
+    expect(cta.classes()).toContain('py-btn-nav-y')
+    expect(cta.classes()).toContain('text-button-sm')
+  })
+
+  it('should render both the call to action and its noscript override when cta is present', async () => {
+    const wrapper = await mountNav()
+
+    expect(ctaWrapper(wrapper).exists()).toBe(true)
+    expect(wrapper.find('noscript').exists()).toBe(true)
+  })
+
   it('should force the call to action visible without scripting', async () => {
     /* The only mechanism that satisfies FR-045 and FR-046 at once: the button
        ships hidden in the landing's HTML so it cannot flash, and a browser

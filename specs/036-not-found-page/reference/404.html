@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#262626">
+<title>Página no encontrada · muush</title>
+<!--
+  muush.dev · página 404 (ES / EN en un solo archivo)
+
+  - Idioma: por defecto español. Si la ruta empieza con /en, el script del final
+    cambia textos, enlaces y aria-labels a inglés (atributos data-en / data-href-en).
+  - Sin JavaScript se ve completa en español.
+  - Servir con código HTTP 404 (no 200). En Astro: src/pages/404.astro.
+  - Ver README.md para qué componentes del sitio reutilizar en lugar de este CSS.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Poppins:wght@600&display=swap" rel="stylesheet">
+<style>
+  /* ---------- tokens (los mismos del sitio) ---------- */
+  :root {
+    --ink-500: #262626; --ink-300: #737373; --ink-200: #A6A6A6; --ink-100: #D9D9D9;
+    --bone-100: #FBF8F6; --bone-200: #F2EBE7; --bone-300: #E0D3CC;
+    --red-400: #CF3147; --red-300: #E36B7C;
+    --glass-dark: rgba(28, 20, 22, 0.65);
+    --glass-line: rgba(251, 248, 246, 0.18);
+    --stroke-led: 1.5px;
+    --font-sans: "Instrument Sans", Arial, Helvetica, sans-serif;
+    --font-logo: "Poppins", Arial, Helvetica, sans-serif;
+    --page-x: 80px;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { background: var(--ink-500); overflow-x: hidden; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+    background: var(--ink-500); color: var(--bone-100);
+    font-family: var(--font-sans); -webkit-font-smoothing: antialiased;
+    position: relative; overflow-x: hidden;
+  }
+  a { color: var(--ink-100); text-decoration: none; transition: color .15s ease; }
+  a:hover { color: var(--bone-100); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--red-400); outline-offset: 3px; }
+
+  /* ---------- fondo: dotted paper + manchas radiales ---------- */
+  .bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .bg__dots {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(217, 217, 217, 0.12) 1.25px, transparent 1.25px);
+    background-size: 24px 24px;
+  }
+  .bg__blob { position: absolute; border-radius: 50%; }
+  .bg__blob--red  { top: -480px; right: -560px; width: 1440px; height: 1440px;
+    background: radial-gradient(circle closest-side, rgba(207, 49, 71, 0.55), transparent); }
+  .bg__blob--wine { top: -260px; left: -400px; width: 1060px; height: 1060px;
+    background: radial-gradient(circle closest-side, rgba(138, 69, 82, 0.40), transparent); }
+  .bg__blob--deep { top: 300px; left: 25%; width: 900px; height: 900px;
+    background: radial-gradient(circle closest-side, rgba(89, 31, 40, 0.30), transparent); }
+
+  /* ---------- header flotante ---------- */
+  .hdr { position: relative; z-index: 3; padding: 24px var(--page-x) 0; }
+  .bar {
+    max-width: 1280px; margin: 0 auto; height: 72px; padding: 0 14px 0 28px;
+    border-radius: 999px; background: var(--glass-dark); border: 1px solid var(--glass-line);
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 24px;
+  }
+  .lockup { justify-self: start; display: inline-flex; align-items: center; gap: 10px; color: var(--bone-100); }
+  .lockup:hover { color: var(--bone-100); }
+  .lockup svg { display: block; }
+  .wordmark { font-family: var(--font-logo); font-weight: 600; font-size: 20px; letter-spacing: -0.03em; }
+  .wordmark span { color: var(--red-400); }
+  .nav-links { display: flex; align-items: center; gap: 34px; font-size: 15px; font-weight: 500; }
+  .nav-links a { color: var(--bone-300); }
+  .nav-links a:hover { color: var(--bone-100); }
+  .bar__end { justify-self: end; display: flex; align-items: center; gap: 10px; }
+  .lang {
+    width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--glass-line);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--bone-100);
+  }
+  .lang:hover { border-color: rgba(251, 248, 246, 0.4); }
+  .menu-btn {
+    display: none; width: 44px; height: 44px; border: 0; border-radius: 999px; background: transparent;
+    flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer;
+  }
+  .menu-btn span { display: block; width: 16px; height: 1.6px; border-radius: 2px; background: var(--bone-100); }
+  .menu-panel {
+    display: none; max-width: 1280px; margin: 8px auto 0; padding: 8px;
+    border-radius: 20px; background: var(--glass-dark); border: 1px solid var(--glass-line);
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  }
+  .menu-panel a { display: block; padding: 14px 16px; font-size: 16px; font-weight: 500; color: var(--bone-300); }
+  .menu-panel.is-open { display: block; }
+
+  /* ---------- contenido ---------- */
+  .main {
+    position: relative; z-index: 1; flex: 1 0 auto; min-height: 664px;
+    padding: 96px 24px 120px; display: flex; align-items: center; justify-content: center;
+    overflow-x: clip;
+  }
+  /* radar vacío: tres anillos sin ningún punto de contacto */
+  .rings {
+    position: absolute; left: 50%; top: 50%; width: 700px; height: 700px;
+    transform: translate(-50%, -50%); pointer-events: none;
+  }
+  .rings span { position: absolute; border-radius: 50%; }
+  .rings span:nth-child(1) { inset: 0;        border: 1px solid rgba(251, 248, 246, 0.08); }
+  .rings span:nth-child(2) { inset: 14.2857%; border: 1px solid rgba(251, 248, 246, 0.12); }
+  .rings span:nth-child(3) { inset: 28.5714%; border: 1px solid rgba(207, 49, 71, 0.24); }
+  .content { position: relative; max-width: 720px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .pill {
+    margin: 0 0 28px; display: inline-flex; align-items: center; gap: 10px; padding: 9px 20px 9px 12px;
+    border-radius: 999px; background: var(--glass-dark); border: 1px solid var(--glass-line);
+    font-size: 13px; font-weight: 500; letter-spacing: 0.054em; color: var(--bone-200);
+  }
+  .pill__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red-400); box-shadow: 0 0 10px rgba(207, 49, 71, 0.8); }
+  .title {
+    margin: 0 0 20px; font-weight: 600; font-size: clamp(44px, 6.2vw, 88px);
+    line-height: 0.98; letter-spacing: -0.036em; color: var(--bone-100); text-wrap: balance;
+  }
+  .sub { margin: 0 0 36px; max-width: 480px; font-size: 18px; line-height: 1.55; color: var(--ink-100); }
+
+  /* botón primario con borde LED (el único LED de la pantalla) */
+  @property --led-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+  .btn-led {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    min-height: 48px; padding: 14px 28px; border-radius: 999px;
+    background: var(--glass-dark); color: var(--bone-100); font-size: 15px; font-weight: 600;
+  }
+  .btn-led:hover { color: var(--bone-100); }
+  .btn-led::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: var(--stroke-led);
+    background: conic-gradient(from var(--led-angle), var(--red-400) 0, var(--bone-100) 50%, var(--red-400) 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+  .btn-led:hover::before { animation: led-spin 2.6s linear infinite; }
+  @keyframes led-spin { to { --led-angle: 360deg; } }
+
+  .shortcuts { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 14px; font-size: 14px; }
+  .shortcuts a { padding: 6px 2px; }
+  .shortcuts span { color: var(--ink-300); }
+
+  /* ---------- footer (Ink 500 plano) ---------- */
+  .ftr { position: relative; z-index: 2; background: var(--ink-500); padding: 64px var(--page-x) 36px; }
+  .ftr__inner { max-width: 1280px; margin: 0 auto; }
+  .ftr__top { display: flex; justify-content: space-between; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(251, 248, 246, 0.1); }
+  .ftr__brand { display: flex; flex-direction: column; gap: 10px; }
+  .ftr__brand .wordmark { font-size: 24px; }
+  .ftr__tagline { margin: 14px 0 0; font-size: 18px; font-weight: 500; letter-spacing: -0.03em; color: var(--ink-100); }
+  .ftr__category { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: 0.075em; color: var(--ink-200); }
+  .ftr__cols { width: 600px; max-width: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; }
+  .ftr__head { margin: 0 0 16px; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--red-300); }
+  .ftr__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; font-size: 15px; line-height: 1.35; }
+  .ftr__bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 24px; font-size: 12px; color: var(--ink-200); }
+  .ftr__bottom p { margin: 0; }
+
+  /* ---------- móvil ---------- */
+  @media (max-width: 760px) {
+    :root { --page-x: 16px; }
+    .hdr { padding-top: 16px; }
+    .bar { height: 60px; padding: 0 8px 0 18px; grid-template-columns: minmax(0, 1fr) auto; }
+    .nav-links { display: none; }
+    .menu-btn { display: inline-flex; }
+    .main { padding: 72px 16px 96px; min-height: 600px; }
+    .rings { width: 420px; height: 420px; }
+    .sub { font-size: 16px; }
+    .ftr { padding: 48px 24px 32px; }
+    .ftr__top { flex-direction: column; }
+    .ftr__cols { grid-template-columns: repeat(2, minmax(0, 1fr)); width: auto; row-gap: 36px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn-led:hover::before { animation: none; }
+    a { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="bg__dots"></div>
+  <div class="bg__blob bg__blob--red"></div>
+  <div class="bg__blob bg__blob--wine"></div>
+  <div class="bg__blob bg__blob--deep"></div>
+</div>
+
+<!-- ============ HEADER (reutilizar el componente del sitio) ============ -->
+<header class="hdr">
+  <nav class="bar" aria-label="Principal" data-aria-en="Main">
+    <a class="lockup" href="/es" data-href-en="/en" aria-label="muush.dev, inicio" data-aria-en="muush.dev, home">
+      <svg width="38" height="21" viewBox="14.5 38.5 70.5 39.5" aria-hidden="true">
+        <circle cx="21" cy="45" r="6.5" fill="#CF3147"/>
+        <path d="M21 72a17 17 0 0 1 34 0 12 12 0 0 1 24 0" fill="none" stroke="#FBF8F6" stroke-width="12" stroke-linecap="round"/>
+      </svg>
+      <span class="wordmark">muush<span>.</span>dev</span>
+    </a>
+    <div class="nav-links">
+      <a href="/es#servicios" data-href-en="/en#servicios" data-en="Services">Servicios</a>
+      <a href="/es/nosotros" data-href-en="/en/about" data-en="About us">Nosotros</a>
+    </div>
+    <div class="bar__end">
+      <!-- Muestra el idioma activo y lleva al inicio del otro idioma (en un 404 no hay página equivalente) -->
+      <a class="lang" href="/en" data-href-en="/es" aria-label="Cambiar a inglés" data-aria-en="Switch to Spanish" data-en="EN">ES</a>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu-panel" aria-label="Abrir menú" data-aria-en="Open menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="menu-panel" id="menu-panel">
+    <a href="/es#servicios" data-href-en="/en#servicios" data-en="Services">Servicios</a>
+    <a href="/es/nosotros" data-href-en="/en/about" data-en="About us">Nosotros</a>
+  </div>
+</header>
+
+<!-- ============ CONTENIDO 404 ============ -->
+<main class="main">
+  <div class="rings" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="content">
+    <p class="pill"><span class="pill__dot" aria-hidden="true"></span>Error 404</p>
+    <h1 class="title" data-en="We couldn't find this page.">No encontramos esta página.</h1>
+    <p class="sub" data-en="The link may be mistyped, or the page may have moved.">Puede que el link venga mal escrito o que la página haya cambiado de lugar.</p>
+    <a class="btn-led" href="/es" data-href-en="/en" data-en="Back to home">Volver al inicio</a>
+    <nav class="shortcuts" aria-label="Atajos" data-aria-en="Shortcuts">
+      <a href="/es#proposito" data-href-en="/en#proposito" data-en="Purpose">Propósito</a>
+      <span aria-hidden="true">·</span>
+      <a href="/es#servicios" data-href-en="/en#servicios" data-en="Services">Servicios</a>
+      <span aria-hidden="true">·</span>
+      <a href="/es/nosotros" data-href-en="/en/about" data-en="About us">Nosotros</a>
+    </nav>
+  </div>
+</main>
+
+<!-- ============ FOOTER (reutilizar el componente del sitio) ============ -->
+<footer class="ftr">
+  <div class="ftr__inner">
+    <div class="ftr__top">
+      <div class="ftr__brand">
+        <a class="lockup" href="/es" data-href-en="/en" aria-label="muush.dev, inicio" data-aria-en="muush.dev, home">
+          <svg width="44" height="25" viewBox="14.5 38.5 70.5 39.5" aria-hidden="true">
+            <circle cx="21" cy="45" r="6.5" fill="#CF3147"/>
+            <path d="M21 72a17 17 0 0 1 34 0 12 12 0 0 1 24 0" fill="none" stroke="#FBF8F6" stroke-width="12" stroke-linecap="round"/>
+          </svg>
+          <span class="wordmark">muush<span>.</span>dev</span>
+        </a>
+        <p class="ftr__tagline" data-en="We speak business and code.">Hablamos negocio y código.</p>
+        <p class="ftr__category">Technology solution studio</p>
+      </div>
+      <div class="ftr__cols">
+        <div>
+          <p class="ftr__head" data-en="Navigation">Navegación</p>
+          <ul class="ftr__list">
+            <li><a href="/es#proposito" data-href-en="/en#proposito" data-en="Purpose">Propósito</a></li>
+            <li><a href="/es#servicios" data-href-en="/en#servicios" data-en="Services">Servicios</a></li>
+            <li><a href="/es/nosotros" data-href-en="/en/about" data-en="About us">Nosotros</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="ftr__head" data-en="Contact">Contacto</p>
+          <ul class="ftr__list">
+            <li><a href="https://cal.com/muush/intro-call" data-en="Book a call">Agenda una llamada</a></li>
+            <li><a href="mailto:support@muush.dev">support@muush.dev</a></li>
+            <li><a href="https://wa.me/525639060739">WhatsApp</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="ftr__head">muush</p>
+          <ul class="ftr__list">
+            <li><a href="/es/nosotros" data-href-en="/en/about">Work with muush</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="ftr__head" data-en="Social">Redes</p>
+          <ul class="ftr__list">
+            <li><a href="https://www.linkedin.com/company/muush-dev">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/muush.dev">Instagram</a></li>
+            <li><a href="https://www.tiktok.com/@muush.dev">TikTok</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="ftr__bottom">
+      <p data-en="© 2026 muush · All rights reserved">© 2026 muush · Todos los derechos reservados</p>
+      <p>CDMX · MX</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    // Idioma según la ruta desde la que se llegó: /en o /en/... → inglés; todo lo demás → español.
+    var isEN = /^\/en(\/|$)/.test(window.location.pathname);
+    if (isEN) {
+      document.documentElement.lang = "en";
+      document.title = "Page not found · muush";
+      document.querySelectorAll("[data-en]").forEach(function (el) { el.textContent = el.getAttribute("data-en"); });
+      document.querySelectorAll("[data-href-en]").forEach(function (el) { el.setAttribute("href", el.getAttribute("data-href-en")); });
+      document.querySelectorAll("[data-aria-en]").forEach(function (el) { el.setAttribute("aria-label", el.getAttribute("data-aria-en")); });
+    }
+    // Menú móvil
+    var btn = document.querySelector(".menu-btn");
+    var panel = document.getElementById("menu-panel");
+    btn.addEventListener("click", function () {
+      var open = panel.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.setAttribute("aria-label", open ? (isEN ? "Close menu" : "Cerrar menú") : (isEN ? "Open menu" : "Abrir menú"));
+    });
+  })();
+</script>
+</body>
+</html>

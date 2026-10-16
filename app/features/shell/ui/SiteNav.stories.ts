@@ -144,3 +144,13 @@ export const Mobile: Story = {
   args: Spanish.args,
   globals: { viewport: { value: 'mobile' } },
 }
+
+/**
+ * The nav on the not-found page (feature 36): no `cta` at all. Unlike
+ * *Call to action hidden*, the button's wrapper and its `<noscript>`
+ * override are not rendered — the page carries its own LED button, and a
+ * screen gets one. Links, language button and hamburger are unchanged.
+ */
+export const WithoutCallToAction: Story = {
+  args: { ...Spanish.args, cta: undefined },
+}
