@@ -20,10 +20,11 @@ import type { ShellLocale } from '@/features/shell/data/types'
  *
  * 2. **A not-found page rendered at runtime picks its language by prefix,
  *    defaulting to English** (Roberto, 2026-10-15, spec § Gate G6): `/es…` →
- *    es, `/en…` → en, any other path (`/xyz`, `/fr/es`) → en. i18n alone falls
- *    back to `defaultLocale` (es) there. It applies only to the initial
- *    locale of a request whose path matches no route; every page that exists,
- *    and `/` (rootRedirect), keep the site's `es` default untouched. The
+ *    es, `/en…` → en, any other path (`/xyz`, `/fr/es`) → en. Since feature 37
+ *    i18n's own fallback there (`defaultLocale`) is also en, but this rule is
+ *    kept explicit so it never depends on that setting. It applies only to
+ *    the initial locale of a request whose path matches no route; every page
+ *    that exists, and `/` (rootRedirect), are left to i18n untouched. The
  *    prerendered `/es/404` and `/en/404` resolve to es/en by their prefix, so
  *    the two documents are unchanged.
  *

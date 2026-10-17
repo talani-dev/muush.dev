@@ -6,8 +6,8 @@ import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 /**
  * The deployed artefact, asserted directly.
  *
- * SC-001 ("4 routes resolve and `/` reaches the Spanish home"), SC-003 ("the
- * toggle resolves correctly from all 4 routes in both directions") and
+ * SC-001 ("4 routes resolve and `/` reaches the Spanish home"; the English
+ * home since feature 37), SC-003 ("the toggle resolves correctly from all 4 routes in both directions") and
  * acceptance criterion 6 ("a layout renders the shell on every page;
  * `about.vue` resolves at `/es/nosotros` and `/en/about`") are all claims
  * about what `pnpm generate` writes. None of them is observable from a
@@ -85,7 +85,7 @@ describe('static output · routes', () => {
     }
   })
 
-  it('should write a document at the root pointing at the Spanish home', () => {
+  it('should write a document at the root pointing at the English home', () => {
     /* `/` has no page and `i18n.rootRedirect` emits no file, so the object at
        the root is the committed `public/index.html`
        (docs/business/rules.md § R25). If that fallback is ever dropped, a
@@ -94,11 +94,18 @@ describe('static output · routes', () => {
        source file. */
     const root = readFileSync(join(OUTPUT, 'index.html'), 'utf8')
 
-    expect(root).toMatch(/<meta http-equiv="refresh" content="0; url=\/es"/)
+    /* Feature 37: English is the site default, so every hand-written pointer
+       in the root object names `/en`, matching `i18n.rootRedirect`. */
+    expect(root).toContain('<html lang="en-US">')
+    expect(root).toMatch(/<meta http-equiv="refresh" content="0; url=\/en"/)
     expect(root).toMatch(
-      /<link rel="canonical" href="https:\/\/muush\.dev\/es"/
+      /<link rel="canonical" href="https:\/\/muush\.dev\/en"/
     )
-    expect(root).toContain('<a href="/es">')
+    expect(root).toContain(
+      '<link rel="alternate" hreflang="x-default" href="https://muush.dev/en" />'
+    )
+    expect(root).toContain('<a href="/en">')
+    expect(root).not.toMatch(/url=\/es|href="\/es"|canonical" href="[^"]*\/es"/)
     /* Feature 35: the hand-written alternates mirror the i18n `language`
        tags, and the object stays out of the index. */
     expect(root).toContain(
