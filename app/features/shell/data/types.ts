@@ -9,7 +9,10 @@ import type { SocialNetwork } from '@/shared/ui/SocialIcon.vue'
  * one-way — nothing here may import from `logic/` or `ui/`.
  */
 
-/** The two locales the site ships in. Spanish is the default. */
+/**
+ * The two locales the site ships in. English is the default since feature 37
+ * (`i18n.defaultLocale` in nuxt.config.ts); this order carries no meaning.
+ */
 export const SHELL_LOCALES = ['es', 'en'] as const
 
 export type ShellLocale = (typeof SHELL_LOCALES)[number]

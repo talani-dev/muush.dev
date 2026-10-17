@@ -1,6 +1,37 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.0.0 → 2.0.1
+Status: PATCH — wording fix in Article VI. The site's default locale moved
+from Spanish to English (feature 37 `english_default_locale`, 2026-10-16):
+`i18n.defaultLocale: 'en'`, `rootRedirect: '/en'`, `x-default` → English.
+Article VI's parenthetical "(default)" now names English. No principle was
+added, removed or expanded: both locales still ship with a prefix and the
+parity rules are unchanged.
+
+Motivation: `/` already resolves to `/en` at the edge (feature 33,
+DEFAULT_LOCALE "en"); the site configuration and this document now agree.
+
+Ratified: Roberto, "si", 2026-10-16 (leader session, decision D6 of the
+feature 37 audit, docs/harness/progress/audit_english_default_locale.md).
+
+Modified principles:
+  VI. i18n Parity — "Spanish (default) and English" → "English (default)
+      and Spanish"; prefix order shown as `/en/`, `/es/`.
+
+Templates reviewed:
+  ✅ .specify/templates/plan-template.md — no locale reference; no change needed.
+  ✅ .specify/templates/spec-template.md — no locale reference; no change needed.
+  ✅ .specify/templates/tasks-template.md — no locale reference; no change needed.
+  ✅ .specify/templates/checklist-template.md — no locale reference; no change needed.
+
+Deferred TODOs: none
+
+Previous report (2.0.0) follows.
+-->
+<!--
+SYNC IMPACT REPORT
+==================
 Version change: 1.0.0 → 2.0.0
 Status: MAJOR — the project migrated from Astro + Svelte to Nuxt 4 + Vue on
 2026-09-06. Every article that named an Astro concept was rewritten, and the
@@ -123,8 +154,8 @@ on every load MUST NOT carry client-side state just to make it feel dynamic.
 
 ### VI. i18n Parity (NON-NEGOTIABLE)
 
-The site ships in Spanish (default) and English, both with a URL prefix
-(`/es/`, `/en/`).
+The site ships in English (default) and Spanish, both with a URL prefix
+(`/en/`, `/es/`).
 
 Every route MUST resolve in both locales — no locale may ship a page the
 other lacks. Every key in `i18n/locales/es.json` MUST have a counterpart in
@@ -285,4 +316,4 @@ Amendments require:
 - MINOR: New principle added or materially expanded.
 - PATCH: Clarification, wording, typo fix.
 
-**Version**: 2.0.0 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-09-06
+**Version**: 2.0.1 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-10-16

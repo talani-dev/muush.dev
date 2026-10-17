@@ -9,20 +9,25 @@
   `index.html` was written (docs/business/rules.md § R25).
 
   This file is that missing object. It is deliberately static and
-  dependency-free: a meta refresh, a canonical pointing at the Spanish home,
+  dependency-free: a meta refresh, a canonical pointing at the English home,
   the hreflang set, and a real link so the page works with scripting and
   refreshes both unavailable.
 
-  Spanish is the default and the language is never detected from IP or
-  `Accept-Language` (docs/business/landing/ui-map.md § 1), so `x-default`
-  points at `/es` too. Since feature 35 the hreflang values mirror the i18n
-  `language` tags in nuxt.config.ts (`es-MX`, `en-US`); this file stays
+  English is the site default since feature 37 (2026-10-16, `i18n.defaultLocale`
+  and `rootRedirect` in nuxt.config.ts), so `lang`, the refresh, the
+  canonical, `x-default` and the link below all name `/en`. In production
+  the edge decides `/` before this file is reached (cookie, then country,
+  then `en`: specs/033-ip-locale-root-redirect/contracts/
+  edge-root-locale-redirect.md); this file is the plain-static fallback and
+  agrees with that default. Since feature 35 the hreflang values mirror the
+  i18n `language` tags in nuxt.config.ts (`es-MX`, `en-US`); this file stays
   `noindex` and is never listed in the sitemap.
 
   ## The instant before the refresh fires (feature 27, 2026-09-09)
 
   Roberto reported seeing the browser's default white background and the
-  "muush.dev" text flash here before the refresh redirects to `/es`. Two
+  "muush.dev" text flash here before the refresh redirects (to `/es` at the
+  time; `/en` since feature 37). Two
   fixes, both requested as purely visual so the accessibility fallback below
   stays intact:
 
@@ -33,7 +38,7 @@
      written literally rather than through a CSS custom property that would
      not exist in this document.
 
-  2. The `<a href="/es">muush.dev</a>` link BELOW is not removed, and must
+  2. The `<a href="/en">muush.dev</a>` link BELOW is not removed, and must
      never be: its own history note (this same comment, previous paragraph)
      already documents it as the accessibility fallback for when both the
      meta refresh AND scripting are disabled — deleting it would regress
@@ -54,17 +59,17 @@
      is the corner of a corner case), and the flash the rest of the site
      sees is gone.
 -->
-<html lang="es">
+<html lang="en-US">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="refresh" content="0; url=/es" />
+    <meta http-equiv="refresh" content="0; url=/en" />
     <meta name="robots" content="noindex" />
     <title>muush · Technology Solution Studio</title>
-    <link rel="canonical" href="https://muush.dev/es" />
+    <link rel="canonical" href="https://muush.dev/en" />
     <link rel="alternate" hreflang="es-MX" href="https://muush.dev/es" />
     <link rel="alternate" hreflang="en-US" href="https://muush.dev/en" />
-    <link rel="alternate" hreflang="x-default" href="https://muush.dev/es" />
+    <link rel="alternate" hreflang="x-default" href="https://muush.dev/en" />
     <style>
       body {
         margin: 0;
@@ -85,6 +90,6 @@
     </style>
   </head>
   <body>
-    <a href="/es">muush.dev</a>
+    <a href="/en">muush.dev</a>
   </body>
 </html>

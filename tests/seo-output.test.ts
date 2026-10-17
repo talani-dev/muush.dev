@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import {
   SHARE_IMAGE,
@@ -183,10 +184,39 @@ describe('seo output · language, canonical and alternates', () => {
       expect(head).toContain(`rel="canonical" href="${ORIGIN}${page.path}"`)
       expect(alternates(head, 'es-MX')).toEqual([`${ORIGIN}${spanish}`])
       expect(alternates(head, 'en-US')).toEqual([`${ORIGIN}${english}`])
-      expect(alternates(head, 'x-default')).toEqual([`${ORIGIN}${spanish}`])
+      /* Feature 37: English is the default, so x-default names the English
+         counterpart of the page — `/en` on both homes, `/en/about` on the
+         About pair (i18n derives it per route; Roberto, D4). */
+      expect(alternates(head, 'x-default')).toEqual([`${ORIGIN}${english}`])
       /* i18n's language-only catch-alls (spec A-04): tolerated, never doubled. */
       expect(alternates(head, 'es').length).toBeLessThanOrEqual(1)
       expect(alternates(head, 'en').length).toBeLessThanOrEqual(1)
+    })
+  }
+})
+
+describe('seo output · site default locale', () => {
+  /* Feature 37 (D3): `site.defaultLocale` is not declared in nuxt.config.ts;
+     nuxt-site-config derives it from the i18n default locale's `language`.
+     This pins the effective value that ships inline in every page. The
+     payload is a minified IIFE whose literals are hoisted into parameters
+     (`defaultLocale:b`), so a regex on the source cannot read it reliably;
+     it is evaluated in an empty `node:vm` context instead — our own build
+     artefact, with no access to this process. */
+  const siteConfigOf = (html: string): Record<string, unknown> => {
+    const source = html.match(
+      /<script>window\.__NUXT_SITE_CONFIG__=([^<]*)<\/script>/
+    )?.[1]
+    expect(source).toBeDefined()
+    return runInNewContext(`(${source})`, {}) as Record<string, unknown>
+  }
+
+  for (const page of PAGES) {
+    it(`should ship en-US as the site default locale when the page is ${page.path}`, () => {
+      const config = siteConfigOf(readOutput(page.file))
+
+      expect(config.defaultLocale).toBe('en-US')
+      expect(config.currentLocale).toBe(LANGUAGE_TAG[page.locale])
     })
   }
 })
@@ -258,8 +288,9 @@ describe('seo output · structured data', () => {
  * (`#website`, `#webpage`, `#identity`, `#logo`), its `@type` set, its key
  * set and the `@type` of each `potentialAction`. Values that legitimately
  * differ per locale (urls, names, copy, `inLanguage`) are left out, as are
- * the two directed translation links (`workTranslation` on the Spanish
- * WebSite, `translationOfWork` on the English one), which name each other.
+ * the two directed translation links (`workTranslation` on the default
+ * locale's WebSite — English since feature 37 — and `translationOfWork` on the
+ * other), which name each other.
  */
 const TRANSLATION_LINKS = ['workTranslation', 'translationOfWork']
 
@@ -324,6 +355,20 @@ describe('seo output · sitemap.xml', () => {
     }
   })
 
+  it("should point every entry's x-default at the English counterpart when generated", () => {
+    /* Feature 37: the sitemap's x-default follows `i18n.defaultLocale`. */
+    for (const block of urlBlocks()) {
+      const loc = block.match(/<loc>([^<]*)<\/loc>/)?.[1] ?? ''
+      const page = PAGES.find(candidate => `${ORIGIN}${candidate.path}` === loc)
+      const english = page?.locale === 'en' ? page.path : page?.counterpart
+
+      expect(page, loc).toBeDefined()
+      expect(block.match(/hreflang="x-default" href="([^"]*)"/)?.[1], loc).toBe(
+        `${ORIGIN}${english}`
+      )
+    }
+  })
+
   it('should write a single sitemap with no index, stylesheet or media entries when generated', () => {
     expect(existsSync(join(OUTPUT, 'sitemap_index.xml'))).toBe(false)
     expect(existsSync(join(OUTPUT, '__sitemap__'))).toBe(false)
@@ -365,7 +410,7 @@ describe('seo output · root object and client bundle', () => {
     expect(root).not.toContain('index, follow')
     expect(alternates(root, 'es-MX')).toEqual([`${ORIGIN}/es`])
     expect(alternates(root, 'en-US')).toEqual([`${ORIGIN}/en`])
-    expect(alternates(root, 'x-default')).toEqual([`${ORIGIN}/es`])
+    expect(alternates(root, 'x-default')).toEqual([`${ORIGIN}/en`])
     expect(alternates(root, 'en')).toEqual([])
   })
 

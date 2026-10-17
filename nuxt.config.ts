@@ -255,7 +255,13 @@ export default defineNuxtConfig({
      * public domain, not configuration that varies by environment.
      */
     baseUrl: SITE_URL,
-    defaultLocale: 'es',
+    /*
+     * English is the site default since feature 37 (2026-10-16): it drives
+     * `x-default` on every page (the English counterpart of the current
+     * route) and nuxt-site-config's derived `defaultLocale` (`en-US`), so
+     * `site` deliberately does not declare a second copy.
+     */
+    defaultLocale: 'en',
     strategy: 'prefix',
     langDir: 'locales',
     detectBrowserLanguage: false,
@@ -264,14 +270,14 @@ export default defineNuxtConfig({
      * present — `nuxt dev`.
      *
      * It does NOT produce a file. Verified by running it: with
-     * `rootRedirect: '/es'` AND `'/'` in `nitro.prerender.routes`, the route
+     * `rootRedirect` set AND `'/'` in `nitro.prerender.routes`, the route
      * is dropped from the crawl and `.output/public/index.html` still does
      * not exist — the redirect is runtime-only, and a static host runs
      * nothing. The prerender entry was removed rather than left as a no-op;
      * the object at the root is the committed `public/index.html`
      * (docs/business/rules.md § R25).
      */
-    rootRedirect: '/es',
+    rootRedirect: '/en',
     /*
      * The translated route segments live here and nowhere else — this is the
      * single declaration spec FR-018 requires. A component never writes
