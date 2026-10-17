@@ -2775,3 +2775,12 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - Review: APPROVED round 1. Closed `done` on Roberto's explicit authorization. `./init.sh` exit 0, 1342 tests.
 - Open: "isotipo" remains in the `--spacing-isotipo` token, comments and SVG `<title>` text (out of scope — possible separate feature). Findings R74: pre-existing i18n `cached-locale-configs` prerender nondeterminism.
 - Implementer: `docs/harness/progress/impl_english_file_names.md`. Reviewer: `docs/harness/progress/review_english_file_names.md`.
+
+## 2026-10-16 — Feature 37: english_default_locale (done)
+
+- i18n `defaultLocale: 'en'`, `rootRedirect: '/en'`; `site.defaultLocale` left derived (effective `en-US`, now asserted). `public/index.html` → `lang="en-US"`, refresh/canonical/x-default/fallback to `/en`.
+- x-default per page: both homes → `https://muush.dev/en`, About pair → `/en/about` (D4). Canonical, lang and og:locale unchanged; sitemap still the same 4 URLs (only x-default lines changed); JSON-LD valid, translation links reversed (D5). Page bodies identical to master on all 6 docs.
+- Constitution Article VI amended 2.0.0 → 2.0.1 (Roberto ratified 2026-10-16). README i18n section rewritten (was still describing Astro).
+- Phase A audit (39 items) approved by Roberto before any change (D1–D9 as recommended). Review: APPROVED round 1. Closed `done` on Roberto's explicit authorization. `./init.sh` exit 0, 1347 tests.
+- Open for Roberto (`docs/business/`, human-only): `landing/ui-map.md` lines 22 and 33–36, `landing/decisions-open.md` line 148, `messaging.md` lines 40–42. Not verified from this repo: `nuxt dev` redirect of `/` (INFERRED from i18n source) and whether the edge still serves the old fixed 301.
+- Audit: `docs/harness/progress/audit_english_default_locale.md`. Implementer: `impl_english_default_locale.md`. Reviewer: `review_english_default_locale.md`.
