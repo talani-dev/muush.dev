@@ -598,24 +598,31 @@
   --duration-contact-whatsapp-toggle: 0.2s;
 
   /*
-   * Form/left-block frame widths, read by `ContactSection.vue`'s
+   * Contacto's two desktop column tracks, read by `ContactSection.vue`'s
    * `<style scoped>` grid (hand-written CSS, so `:root` and not
-   * `@theme inline` — rules.md § R18). 342 → 660 (form) is CONFIRMED
-   * (design-extract.md § 10, frames `Xrs80`/`r3PHqc`).
+   * `@theme inline` — rules.md § R18). A whole track list, not two widths:
+   * `fr` cannot appear inside `calc()`, so the ratio has to live here.
    *
-   * ⚠️ `--contact-left-w`'s desktop value is UNVERIFIED — the leader's brief
-   * gave only the mobile left-block width (342, inert above `lg` since the
-   * mobile frame is single-column). Derived, not confirmed: `1440 − 80×2 −
-   * 660(form) − 64(gap, seeded from the footer's own column gap,
-   * rules.md § R24)` = 556. Flagged for the leader/reviewer to confirm
-   * against the real frame (rules.md § R32 point 4).
+   * Feature 38 (Roberto 2026-10-19, round 2): the grid starts at 64rem
+   * (1024) as before, and its tracks are PROPORTIONAL to the 1440 frame rather than
+   * the old `clamp()` widths, which only fitted the content box at exactly
+   * 1440 and overflowed it by `556.8 − 0.38667·W` px at every width from 1024
+   * to 1439 (measured, docs/harness/progress/audit_tablet_layout_and_pill_
+   * fixes.md). At ≥1440 the content box is 1280 = 556 + 64 + 660, so the
+   * tracks resolve to exactly the frame's 556 / 660 — no change there.
+   * `minmax(0, …)` stops a long word from widening a track past its share.
+   *
+   * 660 (form) is CONFIRMED (design-extract.md § 10, frames `Xrs80`/`r3PHqc`).
+   * ⚠️ 556 (left block) is UNVERIFIED: derived as `1440 − 80×2 − 660(form) −
+   * 64(gap)`, the gap itself seeded from the footer's column gap
+   * (rules.md § R24). Flagged for the leader to confirm against the real frame
+   * (rules.md § R32 point 4).
    */
-  --contact-form-w: clamp(21.375rem, 13.9929rem + 30.2857vw, 41.25rem);
-  --contact-left-w: clamp(21.375rem, 16.4071rem + 20.381vw, 34.75rem);
+  --contact-cols: minmax(0, 556fr) minmax(0, 660fr);
   /* ⚠️ UNVERIFIED — dueño Clau. The gap between the two desktop columns; no
      internal measurement for this section's left block reached this
      implementation beyond the two frame widths. Seeded from the footer's own
-     column gap (rules.md § R24) for the same reason `--contact-left-w` was. */
+     column gap (rules.md § R24), as the 556 in `--contact-cols` was. */
   --contact-col-gap: 4rem;
   /* ⚠️ UNVERIFIED — dueño Clau. The left block's own internal stack gap
      (Pill → heading → body → alt route). Seeded near `--spacing-hero-gap`'s
@@ -629,12 +636,17 @@
    * form 660×744 (D) / 342×665 (M) — CONFIRMED. Read only by
    * `WorkWithMuushSection.vue`'s hand-written `<style scoped>` grid, never by
    * a Tailwind utility class, so these live here and NOT in `@theme inline`
-   * — the same placement `--contact-form-w`/`--contact-left-w` use above,
-   * for the identical reason (`rules.md` § R18: an `@theme inline` token
-   * with no scanned utility consumer never reaches `:root` at all).
+   * — the same placement `--contact-cols` uses above, for the identical
+   * reason (`rules.md` § R18: an `@theme inline` token with no scanned
+   * utility consumer never reaches `:root` at all).
+   *
+   * Feature 38: same recipe as `--contact-cols` — a proportional track list
+   * for the ≥64rem grid. 520 + 100 + 660 = 1280, the content box from 1440
+   * up, so the frame widths are exact there and the tracks shrink together
+   * below it (the old `clamp()` widths overflowed by `606.2 − 0.42095·W` px
+   * from 1024 to 1439).
    */
-  --work-form-w: clamp(21.375rem, 13.9929rem + 30.2857vw, 41.25rem);
-  --work-left-w: clamp(21.375rem, 17.2429rem + 16.9524vw, 32.5rem);
+  --work-cols: minmax(0, 520fr) minmax(0, 660fr);
   /* Desktop only: form x700 − (left x80 + left width 520) = 100px. */
   --work-col-gap: 6.25rem;
   /* Mobile only: form y290 − (left y0 + left height 258) = 32px — NOT the
@@ -1706,9 +1718,8 @@ html {
      role, per this file's own convention, even though the range coincides. */
   --spacing-contact-text-gap: clamp(1.5rem, 1.2679rem + 0.9524vw, 2.125rem);
 
-  /* Form/left-block frame widths, 342 → 660 and 342 → 556. Declared in
-     `:root` as `--contact-form-w` / `--contact-left-w`, not here: the
-     two-column desktop layout is CSS Grid in `ContactSection.vue`'s
+  /* Form/left-block column tracks. Declared in `:root` as `--contact-cols`,
+     not here: the two-column desktop layout is CSS Grid in `ContactSection.vue`'s
      `<style scoped>` (hand-written, R18) and needs no `w-*` utility of its
      own — the grid track sizes the child. */
 
@@ -1861,7 +1872,7 @@ html {
    *
    * Consumed as UTILITY (`pt-*`, `top-*`, `left-*`, `gap-*`), per
    * `findings.md` § R47. The layout widths/gaps
-   * (`--work-form-w`/`--work-left-w`/`--work-col-gap`/`--work-stack-gap`/
+   * (`--work-cols`/`--work-col-gap`/`--work-stack-gap`/
    * `--work-form-y-offset`) live in `:root` above, not here — see that
    * block's own comment.
    *

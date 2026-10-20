@@ -147,11 +147,18 @@ const {
 <style scoped>
 /*
  * Mobile: plain flow, DOM order (text, form, alt) — no override needed.
- * Desktop: a two-column grid whose left column holds two stacked rows (text,
+ * Desktop (`lg`, 64rem): a two-column grid whose left column holds two stacked rows (text,
  * then alt) beside a form column spanning both rows. `grid-template-areas` has
  * no Tailwind utility, so this is hand-written CSS reading the `:root` tokens
  * `<style scoped>` needs (rules.md § R18) rather than the `@theme inline`
  * ones utility classes consume.
+ *
+ * Feature 38 (Roberto 2026-10-19, round 2): the grid starts at `lg` as it
+ * always did, but the tracks are `--contact-cols` — two `fr` columns in the
+ * 1440 frame's 556:660 ratio — instead of fixed `clamp()` widths that only
+ * fit from ~1440 and overflowed the content box from 1024 to 1439. At 1440
+ * the ratio reproduces 556/660 exactly. (Round 1 stacked the section below
+ * 80rem; Roberto rejected that — text and form stay side by side from 1024.)
  */
 .contact-layout {
   display: flex;
@@ -163,7 +170,7 @@ const {
   .contact-layout {
     display: grid;
     align-items: start;
-    grid-template-columns: var(--contact-left-w) var(--contact-form-w);
+    grid-template-columns: var(--contact-cols);
     grid-template-areas: "text form" "alt form";
     column-gap: var(--contact-col-gap);
     row-gap: var(--contact-left-gap);
