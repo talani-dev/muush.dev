@@ -96,15 +96,26 @@ describe('ServicesConnectors · the resting geometry', () => {
       expect(svg.classes()).not.toContain('size-full')
     }
   })
+
+  it('should stretch the frame on x only when mounted (feature 38)', () => {
+    /* `none`, not the default `xMidYMid meet`: x follows the canvas width,
+       y stays the fixed frame height, the same two units the radars use. */
+    for (const svg of mountConnectors().findAll('svg')) {
+      expect(svg.attributes('preserveAspectRatio')).toBe('none')
+    }
+  })
 })
 
 describe('ServicesConnectors · lines follow the float (research R1)', () => {
-  it('should size the svg to the fixed frame instead of the canvas (OA-3)', () => {
+  it('should span the scaled frame width and the fixed frame height when styled (feature 38)', () => {
+    /* The radars scale on x with the canvas since feature 38, so the lines
+       must too: 100% of `.frame` wide, the fixed 910-unit height tall. */
     const style = styleDeclarations()
 
-    expect(style).toContain('width: var(--services-canvas-w)')
+    expect(style).toContain('width: 100%')
     expect(style).toContain('height: var(--services-canvas-h)')
     expect(style).toContain('overflow: visible')
+    expect(style).not.toContain('var(--services-canvas-w)')
   })
 
   it('should derive both line ends from the shared clock', () => {
@@ -121,8 +132,10 @@ describe('ServicesConnectors · lines follow the float (research R1)', () => {
   it('should move each line by the exact vertical shear of its two ends', () => {
     const style = styleDeclarations()
 
+    /* The rise in y units, the run in scaled x units: the on-screen slope,
+       taken by `atan2` as two lengths (no typed division). */
     expect(style).toContain(
-      'translate(0, calc(var(--shift) * var(--services-frame-px))) skewY(atan(var(--slope)))'
+      'translate(0, calc(var(--shift) * var(--services-frame-px))) skewY(atan2(calc((var(--dy-b) - var(--dy-a)) * var(--services-frame-px)), calc((var(--x2) - var(--x1)) * var(--services-unit-x))))'
     )
     expect(style).toContain('transform-origin: 0 0')
     expect(style).toContain('vector-effect: non-scaling-stroke')

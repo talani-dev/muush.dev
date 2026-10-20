@@ -254,3 +254,62 @@ describe('ServicesConstellation · the paint-order contract', () => {
     ).toBe(false)
   })
 })
+
+describe('ServicesConstellation · narrows instead of being cut (feature 38)', () => {
+  /** The declarations of the first rule whose selector is exactly `selector`. */
+  function rule(selector: string): string {
+    const escaped = selector.replaceAll('.', '\\.')
+    return (
+      styleDeclarations().match(
+        new RegExp(`(?:^|\\}|\\s)${escaped}\\s*\\{([^}]*)\\}`)
+      )?.[1] ?? ''
+    )
+  }
+
+  it('should put the eyebrow on the page content edge when styled', () => {
+    /* D6: every section Pill shares `--spacing-page`; a fixed 80 put this one
+       22px right of the others at 1024. */
+    expect(rule('.eyebrow')).toContain('left: var(--spacing-page)')
+  })
+
+  it('should lay the Delivery closer on the page content box when styled', () => {
+    const closer = rule('.closer')
+
+    expect(closer).toContain('left: var(--spacing-page)')
+    expect(closer).toContain('width: calc(100% - 2 * var(--spacing-page))')
+  })
+
+  it('should scale every node x and keep every y fixed when styled', () => {
+    expect(rule('.radar')).toContain(
+      'left: calc(var(--node-x) * var(--services-unit-x))'
+    )
+    expect(rule('.radar')).toContain('top: var(--node-y)')
+    expect(rule('.text')).toContain(
+      'left: calc((var(--node-x) + var(--services-text-offset-x)) * var(--services-unit-x))'
+    )
+  })
+
+  it('should scale the text width down to its measured floor when styled', () => {
+    expect(rule('.text')).toContain(
+      'width: max(calc(var(--services-text-w) * var(--services-unit-x)), var(--services-text-min-w))'
+    )
+  })
+
+  it('should resolve the scale against an inner container, never the root', () => {
+    /* `cqw` needs a size container; containment makes a stacking context,
+       which the paint-order contract keeps off `.canvas`. */
+    const wrapper = mountConstellation()
+
+    expect(rule('.frame')).toContain('container-type: inline-size')
+    expect(rule('.canvas')).not.toContain('container')
+    expect(wrapper.find('.canvas > .frame').exists()).toBe(true)
+    expect(wrapper.findAll('.frame > .node')).toHaveLength(5)
+  })
+
+  it('should transform the canvas nowhere when styled', () => {
+    /* D5: scaling the canvas would shrink the Pills and the copy too. */
+    for (const property of ['transform', 'scale', 'zoom']) {
+      expect(rule('.canvas'), property).not.toContain(property)
+    }
+  })
+})

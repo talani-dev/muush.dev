@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { SERVICE_NODE_CENTRES } from '@/features/landing/data/servicesContent'
 
 /**
  * Feature 38 · the tokens and breakpoints that keep the tablet range
@@ -82,6 +83,43 @@ describe('tablet layout · the two forms go side by side from 64rem', () => {
       '--contact-form-w',
       '--work-left-w',
       '--work-form-w',
+    ]) {
+      expect(globalCss, name).not.toContain(`${name}:`)
+    }
+  })
+})
+
+describe('tablet layout · the Services constellation scales on x', () => {
+  it('should place the five node x tokens on the connector centres when declared', () => {
+    /* The radars read these tokens, the lines read SERVICE_NODE_CENTRES:
+       the same five numbers, or the lines leave their radars. */
+    SERVICE_NODE_CENTRES.forEach(([x], index) => {
+      expect(declared(`--services-node-${index + 1}-x`)).toBe(String(x))
+    })
+  })
+
+  it('should make one frame unit exactly 1px at the 1440 frame when declared', () => {
+    expect(declared('--services-frame-units')).toBe(String(FRAME_W))
+    expect(declared('--services-unit-x')).toBe(
+      'calc(100cqw / var(--services-frame-units))'
+    )
+    expect(Number.parseFloat(declared('--services-canvas-w')) * REM).toBe(
+      FRAME_W
+    )
+  })
+
+  it('should keep the text width at 232 frame units over a floor below it', () => {
+    const floorPx = Number.parseFloat(declared('--services-text-min-w')) * REM
+
+    expect(declared('--services-text-w')).toBe('232')
+    expect(floorPx).toBeLessThan(232)
+  })
+
+  it('should drop the fixed Pill and closer x tokens when declared', () => {
+    for (const name of [
+      '--services-pill-x',
+      '--services-closer-x',
+      '--services-closer-w',
     ]) {
       expect(globalCss, name).not.toContain(`${name}:`)
     }
