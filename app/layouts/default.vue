@@ -104,6 +104,8 @@ const {
   home,
   locale,
   localeSwitchHref,
+  localeSwitchInPlace,
+  switchLocale,
   brand,
 } = useShellNavigation()
 
@@ -187,12 +189,14 @@ useSiteSeo()
       :locale="locale"
       :locale-switch-href="localeSwitchHref"
       :locale-switch-label="localeSwitchLabel"
+      :locale-switch-in-place="localeSwitchInPlace"
       :menu-items="menuItems"
       :socials="socials"
       :nav-label="t('shell.nav.label')"
       :menu-label="t('shell.menu.label')"
       :menu-open-label="t('shell.menu.open')"
       :menu-close-label="t('shell.menu.close')"
+      @switch-locale="switchLocale"
     />
 
     <!--

@@ -40,19 +40,18 @@ interface Props {
   /** The equivalent route in the other locale, without a fragment. */
   localeSwitchHref: string
   /**
-   * Accessible name of the language toggle, naming the *destination* locale
-   * (spec FR-018, feature 21). Threaded through rather than resolved here,
-   * for the same reason `label`/`closeLabel` below already arrive resolved:
+   * Accessible name of the toggle, naming the *destination* locale (spec
+   * FR-018, feature 21). It arrives resolved, like `label`/`closeLabel`:
    * `LanguageToggle.vue` cannot call `useI18n()` itself (`rules.md` § R23).
    */
   localeSwitchLabel: string
+  /** The not-found page (feature 39): the toggle switches in place. */
+  localeSwitchInPlace?: boolean
   /**
-   * Accessible name of the panel, and of the close control.
-   *
-   * Not in `contracts/components.md`, and added deliberately: a modal surface
-   * and an icon-only button both need a name, and no user-facing string may
-   * be written inside a component (Constitution Article VI). They arrive
-   * resolved like every other string here.
+   * Accessible names of the panel and of the close control. Not in
+   * `contracts/components.md`, added deliberately: a modal surface and an
+   * icon-only button both need a name, and no user-facing string may be
+   * written inside a component (Constitution Article VI).
    */
   label: string
   closeLabel: string
@@ -66,6 +65,7 @@ const {
   locale,
   localeSwitchHref,
   localeSwitchLabel,
+  localeSwitchInPlace = false,
   label,
   closeLabel,
 } = defineProps<Props>()
@@ -79,6 +79,8 @@ const emit = defineEmits<{
    * scrolls to the anchor (spec FR-030).
    */
   itemChosen: [href: string]
+  /** Chose `locale` in place (feature 39); the parent closes the panel. */
+  switchLocale: [locale: ShellLocale]
 }>()
 
 const closeControl = useTemplateRef<HTMLButtonElement>('closeControl')
@@ -121,14 +123,14 @@ function chooseItem(item: ResolvedShellItem) {
           :locale="locale"
           :href="localeSwitchHref"
           :switch-label="localeSwitchLabel"
+          :in-place="localeSwitchInPlace"
+          @switch-in-place="emit('switchLocale', $event)"
         />
 
         <!--
-          `cursor-pointer` for the same reason as the hamburger it replaces: a
-          native `<button>` gets `cursor: default` from the user agent, and
-          nothing in the stylesheet overrode it
-          (`docs/harness/findings.md` § R56). The panel only exists when
-          scripting is running, so this control always does something.
+          `cursor-pointer`, as on the hamburger it replaces: a native `<button>`
+          gets `cursor: default` from the user agent (`docs/harness/findings.md`
+          § R56). The panel only exists with scripting, so this always acts.
         -->
         <button
           ref="closeControl"
@@ -165,9 +167,8 @@ function chooseItem(item: ResolvedShellItem) {
       <hr class="mt-menu-divider-gap border-t border-divider-menu">
 
       <!--
-        The only call to action on mobile. The row is centred rather than
-        positioned at the frame's x109/171/233, which is the same 14px gap
-        expressed as flow.
+        The only call to action on mobile. Centred rather than positioned at
+        the frame's x109/171/233: the same 14px gap, expressed as flow.
       -->
       <div
         class="mt-menu-social-gap flex justify-center gap-menu-social-row-gap"

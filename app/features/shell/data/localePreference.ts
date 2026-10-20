@@ -4,8 +4,10 @@
  * - Written **only** by the language toggle, on click, with the destination
  *   locale (`logic/localePreference.ts`).
  * - **Never read by the site.** Nothing in a page changes because of it.
- * - Read only by muush-foundation's edge function, and only at `/`, to
- *   choose between `/es` and `/en` before the country rule applies.
+ * - Read only by muush-foundation's edge: at `/`, to choose between `/es`
+ *   and `/en` before the country rule applies (feature 33), and — once
+ *   Stage 2 of `specs/036-not-found-page/contracts/edge-not-found.md` ships
+ *   (feature 39) — to choose which not-found document a missing URL gets.
  * - Holds only `es` or `en` (`ShellLocale`): no identifier, timestamp or
  *   country.
  *

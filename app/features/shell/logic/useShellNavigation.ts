@@ -14,6 +14,7 @@ import type {
 } from '@/features/shell/data/types'
 import { useNavCtaReveal } from '@/shared/logic/useNavCtaReveal'
 import { resolveLocaleDestination } from './resolveLocaleDestination'
+import { switchLocaleWithFallback } from './switchLocaleInPlace'
 import { useShellItemResolver } from './useShellItemResolver'
 
 /**
@@ -32,7 +33,7 @@ import { useShellItemResolver } from './useShellItemResolver'
  * else (spec FR-018).
  */
 export function useShellNavigation() {
-  const { t, locale } = useI18n()
+  const { t, locale, loadLocaleMessages } = useI18n()
   const localePath = useLocalePath()
   const switchLocalePath = useSwitchLocalePath()
   const routeBaseName = useRouteBaseName()
@@ -98,6 +99,31 @@ export function useShellNavigation() {
   )
 
   /**
+   * Whether the language toggle switches the page in place instead of
+   * navigating (feature 39). Only while an error is shown — the not-found
+   * page, which sits at a URL with no counterpart in the other locale, so
+   * the only place to "switch to" is the same URL in the other language.
+   * Same signal as `navCta` above, so it holds identically on the server and
+   * on the client and the toggle's markup hydrates without a mismatch. Every
+   * other page keeps the navigating toggle untouched.
+   */
+  const localeSwitchInPlace = computed(() => Boolean(error.value))
+
+  /**
+   * The in-place switch the toggle requests on the not-found page. If the
+   * other locale's messages cannot be loaded (offline, a stale deploy), the
+   * visitor still gets a real destination: the toggle's own href, the other
+   * locale's home — what the toggle did before feature 39.
+   */
+  function switchLocale(target: ShellLocale): Promise<void> {
+    return switchLocaleWithFallback(
+      target,
+      { loadLocaleMessages, locale },
+      () => window.location.assign(localeSwitchHref.value)
+    )
+  }
+
+  /**
    * Whether the nav renders its `Cuéntanos tu proyecto` button
    * (`ui-map.md` § 2, Roberto, 2026-09-07).
    *
@@ -133,6 +159,8 @@ export function useShellNavigation() {
     home,
     locale: activeLocale,
     localeSwitchHref,
+    localeSwitchInPlace,
+    switchLocale,
     brand,
   }
 }
