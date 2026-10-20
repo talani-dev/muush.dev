@@ -39,18 +39,54 @@ export interface PurposeCarousel {
 }
 
 /**
- * A card counts as centred once three quarters of it is inside the track. One
- * threshold rather than a scroll-position calculation: the platform already
- * knows, and reading geometry per frame is the cost `findings.md` § R41
- * measured.
+ * The centred card is the one crossing a thin strip at the middle of the
+ * track. The observer's root is narrowed to that strip with a negative
+ * `rootMargin` (1% of the track wide), and any overlap at all — threshold `0`
+ * — means the card is under it. The platform already knows, and reading
+ * geometry per frame is the cost `findings.md` § R41 measured.
+ *
+ * ⚠️ Not a visible-fraction threshold. The first version said "centred once
+ * three quarters of the card is inside the track", which only holds while the
+ * track is narrow enough that at most one card can be 75% visible — true at
+ * 390, false from about 760 up, where all three cards are inside the track at
+ * once. The observer only fires on a crossing, so the active card then froze
+ * on `Why` (or jumped to the wrong one at the ends) while the track itself
+ * scrolled and snapped fine — Roberto's iPad report of 2026-10-19 (feature
+ * 38). A strip at the centre is width-independent: one card crosses it at
+ * rest at every width the carousel shows.
  */
-const CENTRED_RATIO = 0.75
-
+const CENTRE_STRIP_MARGIN = '0px -49.5%'
 /** The cards are the track's own children, so no per-card template ref. */
 function cardsOf(track: HTMLElement): HTMLElement[] {
   return [...track.children].filter(
     (child): child is HTMLElement => child instanceof HTMLElement
   )
+}
+
+/**
+ * Two cards can be under the strip together: their layout boxes overlap by a
+ * few px by design (the negative gap in `PurposeCarousel.vue`), and a fast
+ * fling can deliver both crossings in one batch. The entry's own rects are
+ * already computed, so picking the nearer one reads no layout.
+ */
+function nearestToCentre(
+  entries: IntersectionObserverEntry[]
+): IntersectionObserverEntry | undefined {
+  let best: IntersectionObserverEntry | undefined
+  let bestDistance = Number.POSITIVE_INFINITY
+  for (const entry of entries) {
+    const root = entry.rootBounds
+    const box = entry.boundingClientRect
+    const distance =
+      root && box
+        ? Math.abs(box.left + box.width / 2 - (root.left + root.width / 2))
+        : 0
+    if (distance < bestDistance) {
+      best = entry
+      bestDistance = distance
+    }
+  }
+  return best
 }
 
 export function usePurposeCarousel(
@@ -66,7 +102,9 @@ export function usePurposeCarousel(
   const supportsTracking = typeof IntersectionObserver !== 'undefined'
 
   function onIntersect(entries: IntersectionObserverEntry[]): void {
-    const centred = entries.find(entry => entry.isIntersecting)
+    const entering = entries.filter(entry => entry.isIntersecting)
+    const centred =
+      entering.length > 1 ? nearestToCentre(entering) : entering[0]
     if (!centred) return
 
     const index = cards.indexOf(centred.target as HTMLElement)
@@ -110,7 +148,8 @@ export function usePurposeCarousel(
 
       observer = new IntersectionObserver(onIntersect, {
         root: element,
-        threshold: CENTRED_RATIO,
+        rootMargin: CENTRE_STRIP_MARGIN,
+        threshold: 0,
       })
       for (const card of cards) observer.observe(card)
     },

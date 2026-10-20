@@ -41,7 +41,7 @@ describe('PurposeCard · one card, two label placements', () => {
     expect(children[1]?.text()).toBe(props.copy)
   })
 
-  it('should hide the label above lg when the label renders', () => {
+  it('should hide the label under the constellation variant when the label renders', () => {
     /*
      * `decisions-open.md` § D6: mobile paints the label inside the card,
      * desktop delegates it to the constellation. One utility, no mode prop —
@@ -50,32 +50,39 @@ describe('PurposeCard · one card, two label placements', () => {
      */
     const label = mountCard().find('article > span').classes()
 
-    expect(label).toContain('lg:hidden')
+    expect(label).toContain('constellation:hidden')
     expect(label).toContain('text-purpose-card-label')
     expect(label).toContain('text-red-200')
   })
 
   it('should carry the lead role and the mobile weight when the copy renders', () => {
     /* The one documented exception to the fluid scale: `rules.md` § R4 left
-       the 500 → 600 change below `lg` to this component. The `lg:` changes a
+       the 500 → 600 change in the carousel to this component. The
+       `constellation:` variant changes a
        weight and never a size, which is what keeps it legal under Article
        VII — `text-lead` still carries the 22 → 30 `clamp()`. */
     const copy = mountCard().find('article > p').classes()
 
     expect(copy).toContain('text-lead')
     expect(copy).toContain('font-semibold')
-    expect(copy).toContain('lg:font-medium')
+    expect(copy).toContain('constellation:font-medium')
     expect(copy).toContain('font-instrument')
   })
 
   it('should declare no size at the breakpoint when mounted', () => {
-    /* Article VII: a `lg:` that changed a font size or a padding would mean a
-       fluid token is missing, not that the token should be bypassed. */
+    /* Article VII: a `constellation:` that changed a font size or a padding
+       would mean a fluid token is missing, not that the token should be
+       bypassed. It is also the ONLY switch here (feature 38 round 4): a stray
+       `lg:`/`xl:` would disagree with the section about which composition is
+       showing and could announce the label twice. */
     const breakpointClasses = mountCard()
       .html()
-      .match(/lg:[\w./:-]+/g)
+      .match(/(?:sm|md|lg|xl|2xl|constellation):[\w./:-]+/g)
 
-    expect(breakpointClasses).toEqual(['lg:hidden', 'lg:font-medium'])
+    expect(breakpointClasses).toEqual([
+      'constellation:hidden',
+      'constellation:font-medium',
+    ])
   })
 
   it('should rest on the soft red glass surface when mounted', () => {

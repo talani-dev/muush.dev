@@ -50,7 +50,7 @@ useServicesLyrics(timelineItems)
 <template>
   <div>
     <div class="canvas relative">
-      <Pill :label="eyebrow" class="pill absolute left-services-pill-x top-0" />
+      <Pill :label="eyebrow" class="pill absolute top-0" />
 
       <span aria-hidden="true" class="spine absolute" />
 

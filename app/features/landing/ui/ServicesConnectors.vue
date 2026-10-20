@@ -18,15 +18,14 @@ import {
  * radar in any frame (spec FR-008). The per-line inputs arrive as inline
  * custom properties (`connectorFloatVars`), never as literals.
  *
- * Each `<svg>` is sized to the 1440×910 frame in rem rather than to the
- * canvas (OA-3). Below a 1440px viewport the canvas is narrower than the
- * frame, and a `size-full` SVG was meet-scaled into it while the radars kept
- * their rem positions: measured in Chrome 155 on the pre-feature build,
- * connector 1 started 21.7px off its radar at 1280px and the worst end was
- * 332px off at 1024px. With the SVG at the frame's own size, one user unit
- * is one design pixel (`--services-frame-px`) at every width and root font
- * size, the same unit the nodes are positioned in; `overflow: visible` keeps
- * the clip where it already was, on the layout root.
+ * Each `<svg>` spans the constellation's `.frame` horizontally and the
+ * 910-unit frame height vertically, with `preserveAspectRatio="none"`: one
+ * user unit is one `--services-unit-x` along x and one `--services-frame-px`
+ * along y — exactly the two units the radars are positioned in (feature 38),
+ * so the line ends stay on the radars at every canvas width. (OA-3 had sized
+ * it to the fixed 1440 frame because a uniformly meet-scaled SVG drifted off
+ * radars that did not scale; now both scale the same way, x only.)
+ * `overflow: visible` keeps the clip where it already was, on the layout root.
  */
 interface Props {
   connectors: ConnectorEndpoints[]
@@ -48,6 +47,7 @@ const { connectors } = defineProps<Props>()
     :key="index"
     aria-hidden="true"
     viewBox="0 0 1440 910"
+    preserveAspectRatio="none"
     class="connector pointer-events-none absolute top-0 left-0"
     :style="connectorFloatVars(connector, index)"
   >
@@ -68,17 +68,16 @@ const { connectors } = defineProps<Props>()
  * keep their x. That is exactly the affine map
  *   y' = y + slope·x + shift,  slope = (dyB − dyA) / (x2 − x1),
  *                              shift = dyA − slope·x1
- * which sends (x1, y1) to (x1, y1 + dyA) and (x2, y2) to (x2, y2 + dyB). In
- * CSS: `translate(0, shift) skewY(atan(slope))` about the frame's origin,
- * since `tan(atan(slope)) = slope`. All four lines have x2 ≠ x1, so the
- * slope is always defined. `dyA` / `dyB` are the same expression as
- * `.node`'s offset in `ServicesConstellation.vue`, evaluated against the same
- * inherited clock in the same style pass.
+ * which sends (x1, y1) to (x1, y1 + dyA) and (x2, y2) to (x2, y2 + dyB), all
+ * in design units. `dyA` / `dyB` are the same expression as `.node`'s offset
+ * in `ServicesConstellation.vue`, against the same inherited clock.
  *
- * Units: offsets are unitless design pixels. Each <svg> is exactly the
- * 1440×910 frame in rem, so its border-box origin is the viewBox origin and
- * one user unit is one `--services-frame-px`; `shift` becomes a length
- * through that token, and `slope` is a ratio, unit-free either way.
+ * On screen x is scaled by `--services-unit-x` and y by `--services-frame-px`
+ * (feature 38). `shift` is a pure y quantity, so it only needs the y unit;
+ * the on-screen slope is `(dyB − dyA)·frame-px / ((x2 − x1)·unit-x)`, and
+ * `skewY(atan2(rise, run))` takes it as two lengths — no typed division.
+ * At 1440 both units are 1px and this is the pre-feature 38 `atan(slope)`.
+ * All four lines have x2 ≠ x1, so the run is never zero.
  */
 .connector {
   --dy-a: calc(
@@ -100,18 +99,23 @@ const { connectors } = defineProps<Props>()
   --slope: calc((var(--dy-b) - var(--dy-a)) / (var(--x2) - var(--x1)));
   --shift: calc(var(--dy-a) - var(--slope) * var(--x1));
 
-  width: var(--services-canvas-w);
+  width: 100%;
   height: var(--services-canvas-h);
   overflow: visible;
   transform-origin: 0 0;
   transform: translate(0, calc(var(--shift) * var(--services-frame-px)))
-    skewY(atan(var(--slope)));
+    skewY(
+      atan2(
+        calc((var(--dy-b) - var(--dy-a)) * var(--services-frame-px)),
+        calc((var(--x2) - var(--x1)) * var(--services-unit-x))
+      )
+    );
 }
 
 /*
  * `non-scaling-stroke`: the hairline stays exactly `--services-link-w` on
- * screen at any root font size (one user unit is 1.25px at a 20px root, which
- * would otherwise thicken it), matching the mobile spine's HTML hairline.
+ * screen under the non-uniform x/y scale and at any root font size, matching
+ * the mobile spine's HTML hairline.
  */
 .line {
   stroke: var(--services-link-color);

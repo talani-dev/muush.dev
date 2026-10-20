@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
@@ -79,10 +81,10 @@ describe('PurposeCarousel · the track', () => {
     expect(wrapper.find('.-mx-page > .track').exists()).toBe(true)
   })
 
-  it('should paint each card its own label below lg when mounted', () => {
+  it('should paint each card its own label when mounted', () => {
     /* `decisions-open.md` § D6: there is no constellation here, so the label
-       is integrated into the card. The `lg:hidden` that suppresses it on
-       desktop is `PurposeCard`'s and is never reached at this width. */
+       is integrated into the card. The `constellation:hidden` that suppresses
+       it is `PurposeCard`'s, and never matches while the carousel shows. */
     const cards = mountCarousel().findAll('article')
 
     cards.forEach((card, index) => {
@@ -184,5 +186,54 @@ describe('PurposeCarousel · the indicator', () => {
     expect(cards[0]?.attributes('data-dimmed')).toBeUndefined()
     expect(cards[1]?.attributes('data-dimmed')).toBe('true')
     expect(cards[2]?.attributes('data-dimmed')).toBe('true')
+  })
+})
+
+/**
+ * The scoped style block, comments stripped and whitespace collapsed, so a
+ * rule quoted in prose cannot satisfy an assertion. `lastIndexOf` because the
+ * doc comment above the template could mention the tag (rules.md § R27).
+ */
+function styleDeclarations(): string {
+  const source = readFileSync(
+    join(
+      process.cwd(),
+      'app',
+      'features',
+      'landing',
+      'ui',
+      'PurposeCarousel.vue'
+    ),
+    'utf8'
+  )
+  return source
+    .slice(source.lastIndexOf('<style scoped>'))
+    .replaceAll(/\/\*[\s\S]*?\*\//g, '')
+    .replaceAll(/\s+/g, ' ')
+}
+
+describe('PurposeCarousel · no visible scrollbar', () => {
+  /* Feature 38 round 3: Roberto saw a horizontal bar under the cards while
+     swiping on iPad. The dots are the position indicator, so the track hides
+     its bar in every engine while still scrolling. `happy-dom` resolves no
+     scoped CSS, so the rule is pinned from the source and the computed style
+     is verified in Chrome (impl_tablet_layout_and_pill_fixes.md § Round 3). */
+  const css = styleDeclarations()
+
+  it('should hide the track scrollbar for Firefox and modern Chromium', () => {
+    expect(css).toMatch(/\.track \{[^}]*scrollbar-width: none;[^}]*\}/)
+  })
+
+  it('should hide the track scrollbar for WebKit and older Chromium', () => {
+    expect(css).toMatch(/\.track::-webkit-scrollbar \{ display: none; \}/)
+  })
+
+  it('should keep the track a scroller rather than clipping its overflow', () => {
+    /* Hiding the bar must not become hiding the overflow: swipe, snap and the
+       dots all depend on the track still scrolling. */
+    const track = mountCarousel().find('.track').classes()
+
+    expect(track).toContain('overflow-x-auto')
+    expect(css).not.toMatch(/\.track[^{]*\{[^}]*overflow(-x)?: (hidden|clip)/)
   })
 })

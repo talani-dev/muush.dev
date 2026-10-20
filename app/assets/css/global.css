@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/*
+ * `constellation:` — the ONE condition that chooses Propósito's composition
+ * (feature 38 round 4, Roberto 2026-10-19). A mouse or trackpad as the primary
+ * pointer AND at least 64rem gets the Why/How/What constellation with its
+ * hover reveal; everything else — any touch screen at any width (iPad 1366
+ * included) and every device below 64rem — gets the carousel. Pure CSS, no
+ * JS or user-agent sniffing (Constitution Article I).
+ *
+ * Every switch between the two versions uses this variant and nothing else:
+ * `PurposeSection.vue` (constellation / carousel / arcs / origin glow) and
+ * `PurposeCard.vue` (in-card label and weight). Mixing it with `lg:`/`xl:`
+ * would leave a combination where both or neither render, or where the card
+ * label is announced twice. It replaces round 1's `xl` (80rem) switch, which
+ * existed only to keep a touch tablet off the constellation.
+ */
+@custom-variant constellation (
+  @media (width >= 64rem) and (hover: hover) and (pointer: fine)
+);
+
 /* Valores del branding book (docs/business/branding.md) — 5 pasos por rampa (100-500) */
 :root {
   --bone-100: #fbf8f6;
@@ -443,16 +462,26 @@
    * token (spec FR-008).
    */
 
-  /* Five radar centres, `spec.md` § Provenance / `data-model.md` § 2.1. */
-  --services-node-1-x: 9.375rem;
+  /*
+   * Five radar centres, `spec.md` § Provenance / `data-model.md` § 2.1.
+   *
+   * Feature 38 (D5, Roberto 2026-10-19): the x of each centre is a UNITLESS
+   * count of 1440-frame design pixels, turned into a length by
+   * `--services-unit-x` (below) — so the constellation narrows with its
+   * canvas instead of being cut between 1024 and 1439. The y stays a fixed
+   * rem length: only the horizontal axis scales, never the canvas itself
+   * (a transform would shrink the Pills and the type). Same numbers as
+   * `SERVICE_NODE_CENTRES` in `data/servicesContent.ts`.
+   */
+  --services-node-1-x: 150;
   --services-node-1-y: 20.625rem;
-  --services-node-2-x: 26.875rem;
+  --services-node-2-x: 430;
   --services-node-2-y: 12.5rem;
-  --services-node-3-x: 43.125rem;
+  --services-node-3-x: 690;
   --services-node-3-y: 27.5rem;
-  --services-node-4-x: 59.375rem;
+  --services-node-4-x: 950;
   --services-node-4-y: 15.625rem;
-  --services-node-5-x: 71.875rem;
+  --services-node-5-x: 1150;
   --services-node-5-y: 30rem;
 
   /*
@@ -460,9 +489,29 @@
    * `textBlock = radarCentre + (-4, +28)`, exact to the pixel across all five
    * (`data-model.md` § 2.1). Text block height is intrinsic to its own copy,
    * never a token.
+   *
+   * Feature 38: the x offset and the 232 text-block width (design-extract.md
+   * § 10) are unitless frame pixels like the node x above, so a text block
+   * keeps the same horizontal relation to its neighbours at every canvas
+   * width it has at 1440 — the narrowing adds no horizontal overlap, and the
+   * last block keeps its proportional right margin instead of leaving the
+   * viewport. Text wraps to more lines instead (measured in
+   * docs/harness/progress/impl_tablet_layout_and_pill_fixes.md).
    */
-  --services-text-offset-x: -0.25rem;
+  --services-text-offset-x: -4;
   --services-text-offset-y: 1.75rem;
+  --services-text-w: 232;
+  /*
+   * Feature 38 · the floor under the scaled 232 (active only below ~1117px,
+   * where 232 frame px drop under 180). NOT a design value — measured in
+   * Chrome: at a fully proportional 165px (1024) the ES Automation brief
+   * wraps one more line and its last line ends 1.7px above node 5's radar,
+   * which the float (±7px per node, up to 13px between neighbours) then
+   * runs through. At 180 the closest text→radar gap is 23px at rest (≥10px
+   * at any float phase) and the closest text→text gap is 19px, both locales,
+   * 1024–1439. Retune here if the copy changes length.
+   */
+  --services-text-min-w: 11.25rem;
 
   /* Canvas explicit height: the closer's own bottom edge (810 + 100 = 910),
      the tallest extent among all nodes/connectors/closer (`data-model.md`
@@ -473,14 +522,25 @@
    * Feature 23, item 4 (round 3). The leader read the real `.pen` node
    * (`GiLTU`, 1440×1020, under `Landing ES · v4 (radiales)`) directly:
    * the canvas's own coordinate space is the FULL 1440px frame, not the
-   * 1280px `--services-closer-w` box (`vUMC8`) nested 80px in from each
-   * edge inside it — two different boxes in the design, previously
-   * conflated into one token. Every node/Pill/closer offset (`--services-
-   * node-*-x/-y`, `--services-pill-x/-y`, `--services-closer-x/-y/-w`) was
-   * already authored relative to THIS frame's own origin and is
-   * unaffected; only `.canvas` itself needed its own width.
+   * 1280px closer box (`vUMC8`) nested 80px in from each edge inside it —
+   * two different boxes in the design, previously conflated into one token.
+   * Every node offset (`--services-node-*-x/-y`) is authored relative to
+   * THIS frame's own origin; since feature 38 the eyebrow and the closer sit
+   * on `--spacing-page` instead, which is that same 80 at 1440.
    */
   --services-canvas-w: 90rem;
+
+  /*
+   * Feature 38 · the one horizontal scale of the desktop constellation: one
+   * 1440-frame design pixel along x, as a length. `cqw` resolves against
+   * the constellation's `.frame` (an inline-size container exactly as wide as
+   * `.canvas`), so it is exactly 1px when the canvas is the 1440 frame — the
+   * composition is unchanged from 1440 up — and shrinks with the canvas below
+   * it. A custom property keeps `cqw` unresolved until the element using it,
+   * which is what makes this work from `:root`.
+   */
+  --services-frame-units: 1440;
+  --services-unit-x: calc(100cqw / var(--services-frame-units));
 
   /* ⚠️ O-02, owner Clau. Seeded with the same hairline family as Propósito's
      connector lines (bone-100 @24%, 1px) pending a real stroke colour/width. */
@@ -489,22 +549,24 @@
 
   /*
    * Eyebrow Pill @80,90 desktop / @24,0 mobile (`data-model.md` § 2.3, § 3).
+   * Only the y is a token: the x is `--spacing-page`, the page's content edge
+   * (feature 38, D6 — the 80 in the frame IS the page margin at 1440, and a
+   * fixed 80 put this Pill and Delivery's 22px right of every other section
+   * Pill at 1024).
    * ⚠️ `data-model.md` § 4.1 also lists the mobile Pill's own rendered size
    * (118×38). Not carried here: `Pill.vue` is self-sizing from its own
    * padding/gap tokens (design-extract.md § 3), so a caller-supplied width/
    * height would have nothing to apply to — the same class of correction
    * feature 13 made about where the arcs actually live.
    */
-  --services-pill-x: 5rem;
   --services-pill-y: 5.625rem;
 
-  /* Delivery closer @80,810, 1280×100 desktop. Mobile's own 342px width lives
-     below in `@theme inline` (`--spacing-services-closer-m-w`), since it is
-     consumed as a `w-*` utility rather than by hand-written CSS. */
-  --services-closer-x: 5rem;
+  /* Delivery closer @80,810, 1280×100 desktop: x and width are the page
+     content box (`--spacing-page` in from each canvas edge, feature 38), so
+     only the y is a token. Mobile's own 342px width lives below in
+     `@theme inline` (`--spacing-services-closer-m-w`), since it is consumed
+     as a `w-*` utility rather than by hand-written CSS. */
   --services-closer-y: 50.625rem;
-  --services-closer-w: 80rem;
-  --services-closer-h: 6.25rem;
 
   /* Mobile timeline: `item.top = 72 + index × 185`, exact across all five
      (`data-model.md` § 3) — the one relation FR-011 forbids as five literals. */
@@ -598,24 +660,31 @@
   --duration-contact-whatsapp-toggle: 0.2s;
 
   /*
-   * Form/left-block frame widths, read by `ContactSection.vue`'s
+   * Contacto's two desktop column tracks, read by `ContactSection.vue`'s
    * `<style scoped>` grid (hand-written CSS, so `:root` and not
-   * `@theme inline` — rules.md § R18). 342 → 660 (form) is CONFIRMED
-   * (design-extract.md § 10, frames `Xrs80`/`r3PHqc`).
+   * `@theme inline` — rules.md § R18). A whole track list, not two widths:
+   * `fr` cannot appear inside `calc()`, so the ratio has to live here.
    *
-   * ⚠️ `--contact-left-w`'s desktop value is UNVERIFIED — the leader's brief
-   * gave only the mobile left-block width (342, inert above `lg` since the
-   * mobile frame is single-column). Derived, not confirmed: `1440 − 80×2 −
-   * 660(form) − 64(gap, seeded from the footer's own column gap,
-   * rules.md § R24)` = 556. Flagged for the leader/reviewer to confirm
-   * against the real frame (rules.md § R32 point 4).
+   * Feature 38 (Roberto 2026-10-19, round 2): the grid starts at 64rem
+   * (1024) as before, and its tracks are PROPORTIONAL to the 1440 frame rather than
+   * the old `clamp()` widths, which only fitted the content box at exactly
+   * 1440 and overflowed it by `556.8 − 0.38667·W` px at every width from 1024
+   * to 1439 (measured, docs/harness/progress/audit_tablet_layout_and_pill_
+   * fixes.md). At ≥1440 the content box is 1280 = 556 + 64 + 660, so the
+   * tracks resolve to exactly the frame's 556 / 660 — no change there.
+   * `minmax(0, …)` stops a long word from widening a track past its share.
+   *
+   * 660 (form) is CONFIRMED (design-extract.md § 10, frames `Xrs80`/`r3PHqc`).
+   * ⚠️ 556 (left block) is UNVERIFIED: derived as `1440 − 80×2 − 660(form) −
+   * 64(gap)`, the gap itself seeded from the footer's column gap
+   * (rules.md § R24). Flagged for the leader to confirm against the real frame
+   * (rules.md § R32 point 4).
    */
-  --contact-form-w: clamp(21.375rem, 13.9929rem + 30.2857vw, 41.25rem);
-  --contact-left-w: clamp(21.375rem, 16.4071rem + 20.381vw, 34.75rem);
+  --contact-cols: minmax(0, 556fr) minmax(0, 660fr);
   /* ⚠️ UNVERIFIED — dueño Clau. The gap between the two desktop columns; no
      internal measurement for this section's left block reached this
      implementation beyond the two frame widths. Seeded from the footer's own
-     column gap (rules.md § R24) for the same reason `--contact-left-w` was. */
+     column gap (rules.md § R24), as the 556 in `--contact-cols` was. */
   --contact-col-gap: 4rem;
   /* ⚠️ UNVERIFIED — dueño Clau. The left block's own internal stack gap
      (Pill → heading → body → alt route). Seeded near `--spacing-hero-gap`'s
@@ -629,12 +698,17 @@
    * form 660×744 (D) / 342×665 (M) — CONFIRMED. Read only by
    * `WorkWithMuushSection.vue`'s hand-written `<style scoped>` grid, never by
    * a Tailwind utility class, so these live here and NOT in `@theme inline`
-   * — the same placement `--contact-form-w`/`--contact-left-w` use above,
-   * for the identical reason (`rules.md` § R18: an `@theme inline` token
-   * with no scanned utility consumer never reaches `:root` at all).
+   * — the same placement `--contact-cols` uses above, for the identical
+   * reason (`rules.md` § R18: an `@theme inline` token with no scanned
+   * utility consumer never reaches `:root` at all).
+   *
+   * Feature 38: same recipe as `--contact-cols` — a proportional track list
+   * for the ≥64rem grid. 520 + 100 + 660 = 1280, the content box from 1440
+   * up, so the frame widths are exact there and the tracks shrink together
+   * below it (the old `clamp()` widths overflowed by `606.2 − 0.42095·W` px
+   * from 1024 to 1439).
    */
-  --work-form-w: clamp(21.375rem, 13.9929rem + 30.2857vw, 41.25rem);
-  --work-left-w: clamp(21.375rem, 17.2429rem + 16.9524vw, 32.5rem);
+  --work-cols: minmax(0, 520fr) minmax(0, 660fr);
   /* Desktop only: form x700 − (left x80 + left width 520) = 100px. */
   --work-col-gap: 6.25rem;
   /* Mobile only: form y290 − (left y0 + left height 258) = 32px — NOT the
@@ -1655,8 +1729,6 @@ html {
 
   /* ServiceItem's own name/brief gap: 12 (D) → 10 (M), design-extract.md § 10. */
   --spacing-services-item-gap: clamp(0.625rem, 0.5786rem + 0.1905vw, 0.75rem);
-  /* Desktop-only text-block width, 232 (design-extract.md § 10). */
-  --spacing-services-text-w: 14.5rem;
   /* Mobile-only item width, 310 (design-extract.md § 10). */
   --spacing-services-item-m-w: 19.375rem;
   /* ⚠️ Not separately measured in the frame — the gap between a mobile item's
@@ -1706,9 +1778,8 @@ html {
      role, per this file's own convention, even though the range coincides. */
   --spacing-contact-text-gap: clamp(1.5rem, 1.2679rem + 0.9524vw, 2.125rem);
 
-  /* Form/left-block frame widths, 342 → 660 and 342 → 556. Declared in
-     `:root` as `--contact-form-w` / `--contact-left-w`, not here: the
-     two-column desktop layout is CSS Grid in `ContactSection.vue`'s
+  /* Form/left-block column tracks. Declared in `:root` as `--contact-cols`,
+     not here: the two-column desktop layout is CSS Grid in `ContactSection.vue`'s
      `<style scoped>` (hand-written, R18) and needs no `w-*` utility of its
      own — the grid track sizes the child. */
 
@@ -1861,7 +1932,7 @@ html {
    *
    * Consumed as UTILITY (`pt-*`, `top-*`, `left-*`, `gap-*`), per
    * `findings.md` § R47. The layout widths/gaps
-   * (`--work-form-w`/`--work-left-w`/`--work-col-gap`/`--work-stack-gap`/
+   * (`--work-cols`/`--work-col-gap`/`--work-stack-gap`/
    * `--work-form-y-offset`) live in `:root` above, not here — see that
    * block's own comment.
    *

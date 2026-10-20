@@ -260,8 +260,8 @@ describe('PurposeConstellation · the paint-order contract', () => {
   })
 
   it('should leave the display decision to the caller when mounted', () => {
-    /* The section chooses which composition renders (`hidden lg:flex`), so
-       declaring `flex` here would fight the `lg:` that switches it on. */
+    /* The section chooses which composition renders (`hidden constellation:flex`),
+       so declaring `flex` here would fight the variant that switches it on. */
     expect(mountConstellation().classes()).not.toContain('flex')
     expect(mountConstellation().classes()).toContain('flex-col')
   })

@@ -8,8 +8,10 @@ import PurposeCard from './PurposeCard.vue'
  * The mobile composition: three cards on a horizontal track, the centred one
  * at full size and its neighbours smaller and dimmed, with three dots below.
  *
- * Below `lg` this is the **only** form the section has, so it is half the
- * feature's surface rather than an enhancement.
+ * Wherever the `constellation:` variant (`global.css`) does not match — any
+ * touch screen at any width, and every device below 64rem — this is the
+ * **only** form the section has, so it is half the feature's surface rather
+ * than an enhancement.
  *
  * ## A native snap track, plus very little
  *
@@ -133,6 +135,20 @@ function dimmed(index: number): true | undefined {
 .track {
   padding-inline: calc((100% - var(--purpose-card-m)) / 2);
   scroll-behavior: smooth;
+  /*
+   * No visible scrollbar at any width (feature 38, Roberto on iPad Chrome
+   * 2026-10-19): the dots are the position indicator, and a bar flashing
+   * under the cards while swiping reads as a bug. This hides the bar only —
+   * the track still scrolls, snaps and takes swipe, wheel and keys.
+   * `scrollbar-width` covers Firefox and Chromium ≥ 121; the pseudo-element
+   * below covers Safari/WebKit and older Chromium. Scoped to `.track`, so
+   * the page's own vertical scrollbar is untouched.
+   */
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
 }
 
 /*

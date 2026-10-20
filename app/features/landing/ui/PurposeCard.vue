@@ -5,15 +5,16 @@ import GlassPanel from '@/shared/ui/GlassPanel.vue'
  * One Golden Circle block on a red glass surface: a label and a copy block.
  *
  * **One component, two label placements, and no mode prop.** It always receives
- * `label` **and** `copy`; the label is painted inside the card below `lg` and
- * hidden above it, where the constellation paints the word outside next to the
- * radar. That is `decisions-open.md` § D6 verbatim — *"un solo dato, dos
+ * `label` **and** `copy`; the label is painted inside the card wherever the
+ * carousel renders and hidden under the `constellation:` variant
+ * (`global.css`), where the constellation paints the word outside next to
+ * the radar. That is `decisions-open.md` § D6 verbatim — *"un solo dato, dos
  * posiciones — no requiere prop de modo"* — and it costs exactly one utility.
  *
- * The `lg:hidden` is what keeps the label out of the accessibility tree twice
- * on desktop: the constellation's trigger already carries it as its accessible
- * name, so a second copy inside the card would be announced twice (spec
- * FR-004, SC-002).
+ * The `constellation:hidden` is what keeps the label out of the
+ * accessibility tree twice on desktop: the constellation's trigger already
+ * carries it as its accessible name, so a second copy inside the card would
+ * be announced twice (spec FR-004, SC-002).
  *
  * **All three cards share one surface.** The design file draws the Why card
  * brighter (`#CF31472B` fill / `#CF314778` stroke — the `red-strong` variant)
@@ -25,13 +26,13 @@ import GlassPanel from '@/shared/ui/GlassPanel.vue'
  *
  * ## The two deviations from `--text-lead`, both recorded rather than silent
  *
- * 1. **The weight goes 500 → 600 below `lg`.** `design-extract.md` § 9 draws
- *    the Lead role as 30/500 on desktop and 22/**600** on mobile, and
- *    `rules.md` § R4 named it the single documented exception to the fluid
- *    scale and left it to whoever built this component. It is the reason the
- *    `lg:` here is legitimate under Article VII: a breakpoint changing a
- *    *weight*, never a size — the size still comes from `text-lead`'s
- *    `clamp()`.
+ * 1. **The weight is 600 in the carousel, 500 in the constellation.**
+ *    `design-extract.md` § 9 draws the Lead role as 30/500 on desktop and
+ *    22/**600** on mobile, and `rules.md` § R4 named it the single documented
+ *    exception to the fluid scale and left it to whoever built this
+ *    component. It is the reason the `constellation:` here is legitimate
+ *    under Article VII: a media condition changing a *weight*, never a size —
+ *    the size still comes from `text-lead`'s `clamp()`.
  * 2. **The mobile letter-spacing stays at the token's −0.02em** against the
  *    frame's −0.03em. At 22px that is 0.22px, and the criterion is the one
  *    `rules.md` §§ R2 and R11 already applied twice: implement the system
@@ -43,7 +44,7 @@ import GlassPanel from '@/shared/ui/GlassPanel.vue'
  * with bone text, and it is reported rather than presented as measured.
  */
 interface Props {
-  /** Painted inside the card below `lg`; the constellation owns it above. */
+  /** Painted inside the card in the carousel; the constellation owns it otherwise. */
   label: string
   copy: string
 }
@@ -64,12 +65,12 @@ const { label, copy } = defineProps<Props>()
     class="flex flex-col gap-purpose-card-gap"
   >
     <span
-      class="font-instrument text-purpose-card-label text-red-200 lg:hidden"
+      class="font-instrument text-purpose-card-label text-red-200 constellation:hidden"
     >
       {{ label }}
     </span>
     <p
-      class="font-instrument text-lead font-semibold text-bone-100 lg:font-medium"
+      class="font-instrument text-lead font-semibold text-bone-100 constellation:font-medium"
     >
       {{ copy }}
     </p>

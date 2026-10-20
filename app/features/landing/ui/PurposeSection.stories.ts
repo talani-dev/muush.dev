@@ -154,7 +154,10 @@ export const Revealed: Story = {
   ],
 }
 
-/** Below `lg`: no constellation at all, and the label moves inside the card. */
+/**
+ * The carousel (below 64rem, or any touch screen at any width): no
+ * constellation, and the label moves inside the card.
+ */
 export const Mobile: Story = {
   args: spanish,
   globals: { viewport: { value: 'mobile' } },

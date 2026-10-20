@@ -45,13 +45,18 @@ import SectionGlow from '@/shared/ui/SectionGlow.vue'
  * needed. Desktop (`lg` and above): a two-column CSS grid, left block beside
  * the form. `grid-template-areas` has no Tailwind utility, so this is
  * hand-written CSS in `<style scoped>` reading `:root`-declared tokens
- * (`rules.md` § R18) — `--work-left-w` / `--work-form-w` / `--work-col-gap`
- * live in `:root`, not `@theme inline`, because they are read only by this
- * hand-written rule and never by a Tailwind utility class, the same
- * placement `ContactSection.vue`'s own `--contact-left-w` / `--contact-form-w`
- * / `--contact-col-gap` use for the identical reason (`rules.md` § R18's own
- * warning: an `@theme inline` token with no scanned utility consumer never
- * reaches `:root` at all).
+ * (`rules.md` § R18) — `--work-cols` / `--work-col-gap` live in `:root`, not
+ * `@theme inline`, because they are read only by this hand-written rule and
+ * never by a Tailwind utility class, the same placement `ContactSection.vue`'s
+ * own `--contact-cols` / `--contact-col-gap` use for the identical reason
+ * (`rules.md` § R18's own warning: an `@theme inline` token with no scanned
+ * utility consumer never reaches `:root` at all).
+ *
+ * Feature 38 (Roberto 2026-10-19, round 2): the grid still starts at `lg`,
+ * but its fixed `clamp()` widths only fitted from ~1440 and overflowed the
+ * content box from 1024 to 1439. The tracks are now `fr` columns in the 1440
+ * frame's 520:660 ratio, so both columns shrink together and 1440 is
+ * unchanged. (Round 1 stacked below 80rem; Roberto rejected that.)
  */
 interface Props {
   eyebrow: string
@@ -125,7 +130,7 @@ defineProps<Props>()
   .work-layout {
     display: grid;
     align-items: start;
-    grid-template-columns: var(--work-left-w) var(--work-form-w);
+    grid-template-columns: var(--work-cols);
     grid-template-areas: "text form";
     column-gap: var(--work-col-gap);
   }

@@ -22,9 +22,18 @@ afterEach(() => {
 
 interface ObserverRecord {
   root: Element | null
+  rootMargin: string | undefined
+  threshold: number | number[] | undefined
   observed: Element[]
   disconnected: boolean
-  fire: (entries: { target: Element; isIntersecting: boolean }[]) => void
+  fire: (entries: FakeEntry[]) => void
+}
+
+interface FakeEntry {
+  target: Element
+  isIntersecting: boolean
+  boundingClientRect?: { left: number; width: number }
+  rootBounds?: { left: number; width: number } | null
 }
 
 const observers: ObserverRecord[] = []
@@ -44,6 +53,8 @@ function stubIntersectionObserver(): void {
     ) {
       this.record = {
         root: (options?.root as Element | null) ?? null,
+        rootMargin: options?.rootMargin,
+        threshold: options?.threshold,
         observed: [],
         disconnected: false,
         fire: entries =>
@@ -140,6 +151,45 @@ describe('usePurposeCarousel · the active card', () => {
 
     observers[0]?.fire([{ target: cards[1] as Element, isIntersecting: true }])
     observers[0]?.fire([{ target: cards[1] as Element, isIntersecting: false }])
+
+    expect(wrapper.vm.carousel.activeIndex.value).toBe(1)
+  })
+
+  it('should watch a thin strip at the centre of the track when mounted', async () => {
+    /* Regression, feature 38 (Roberto's iPad, 2026-10-19). A visible-fraction
+       threshold (the old `0.75`) holds every card "centred" once the track is
+       wide enough to show all three, so the observer never fires again and the
+       active card freezes on Why from ~760 up. A strip at the centre has one
+       card under it at rest at any track width. */
+    stubIntersectionObserver()
+    await mountHost()
+
+    expect(observers[0]?.rootMargin).toBe('0px -49.5%')
+    expect(observers[0]?.threshold).toBe(0)
+  })
+
+  it('should pick the card nearest the centre when two cross the strip at once', async () => {
+    /* The layout boxes overlap by a few px by design, and a fast fling can
+       report both crossings in one batch. */
+    stubIntersectionObserver()
+    const wrapper = await mountHost()
+    const cards = wrapper.findAll('article').map(card => card.element)
+    const rootBounds = { left: 507, width: 10 }
+
+    observers[0]?.fire([
+      {
+        target: cards[1] as Element,
+        isIntersecting: true,
+        boundingClientRect: { left: 245, width: 274 },
+        rootBounds,
+      },
+      {
+        target: cards[2] as Element,
+        isIntersecting: true,
+        boundingClientRect: { left: 510, width: 274 },
+        rootBounds,
+      },
+    ])
 
     expect(wrapper.vm.carousel.activeIndex.value).toBe(1)
   })

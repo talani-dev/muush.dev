@@ -818,6 +818,26 @@
       "sdd": false,
       "status": "done",
       "depends_on": [35, 36]
+    },
+    {
+      "id": 38,
+      "name": "tablet_layout_and_pill_fixes",
+      "title": "Fixes de layout: formularios cortados en tablet (contacto y Work with muush) y Pills de sección con mismo tamaño y alineación",
+      "description": "Pedido de Roberto el 2026-10-19, en una sola feature. (1) FORMULARIOS CORTADOS: en iPad Air 13\" vertical (1024 CSS px) el formulario de Work with muush (/es/nosotros, /en/about) se sale por la derecha; Roberto pide revisar también el de contacto del inicio. Causa INFERIDA por el leader (cálculo, no medido en navegador): ContactSection.vue y WorkWithMuushSection.vue pasan a dos columnas en `width >= 64rem` con anchos fijos por clamp (--contact-left-w + --contact-form-w + --contact-col-gap, y el equivalente --work-*) más --spacing-page a ambos lados; esa suma solo cabe a partir de ~1440 px, así que entre 1024 y ~1439 hay desbordamiento horizontal (también en laptops de 1280). Preferencia de Roberto: texto arriba y formulario abajo en vez de adelgazar el formulario. (2) PILLS DE DISTINTO TAMAÑO: todas usan app/shared/ui/Pill.vue, pero en pantalla el de Servicios (y otros) se ve más chico que el de Propósito; todos deben medir lo mismo que el de Propósito. Causa sin diagnosticar: la fase A la mide en el build. (3) PILLS DESALINEADOS EN X: el Pill 'Delivery' (ServicesConstellation.vue, canvas full-bleed con --services-pill-x / closer tokens) no queda en la misma x que el Pill 'Contacto' de la sección siguiente; todos los Pills de sección deben compartir el borde izquierdo del contenido (margen de página). Anotaciones de Roberto en el screenshot del inicio. RESTRICCIONES: sin cambios de copy, rutas ni dependencias; el .pen es la fuente visual (solo el leader lo lee); no tocar infraestructura ni desplegar. ALCANCE APROBADO por Roberto el 2026-10-19 tras la fase A (docs/harness/progress/audit_tablet_layout_and_pill_fixes.md): D1 los formularios se apilan debajo de 80rem (1280) y arriba usan columnas proporcionales a la composición de 1440; D3 botón de enviar centrado como escritorio en el rango apilado; D4 texto a todo el ancho cuando se apila; D5 ENTRA el corte de la constelación de Servicios entre 1024 y 1439: Roberto prefiere hacerla más angosta (posiciones proporcionales al ancho) en vez de cambiar a la línea de tiempo; D6 el tamaño de los Pills no se toca (medido igual en Chrome), solo la alineación en x. NUEVO (Roberto, 2026-10-19): en tamaño tablet Propósito muestra la versión de escritorio y los elementos Why/How/What se quedan abiertos; debajo de 80rem debe mostrar el carrusel móvil.",
+      "acceptance": [
+        "Antes de editar, la fase A entrega a Roberto: causa medida de cada uno de los tres problemas, anchos a los que ocurren y el breakpoint propuesto para apilar los formularios; Roberto aprueba",
+        "Ni el formulario de contacto (inicio) ni el de Work with muush (Nosotros/About) desbordan horizontalmente en ningún ancho de 320 a 1920 px, incluidos 1024 (iPad Air 13\" vertical), 1180, 1280 y 1366, en ambos locales",
+        "Desde 64rem (1024) ambos formularios van en dos columnas (texto a la izquierda, formulario a la derecha) proporcionales a la composición de 1440, sin cortarse ni encimarse y sin desbordar ningún control interno (radios, teléfono, botón); debajo de 1024 se apilan como hoy (revisión de Roberto 2026-10-19: reemplaza el apilado bajo 1280)",
+        "Propósito elige versión por tipo de puntero y ancho (Roberto 2026-10-19): con mouse/trackpad (hover: hover y pointer: fine) y desde 64rem (1024) muestra la constelación Why/How/What con las tarjetas reveladas al hacer hover en los puntos; en pantalla táctil (cualquier ancho) o debajo de 1024 muestra el carrusel, en el que se puede deslizar entre las tres tarjetas y la tarjeta activa e indicadores cambian; solo CSS, sin detección por JS ni user-agent",
+        "La constelación de Servicios no se corta en ningún ancho desde que aparece hasta 1920: entre su breakpoint y 1440 se hace más angosta (posiciones proporcionales) sin que los textos de los nodos se encimen; a 1440 queda igual",
+        "Los Pills de sección comparten la misma x izquierda (el borde del contenido de la página) en cada ancho de escritorio, incluidos Servicios y Delivery respecto a Propósito y Contacto; el tamaño del Pill no cambia",
+        "Ningún carrusel del sitio muestra barra de scroll horizontal en ningún ancho ni navegador (Chrome, Safari/WebKit, Firefox), sin perder el deslizamiento, los indicadores ni el teclado (pedido de Roberto 2026-10-19 tras probar en iPad)",
+        "Sin cambios de copy, rutas ni dependencias; la composición a 1440 no cambia",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": []
     }
   ]
 }

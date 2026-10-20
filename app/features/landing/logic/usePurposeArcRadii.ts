@@ -47,11 +47,12 @@ import { onScopeDispose, type Ref, watch } from 'vue'
  * client paint agree. The correction lands a frame after mount, which
  * Roberto accepted explicitly as the cost of exact tangency over "zero JS".
  *
- * ## Below `lg`, and on resize
+ * ## When the carousel renders, and on resize
  *
- * The `.arcs` WRAPPER is `hidden` below `lg` (mobile has no constellation at
- * all), so measuring it would corrupt every radius instead of leaving the
- * fixed fallback alone. Guarded by reading the **wrapper's own**
+ * The `.arcs` WRAPPER is `hidden` unless the `constellation:` variant matches
+ * (touch screens and widths below 64rem have no constellation at all), so
+ * measuring it would corrupt every radius instead of leaving the fixed
+ * fallback alone. Guarded by reading the **wrapper's own**
  * `getBoundingClientRect()`: a box that is not rendered has a rect that is
  * `0×0` at `(0, 0)`, full stop — checked directly, never through an
  * individual `.arc`'s.
@@ -71,9 +72,10 @@ import { onScopeDispose, type Ref, watch } from 'vue'
  * this wrapper).
  *
  * A `ResizeObserver` on the section recalculates on any reflow — a viewport
- * resize crossing the `lg` breakpoint, or a locale swap that makes the
- * cards wrap differently — so a stale radius from a previous layout is
- * never left applied.
+ * resize or a pointer change flipping the `constellation:` variant (the
+ * section's height changes with the composition, so the observer fires), or
+ * a locale swap that makes the cards wrap differently — so a stale radius
+ * from a previous layout is never left applied.
  *
  * Plain Vue only (`onScopeDispose`, no Nuxt composable), same discipline
  * `useServicesLyrics.ts` and `usePurposeCarousel.ts` already follow so the
