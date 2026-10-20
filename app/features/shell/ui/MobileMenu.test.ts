@@ -162,4 +162,15 @@ describe('MobileMenu', () => {
     expect(wrapper.find('button svg').exists()).toBe(true)
     expect(wrapper.find('img').exists()).toBe(false)
   })
+
+  it('should re-emit the chosen locale when its toggle switches in place', async () => {
+    /* feature 39: the not-found page. */
+    const wrapper = mount(MobileMenu, {
+      props: { ...props, localeSwitchInPlace: true },
+    })
+
+    await wrapper.find('a[hreflang="en"]').trigger('click', { button: 0 })
+
+    expect(wrapper.emitted('switchLocale')).toEqual([['en']])
+  })
 })

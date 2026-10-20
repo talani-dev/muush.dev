@@ -838,6 +838,25 @@
       "sdd": false,
       "status": "done",
       "depends_on": []
+    },
+    {
+      "id": 39,
+      "name": "not_found_locale",
+      "title": "404 en el idioma del visitante (cookie > URL > país) y botón ES/EN que cambia el idioma en la misma 404",
+      "description": "Pedido de Roberto el 2026-10-19. HOY (CONFIRMADO leyendo muush-foundation/modules/static-site, solo lectura): CloudFront devuelve /en/404/index.html para toda ruta inexistente (custom_error_response, Etapa 1 de la feature 36, gate G5), así que la 404 siempre sale en inglés; el país (cloudfront-viewer-country) solo se usa en `/` (request-router job 3) y en `/__geo`. En la 404 el botón de idioma lleva al home del otro idioma (resolveLocaleDestination cae a fallbackHome porque una ruta inexistente no tiene equivalente). DECISIONES de Roberto (2026-10-19): (B) el idioma lo decide CloudFront con Lambda@Edge (origin-response), no el cliente: sin parpadeo y funciona sin JavaScript; esta feature solo ESCRIBE el contrato, Roberto lo lleva a muush-foundation en otra sesión. PRIORIDAD: cookie muush_locale ('es'|'en' exacto) > prefijo de la URL (/es o /es/… → es; /en o /en/… → en) > país en la lista SPANISH_SPEAKING del contrato de la feature 33 (21 códigos) → es, otro país válido → en > sin país → en. BOTÓN ES/EN en la 404: cambia el idioma en la misma URL (sin navegar al home), escribe la cookie muush_locale como ya lo hace el toggle, y 'Volver al inicio' y los links apuntan al home/rutas del idioma elegido. RESTRICCIONES: no editar ni desplegar muush-foundation; sin cambios de copy ni dependencias; los dos documentos es/404 y en/404 siguen existiendo con las mismas llaves.",
+      "acceptance": [
+        "specs/036-not-found-page/contracts/edge-not-found.md queda actualizado (o se crea un contrato nuevo referenciado desde él) con la regla de 4 pasos cookie > prefijo > país > en, la lista SPANISH_SPEAKING citada del contrato de la feature 33 (no una copia distinta), la tabla de verificación con casos de cookie, prefijo y país, y la Etapa 1 como red de seguridad",
+        "El contrato resuelve explícitamente el caché: una 404 cuyo cuerpo depende de cookie/país nunca se sirve desde caché a otro visitante (p. ej. cache-control private, no-store, o cookie y país en la llave de caché), y dice qué cabeceras/cookie deben llegar al Lambda origin-response (la origin request policy viewer_country hoy no reenvía cookies)",
+        "El contrato mantiene: estado 404 sin redirect, URL intacta, noindex, sin Set-Cookie desde el edge, nunca leer ni registrar la IP",
+        "Servido es/404 en cualquier URL (p. ej. /fr/abc), la página hidrata en español sin mismatch ni cambio de idioma; lo mismo con en/404 en /es/abc (la regla 'el documento servido gana al hidratar' sigue vigente)",
+        "En la 404, el botón ES/EN cambia el texto al otro idioma sin cambiar la URL ni recargar, escribe muush_locale con el idioma elegido, y su href sin JavaScript sigue siendo un destino real (el home del otro idioma)",
+        "Tras cambiar de idioma en la 404, 'Volver al inicio', los links de la 404, el nav y el footer apuntan a las rutas del idioma elegido, y <html lang> y el <title> corresponden a ese idioma",
+        "El botón ES/EN fuera de la 404 se comporta exactamente igual que antes (tests existentes de LanguageToggle/resolveLocaleDestination intactos)",
+        "pnpm typecheck, pnpm lint, pnpm test y pnpm generate pasan; los prerenders /es/404 y /en/404 siguen generándose"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": [36]
     }
   ]
 }

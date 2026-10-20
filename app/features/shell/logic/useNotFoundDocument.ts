@@ -5,6 +5,18 @@ import {
 } from '@/features/shell/data/notFound'
 
 /**
+ * The not-found document's `useSeoMeta` input. The title is a getter, not a
+ * string: the language toggle switches this page in place (feature 39), and
+ * the title must follow the locale like the copy does.
+ */
+export function notFoundSeoMeta(t: (key: string) => string) {
+  return {
+    title: () => t(NOT_FOUND_COPY_KEYS.documentTitle),
+    robots: NOT_FOUND_ROBOTS,
+  }
+}
+
+/**
  * The head of a not-found document, and the one Nuxt-internal workaround it
  * needs (feature 36).
  *
@@ -24,10 +36,7 @@ export function useNotFoundDocument(): void {
    */
   useState(NOT_FOUND_LOCALE_STATE_KEY, () => locale.value)
 
-  useSeoMeta({
-    title: t(NOT_FOUND_COPY_KEYS.documentTitle),
-    robots: NOT_FOUND_ROBOTS,
-  })
+  useSeoMeta(notFoundSeoMeta(t))
 
   /*
    * The layout's `useLocaleHead()` still emits `og:locale` and

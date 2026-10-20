@@ -133,6 +133,12 @@ interface Props {
    * to satisfy FR-018 without either violation.
    */
   localeSwitchLabel: string
+  /**
+   * The not-found page (feature 39): the toggle switches the language in
+   * place and this component re-emits the request as `switchLocale`, from
+   * the nav row and from the open menu alike.
+   */
+  localeSwitchInPlace?: boolean
   /** The four destinations the mobile menu carries. */
   menuItems: ResolvedShellItem[]
   socials: ResolvedSocial[]
@@ -151,6 +157,7 @@ const {
   locale,
   localeSwitchHref,
   localeSwitchLabel,
+  localeSwitchInPlace = false,
   menuItems,
   socials,
   navLabel,
@@ -158,6 +165,11 @@ const {
   menuOpenLabel,
   menuCloseLabel,
 } = defineProps<Props>()
+
+const emit = defineEmits<{
+  /** The visitor chose `locale` on a page that switches in place. */
+  switchLocale: [locale: ShellLocale]
+}>()
 
 /**
  * The no-scripting override for the call to action, as a string.
@@ -196,6 +208,18 @@ const isScriptingAvailable = ref(false)
 onMounted(() => {
   isScriptingAvailable.value = true
 })
+
+/*
+ * The open menu's toggle switches the not-found page in place (feature 39).
+ * Nothing navigates, so nothing else would close the panel; it closes here,
+ * after the request is forwarded, so the visitor sees the page in the new
+ * language (Roberto, 2026-10-20). Focus returns to the hamburger as on any
+ * other close.
+ */
+function switchLocaleFromMenu(target: ShellLocale) {
+  emit('switchLocale', target)
+  close()
+}
 
 /* Focus returns to the control that opened the menu. */
 watch(isOpen, opened => {
@@ -321,6 +345,8 @@ watch(isOpen, opened => {
           :locale="locale"
           :href="localeSwitchHref"
           :switch-label="localeSwitchLabel"
+          :in-place="localeSwitchInPlace"
+          @switch-in-place="emit('switchLocale', $event)"
         />
 
         <!--
@@ -372,10 +398,12 @@ watch(isOpen, opened => {
       :locale="locale"
       :locale-switch-href="localeSwitchHref"
       :locale-switch-label="localeSwitchLabel"
+      :locale-switch-in-place="localeSwitchInPlace"
       :label="menuLabel"
       :close-label="menuCloseLabel"
       @closed="close"
       @item-chosen="close"
+      @switch-locale="switchLocaleFromMenu"
     />
   </nav>
 </template>

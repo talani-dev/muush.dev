@@ -2818,3 +2818,35 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - 2026-10-19 · Reviewer round 4: APPROVED (init.sh exit 0, 1375 tests; one version per mouse/touch case; 1440 mouse = master 0 px). Real iPad/Safari unverified. Awaiting Roberto iPad test + OK for done.
 - 2026-10-19 · Roberto verified on iPad and computer ("esta perfecto … todo perfecto") in answer to the done question. implementer launched to close out (done + history).
 - 2026-10-19 · Feature 38 → done (Roberto's OK); ./init.sh exit 0 (1375 tests); history entry written, current.md reset.
+
+## 2026-10-20 — Feature 39: not_found_locale (done)
+
+- Contract (docs only): `specs/036-not-found-page/contracts/edge-not-found.md` § 4–§ 8 rewritten for Stage 2.
+  - A Lambda@Edge origin-response on the HTML behaviour picks the 404 document by cookie `muush_locale` > path prefix `es`/`en` > `CloudFront-Viewer-Country` (feature 33 list, referenced not copied) > `en`.
+  - The response is a 404 in place, `noindex`, with no `Set-Cookie`, `private, no-store`, and `error_caching_min_ttl = 0`.
+  - `muush_locale` is whitelisted in the `viewer_country` origin request policy, and the cache key is unchanged.
+  - Stage 1 is kept as the safety net. Verification is L-1…L-19 and E-0, V-1…V-13.
+  - Roberto applies it in muush-foundation; it was only read from here.
+- Feature 33 cookie contract § 4 amended (Roberto, 2026-10-20). The edge reads `muush_locale` at `/` and on the not-found responses; the edge-not-found § 8 note was updated to match.
+- Site: on the 404 the ES/EN toggle switches language in place.
+  - It loads the messages, then assigns `locale`, with no `setLocale()` and no navigation.
+  - The URL is kept and the cookie is written. Links, nav, footer, `<html lang>` and the title follow the locale.
+  - With scripting off, the href is the other home. If the messages fail to load, it falls back to that href.
+  - Off the 404 the toggle is unchanged.
+- Round 2 (Roberto, 2026-10-20):
+  - The open mobile menu closes after an in-place switch made from inside it.
+  - `MobileMenu.vue` is back under 200 lines (199).
+  - Unit tests added for the fallback (`switchLocaleWithFallback`) and the title getter (`notFoundSeoMeta`).
+- Reviewer APPROVED rounds 1 and 2. Headless Chrome at 390 (es/404 at `/fr/abc`, en/404 at `/es/abc`, regression on `/en/about`). `./init.sh` exit 0, 98 files / 1395 tests.
+- Open follow-ups for Roberto (both pre-existing, not changed here):
+  - Focus return on menu close in `SiteNav.vue` (`watch(isOpen)`). It likely needs `flush: 'post'`, because the nav row is still `inert` when the watcher runs. It dates from 6d50ad8 and is UNVERIFIED in a browser.
+  - On pages other than the 404, the open mobile menu stays open after its navigating language toggle is used.
+- Still open on the infrastructure side: E-0, whether CloudFront re-applies `custom_error_response` over a function-generated 404, must be tested in muush-foundation before production.
+- Implementer: `impl_not_found_locale.md`. Reviewer: `review_not_found_locale.md`.
+
+### Session log (from current.md)
+
+- 2026-10-19 — Feature registered with Roberto's decisions (B, cookie > URL > IP, in-place toggle, contract only).
+- 2026-10-20 — Reviewer APPROVED round 1. Roberto approved: status → reviewing; amend the feature 33 cookie contract; close the mobile menu after an in-place switch. No commits until Roberto says so.
+- 2026-10-20 — Implementer round 2 done (menu closes after in-place switch; MobileMenu 199 lines; fallback and title tests; cookie contract amended). Reviewer APPROVED round 2.
+- 2026-10-20 — Feature 39 → done; history entry written, current.md reset. Not committed (Roberto's instruction).

@@ -34,3 +34,17 @@ export const English: Story = {
     switchLabel: 'Switch to Spanish',
   },
 }
+
+/**
+ * Feature 39 · the not-found page. Same circle, same href (the other
+ * locale's home, for no scripting and new tabs); a plain click emits
+ * `switchInPlace` instead of navigating.
+ */
+export const InPlaceOnNotFound: Story = {
+  args: {
+    locale: 'en',
+    href: '/es',
+    switchLabel: 'Switch to Spanish',
+    inPlace: true,
+  },
+}

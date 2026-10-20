@@ -29,7 +29,8 @@ import type { ShellLocale } from '@/features/shell/data/types'
  *    the two documents are unchanged.
  *
  * Every later switch — the visitor following a link or the language button —
- * is left alone.
+ * is left alone. On the not-found page the button switches in place
+ * (feature 39, `switchLocaleInPlace.ts`) without calling this hook at all.
  */
 
 /** Locale of a path for the not-found page: its prefix, else English. */

@@ -45,9 +45,25 @@ interface Props {
   href: string
   /** Accessible name naming the destination locale, e.g. "Switch to English". */
   switchLabel: string
+  /**
+   * Feature 39 · the not-found page. A plain click switches the language of
+   * the page being shown instead of navigating: it emits `switchInPlace` and
+   * the URL stays the one the visitor typed. `href` stays a real destination
+   * (the other locale's home) for a visitor with no scripting, a click before
+   * hydration, and a modified click opening a new tab.
+   */
+  inPlace?: boolean
 }
 
-const { locale, href, switchLabel } = defineProps<Props>()
+const { locale, href, switchLabel, inPlace = false } = defineProps<Props>()
+
+const emit = defineEmits<{
+  /** The visitor chose `locale` on a page that switches in place. */
+  switchInPlace: [locale: ShellLocale]
+}>()
+
+const TOGGLE_CLASS =
+  'inline-grid size-lang-circle place-items-center rounded-full border border-glass-line bg-glass-dark font-instrument text-lang font-semibold text-bone-100 focus-visible:outline-red-400'
 
 /**
  * The only locale this component ever links to. Derived from `locale`
@@ -67,10 +83,14 @@ const otherLocale = computed<ShellLocale>(() => (locale === 'es' ? 'en' : 'es'))
  * Modified clicks are left alone: intercepting a ⌘/Ctrl/middle-click would
  * cost the visitor "open in new tab" to buy a fragment they did not ask for.
  */
-function preserveAnchor(event: MouseEvent) {
+function isPlainPrimaryClick(event: MouseEvent): boolean {
   const isModified =
     event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
-  if (event.defaultPrevented || isModified || event.button !== 0) return
+  return !event.defaultPrevented && !isModified && event.button === 0
+}
+
+function preserveAnchor(event: MouseEvent) {
+  if (!isPlainPrimaryClick(event)) return
 
   const fragment = window.location.hash.replace(/^#+/, '')
   if (fragment === '') return
@@ -90,17 +110,49 @@ function preserveAnchor(event: MouseEvent) {
  */
 function onToggleClick(event: MouseEvent) {
   rememberLocalePreference(otherLocale.value)
-  preserveAnchor(event)
+  if (inPlace) requestInPlaceSwitch(event)
+  else preserveAnchor(event)
+}
+
+/**
+ * Feature 39. Modified clicks are left to the browser, exactly like
+ * `preserveAnchor`: ⌘/Ctrl-click still opens the other locale's home in a new
+ * tab. The cookie was already written by `onToggleClick`, with the same
+ * destination locale as on every other page.
+ */
+function requestInPlaceSwitch(event: MouseEvent) {
+  if (!isPlainPrimaryClick(event)) return
+
+  event.preventDefault()
+  emit('switchInPlace', otherLocale.value)
 }
 </script>
 
 <template>
+  <!--
+    In place (the not-found page): a plain `<a>`, not a `<NuxtLink>`. The
+    router link's own click handler runs before this component's and would
+    already have started the navigation by the time `preventDefault` ran.
+    The rendered markup is the same anchor either way.
+  -->
+  <a
+    v-if="inPlace"
+    :href="href"
+    :hreflang="otherLocale"
+    :lang="otherLocale"
+    :aria-label="switchLabel"
+    :class="TOGGLE_CLASS"
+    @click="onToggleClick"
+  >
+    {{ locale.toUpperCase() }}
+  </a>
   <NuxtLink
+    v-else
     :to="href"
     :hreflang="otherLocale"
     :lang="otherLocale"
     :aria-label="switchLabel"
-    class="inline-grid size-lang-circle place-items-center rounded-full border border-glass-line bg-glass-dark font-instrument text-lang font-semibold text-bone-100 focus-visible:outline-red-400"
+    :class="TOGGLE_CLASS"
     @click="onToggleClick"
   >
     {{ locale.toUpperCase() }}

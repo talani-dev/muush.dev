@@ -59,7 +59,9 @@ const props = {
  * Awaited: the hamburger appears only once scripting has run, and the ref
  * that records it schedules its render asynchronously.
  */
-async function mountNav(overrides: Partial<typeof props> = {}) {
+async function mountNav(
+  overrides: Partial<typeof props> & { localeSwitchInPlace?: boolean } = {}
+) {
   const wrapper = mount(SiteNav, { props: { ...props, ...overrides } })
   await nextTick()
   return wrapper
@@ -387,5 +389,70 @@ describe('SiteNav', () => {
     ]
 
     expect(menuHrefs.every(href => footerHrefs.includes(href ?? ''))).toBe(true)
+  })
+
+  it('should switch every toggle in place and re-emit the chosen locale when on the not-found page', async () => {
+    /* feature 39: both toggles (nav row and open menu) forward the request. */
+    const wrapper = await mountNav({
+      cta: undefined,
+      localeSwitchInPlace: true,
+    })
+    useMobileMenu().open()
+    await nextTick()
+
+    const toggles = wrapper.findAll('a[hreflang="en"]')
+    expect(toggles).toHaveLength(2)
+    for (const toggle of toggles) {
+      expect(toggle.attributes('href')).toBe('/en')
+      await toggle.trigger('click', { button: 0 })
+    }
+
+    expect(wrapper.emitted('switchLocale')).toEqual([['en'], ['en']])
+  })
+
+  it('should close the open menu after switching in place from inside it', async () => {
+    /* Roberto, 2026-10-20: nothing navigates, so the panel would otherwise
+       stay up over the page that just changed language. */
+    const wrapper = await mountNav({
+      cta: undefined,
+      localeSwitchInPlace: true,
+    })
+    useMobileMenu().open()
+    await nextTick()
+
+    await wrapper.find('[role="dialog"] a[hreflang="en"]').trigger('click', {
+      button: 0,
+    })
+
+    expect(wrapper.emitted('switchLocale')).toEqual([['en']])
+    expect(useMobileMenu().isOpen.value).toBe(false)
+    expect(wrapper.find('[role="dialog"]').exists()).toBe(false)
+  })
+
+  it('should close the menu only from the menu toggle, not from the nav-row toggle', async () => {
+    /* jsdom does not enforce `inert`, so the row's toggle is clickable with
+       the panel up here; it proves the close is wired to the menu's toggle
+       alone, and that the row toggle is unchanged. */
+    const wrapper = await mountNav({
+      cta: undefined,
+      localeSwitchInPlace: true,
+    })
+    useMobileMenu().open()
+    await nextTick()
+
+    await wrapper
+      .find('.nav-row a[hreflang="en"]')
+      .trigger('click', { button: 0 })
+
+    expect(wrapper.emitted('switchLocale')).toEqual([['en']])
+    expect(useMobileMenu().isOpen.value).toBe(true)
+  })
+
+  it('should not emit a locale switch when the toggle navigates', async () => {
+    const wrapper = await mountNav()
+
+    await wrapper.find('a[hreflang="en"]').trigger('click', { button: 0 })
+
+    expect(wrapper.emitted('switchLocale')).toBeUndefined()
   })
 })

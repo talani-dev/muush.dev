@@ -215,3 +215,106 @@ describe('LanguageToggle · locale preference (feature 33)', () => {
     expect(document.cookie).toContain('muush_locale=en')
   })
 })
+
+describe('LanguageToggle · in place on the not-found page (feature 39)', () => {
+  const remember = vi.mocked(rememberLocalePreference)
+  const ENGLISH_HOME = '/en'
+
+  function mountInPlace(locale: 'es' | 'en' = 'es') {
+    return mount(LanguageToggle, {
+      props: {
+        locale,
+        href: locale === 'es' ? ENGLISH_HOME : '/es',
+        switchLabel: SWITCH_TO_ENGLISH,
+        inPlace: true,
+      },
+    })
+  }
+
+  beforeEach(() => {
+    remember.mockClear()
+    clearLocalePreferenceCookie()
+  })
+
+  afterEach(() => {
+    window.location.hash = ''
+    clearLocalePreferenceCookie()
+    vi.restoreAllMocks()
+  })
+
+  it('should keep the other locale home as a real href when rendered in place', () => {
+    /* No scripting, a click before hydration, or a new tab: all land here. */
+    const link = mountInPlace().find('a')
+
+    expect(link.attributes('href')).toBe(ENGLISH_HOME)
+    expect(link.attributes('hreflang')).toBe('en')
+    expect(link.attributes('aria-label')).toBe(SWITCH_TO_ENGLISH)
+    expect(link.classes()).toContain('size-lang-circle')
+  })
+
+  it('should emit the other locale and stay on the page when a plain click switches in place', async () => {
+    const assign = vi
+      .spyOn(window.location, 'assign')
+      .mockImplementation(() => undefined)
+    const wrapper = mountInPlace()
+    const click = new MouseEvent('click', { button: 0, cancelable: true })
+
+    wrapper.find('a').element.dispatchEvent(click)
+
+    expect(click.defaultPrevented).toBe(true)
+    expect(wrapper.emitted('switchInPlace')).toEqual([['en']])
+    expect(assign).not.toHaveBeenCalled()
+  })
+
+  it('should emit Spanish when the page in place is English', async () => {
+    const wrapper = mountInPlace('en')
+
+    await wrapper.find('a').trigger('click', { button: 0 })
+
+    expect(wrapper.emitted('switchInPlace')).toEqual([['es']])
+  })
+
+  it('should write the chosen locale to the cookie when switching in place', async () => {
+    await mountInPlace().find('a').trigger('click', { button: 0 })
+
+    expect(remember).toHaveBeenCalledTimes(1)
+    expect(remember).toHaveBeenCalledWith('en')
+    expect(document.cookie).toContain('muush_locale=en')
+  })
+
+  it('should leave a modified click to the browser when switching in place', async () => {
+    const wrapper = mountInPlace()
+    const click = new MouseEvent('click', {
+      button: 0,
+      metaKey: true,
+      cancelable: true,
+    })
+
+    wrapper.find('a').element.dispatchEvent(click)
+
+    expect(click.defaultPrevented).toBe(false)
+    expect(wrapper.emitted('switchInPlace')).toBeUndefined()
+    expect(remember).toHaveBeenCalledWith('en')
+  })
+
+  it('should not carry a fragment away when switching in place with a hash', async () => {
+    const assign = vi
+      .spyOn(window.location, 'assign')
+      .mockImplementation(() => undefined)
+    window.location.hash = '#work'
+    const wrapper = mountInPlace()
+
+    await wrapper.find('a').trigger('click', { button: 0 })
+
+    expect(assign).not.toHaveBeenCalled()
+    expect(wrapper.emitted('switchInPlace')).toEqual([['en']])
+  })
+
+  it('should never emit when the toggle navigates as on every other page', async () => {
+    const wrapper = mountToggle()
+
+    await wrapper.find('a').trigger('click', { button: 0 })
+
+    expect(wrapper.emitted('switchInPlace')).toBeUndefined()
+  })
+})
