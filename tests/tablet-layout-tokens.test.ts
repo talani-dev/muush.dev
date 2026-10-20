@@ -125,3 +125,68 @@ describe('tablet layout · the Services constellation scales on x', () => {
     }
   })
 })
+
+describe('tablet layout · Propósito chooses its composition by pointer and width', () => {
+  /*
+   * Feature 38 round 4 (Roberto 2026-10-19): a mouse/trackpad from 64rem gets
+   * the hover constellation; any touch screen at any width, and every device
+   * below 64rem, gets the carousel. One named condition, used by every switch,
+   * so exactly one composition is displayed in every combination.
+   */
+  const CONDITION =
+    '@media (width >= 64rem) and (hover: hover) and (pointer: fine)'
+  const purposeFiles = [
+    'PurposeSection.vue',
+    'PurposeCard.vue',
+    'PurposeConstellation.vue',
+    'PurposeCarousel.vue',
+  ]
+  const purposeSource = (file: string) =>
+    source('app', 'features', 'landing', 'ui', file)
+
+  it('should declare the constellation variant once in global.css', () => {
+    /* `source()` collapses whitespace, so Biome's line break inside the
+       parentheses reads as one space on each side. */
+    expect(globalCss).toMatch(
+      new RegExp(
+        `@custom-variant constellation \\(\\s?${CONDITION.replace(/[()]/g, '\\$&')}\\s?\\);`
+      )
+    )
+    expect(globalCss.split('(hover: hover) and (pointer: fine)')).toHaveLength(
+      2
+    )
+  })
+
+  for (const file of purposeFiles) {
+    it(`should switch ${file} with the variant only, never lg:/xl:/80rem`, () => {
+      const code = purposeSource(file)
+
+      expect(code).not.toMatch(/\b(?:sm|md|lg|xl|2xl):[\w-]/)
+      expect(code).not.toContain('80rem')
+      expect(code).not.toMatch(/@media\s*\(\s*hover:\s*none/)
+    })
+  }
+
+  it('should pair every constellation-only piece with the carousel switch', () => {
+    const section = purposeSource('PurposeSection.vue')
+
+    /* constellation, arcs, origin glow — shown only under the variant */
+    expect(
+      section.match(/hidden [^"]*constellation:(?:flex|block)/g)
+    ).toHaveLength(3)
+    /* the carousel — the exact complement */
+    expect(section).toMatch(
+      /<PurposeCarousel[^>]*class="[^"]*constellation:hidden/
+    )
+  })
+
+  it('should keep the hover and keyboard reveal in the constellation', () => {
+    const code = purposeSource('PurposeConstellation.vue')
+
+    for (const target of ['.link', '.card', '.radar']) {
+      const sibling = target === '.radar' ? ' ' : ' ~ '
+      expect(code).toContain(`.trigger:hover${sibling}${target}`)
+      expect(code).toContain(`.trigger:focus-visible${sibling}${target}`)
+    }
+  })
+})

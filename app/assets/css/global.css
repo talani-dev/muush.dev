@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/*
+ * `constellation:` — the ONE condition that chooses Propósito's composition
+ * (feature 38 round 4, Roberto 2026-10-19). A mouse or trackpad as the primary
+ * pointer AND at least 64rem gets the Why/How/What constellation with its
+ * hover reveal; everything else — any touch screen at any width (iPad 1366
+ * included) and every device below 64rem — gets the carousel. Pure CSS, no
+ * JS or user-agent sniffing (Constitution Article I).
+ *
+ * Every switch between the two versions uses this variant and nothing else:
+ * `PurposeSection.vue` (constellation / carousel / arcs / origin glow) and
+ * `PurposeCard.vue` (in-card label and weight). Mixing it with `lg:`/`xl:`
+ * would leave a combination where both or neither render, or where the card
+ * label is announced twice. It replaces round 1's `xl` (80rem) switch, which
+ * existed only to keep a touch tablet off the constellation.
+ */
+@custom-variant constellation (
+  @media (width >= 64rem) and (hover: hover) and (pointer: fine)
+);
+
 /* Valores del branding book (docs/business/branding.md) — 5 pasos por rampa (100-500) */
 :root {
   --bone-100: #fbf8f6;

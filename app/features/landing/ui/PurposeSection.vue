@@ -41,7 +41,7 @@ import PurposeConstellation from './PurposeConstellation.vue'
  * differs in length. Roberto's call (2026-09-08): fix the tangency exactly
  * by measuring in the browser, accepting that this one geometry correction
  * is no longer zero-JS. `usePurposeArcRadii.ts` does the measuring — see
- * its own doc comment for the mechanism, the `lg`-only guard and the
+ * its own doc comment for the mechanism, the hidden-wrapper guard and the
  * fixed-token fallback that holds until the first `onMounted` runs (no
  * hydration mismatch). The hover **reveal** in `PurposeConstellation.vue`
  * is untouched and stays pure CSS; only this static radius correction adds
@@ -175,7 +175,7 @@ usePurposeArcRadii(sectionRoot)
         color="red-400"
         :opacity="12"
         size="920"
-        class="absolute top-purpose-origen-y left-purpose-origen-x hidden -translate-x-1/2 -translate-y-1/2 lg:block"
+        class="absolute top-purpose-origen-y left-purpose-origen-x hidden -translate-x-1/2 -translate-y-1/2 constellation:block"
       />
     </SectionBackdrop>
 
@@ -195,7 +195,7 @@ usePurposeArcRadii(sectionRoot)
     -->
     <div
       aria-hidden="true"
-      class="arcs-clip pointer-events-none absolute inset-0 hidden overflow-clip lg:block"
+      class="arcs-clip pointer-events-none absolute inset-0 hidden overflow-clip constellation:block"
     >
       <div class="arcs">
         <span class="arc arc-why" />
@@ -221,15 +221,23 @@ usePurposeArcRadii(sectionRoot)
       Exactly one of the two renders. `display` is declared here, on the
       caller, because choosing the composition is the caller's job — the two
       components deliberately declare none of their own.
+
+      The switch is the `constellation:` variant defined in `global.css`
+      (feature 38 round 4, Roberto 2026-10-19): `(width >= 64rem) and
+      (hover: hover) and (pointer: fine)`. A mouse/trackpad from 64rem gets
+      the hover constellation; any touch screen at any width, and everything
+      below 64rem, gets the carousel. The arcs and the origin glow above
+      switch with it — always this variant, never `lg:`/`xl:`, so exactly one
+      composition is ever `display`ed.
     -->
     <PurposeConstellation
       :nodes="nodes"
-      class="mt-purpose-eyebrow-gap hidden lg:flex"
+      class="mt-purpose-eyebrow-gap hidden constellation:flex"
     />
     <PurposeCarousel
       :nodes="nodes"
       :label="carouselLabel"
-      class="mt-purpose-eyebrow-gap lg:hidden"
+      class="mt-purpose-eyebrow-gap constellation:hidden"
     />
   </section>
 </template>

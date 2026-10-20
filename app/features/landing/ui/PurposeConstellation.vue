@@ -36,7 +36,8 @@ import PurposeCard from './PurposeCard.vue'
  * announced as empty (spec FR-010). A revealed card never intercepts the
  * pointer, which keeps the reveal stable while the pointer travels and costs
  * mouse text selection at desktop width only (spec A-06); the same copy is
- * permanently selectable below `lg` and on any coarse-pointer device.
+ * permanently selectable in the carousel, which is what every touch screen
+ * and every width below 64rem gets.
  *
  * ## Nothing here is a measured pixel
  *
@@ -49,8 +50,15 @@ import PurposeCard from './PurposeCard.vue'
  * line are centred on their card" (FR-016).
  *
  * `display` is deliberately **not** declared here: the section decides which
- * composition renders (`hidden lg:flex`), and declaring `flex` on this root
- * would fight the `lg:` that switches it on.
+ * composition renders (`hidden constellation:flex`, the variant in
+ * `global.css`), and declaring `flex` on this root would fight the variant
+ * that switches it on.
+ *
+ * It only ever renders under `(hover: hover) and (pointer: fine)` from 64rem
+ * (feature 38 round 4, Roberto 2026-10-19), so there is no `(hover: none)`
+ * fallback here any more: the old "render all three revealed" block opened
+ * every card at once on an iPad, and a touch screen now gets the carousel
+ * instead. Keyboard users still reveal each card through `:focus-visible`.
  *
  * The three concentric arcs are **not** in this file. They centre on a point
  * 270px above this component's own box and must be clipped to the *section*,
@@ -247,24 +255,6 @@ const { nodes } = defineProps<Props>()
 .trigger:hover .radar,
 .trigger:focus-visible .radar {
   opacity: 1;
-}
-
-/*
- * No pointer at all — a tablet at desktop width, or any touch screen wider
- * than the breakpoint. All three nodes render revealed with no interaction,
- * because a section whose substance exists only under a cursor has no
- * substance there (spec FR-011). Same discipline `rules.md` § R7 applied to
- * the LED ring.
- */
-@media (hover: none) {
-  .link {
-    width: var(--purpose-link-revealed);
-  }
-
-  .radar,
-  .node > .card {
-    opacity: 1;
-  }
 }
 
 /*

@@ -174,7 +174,7 @@ describe('usePurposeArcRadii · measurement', () => {
     expect(observers[0]?.target).toBe(wrapper.element)
   })
 
-  it('should never overwrite the diameter while the arcs wrapper is hidden (mobile, below `lg`)', async () => {
+  it('should never overwrite the diameter while the arcs wrapper is hidden (carousel: touch or below 64rem)', async () => {
     /*
      * Regression test for feature 24 round 3 (review finding): the guard
      * used to check an individual `.arc`'s own computed `display`, but
@@ -208,7 +208,8 @@ describe('usePurposeArcRadii · measurement', () => {
     expect(arcWhy.style.getPropertyValue('--arc-diameter')).toBe('100px')
 
     /* Now the wrapper itself reports the zero rect a `display: none` box
-       always has (mobile, below `lg`), plus a different, bogus radar rect —
+       always has (the carousel case: touch, or below 64rem), plus a
+       different, bogus radar rect —
        if the guard did not hold, this would corrupt the diameter to 0. */
     stubRect(arcsWrapper, { left: 0, top: 0, width: 0, height: 0 })
     stubRect(radars[0] as Element, { left: 0, top: 0, width: 0, height: 0 })

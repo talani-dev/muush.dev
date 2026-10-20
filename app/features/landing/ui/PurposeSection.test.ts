@@ -52,7 +52,9 @@ describe('PurposeSection · structure', () => {
   it('should render the eyebrow and exactly one of the two compositions', () => {
     /* Both are in the DOM and one is `display: none`, which is FR-002's point:
        the inactive composition is *removed from rendering*, never merely
-       transparent, so no copy is announced twice. */
+       transparent, so no copy is announced twice. The switch is the
+       `constellation:` variant (mouse/trackpad from 64rem; feature 38 round
+       4): any touch screen at any width gets the carousel. */
     const wrapper = mountSection()
 
     expect(wrapper.text()).toContain(props.eyebrow)
@@ -61,8 +63,8 @@ describe('PurposeSection · structure', () => {
     const carousel = wrapper.getComponent(PurposeCarousel).classes()
 
     expect(constellation).toContain('hidden')
-    expect(constellation).toContain('lg:flex')
-    expect(carousel).toContain('lg:hidden')
+    expect(constellation).toContain('constellation:flex')
+    expect(carousel).toContain('constellation:hidden')
     expect(carousel).not.toContain('hidden')
   })
 
@@ -122,7 +124,7 @@ describe('PurposeSection · the three glows', () => {
       .find(glow => glow.props('size') === '920')
 
     expect(origen?.classes()).toContain('hidden')
-    expect(origen?.classes()).toContain('lg:block')
+    expect(origen?.classes()).toContain('constellation:block')
     expect(origen?.classes()).toContain('top-purpose-origen-y')
     expect(origen?.classes()).toContain('left-purpose-origen-x')
   })
@@ -233,7 +235,7 @@ describe('PurposeSection · the paint-order contract', () => {
     expect(arcsClip).toContain('absolute')
     expect(arcsClip).toContain('inset-0')
     expect(arcsClip).toContain('hidden')
-    expect(arcsClip).toContain('lg:block')
+    expect(arcsClip).toContain('constellation:block')
     expect(arcsClip).not.toContain('overflow-hidden')
 
     const root = sectionRoot(wrapper)
