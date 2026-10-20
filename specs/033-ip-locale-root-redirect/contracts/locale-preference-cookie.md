@@ -1,8 +1,8 @@
 # Contract: the `muush_locale` preference cookie (muush.dev ↔ muush-foundation)
 
 **Writer**: muush.dev, the language toggle (`app/features/shell/ui/LanguageToggle.vue` through `app/features/shell/logic/localePreference.ts`)
-**Reader**: muush-foundation `request-router`, at `/` only (`edge-root-locale-redirect.md` § 3)
-**Status**: Agreed at gate G4 (Roberto, 2026-10-15).
+**Reader**: muush-foundation `request-router`, at `/` (`edge-root-locale-redirect.md` § 3); and, from feature 39, the not-found origin-response function (`specs/036-not-found-page/contracts/edge-not-found.md` § 4)
+**Status**: Agreed at gate G4 (Roberto, 2026-10-15). Amended in § 4 (Roberto, 2026-10-20, feature 39).
 
 ## 1 · Exact form
 
@@ -35,6 +35,8 @@ muush_locale=<es|en>; Path=/; Max-Age=31536000; SameSite=Lax; Secure
 
 ## 4 · What the edge must do
 
-- Read only this cookie, only at `/`, and accept only the exact values `es`/`en`.
+- Read only this cookie, and only in two places: at `/` (`request-router`), and on the not-found responses described in `specs/036-not-found-page/contracts/edge-not-found.md` § 4 (the origin-response function, for an origin `403`/`404` on the HTML behaviour). Accept only the exact values `es`/`en`.
 - Never set, refresh or delete it.
 - Never include it in a cache key.
+
+> **Amendment (Roberto, 2026-10-20, feature 39).** The original G4 text read "Read only this cookie, only at `/`". It is widened to the not-found responses of `edge-not-found.md` § 4, where the cookie is the first step of the language rule (§ 4.2) and reaches the function through the `viewer_country` origin request policy (§ 4.4), never through the cache key (§ 4.5). Nothing else in this contract changes: the site still writes it only from the toggle (§ 2) and never reads it (§ 3), and the edge still never sets, refreshes or deletes it.
