@@ -127,6 +127,11 @@ Rejected: adding `muush_locale` and `CloudFront-Viewer-Country` to the cache key
 
 Accepted cost: every request for a missing HTML URL reaches S3 and runs the function (plus at most one `GetObject` per container per locale per TTL window). Bot scans of random paths are billed at that rate.
 
+**HTML pages are cached at the edge (Roberto, 2026-10-20, feature 40).** The deploy uploads every non-hashed object (HTML, `_payload.json`, `_i18n/*`, `favicon.svg`) with `cache-control: public,max-age=0,s-maxage=300,must-revalidate` (CONFIRMED, `.github/workflows/deploy.yml`). `max-age=0` + `must-revalidate` keep the browser revalidating every time; `s-maxage=300` is read only by CloudFront, within the HTML cache policy's `max_ttl` 3600 (`min_ttl` 0 and default 300 CONFIRMED above / in `variables.tf`; `max_ttl` 3600 as recorded in feature 40, measured from muush-foundation). Before this every page visit was a miss to S3 and would run this function; now a page miss — and so the function — happens about once per 5 min per path per edge cache (INFERRED). The deploy's `/*` invalidation, the last deploy step, makes a new deploy visible at once.
+
+- **Stage 2 is unchanged.** The function's 404s still carry `private, no-store` and are not cached (point 1 above), and the "Accepted cost" for missing URLs is unchanged: a missing URL has no object to cache, so each request still reaches S3 and the function.
+- **404 body lag after a deploy (pre-existing, not introduced by feature 40).** The function's in-memory copy of the 404 body (§ 4.3, up to `html_default_ttl_seconds`) lives in the Lambda container, not in the CloudFront cache, so a `/*` invalidation does not clear it: the 404 text can lag a deploy by up to 300 s (INFERRED).
+
 **Interaction with `custom_error_response` — UNVERIFIED, settled by test E-0 (§ 7).** It is not established here whether CloudFront matches its custom error responses against the origin's status (403) or against the status the function returned (404), nor whether it replaces a function-generated body. The **required outcome** is fixed: when the function succeeds, its body reaches the visitor; when it passes the origin response through, the Stage 1 English page does. If E-0 shows the custom error page replacing the function's body, the candidate fix is to keep only the `403` entry (the normal miss, CONFIRMED) and drop `404` — then re-run E-0. If the 403 entry also overrides it, Stage 2 cannot coexist with a custom error response and muush-foundation must come back to muush.dev before shipping.
 
 ### 4.6 · Privacy and logging
@@ -224,7 +229,7 @@ Infrastructure this implies (muush-foundation's to specify): the function in **u
 | Header | Stage 1 (custom error response) | Stage 2 (function-generated) |
 |---|---|---|
 | `content-type` | `text/html; charset=utf-8` | same |
-| `cache-control` | what the HTML behaviour sends; never `immutable` | **`private, no-store`** (§ 4.5) |
+| `cache-control` | what the HTML object carries — `public,max-age=0,s-maxage=300,must-revalidate` since feature 40 (§ 4.5); never `immutable` | **`private, no-store`** (§ 4.5) |
 | `x-robots-tag` | `noindex` (optional) | `noindex` |
 | `set-cookie` | none | **none** |
 | `location` | none | **none** |
@@ -296,7 +301,7 @@ Stage 2 (no muush.dev deploy required — both documents exist since feature 36)
 | V-5 | from a non-Spanish-speaking location, no cookie: `/fr/abc` | `en-US` |
 | V-6 | **cache**: one fresh missing URL `U=/fr/cache-$RANDOM`; request it 6 times alternating `muush_locale=es` / `en` | language follows **every** request; `cache-control: private, no-store`; `x-cache` never `Hit from cloudfront` |
 | V-7 | `curl -sI` on any 404 above | no `location`, no `set-cookie`, no `vary` |
-| V-8 | `/es`, `/en`, `/es/nosotros`, `/en/about` twice each | `200`, same `cache-control` as before, second request `Hit from cloudfront` (HTML cache key unchanged) |
+| V-8 | `/es`, `/en`, `/es/nosotros`, `/en/about` twice each | `200`, `cache-control: public,max-age=0,s-maxage=300,must-revalidate` (the S3 object header, feature 40) and no `private, no-store`, second request `Hit from cloudfront` with `age` (HTML cache key unchanged) |
 | V-9 | `/`, with and without cookie | unchanged feature 33 302 |
 | V-10 | `/en/404/_payload.json`, `/_i18n/…/messages.json` used by the page | `200` |
 | V-11 | `/_nuxt/does-not-exist.js` | unchanged (Stage 1 behaviour of the immutable behaviours) |
