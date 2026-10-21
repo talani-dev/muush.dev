@@ -135,13 +135,21 @@ jobs:
             --include "_nuxt/*" \
             --include "_fonts/*"
 
-      - name: Upload HTML/payload/other files (revalidate on every request)
+      - name: Upload HTML/payload/other files (browser revalidates; CDN keeps 5 min)
         # Everything else (`*.html`, per-route `_payload.json`, `favicon.svg`,
         # `_i18n/*`) is NOT content-hashed, so a stale cached copy would keep
         # serving the previous deploy's markup/data.
+        # `max-age=0` + `must-revalidate` govern the browser: it always
+        # revalidates, never shows an old copy. `s-maxage=300` is read only by
+        # shared caches, so CloudFront keeps the object 5 min (inside the html
+        # cache policy's min_ttl 0 / default 300 / max_ttl 3600). Without it
+        # every visit was a miss to S3 and would run the Stage 2 Lambda@Edge
+        # origin-response (specs/036-not-found-page/contracts/edge-not-found.md
+        # § 4) on every visit. Deploys stay visible at once through the `/*`
+        # invalidation below (feature 40).
         run: |
           aws s3 sync .output/public "s3://${{ vars.AWS_S3_BUCKET }}" \
-            --cache-control "public,max-age=0,must-revalidate" \
+            --cache-control "public,max-age=0,s-maxage=300,must-revalidate" \
             --exclude "_nuxt/*" \
             --exclude "_fonts/*"
 
@@ -156,6 +164,9 @@ jobs:
           aws s3 sync .output/public "s3://${{ vars.AWS_S3_BUCKET }}" --delete
 
       - name: Invalidate CloudFront cache
+        # Must stay the last step, after both uploads and the `--delete`, and
+        # cover `/*`: it is what makes a new deploy visible at once even though
+        # CloudFront keeps HTML up to `s-maxage=300` (upload step above).
         run: |
           aws cloudfront create-invalidation \
             --distribution-id "${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }}" \
