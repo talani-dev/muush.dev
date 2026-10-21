@@ -872,7 +872,7 @@
         "Verificación post-deploy (la hace Roberto o el leader con su aprobación): aws s3api head-object --key es/index.html devuelve CacheControl 'public,max-age=0,s-maxage=300,must-revalidate'; dos curl -sI https://muush.dev/es → el segundo con 'x-cache: Hit from cloudfront' y 'age:'; un cambio de texto publicado se ve al instante tras el deploy"
       ],
       "sdd": false,
-      "status": "reviewing",
+      "status": "done",
       "depends_on": [36, 39]
     }
   ]

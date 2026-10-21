@@ -2850,3 +2850,30 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - 2026-10-20 — Reviewer APPROVED round 1. Roberto approved: status → reviewing; amend the feature 33 cookie contract; close the mobile menu after an in-place switch. No commits until Roberto says so.
 - 2026-10-20 — Implementer round 2 done (menu closes after in-place switch; MobileMenu 199 lines; fallback and title tests; cookie contract amended). Reviewer APPROVED round 2.
 - 2026-10-20 — Feature 39 → done; history entry written, current.md reset. Not committed (Roberto's instruction).
+
+## 2026-10-20 — Feature 40: html_edge_cache_s_maxage (done)
+
+- Change (sdd: false): the `Upload HTML/payload/other files` step of `.github/workflows/deploy.yml` now uploads with `public,max-age=0,s-maxage=300,must-revalidate`. Browsers still revalidate on every visit, and CloudFront keeps the HTML for 5 min (inside the html cache policy's max_ttl 3600).
+  - Step name and comment updated. The `_nuxt/`/`_fonts/` step (`public,max-age=31536000,immutable`) is untouched.
+  - `Invalidate CloudFront cache` is commented as the step that must stay last (`/*`), after both uploads and `--delete`.
+  - `specs/036-not-found-page/contracts/edge-not-found.md` § 4.5 note and § 5 Stage 1 cell record the header. Stage 2 Lambda 404s stay `private, no-store`.
+  - No app/ or tests/ change. typecheck/lint/test/generate and `./init.sh` exit 0.
+- Reviewer APPROVED (acceptance #6 left for after the production deploy).
+- Leader note: contract edge-not-found § 7 V-8 reworded to the new header.
+- Deployed as v1.7.3.
+- Post-deploy evidence:
+  - Create release run 39538804706 success; deploy steps ran upload → `--delete` → invalidation `/*` in order (CONFIRMED from the run).
+  - `aws s3api head-object --key es/index.html` → `CacheControl: "public,max-age=0,s-maxage=300,must-revalidate"` (CONFIRMED, run by Roberto).
+  - `curl -sI https://muush.dev/es`: 2 misses, then 6 consecutive `Hit from cloudfront` with `age` 7→14 on POP MIA3-P3; `/en/about` Hit with age (CONFIRMED).
+- "Text change visible right after a deploy": NOT RUN. Roberto chose to defer it to the next deploy that changes copy (decision 2026-10-20, option b). Whether the invalidation reached `Completed` status in CloudFront was not checked (UNVERIFIED); only the create-invalidation step's success is confirmed.
+- Pre-existing, not a regression: the Stage 2 Lambda's in-memory 404 body can lag up to 300 s after a deploy.
+- Implementer: `impl_html_edge_cache_s_maxage.md`. Reviewer: `review_html_edge_cache_s_maxage.md`.
+
+### Session log (from current.md)
+
+- 2026-10-20 · `./init.sh` green. Leader pre-checks (read-only): `Invalidate CloudFront cache` is the last deploy step and invalidates `/*` (CONFIRMED, deploy.yml:158-162); `/` (302) and `/__geo` are answered by `request-router` at viewer-request with `private, no-store` and never reach S3 (CONFIRMED from contracts 033 § 4 and 036 F29); no preview environment or dynamic routes. Feature 40 registered as `pending`.
+- 2026-10-20 · Roberto approved → `in_progress`; implementer launched.
+- 2026-10-20 · Implementer PASS (deploy.yml HTML header + comments; edge-not-found.md § 4.5/§ 5; all checks exit 0) → `reviewing`; reviewer launched.
+- 2026-10-20 · Reviewer APPROVED; acceptance #6 pending production deploy. Leader reworded contract § 7 V-8. Feature stays `reviewing` until post-deploy checks.
+- 2026-10-20 · Deployed v1.7.3 (run 39538804706, 2026-10-21 03:33 UTC). Post-deploy header, S3 metadata and CloudFront Hit/age checks CONFIRMED; text-change check NOT run.
+- 2026-10-20 · Roberto chose option (b): defer the text-change check to the next copy deploy. Feature 40 → done; history entry written, current.md reset.
