@@ -857,6 +857,23 @@
       "sdd": false,
       "status": "done",
       "depends_on": [36]
+    },
+    {
+      "id": 40,
+      "name": "html_edge_cache_s_maxage",
+      "title": "CloudFront cachea el HTML 5 min en el edge (s-maxage=300) sin que el navegador guarde copias viejas",
+      "description": "Pedido de Roberto el 2026-10-20 (medido desde muush-foundation): el paso 'Upload HTML/payload/other files' de .github/workflows/deploy.yml sube todo lo que no es _nuxt/ ni _fonts/ con 'public,max-age=0,must-revalidate'; la cache policy html (min_ttl 0, default 300, max 3600) respeta max-age=0, así que cada visita es un miss a S3 y la Etapa 2 de la 404 (Lambda@Edge origin-response, contrato specs/036-not-found-page/contracts/edge-not-found.md § 4) correría en cada visita. CAMBIO: ese paso pasa a 'public,max-age=0,s-maxage=300,must-revalidate'. VERIFICADO por el leader antes de registrar (2026-10-20): (a) 'Invalidate CloudFront cache' corre después de ambas subidas y del --delete e invalida '/*'; (b) nada servido desde S3 depende del visitante: '/' (302 por país/cookie) y '/__geo' los contesta la función viewer-request request-router antes de la caché con 'private, no-store' y nunca llegan a S3; public/index.html es el mismo fallback estático para todos; no hay entorno de preview ni rutas dinámicas (sitio estático). RESTRICCIONES: no tocar muush-foundation; el deploy a producción necesita aprobación explícita de Roberto.",
+      "acceptance": [
+        "El paso 'Upload HTML/payload/other files' de .github/workflows/deploy.yml usa --cache-control \"public,max-age=0,s-maxage=300,must-revalidate\"; el nombre del paso y su comentario explican que max-age=0 + must-revalidate rigen al navegador y s-maxage=300 solo al CDN (dentro de max_ttl 3600 de la cache policy html)",
+        "El paso de _nuxt/ y _fonts/ (public,max-age=31536000,immutable) no cambia",
+        "El paso 'Invalidate CloudFront cache' sigue siendo el último, después de las dos subidas y del --delete, e invalida '/*'; su comentario dice que es lo que hace visible un deploy al instante pese a s-maxage",
+        "specs/036-not-found-page/contracts/edge-not-found.md registra la decisión: § 5 (cabecera de Etapa 1) y § 4.5 dicen que las páginas HTML llevan s-maxage=300 y que la Etapa 2 no cambia — las 404 del Lambda llevan 'private, no-store' y no se cachean; el miss por página deja de ser por visita",
+        "Ningún otro archivo de app/ o tests/ cambia; pnpm typecheck, pnpm lint, pnpm test y pnpm generate pasan",
+        "Verificación post-deploy (la hace Roberto o el leader con su aprobación): aws s3api head-object --key es/index.html devuelve CacheControl 'public,max-age=0,s-maxage=300,must-revalidate'; dos curl -sI https://muush.dev/es → el segundo con 'x-cache: Hit from cloudfront' y 'age:'; un cambio de texto publicado se ve al instante tras el deploy"
+      ],
+      "sdd": false,
+      "status": "reviewing",
+      "depends_on": [36, 39]
     }
   ]
 }
