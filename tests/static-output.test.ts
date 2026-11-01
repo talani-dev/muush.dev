@@ -243,7 +243,10 @@ describe('static output · the layout wraps every page', () => {
        */
       const html = documentFor(route)
 
-      const layoutRoot = html.match(/<div class="([^"]*bg-ink-500[^"]*)"/)?.[1]
+      /* Feature 42: the layout root paints the v2 canvas, Negro 950. */
+      const layoutRoot = html.match(
+        /<div class="([^"]*bg-negro-950[^"]*)"/
+      )?.[1]
 
       expect(layoutRoot, route).toBeDefined()
       for (const utility of ['relative', 'isolate', 'overflow-clip']) {
@@ -609,7 +612,7 @@ describe('static output · the canvas under the document', () => {
    * what a future glow would silently take away.
    */
 
-  it('should paint the document canvas with the ink base when the site is generated', () => {
+  it('should paint the document canvas with the Negro 950 base when the site is generated', () => {
     const css = emittedCss()
 
     /* On `html`, not on `body`: the canvas takes the root element's background
@@ -619,10 +622,11 @@ describe('static output · the canvas under the document', () => {
        (reviewer, 2026-09-08) — but it would leave the outcome depending on
        `html` staying transparent. What can never paint the canvas is the
        layout root, because it is a `<div>`, and that is the actual defect. */
-    expect(css).toMatch(/html\s*\{[^}]*background-color:\s*var\(--ink-500\)/)
+    /* Feature 42: the v2 canvas is Negro 950 (spec FR-009). */
+    expect(css).toMatch(/html\s*\{[^}]*background-color:\s*var\(--negro-950\)/)
     /* And the token it names has to be reachable, or the rule resolves to
        nothing in silence — the trap `findings.md` § R46 records. */
-    expect(css).toMatch(/--ink-500:\s*#262626/i)
+    expect(css).toMatch(/--negro-950:\s*#050505/i)
   })
 
   it('should leave no other background on the root or the body when the site is generated', () => {
@@ -649,7 +653,7 @@ describe('static output · the canvas under the document', () => {
        * replaced, and it is exactly what a revert would put back.
        */
       const layoutRoot = documentFor(route)
-        .match(/<div class="([^"]*bg-ink-500[^"]*)"/)?.[1]
+        .match(/<div class="([^"]*bg-negro-950[^"]*)"/)?.[1]
         ?.split(' ')
 
       expect(layoutRoot, route).toContain('overflow-clip')
@@ -790,7 +794,7 @@ describe('static output · the landing hero', () => {
       expect(controls.length, route).toBeGreaterThan(0)
       for (const classes of controls) {
         expect(classes, route).toContain('rounded-full')
-        expect(classes, route).not.toContain('rounded-control')
+        expect(classes, route).not.toContain('rounded-legacy-control')
         /* The fill is untouched: the nav CTA looks fill-less in the frame
            because the nav's own glass sits behind it (Roberto, 2026-09-08). */
         expect(classes, route).toContain('bg-glass-dark')
@@ -1073,7 +1077,7 @@ describe('static output · the landing purpose section', () => {
 
   it('should add no token to the closed glow namespace when generated', () => {
     /*
-     * `rules.md` § R36. `app/shared/ui/SectionGlow.test.ts` asserts in both
+     * `rules.md` § R36. `app/shared/ui/legacy/SectionGlow.test.ts` asserts in both
      * directions over `--(?:color|spacing)-glow-[\w-]+`, so a token named
      * `--spacing-glow-purpose-…` would turn this feature red in a file it
      * never opened — and the instinct would be to relax that test. This is the
@@ -1668,6 +1672,9 @@ describe('static output · the brand type is self-hosted', () => {
    * (docs/business/rules.md §§ R25, R31).
    */
   const BRAND_FONT_WEIGHTS = [
+    /* Feature 42: Poppins 500 for the v2 headings, logo and wordmark
+       (Constitution VII); 600 stays for v1 components until feature 47. */
+    { family: 'Poppins', weight: 500 },
     { family: 'Poppins', weight: 600 },
     { family: 'Instrument Sans', weight: 400 },
     { family: 'Instrument Sans', weight: 500 },

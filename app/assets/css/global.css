@@ -111,15 +111,18 @@
   --spotlight-lit-radius: 7.5rem;
 
   /*
-   * Color del punto iluminado: red-400 al 100%, decisión de Roberto (A2-2,
-   * 2026-10-14; opacidad plena = elección A2-S1 del spec). Bajo el puntero el
-   * punto es exactamente #CF3147; la máscara lineal lo funde hasta el punto
-   * normal en el radio. Una opacidad parcial sobre ink-500 se vería como un
-   * granate que no es tono de marca. Si hiciera falta suavizarlo, el respaldo
-   * es `color-mix(in srgb, var(--red-400) N%, transparent)` en ESTE mismo
-   * token, nunca un rojo nuevo.
+   * Color del punto iluminado, al 100% (A2-2, Roberto 2026-10-14; opacidad
+   * plena = elección A2-S1 del spec de la feature 34). Desde la feature 42
+   * (Muush 1.0, spec FR-027; Clarifications Q1, confirmado por Roberto
+   * 2026-10-31) es Red muush 500 (`--red-muush-500`, #E5352F) y ya no el
+   * red-400 v1: bajo el puntero el punto es exactamente ese rojo, y la
+   * máscara lineal lo funde hasta el punto normal en el radio. El radio, la
+   * caída de la máscara, las condiciones de montaje y el fundido NO cambian.
+   * Si hiciera falta suavizarlo, el respaldo es
+   * `color-mix(in srgb, var(--red-muush-500) N%, transparent)` en ESTE
+   * mismo token, nunca un rojo nuevo.
    */
-  --dot-paper-lit-color: var(--red-400);
+  --dot-paper-lit-color: var(--red-muush-500);
 
   /*
    * ⚠️ UNVERIFIED — dueño: Clau (spec A-08). El diseño no especifica timing
@@ -730,6 +733,243 @@
 }
 
 /*
+ * ==========================================================================
+ * MUUSH 1.0 (v2) · tokens — feature 42 (visual foundation)
+ * ==========================================================================
+ *
+ * Three sources, in order of precedence (spec "Sources of truth"):
+ *
+ * 1. `muush.pen`, read by the leader into
+ *    `docs/harness/progress/pen-extract-42.md`. The `.pen` wins every tie
+ *    (rules.md § R32).
+ * 2. `docs/business/muush-1.0.md` (decisions and approved copy).
+ * 3. `docs/handoff/muush-1.0/componentes/tokens.css`: every one of its
+ *    variables is declared below under the same name minus the handoff's
+ *    version prefix, with the same computed value at a 16 px root, in `rem`
+ *    (research R3), except where a comment records a `.pen` override. The two
+ *    font stacks are the one renamed pair (see "Tipografía" below).
+ *    `tests/design-tokens.test.ts` pins that.
+ *
+ * No name here carries a version marker (Constitution VII, naming
+ * reorganization approved by Roberto 2026-11-01): these are the final names.
+ * The v1 theme keys that would have collided were renamed `legacy-*`.
+ *
+ * ⚠️ New code MUST NOT use the v1 families (`--bone-*`, `--ink-*`, `--red-*`,
+ * `--wine-*`) or their utilities (Constitution VII). They stay above, for the
+ * v1 sections, until feature 47 removes them.
+ *
+ * Heading tracking is FLUID: 0 at 390 px and ≈ −0.035 em at 1440 px, so both
+ * anchors match the `.pen` (pen extract § 8; Clarifications Q2, resolved). A
+ * fixed `em` would give the mobile hero −1.24 px and break the 390 anchor.
+ *
+ * Every fluid value interpolates linearly between the 390 and 1440 anchors
+ * and clamps outside them: slope = (max − min) / 1050, intercept =
+ * min − slope × 390 (research R4).
+ *
+ * Values read by hand-written CSS live here; `@theme inline` (further down)
+ * only references them, because it inlines its values and emits no custom
+ * property of its own (rules.md § R18, findings.md § R46).
+ */
+:root {
+  /* ---------- Base neutra (handoff · pen extract § 1) ---------- */
+  --negro-950: #050505;
+  --negro-900: #0b0b0b;
+  --carbon-800: #1a1a1a;
+  --carbon-700: #2c2c2c;
+  --gris-400: #8c8c8a;
+  --blanco: #f4f4f2;
+
+  /* ---------- Brasa. `m1-red-400 #CF3147` of the `.pen` is "el rojo
+     anterior", reference only: deliberately NO token (pen extract § 1). And
+     no `--brasa-500` alias: the button's `$m1-brasa-500` IS red-muush-500.
+     ---------- */
+  --red-muush-500: #e5352f;
+  --crimson-600: #8e2a1e;
+  --oxblood-800: #4a1715;
+  --coral-300: #c9604a;
+  --arena-300: #b38b7b;
+
+  /* ---------- Acero ---------- */
+  --acero-200: #a6b6b2;
+  --acero-400: #4a676b;
+  --acero-800: #1f3236;
+
+  /* ---------- Texto con opacidad (handoff literals, so the value
+     comparison of SC-001 is literal) ---------- */
+  --texto: var(--blanco);
+  --texto-suave: rgba(244, 244, 242, 0.7);
+  --texto-tenue: rgba(244, 244, 242, 0.4);
+  --linea: rgba(244, 244, 242, 0.12);
+  --linea-fuerte: rgba(244, 244, 242, 0.2);
+
+  /* ---------- Superficies derivadas (pen extract §§ 2–3). The `.pen`
+     writes 8-digit hexes; they are re-expressed over the palette so a palette
+     change reaches them (0x99 = 60 %, 0x66 = 40 %, 0x4D = 30 %, 0x1F = 12 %).
+     ---------- */
+  --pill-fondo: color-mix(in srgb, var(--carbon-800) 60%, transparent);
+  --franja-fondo: color-mix(in srgb, var(--carbon-800) 40%, transparent);
+  --punto-halo: color-mix(in srgb, var(--red-muush-500) 30%, transparent);
+  --punto-halo2: color-mix(in srgb, var(--red-muush-500) 12%, transparent);
+
+  /* ---------- Tipografía. The handoff's two font stacks are the only
+     variables NOT kept under their unprefixed handoff name: unprefixed they
+     would be `--font-titulo` and `--font-texto`, the very keys of the theme
+     aliases below (`font-titulo`, `font-texto`), and an alias would then
+     reference itself. `--fuente-*` keeps the stack and the alias apart.
+     ---------- */
+  --fuente-titulo: "Poppins", system-ui, sans-serif;
+  --fuente-texto: "Instrument Sans", system-ui, sans-serif;
+
+  /*
+   * `.pen` OVERRIDE (pen extract § 4, rules.md § R32): the handoff caps the
+   * hero at 84 px (`clamp(34px, 6vw + 10px, 84px)`); the `.pen` draws it at
+   * 96 px at 1440. 34 → 96 px.
+   */
+  --h-hero: clamp(2.125rem, 0.6857rem + 5.9048vw, 6rem);
+  /*
+   * Handoff range 28 → 56 px, re-anchored to 390 / 1440 (research R4): equal
+   * to the handoff's `3vw + 14px` at and beyond both anchors, slightly
+   * different in between (responsive latitude, Constitution VII). The 30, 32
+   * and 34 px mobile sizes some sections draw are per-use overrides owned by
+   * features 44 and 46 (pen extract § 8).
+   */
+  --h-seccion: clamp(1.75rem, 1.1rem + 2.6667vw, 3.5rem);
+  /* Cómo trabajamos, 28 → 52 px (pen extract § 4). */
+  --h-proceso: clamp(1.75rem, 1.1929rem + 2.2857vw, 3.25rem);
+  /* "Pide tu diagnóstico", 34 → 64 px (pen extract § 4). */
+  --h-diagnostico: clamp(2.125rem, 1.4286rem + 2.8571vw, 4rem);
+  --h-tarjeta: clamp(1.1875rem, 1vw + 0.875rem, 1.625rem);
+  /* Service-card title: 24 px at both anchors (pen extract § 8). */
+  --h-servicio: 1.5rem;
+  /*
+   * `.pen` OVERRIDE (pen extract § 4, rules.md § R32): the hero subtitle is
+   * 17 px at 390 and 20 px at 1440; the handoff started at 16 px
+   * (`clamp(16px, 0.5vw + 14px, 20px)`).
+   */
+  --p-grande: clamp(1.0625rem, 0.9929rem + 0.2857vw, 1.25rem);
+  --p: 0.9375rem;
+  --p-chico: 0.8125rem;
+  --etiqueta: 0.75rem;
+  /* Section body text, 17 px (pen extract § 4). */
+  --cuerpo: 1.0625rem;
+  --interlineado-titulo: 1.15;
+  --interlineado-texto: 1.5;
+
+  /*
+   * Heading line-heights as LENGTHS, so both anchors are exact even though
+   * the unitless ratio changes (hero 1.1 → 1.06, sección 1.15 → 1.1,
+   * proceso 1.15 → 1.1, diagnóstico 1.15 → 1.08; pen extract § 4).
+   */
+  --lh-hero: clamp(2.3375rem, 0.8434rem + 6.1295vw, 6.36rem);
+  --lh-seccion: clamp(2.0125rem, 1.33rem + 2.8vw, 3.85rem);
+  --lh-proceso: clamp(2.0125rem, 1.4321rem + 2.381vw, 3.575rem);
+  --lh-diagnostico: clamp(2.4438rem, 1.7469rem + 2.859vw, 4.32rem);
+
+  /*
+   * Heading tracking, fluid from 0 at 390 to the 1440 value (pen extract
+   * § 8): hero −3.5, sección −1.96, proceso −1.82, diagnóstico −2.24 px.
+   * Negative clamps: the minimum is the 1440 value, the maximum is 0.
+   */
+  --tracking-hero: clamp(-0.2188rem, 0.0813rem - 0.3333vw, 0rem);
+  --tracking-seccion: clamp(-0.1225rem, 0.0455rem - 0.1867vw, 0rem);
+  --tracking-proceso: clamp(-0.1138rem, 0.0423rem - 0.1733vw, 0rem);
+  --tracking-diagnostico: clamp(-0.14rem, 0.052rem - 0.2133vw, 0rem);
+  /* Service-card title, −0.6 px at both anchors (pen extract § 8). */
+  --tracking-servicio: -0.0375rem;
+
+  /* ---------- Forma ---------- */
+  --radio-control: 0.75rem;
+  --radio-campo: 0.75rem;
+  /* Handoff card radius, kept at 22 px. The service card is 24 (below). */
+  --radio-tarjeta: 1.375rem;
+  --radio-tile: 1.75rem;
+  /* 999 px, the handoff's pill radius, at the same computed value. */
+  --radio-pill: 62.4375rem;
+  /* Glass presets (pen extract §§ 3, 8): panel 28, service card 24 (confirmed
+     in the `.pen`), "También" strip 20. */
+  --radio-panel: 1.75rem;
+  --radio-servicio: 1.5rem;
+  --radio-franja: 1.25rem;
+  --control: 2.25rem;
+
+  /* ---------- Espaciado ---------- */
+  --gutter: 1.5rem;
+  --gutter-desktop: 5rem;
+  --seccion-y: 4.5rem;
+  --seccion-y-desktop: 7.5rem;
+
+  /* ---------- Vidrio (handoff) ---------- */
+  --vidrio-fondo: rgba(11, 11, 11, 0.7);
+  /* The same 30 px as `--blur-vidrio` in the theme, which needs a bare
+     length; this one is the handoff's `filter` form. */
+  --vidrio-blur: blur(1.875rem);
+  --vidrio-borde: linear-gradient(
+    180deg,
+    rgba(244, 244, 242, 0.25),
+    rgba(244, 244, 242, 0.04)
+  );
+  --vidrio-sombra: 0 1.875rem 5rem rgba(0, 0, 0, 0.67);
+  --nav-fondo: rgba(11, 11, 11, 0.45);
+
+  /*
+   * The 1 px top-lit edges ("borde de luz", pen extract §§ 2–3), each a
+   * vertical fade of Blanco, consumed by the `borde-*` utilities below.
+   * 0x2E = 18 %, 0x0A = 4 %, 0x40 = 25 %, 0x0F = 6 %, 0x1A = 10 %. The form
+   * panel's edge is the handoff's `--vidrio-borde` above.
+   */
+  --borde-tarjeta: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--blanco) 18%, transparent),
+    color-mix(in srgb, var(--blanco) 4%, transparent)
+  );
+  --borde-boton: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--blanco) 25%, transparent),
+    color-mix(in srgb, var(--blanco) 6%, transparent)
+  );
+  --borde-plano: color-mix(in srgb, var(--blanco) 10%, transparent);
+  --borde-ancho: 0.0625rem;
+
+  /* ---------- Botón primario (handoff · pen extract § 2) ---------- */
+  --btn-fondo: linear-gradient(180deg, #ec4a44 0%, #e5352f 55%, #c42a25 100%);
+  --btn-borde: rgba(255, 255, 255, 0.2);
+  --btn-sombra: 0 0.625rem 2rem rgba(229, 53, 47, 0.33);
+  /* Hover and press of the handoff's primary button (`componentes.css`):
+     brightness(1.06) and scale(.98). The `.pen` draws no states. */
+  --btn-brillo: 1.06;
+  --btn-presion: 0.98;
+
+  /* ---------- Botón secundario (handoff) ---------- */
+  --btn2-fondo: rgba(26, 26, 26, 0.55);
+
+  /*
+   * Keyboard focus on the shared controls: a 2 px Blanco outline 3 px away, on
+   * `:focus-visible` only (Clarifications Q3, confirmed by Roberto
+   * 2026-10-31). Blanco, not red: a red ring disappears on the red button.
+   */
+  --foco-ancho: 0.125rem;
+  --foco-separacion: 0.1875rem;
+
+  /* ---------- Movimiento (handoff; zeroed under reduced motion) ---------- */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --rapido: 180ms;
+  --medio: 320ms;
+  --lento: 700ms;
+
+  /*
+   * The rotating pill's slide (handoff `rotatePill`): out 220 ms rising
+   * 6 px, in 260 ms from 6 px below. NOT zeroed under reduced motion: there
+   * the rotation itself never runs (`useRotatingText`).
+   */
+  --pill-salida: 220ms;
+  --pill-entrada: 260ms;
+  --pill-desliz: 0.375rem;
+
+  /* ---------- Contenedor ---------- */
+  --max: 80rem;
+}
+
+/*
  * Feature 34 · D-5: reduced motion means no float at all. Zeroing the
  * amplitude puts every node AND every connector end at its rest position in
  * one place (both read it); each canvas also drops its clock animation in
@@ -738,12 +978,18 @@
 @media (prefers-reduced-motion: reduce) {
   :root {
     --services-float-amplitude: 0;
+    /* Feature 42 · the handoff's own reduced-motion block (tokens.css). */
+    --rapido: 0ms;
+    --medio: 0ms;
+    --lento: 0ms;
   }
 }
 
 /*
- * EL LIENZO. La base ink-500 vive en la raíz del layout (`bg-ink-500` en
- * default.vue), que es un `<div>` y por lo tanto NO pinta el lienzo del
+ * EL LIENZO. Desde la feature 42 (Muush 1.0, spec FR-009) es Negro 950
+ * (`--negro-950`, #050505), no ink-500. La base vive en la raíz del layout
+ * (`bg-negro-950` en default.vue), que es un `<div>` y por lo tanto NO
+ * pinta el lienzo del
  * documento. Donde ese div no llega, no pinta nadie y el navegador muestra su
  * blanco por defecto: la banda blanca de la feature 010, medida en
  * findings.md § R54.
@@ -761,11 +1007,14 @@
  * Tailwind —que sí vive en `@layer base`— sin `!important` y sin depender del
  * orden del archivo.
  *
- * El valor tiene que coincidir con el `bg-ink-500` de la raíz del layout: son
- * dos superficies contiguas y una diferencia se vería como una costura.
+ * El valor tiene que coincidir con el `bg-negro-950` de la raíz del
+ * layout: son dos superficies contiguas y una diferencia se vería como una
+ * costura. El footer v1 conserva su propio ink-500 plano (feature 34 A2
+ * rev. 1) y se ve como una banda más clara hasta que la feature 43 lo
+ * reemplace. No se agrega fondo a `body`: un solo lugar decide el lienzo.
  */
 html {
-  background-color: var(--ink-500);
+  background-color: var(--negro-950);
 }
 
 /*
@@ -2164,6 +2413,288 @@ html {
    */
   --spacing-not-found-glow-x: clamp(12.875rem, -10.2rem + 94.6667vw, 75rem);
   --spacing-not-found-glow-y: clamp(10.125rem, 9.9857rem + 0.5714vw, 10.5rem);
+}
+
+/*
+ * MUUSH 1.0 (v2) · the utility layer of the tokens above (feature 42,
+ * research R2, data-model § 1). No name carries a version prefix (naming
+ * reorganization, Roberto 2026-11-01). Every key was checked against the v1
+ * theme: the seven that collided (`--radius-control`, `--radius-panel`,
+ * `--spacing-pill-gap`, `--spacing-pill-y` and `--text-pill` with its
+ * sub-properties) were renamed `legacy-*` on the v1 side, so a v1 value can
+ * never leak into a v2 utility. Feature 47 deletes the `legacy-*` keys.
+ *
+ * Each value REFERENCES a `:root` token or is a bare constant used only by a
+ * utility; nothing hand-written may read a name from this block, because
+ * `@theme inline` inlines values and emits no variable (rules.md § R18).
+ *
+ * Not here, on purpose: durations and gradients. Tailwind v4 has no theme
+ * namespace for `transition-duration` (findings.md § R52) or background
+ * images; components read them with the variable shorthands
+ * `duration-(--rapido)` and `bg-(image:--btn-fondo)`, which name a
+ * token and no literal (Article VII). Verified on `pnpm generate` (T010):
+ * both shorthands are emitted as `transition-duration: var(--rapido)` and
+ * `background-image: var(--btn-fondo)` in `.output/public/_nuxt/*.css`.
+ */
+@theme inline {
+  /* ---------- Colour ---------- */
+  --color-negro-950: var(--negro-950);
+  --color-negro-900: var(--negro-900);
+  --color-carbon-800: var(--carbon-800);
+  --color-carbon-700: var(--carbon-700);
+  --color-gris-400: var(--gris-400);
+  --color-blanco: var(--blanco);
+  --color-red-muush-500: var(--red-muush-500);
+  --color-crimson-600: var(--crimson-600);
+  --color-oxblood-800: var(--oxblood-800);
+  --color-coral-300: var(--coral-300);
+  --color-arena-300: var(--arena-300);
+  --color-acero-200: var(--acero-200);
+  --color-acero-400: var(--acero-400);
+  --color-acero-800: var(--acero-800);
+  --color-texto: var(--texto);
+  --color-texto-suave: var(--texto-suave);
+  --color-texto-tenue: var(--texto-tenue);
+  --color-linea: var(--linea);
+  --color-linea-fuerte: var(--linea-fuerte);
+  --color-vidrio-fondo: var(--vidrio-fondo);
+  --color-nav-fondo: var(--nav-fondo);
+  --color-btn-borde: var(--btn-borde);
+  --color-btn2-fondo: var(--btn2-fondo);
+  --color-pill-fondo: var(--pill-fondo);
+  --color-franja-fondo: var(--franja-fondo);
+  --color-punto-halo: var(--punto-halo);
+  --color-punto-halo2: var(--punto-halo2);
+
+  /* ---------- Type ---------- */
+  --font-titulo: var(--fuente-titulo);
+  --font-texto: var(--fuente-texto);
+
+  /* Two-tone headings, Poppins 500 (pen extract § 4). */
+  --text-hero: var(--h-hero);
+  --text-hero--line-height: var(--lh-hero);
+  --text-hero--letter-spacing: var(--tracking-hero);
+  --text-hero--font-weight: 500;
+  --text-seccion: var(--h-seccion);
+  --text-seccion--line-height: var(--lh-seccion);
+  --text-seccion--letter-spacing: var(--tracking-seccion);
+  --text-seccion--font-weight: 500;
+  --text-proceso: var(--h-proceso);
+  --text-proceso--line-height: var(--lh-proceso);
+  --text-proceso--letter-spacing: var(--tracking-proceso);
+  --text-proceso--font-weight: 500;
+  --text-diagnostico: var(--h-diagnostico);
+  --text-diagnostico--line-height: var(--lh-diagnostico);
+  --text-diagnostico--letter-spacing: var(--tracking-diagnostico);
+  --text-diagnostico--font-weight: 500;
+
+  /* Cards. 1.2 is data-model § 1.3's card line-height. */
+  --text-tarjeta: var(--h-tarjeta);
+  --text-tarjeta--line-height: 1.2;
+  --text-tarjeta--font-weight: 500;
+  --text-servicio: var(--h-servicio);
+  --text-servicio--line-height: 1.2;
+  --text-servicio--letter-spacing: var(--tracking-servicio);
+  --text-servicio--font-weight: 500;
+
+  /* Running text. Subtitle 17 → 20 / 1.5; body 17 / 1.55 (pen extract § 4). */
+  --text-subtitulo: var(--p-grande);
+  --text-subtitulo--line-height: var(--interlineado-texto);
+  --text-cuerpo: var(--cuerpo);
+  --text-cuerpo--line-height: 1.55;
+  --text-p: var(--p);
+  --text-p--line-height: var(--interlineado-texto);
+  --text-p-chico: var(--p-chico);
+  --text-p-chico--line-height: var(--interlineado-texto);
+  --text-etiqueta: var(--etiqueta);
+  --text-etiqueta--line-height: var(--interlineado-texto);
+
+  /*
+   * Pill label: Instrument Sans 13 / 500, tracking 0.6 px (pen extract § 2).
+   */
+  --text-pill: 0.8125rem;
+  --text-pill--letter-spacing: 0.0375rem;
+  --text-pill--font-weight: 500;
+
+  /*
+   * Button labels (pen extract § 2): hero 19 / 600, nav 15 / 600, mobile 14,
+   * glass 17 / 500. The line box is the font's own (`normal`), which is how
+   * the `.pen` sizes an auto-height text: it is what makes the measured
+   * 253 × 55, 195 × 40, 198 × 53 and 145 × 41 come out of the paddings
+   * (e.g. 55 = 16 + 23 + 16, 23 being Instrument Sans's line box at 19 px).
+   * The `.pen` gives no explicit line-height for them.
+   */
+  --text-boton-hero: 1.1875rem;
+  --text-boton-hero--line-height: normal;
+  --text-boton-hero--font-weight: 600;
+  --text-boton-nav: 0.9375rem;
+  --text-boton-nav--line-height: normal;
+  --text-boton-nav--font-weight: 600;
+  --text-boton-movil: 0.875rem;
+  --text-boton-movil--line-height: normal;
+  --text-boton-vidrio: 1.0625rem;
+  --text-boton-vidrio--line-height: normal;
+  --text-boton-vidrio--font-weight: 500;
+
+  /* ---------- Radius ---------- */
+  --radius-control: var(--radio-control);
+  --radius-campo: var(--radio-campo);
+  --radius-tarjeta: var(--radio-tarjeta);
+  --radius-tile: var(--radio-tile);
+  --radius-pill: var(--radio-pill);
+  --radius-panel: var(--radio-panel);
+  --radius-servicio: var(--radio-servicio);
+  --radius-franja: var(--radio-franja);
+
+  /* ---------- Spacing ---------- */
+  --spacing-control: var(--control);
+  --spacing-gutter: var(--gutter);
+  --spacing-gutter-desktop: var(--gutter-desktop);
+  --spacing-seccion-y: var(--seccion-y);
+  --spacing-seccion-y-desktop: var(--seccion-y-desktop);
+
+  /* Buttons (pen extract § 2): hero 16 / 30, nav 11 / 20, mobile 12 / 14,
+     glass x 28, gap 10, arrow 20 (hero) / 16 (nav). */
+  --spacing-boton-y: 1rem;
+  --spacing-boton-x: 1.875rem;
+  --spacing-boton-nav-y: 0.6875rem;
+  --spacing-boton-nav-x: 1.25rem;
+  --spacing-boton-movil-y: 0.75rem;
+  --spacing-boton-movil-x: 0.875rem;
+  --spacing-boton-vidrio-x: 1.75rem;
+  --spacing-boton-gap: 0.625rem;
+  --spacing-boton-icono: 1.25rem;
+  --spacing-boton-icono-nav: 1rem;
+
+  /* Pill (pen extract § 2): padding 8 / 18 / 8 / 10, gap 10, and the red dot
+     as three concentric circles of 20 / 14 / 7 px. */
+  --spacing-pill-y: 0.5rem;
+  --spacing-pill-inicio: 0.625rem;
+  --spacing-pill-fin: 1.125rem;
+  --spacing-pill-gap: 0.625rem;
+  --spacing-pill-punto: 1.25rem;
+  --spacing-pill-halo: 0.875rem;
+  --spacing-pill-nucleo: 0.4375rem;
+
+  /* Glass surfaces (pen extract § 3): panel 36, strip 22 / 28. */
+  --spacing-panel: 2.25rem;
+  --spacing-franja-y: 1.375rem;
+  --spacing-franja-x: 1.75rem;
+
+  /* ---------- Blur (drives `blur-*` and `backdrop-blur-*`) ---------- */
+  --blur-pill: 1rem;
+  --blur-boton: 1.25rem;
+  --blur-vidrio: 1.875rem;
+
+  /* ---------- Shadow ---------- */
+  --shadow-boton: var(--btn-sombra);
+  --shadow-vidrio: var(--vidrio-sombra);
+
+  /*
+   * ---------- Motion and container ----------
+   * Two aliases cannot simply drop the prefix: `--ease` alone is not a theme
+   * key, so the curve is `ease-muush`; and `--container-max` would make
+   * `max-w-max`, which Tailwind already defines as `max-content`, so the
+   * 1280 px content width is `max-w-contenido`.
+   */
+  --ease-muush: var(--ease);
+  --container-contenido: var(--max);
+}
+
+/*
+ * Feature 42 · the 1 px top-lit edge ("borde de luz", research R6). The
+ * `.pen` strokes the Kit's glass with a 1 px border whose colour fades
+ * downward; CSS `border-color` cannot take a gradient.
+ *
+ * A masked `::before` paints the band: `padding` is the band width,
+ * `mask-composite: exclude` removes the content box, and `border-radius:
+ * inherit` keeps it concentric on any radius, the pill included (the same
+ * mechanism as the v1 LED ring, findings.md § R59). The mask's black carries
+ * no design meaning; only its alpha is read. The host must be positioned
+ * (each component that uses it is `relative`).
+ *
+ * Rejected: `border-image`, which ignores `border-radius`; and the
+ * `background-clip: padding-box, border-box` double background, which cannot
+ * coexist with a translucent fill. A painted band also takes no layout
+ * space, like the `.pen`'s stroke, so the measured sizes (253 × 55, pill 36)
+ * come out of the paddings alone.
+ *
+ * The variants set `--borde`, which the band inherits from its host.
+ */
+@utility borde-luz {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: var(--borde-ancho);
+    background: var(--borde, var(--linea));
+    -webkit-mask:
+      linear-gradient(black 0 0) content-box,
+      linear-gradient(black 0 0);
+    mask:
+      linear-gradient(black 0 0) content-box,
+      linear-gradient(black 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /*
+   * Forced colours (spec § Edge Cases; review S1, 2026-11-01): the browser
+   * drops the band's background there, so the button, pill or panel would
+   * lose its boundary. An outline is repainted in a system colour instead,
+   * and like the band it takes no layout space: the negative offset draws it
+   * inside the box, so 253 × 55, 178 × 44 and the 36 px pill do not change.
+   * A `:focus-visible` ring (`foco`) is more specific and still wins.
+   */
+  @media (forced-colors: active) {
+    outline: var(--borde-ancho) solid CanvasText;
+    outline-offset: calc(var(--borde-ancho) * -1);
+  }
+}
+
+/* Form panel: Blanco 25 % → 4 % (pen extract § 3, the handoff's edge). */
+@utility borde-panel {
+  --borde: var(--vidrio-borde);
+}
+
+/* Service card: Blanco 18 % → 4 % (pen extract § 3). */
+@utility borde-tarjeta {
+  --borde: var(--borde-tarjeta);
+}
+
+/* Glass button: Blanco 25 % → 6 % (pen extract § 2). */
+@utility borde-boton {
+  --borde: var(--borde-boton);
+}
+
+/* "También" strip: flat Blanco 10 % (pen extract § 3). */
+@utility borde-plano {
+  --borde: var(--borde-plano);
+}
+
+/* Pill: flat Blanco 12 % (pen extract § 2). */
+@utility borde-linea {
+  --borde: var(--linea);
+}
+
+/* Primary button: flat white 20 % (pen extract § 2). */
+@utility borde-btn {
+  --borde: var(--btn-borde);
+}
+
+/*
+ * Feature 42 · keyboard focus on the shared controls (Clarifications Q3, confirmed by
+ * Roberto 2026-10-31): a 2 px Blanco outline 3 px away, on `:focus-visible`
+ * only, so a mouse click draws nothing. In forced-colours mode the browser
+ * substitutes a system colour for the outline, so it stays visible.
+ */
+@utility foco {
+  &:focus-visible {
+    outline: var(--foco-ancho) solid var(--blanco);
+    outline-offset: var(--foco-separacion);
+  }
 }
 
 /*
