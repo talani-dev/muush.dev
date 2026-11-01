@@ -1,0 +1,188 @@
+import posterNotFound from '@/assets/backgrounds/404-acanalado.webp'
+import posterHowWeWork from '@/assets/backgrounds/como-trabajamos-acanalado.webp'
+import posterAssessment from '@/assets/backgrounds/diagnostico-liston.webp'
+import posterHomeHero from '@/assets/backgrounds/hero-liston.webp'
+import posterAboutHero from '@/assets/backgrounds/nosotros-hero-liston.webp'
+import posterFaq from '@/assets/backgrounds/preguntas-acanalado.webp'
+
+/**
+ * The animated section backgrounds of Muush 1.0 (feature 42, spec FR-018,
+ * research R9, data-model § 3): one preset per production use in the
+ * handoff README, each bundling its shader, its uniform overrides, its still
+ * poster and whether that poster is above the fold.
+ *
+ * Only the listón and the vidrio acanalado ship; brasa-acero is reserved for
+ * another brand (handoff README). Every preset carries `u_flip: 1`; omitted
+ * uniforms take the shader's own `@default`, and `u_speed` / `u_grain` the
+ * engine defaults of `shaderFrame.ts`. The uniform values are the README's,
+ * which the `.pen` fills use too (pen extract § 6).
+ *
+ * Posters are imported as modules so the build hashes them under `_nuxt/`;
+ * nothing is served from `docs/` (FR-025).
+ */
+export type ShaderName = 'liston' | 'acanalado'
+
+export type BackgroundPresetName =
+  | 'homeHero'
+  | 'howWeWork'
+  | 'assessment'
+  | 'aboutHero'
+  | 'workWithUs'
+  | 'faq'
+  | 'notFound'
+
+export interface BackgroundPreset {
+  shader: ShaderName
+  /** Overrides only; `u_flip: 1` always included. */
+  uniforms: Readonly<Record<`u_${string}`, number>>
+  /** Hashed asset URL of the still frame. */
+  poster: string
+  /** `high`: above the fold, may be the LCP image, loaded eagerly. */
+  priority: 'high' | 'lazy'
+}
+
+/** Diagnóstico y contacto; Trabaja con muush reuses it (handoff README). */
+const ASSESSMENT_UNIFORMS = {
+  u_flip: 1,
+  u_y0: 1,
+  u_y1: 0.35,
+  u_th: 0.11,
+  u_amp: 0.06,
+  u_twist: 0.5,
+  u_tx: 0.27,
+  u_ty: 0.45,
+  u_trx: 0.25,
+  u_try: 0.35,
+  u_tdark: 0.75,
+  u_fadeT: 0.3,
+  u_fadeB: 0.05,
+} as const
+
+export const BACKGROUND_PRESETS: Readonly<
+  Record<BackgroundPresetName, Readonly<BackgroundPreset>>
+> = {
+  /* Home · hero, 1000 px. */
+  homeHero: {
+    shader: 'liston',
+    uniforms: {
+      u_flip: 1,
+      u_tx: 0.5,
+      u_ty: 0.53,
+      u_trx: 0.36,
+      u_try: 0.28,
+      u_tdark: 1,
+      u_fadeB: 0.06,
+    },
+    poster: posterHomeHero,
+    priority: 'high',
+  },
+  /* Home · Cómo trabajamos. */
+  howWeWork: {
+    shader: 'acanalado',
+    uniforms: {
+      u_flip: 1,
+      u_y0: 0.52,
+      u_y1: 0.47,
+      u_th: 0.15,
+      u_right: 0.45,
+      u_tx: 0.5,
+      u_ty: 0.27,
+      u_trx: 0.42,
+      u_try: 0.22,
+      u_tdark: 0.9,
+      u_fadeT: 0.2,
+      u_fadeB: 0.15,
+    },
+    poster: posterHowWeWork,
+    priority: 'lazy',
+  },
+  /* Home · Diagnóstico y contacto. */
+  assessment: {
+    shader: 'liston',
+    uniforms: ASSESSMENT_UNIFORMS,
+    poster: posterAssessment,
+    priority: 'lazy',
+  },
+  /* Nosotros · hero, 820 px. */
+  aboutHero: {
+    shader: 'liston',
+    uniforms: {
+      u_flip: 1,
+      u_tx: 0.5,
+      u_ty: 0.55,
+      u_trx: 0.4,
+      u_try: 0.32,
+      u_tdark: 1,
+      u_fadeB: 0.08,
+    },
+    poster: posterAboutHero,
+    priority: 'high',
+  },
+  /*
+   * Nosotros · Trabaja con muush: the README gives it the assessment's
+   * uniforms and the handoff ships no poster of its own, so it reuses the
+   * diagnóstico poster (confirmed by Roberto 2026-10-31).
+   */
+  workWithUs: {
+    shader: 'liston',
+    uniforms: ASSESSMENT_UNIFORMS,
+    poster: posterAssessment,
+    priority: 'lazy',
+  },
+  /* Preguntas · all content, 1100 px. */
+  faq: {
+    shader: 'acanalado',
+    uniforms: {
+      u_flip: 1,
+      u_y0: 0.84,
+      u_y1: 0.76,
+      u_th: 0.13,
+      u_right: 0.6,
+      u_tx: 0.5,
+      u_ty: 0.5,
+      u_trx: 0.45,
+      u_try: 0.26,
+      u_tdark: 1,
+      u_fadeT: 0.1,
+      u_fadeB: 0.15,
+    },
+    poster: posterFaq,
+    priority: 'high',
+  },
+  /* 404 · content, 760 px. */
+  notFound: {
+    shader: 'acanalado',
+    uniforms: {
+      u_flip: 1,
+      u_y0: 0.98,
+      u_y1: 0.92,
+      u_th: 0.11,
+      u_right: 0.6,
+      u_tx: 0.5,
+      u_ty: 0.5,
+      u_trx: 0.42,
+      u_try: 0.4,
+      u_tdark: 1,
+      u_fadeT: 0.1,
+      u_fadeB: 0.02,
+    },
+    poster: posterNotFound,
+    priority: 'high',
+  },
+}
+
+/**
+ * The GLSL sources, loaded on demand so a page bundles only the shader it
+ * shows. The files are byte-for-byte copies of the handoff's two shaders
+ * (research R8); only the version prefix was dropped from their file names.
+ */
+export const SHADER_SOURCES: Readonly<
+  Record<ShaderName, () => Promise<string>>
+> = {
+  liston: () =>
+    import('@/assets/shaders/liston.glsl?raw').then(module => module.default),
+  acanalado: () =>
+    import('@/assets/shaders/acanalado.glsl?raw').then(
+      module => module.default
+    ),
+}

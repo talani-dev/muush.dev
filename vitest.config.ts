@@ -40,6 +40,12 @@ export default defineVitestConfig({
        * the line is written before the need rather than after the false green.
        */
       'app/shared/data/**/*.test.ts',
+      /*
+       * Added by feature 42, for the same reason: `shaderFrame.test.ts` is the
+       * first test in `app/shared/utils/` (Article X names that folder for
+       * unit tests), and without this line it would be collected zero times.
+       */
+      'app/shared/utils/**/*.test.ts',
       'app/features/**/*.test.ts',
     ],
   },
