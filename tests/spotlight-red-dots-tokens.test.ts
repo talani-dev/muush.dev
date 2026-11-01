@@ -22,8 +22,12 @@ function declared(name: string): string | undefined {
 }
 
 describe('spotlight · red lit dots (amendment A2)', () => {
-  it('should paint lit dots in the existing red-400 when the stylesheet loads', () => {
-    expect(declared('--dot-paper-lit-color')).toBe('var(--red-400)')
+  it('should paint lit dots in the Muush 1.0 accent when the stylesheet loads', () => {
+    /* Feature 42 (spec FR-027): the lit dots move from the v1 red-400 to
+       Red muush 500 on the dark canvas. Radius, mask fall-off, mounting
+       conditions and fade timing do not change (asserted below and in
+       CursorSpotlight.test.ts / useCursorSpotlight.test.ts). */
+    expect(declared('--dot-paper-lit-color')).toBe('var(--red-muush-500)')
   })
 
   it('should declare exactly the five brand reds when the stylesheet loads', () => {

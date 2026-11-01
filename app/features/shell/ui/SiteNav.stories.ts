@@ -26,7 +26,7 @@ import SiteNav from './SiteNav.vue'
  * `opacity` and `visibility` differ.
  */
 const meta = {
-  title: 'Shell/SiteNav',
+  title: 'Legacy v1/Shell/SiteNav',
   component: SiteNav,
 } satisfies Meta<typeof SiteNav>
 

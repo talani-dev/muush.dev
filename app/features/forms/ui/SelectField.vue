@@ -71,7 +71,7 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
         :disabled="readonly"
         :aria-invalid="Boolean(error)"
         :aria-describedby="error ? `${id}-error` : undefined"
-        class="w-full appearance-none rounded-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-100 focus-visible:outline-red-400"
+        class="w-full appearance-none rounded-legacy-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-100 focus-visible:outline-red-400"
         :class="error ? 'border-red-400' : 'border-glass-line'"
         @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
       >

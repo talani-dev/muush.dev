@@ -6,9 +6,9 @@ import {
   useShellNavigation,
   useSiteSeo,
 } from '@/features/shell'
-import { useCursorSpotlight } from '@/shared/logic/useCursorSpotlight'
-import CursorSpotlight from '@/shared/ui/CursorSpotlight.vue'
-import DotGrid from '@/shared/ui/DotGrid.vue'
+import { useCursorSpotlight } from '@/shared/logic/legacy/useCursorSpotlight'
+import CursorSpotlight from '@/shared/ui/legacy/CursorSpotlight.vue'
+import DotGrid from '@/shared/ui/legacy/DotGrid.vue'
 
 /**
  * The chrome every page inherits: the nav above, the page below, the footer
@@ -26,7 +26,7 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
  *
  * | Layer | Where it is written |
  * |---|---|
- * | ink-500 base | this element's own background |
+ * | Negro 950 base (`bg-negro-950`, the Muush 1.0 canvas since feature 42) | this element's own background |
  * | section glow groups · `--layer-glow` (-3) | inside each section |
  * | dotted paper · `--layer-dots` (-2), page-wide | `<DotGrid />`, once, here |
  * | cursor spotlight (red lit dots, no light) · `--layer-spotlight` (-1) | `<CursorSpotlight />`, here, after mount |
@@ -39,7 +39,7 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
  * The root element is the page's **single stacking context** (`isolate`) and
  * is positioned (`relative`), which is what lets all three negative levels
  * resolve against the whole document instead of escaping to the document root
- * and painting behind this element's own ink. Because the levels differ, a
+ * and painting behind this element's own base. Because the levels differ, a
  * glow authored *inside* a section still paints *beneath* a sheet declared
  * once here — no registry, no list of 21, no client state
  * (`docs/business/rules.md` § R28). What a section must and must not do is in
@@ -85,8 +85,9 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
  *
  * **The white band is not fixed here.** Clipping stops the document from
  * growing past this div; it does nothing about the canvas underneath, which is
- * what an overscroll reveals at any page height. The ink surface is declared
- * on `html` in `global.css`, and that is the fix. Both are needed and neither
+ * what an overscroll reveals at any page height. The canvas colour (Negro 950,
+ * the same token as this element's base) is declared on `html` in
+ * `global.css`, and that is the fix. Both are needed and neither
  * substitutes for the other.
  *
  * Feature 3's scope flag **A-03 is resolved by feature 006**: the dotted paper
@@ -155,7 +156,7 @@ useSiteSeo()
 <template>
   <div
     ref="layoutRoot"
-    class="relative isolate min-h-screen overflow-clip bg-ink-500"
+    class="relative isolate min-h-screen overflow-clip bg-negro-950"
   >
     <!--
       The page-wide dotted paper, rendered once: not per page and not per

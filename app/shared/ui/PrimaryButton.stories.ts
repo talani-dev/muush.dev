@@ -1,85 +1,76 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import PrimaryButton, {
-  type ButtonVariant,
-} from '@/shared/ui/PrimaryButton.vue'
+import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
 
 /**
- * The site's single animated control, from
- * docs/business/landing/design-extract.md § 4.
- *
- * How to review the ring: hover it on a pointer device and it turns once
- * every 2.6s; leave and it stops. The three stops are red-400 → bone-100 →
- * red-400 — if you see wine anywhere, that is a defect.
- *
- * **The shape is a pill, in all three sizes** (Roberto, 2026-09-08). What to
- * look for in `AllVariants`, where the three sizes sit side by side: the ring
- * is one uniform 1.5px band all the way round, the caps are full semicircles,
- * and there is no thinning or notch where a cap meets a straight edge. The
- * bone-100 stop lands as a short bright arc on the vertical centre line rather
- * than spread along an edge — that is the aspect ratio, not a defect, and the
- * turn on hover walks it round the whole outline.
- *
- * The label is slot content in both locales below, to show that no copy is
- * baked into the component.
- *
- * **Hover the cursor, not just the ring.** `Nav`, `Hero` and `AsLink` differ in
- * one more way than their padding: a `<button>` with no destination and no
- * handler does nothing when clicked, so it deliberately keeps the default
- * cursor, while a link and a form submit show a pointer. That is the rule
- * `ui-map.md` § 6 states for reserved controls, and nothing in the stylesheet
- * used to set a cursor at all (`docs/harness/findings.md` § R56).
+ * The Muush 1.0 primary button (feature 42, FR-012; Kit `FcCCF`). Measure in
+ * the viewport toolbar: hero 253 × 55 at "Escritorio (1440)" and 178 × 44
+ * with the arrow at "Móvil (390)"; nav 195 × 40; block full width × 55.
+ * Tab to it: a Blanco ring 3 px away. Copy from `muush-1.0.md` §§ 4.1, 4.6.
  */
 const meta = {
   title: 'Shared/UI/PrimaryButton',
   component: PrimaryButton,
-  render: args => ({
-    components: { PrimaryButton },
-    setup: () => ({ args }),
-    template:
-      '<PrimaryButton v-bind="args">Cuéntanos tu proyecto</PrimaryButton>',
-  }),
+  globals: { backgrounds: { value: 'negro' } },
 } satisfies Meta<typeof PrimaryButton>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-const allVariants: ButtonVariant[] = ['nav', 'hero', 'submit']
+const mobile = { viewport: { value: 'mobile' } }
+const desktop = { viewport: { value: 'desktop' } }
 
-export const Nav: Story = { args: { variant: 'nav' } }
-export const Hero: Story = { args: { variant: 'hero' } }
-export const Submit: Story = { args: { variant: 'submit' } }
+const heroEs = { label: 'Diagnóstico gratis', size: 'hero' } as const
+const heroEn = { label: 'Free assessment', size: 'hero' } as const
+const nav = { label: 'Diagnóstico gratis', size: 'nav' } as const
+const blockEs = {
+  label: 'Quiero mi diagnóstico',
+  size: 'block',
+  type: 'submit',
+} as const
+const blockEn = { ...blockEs, label: 'Get my assessment' } as const
+const disabled = { ...blockEs, label: 'Enviando…', disabled: true } as const
 
-/** With `href` the control is a real link, not a button. */
-export const AsLink: Story = {
-  args: { variant: 'hero', href: '#contacto' },
-  render: args => ({
-    components: { PrimaryButton },
-    setup: () => ({ args }),
-    template:
-      '<PrimaryButton v-bind="args">Tell us about your project</PrimaryButton>',
-  }),
+/** The block button fills its form column, as in the form panel. */
+const inColumn: Story['render'] = args => ({
+  components: { PrimaryButton },
+  setup: () => ({ args }),
+  template:
+    '<div class="max-w-contenido p-gutter"><PrimaryButton v-bind="args" /></div>',
+})
+
+export const HeroEs: Story = { args: heroEs }
+export const HeroEn: Story = { args: heroEn }
+export const HeroEsMobile390: Story = { args: heroEs, globals: mobile }
+export const HeroEnDesktop1440: Story = { args: heroEn, globals: desktop }
+export const Nav: Story = { args: nav }
+export const NavDesktop1440: Story = {
+  args: { ...nav, label: 'Free assessment' },
+  globals: desktop,
 }
-
-export const AllVariants: Story = {
-  render: () => ({
-    components: { PrimaryButton },
-    setup: () => ({ allVariants }),
-    template: `
-      <div class="flex flex-wrap items-center gap-8 font-instrument">
-        <figure v-for="variant in allVariants" :key="variant" class="flex flex-col items-start gap-2">
-          <PrimaryButton :variant="variant">Cuéntanos tu proyecto</PrimaryButton>
-          <figcaption class="text-meta text-bone-300">{{ variant }}</figcaption>
-        </figure>
-      </div>
-    `,
-  }),
+export const BlockEs: Story = { args: blockEs, render: inColumn }
+export const BlockEn: Story = { args: blockEn, render: inColumn }
+export const BlockMobile390: Story = {
+  args: blockEs,
+  render: inColumn,
+  globals: mobile,
 }
-
-/**
- * Reduced motion cannot be forced from a story — it is an operating-system
- * setting. To check the fallback, turn on "Reduce motion" in the OS (macOS:
- * System Settings → Accessibility → Display) and reload: the ring must go
- * flat red-400 and never animate, on hover or otherwise. A touch device gets
- * the same static ring while decisions-open.md #8 is open.
- */
-export const ReducedMotion: Story = { args: { variant: 'hero' } }
+export const BlockDesktop1440: Story = {
+  args: blockEn,
+  render: inColumn,
+  globals: desktop,
+}
+export const DisabledEs: Story = { args: disabled, render: inColumn }
+export const DisabledEn: Story = {
+  args: { ...disabled, label: 'Sending…' },
+  render: inColumn,
+}
+export const DisabledMobile390: Story = {
+  args: disabled,
+  render: inColumn,
+  globals: mobile,
+}
+export const DisabledDesktop1440: Story = {
+  args: disabled,
+  render: inColumn,
+  globals: desktop,
+}

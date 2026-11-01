@@ -158,7 +158,7 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
   it('should render the pill with its radar dot and label when generated', () => {
     /* From the Pill's own root to the heading that follows it. */
     const pill = sectionOf(document.file).match(
-      /<span class="inline-flex items-center gap-pill-gap rounded-full border border-glass-line bg-glass-dark[^"]*"[^>]*>.*?(?=<h1\b)/s
+      /<span class="inline-flex items-center gap-legacy-pill-gap rounded-full border border-glass-line bg-glass-dark[^"]*"[^>]*>.*?(?=<h1\b)/s
     )?.[0]
 
     expect(pill).toBeDefined()

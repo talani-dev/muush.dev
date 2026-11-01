@@ -6,8 +6,8 @@ import type {
   ResolvedSocial,
   ShellLocale,
 } from '@/features/shell/data/types'
-import Lockup from '@/shared/ui/Lockup.vue'
-import SocialIcon from '@/shared/ui/SocialIcon.vue'
+import Lockup from '@/shared/ui/legacy/Lockup.vue'
+import SocialIcon from '@/shared/ui/legacy/SocialIcon.vue'
 import LanguageToggle from './LanguageToggle.vue'
 
 /**

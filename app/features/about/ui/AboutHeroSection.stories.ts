@@ -21,7 +21,7 @@ import AboutHeroSection from './AboutHeroSection.vue'
  * they do on the site — same note `Landing/HeroSection`'s story carries.
  */
 const meta = {
-  title: 'About/AboutHeroSection',
+  title: 'Legacy v1/About/AboutHeroSection',
   component: AboutHeroSection,
   parameters: {
     layout: 'fullscreen',

@@ -33,14 +33,18 @@ function cursorSvg(): string {
   return readFileSync(CURSOR_FILE, 'utf8')
 }
 
-/** `--red-400` as declared in the source stylesheet. */
-function red400(): string {
+/**
+ * `--red-muush-500` as declared in the source stylesheet. Feature 42
+ * recoloured the cursor from the v1 `--red-400` to the Muush 1.0 accent
+ * (spec FR-028, Clarifications Q1, confirmed by Roberto 2026-10-31).
+ */
+function redMuush500(): string {
   const globalCss = readFileSync(
     join(process.cwd(), 'app', 'assets', 'css', 'global.css'),
     'utf8'
   )
-  const value = globalCss.match(/--red-400:\s*(#[0-9a-f]{6})\s*;/i)?.[1]
-  if (!value) throw new Error('--red-400 not found in global.css')
+  const value = globalCss.match(/--red-muush-500:\s*(#[0-9a-f]{6})\s*;/i)?.[1]
+  if (!value) throw new Error('--red-muush-500 not found in global.css')
   return value
 }
 
@@ -103,7 +107,7 @@ describe('brand cursor · the asset (FR-013, OA-7)', () => {
     expect(svg.match(/<path\b/g)).toHaveLength(2)
   })
 
-  it('should paint the arrow and pill in the --red-400 token value', () => {
+  it('should paint the arrow and pill in the --red-muush-500 token value', () => {
     /* A cursor image cannot read CSS variables, so the literal stays in the
        file; this pins it to the token so a palette change fails loudly. */
     const fills = [...cursorSvg().matchAll(/(?:fill|stroke)="(#[0-9a-f]+)"/gi)]
@@ -111,7 +115,7 @@ describe('brand cursor · the asset (FR-013, OA-7)', () => {
       .filter(Boolean)
 
     expect(fills.length).toBeGreaterThan(0)
-    expect(new Set(fills)).toEqual(new Set([red400().toLowerCase()]))
+    expect(new Set(fills)).toEqual(new Set([redMuush500().toLowerCase()]))
   })
 })
 

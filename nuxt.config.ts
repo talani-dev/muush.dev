@@ -199,12 +199,14 @@ export default defineNuxtConfig({
   },
 
   /*
-   * The brand type, self-hosted. `branding.md` § Tipografía grants Poppins to
-   * the logo/wordmark alone, at 600, and gives everything else to Instrument
-   * Sans at 400 / 500 / 600. The set is closed: the 32 type tokens in
-   * global.css name those weights and no other, so a weight added here would
-   * be bytes no page asks for, and one missing would be synthesised by the
-   * browser — the defect this feature exists to remove.
+   * The brand type, self-hosted. Muush 1.0 (feature 42, Constitution VII)
+   * sets Poppins 500 for headings, the logo and the wordmark, and Instrument
+   * Sans for everything else at 400 / 500 / 600. Poppins 600 stays only
+   * because the v1 components still use it; feature 47 removes it with them.
+   * The set is closed: the type tokens in global.css name these weights and
+   * no other, so a weight added here would be bytes no page asks for, and one
+   * missing would be synthesised by the browser. No `@import` from Google
+   * Fonts anywhere: the handoff's is deliberately not ported.
    *
    * The binaries are downloaded at **build** time and emitted into
    * `.output/public/_fonts`, so the deployed artefact makes no request to a
@@ -227,7 +229,7 @@ export default defineNuxtConfig({
       subsets: ['latin', 'latin-ext'],
     },
     families: [
-      { name: 'Poppins', provider: 'google', weights: [600] },
+      { name: 'Poppins', provider: 'google', weights: [500, 600] },
       { name: 'Instrument Sans', provider: 'google', weights: [400, 500, 600] },
     ],
     throwOnError: true,

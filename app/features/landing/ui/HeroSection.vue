@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
 import { useHeroSentinel } from '@/shared/logic/useNavCtaReveal'
-import HeroStack from '@/shared/ui/HeroStack.vue'
-import LinkArrow from '@/shared/ui/LinkArrow.vue'
-import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import HeroStack from '@/shared/ui/legacy/HeroStack.vue'
+import LinkArrow from '@/shared/ui/legacy/LinkArrow.vue'
+import PrimaryButton from '@/shared/ui/legacy/PrimaryButton.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 
 /**
  * `01 Hero` — the landing's first section, and the first section the site has

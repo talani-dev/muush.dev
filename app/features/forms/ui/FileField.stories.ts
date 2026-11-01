@@ -11,7 +11,7 @@ import FileField from './FileField.vue'
  * `WithError` story already uses.
  */
 const meta = {
-  title: 'Forms/FileField',
+  title: 'Legacy v1/Forms/FileField',
   component: FileField,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof FileField>

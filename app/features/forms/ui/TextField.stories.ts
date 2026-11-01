@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import TextField from './TextField.vue'
 
 const meta = {
-  title: 'Forms/TextField',
+  title: 'Legacy v1/Forms/TextField',
   component: TextField,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof TextField>

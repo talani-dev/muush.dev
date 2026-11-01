@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import SelectField from './SelectField.vue'
 
 const meta = {
-  title: 'Forms/SelectField',
+  title: 'Legacy v1/Forms/SelectField',
   component: SelectField,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof SelectField>

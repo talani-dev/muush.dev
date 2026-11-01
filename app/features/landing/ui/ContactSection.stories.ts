@@ -14,7 +14,7 @@ import ContactSection from './ContactSection.vue'
  * (`docs/business/rules.md` § R23).
  */
 const meta = {
-  title: 'Landing/ContactSection',
+  title: 'Legacy v1/Landing/ContactSection',
   component: ContactSection,
   parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof ContactSection>

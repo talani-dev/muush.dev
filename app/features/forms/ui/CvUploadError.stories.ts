@@ -8,7 +8,7 @@ import CvUploadError from './CvUploadError.vue'
  * against the `.pen` (spec OA-5).
  */
 const meta = {
-  title: 'Forms/CvUploadError',
+  title: 'Legacy v1/Forms/CvUploadError',
   component: CvUploadError,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof CvUploadError>

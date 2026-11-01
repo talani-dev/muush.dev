@@ -4,8 +4,8 @@ import type {
   ApplicationFormContent,
   ApplicationSubmitter,
 } from '@/features/forms'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 import WorkWithMuushSection from './WorkWithMuushSection.vue'
 
 /**

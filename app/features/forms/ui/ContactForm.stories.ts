@@ -16,7 +16,7 @@ import ContactForm from './ContactForm.vue'
  * "Enviando…" for a moment and then the confirmation.
  */
 const meta = {
-  title: 'Forms/ContactForm',
+  title: 'Legacy v1/Forms/ContactForm',
   component: ContactForm,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof ContactForm>

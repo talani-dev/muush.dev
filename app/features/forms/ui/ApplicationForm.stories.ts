@@ -16,7 +16,7 @@ import ApplicationForm from './ApplicationForm.vue'
  * (feature 031 spec OA-5).
  */
 const meta = {
-  title: 'Forms/ApplicationForm',
+  title: 'Legacy v1/Forms/ApplicationForm',
   component: ApplicationForm,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof ApplicationForm>

@@ -7,7 +7,7 @@ import {
   SERVICE_NODE_CENTRES,
   type ServiceNodeContent,
 } from '@/features/landing/data/servicesContent'
-import Radar from '@/shared/ui/Radar.vue'
+import Radar from '@/shared/ui/legacy/Radar.vue'
 import ServiceItem from './ServiceItem.vue'
 import ServicesConnectors from './ServicesConnectors.vue'
 import ServicesConstellation from './ServicesConstellation.vue'

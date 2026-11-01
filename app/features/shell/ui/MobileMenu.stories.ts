@@ -22,7 +22,7 @@ import MobileMenu from './MobileMenu.vue'
  * (`docs/business/rules.md` § R12).
  */
 const meta = {
-  title: 'Shell/MobileMenu',
+  title: 'Legacy v1/Shell/MobileMenu',
   component: MobileMenu,
   globals: { viewport: { value: 'mobile' } },
 } satisfies Meta<typeof MobileMenu>

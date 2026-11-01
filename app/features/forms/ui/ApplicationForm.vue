@@ -12,7 +12,7 @@ import {
 } from '@/features/forms/logic/selectOptions'
 import { useApplicationForm } from '@/features/forms/logic/useApplicationForm'
 import type { SubmitState } from '@/features/forms/logic/useFormSubmitState'
-import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
+import PrimaryButton from '@/shared/ui/legacy/PrimaryButton.vue'
 import CvField from './CvField.vue'
 import FormOutcome from './FormOutcome.vue'
 import HoneypotField from './HoneypotField.vue'

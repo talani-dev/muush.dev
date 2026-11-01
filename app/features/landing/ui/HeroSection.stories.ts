@@ -35,7 +35,7 @@ import HeroSection from './HeroSection.vue'
  * away bottom right — is what this story is for.
  */
 const meta = {
-  title: 'Landing/HeroSection',
+  title: 'Legacy v1/Landing/HeroSection',
   component: HeroSection,
   parameters: {
     layout: 'fullscreen',

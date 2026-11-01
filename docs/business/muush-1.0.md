@@ -21,7 +21,8 @@
   cambia (`landing/form-api-contract.md` sigue vigente tal cual).
 - Aviso de privacidad y Términos y condiciones tendrán **páginas propias**
   dentro de v2; diseño y texto legal llegan después (feature 48).
-- El cursor personalizado y el spotlight **se quedan**.
+- El cursor personalizado ("You") **se queda**. El efecto spotlight (puntos rojos
+  alrededor del mouse) **se retira** en v2 (Roberto, 2026-11-01).
 - Preguntas vive en `/es/preguntas` ↔ `/en/faq` y **se indexa** desde el primer
   día, aunque diga "En construcción": todo el sitio se indexa y va en el sitemap.
 - El CTA principal dice "Diagnóstico gratis" / "Free assessment".

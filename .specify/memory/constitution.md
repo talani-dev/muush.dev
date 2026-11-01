@@ -1,6 +1,33 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.1.0 → 2.1.1
+Status: PATCH — Article VII naming clarified, no principle added or removed.
+The v2 palette loses its `--m1-*` prefix so that nothing in the final code
+carries a version marker; v1 is quarantined (`legacy-*` tokens,
+`app/shared/ui/legacy/`, Storybook `Legacy v1/`) until feature 47 deletes it.
+
+Ratified: Roberto, "si apruebo", 2026-11-01 (leader session, feature 42).
+
+Modified principles:
+  VII. Design Tokens Discipline — palette family names without prefix; no
+       version marker in token, utility, component or Storybook names; v1
+       quarantine locations named.
+
+Templates reviewed:
+  ✅ .specify/templates/*.md — no token names; no change needed.
+
+Agent guidance files reviewed:
+  ✅ .claude/agents/implementer.md — "`--m1-*` family" replaced by the
+     unprefixed families and the quarantine rule.
+
+Deferred TODOs: none
+
+Previous report (2.1.0) follows.
+-->
+<!--
+SYNC IMPACT REPORT
+==================
 Version change: 2.0.1 → 2.1.0
 Status: MINOR — Article VII materially expanded for the Muush 1.0 redesign
 (feature 41 `v2_foundation_docs`). No principle was removed.
@@ -214,11 +241,16 @@ Components MUST NOT hardcode color or spacing literals (hex, rgb, oklch, or
 arbitrary Tailwind values like `bg-[#123456]`). Every visual value goes
 through the CSS custom properties defined in `app/assets/css/global.css`
 and the fluid type/space scale, consumed as Tailwind utility classes. Since
-the Muush 1.0 redesign the palette is the `--m1-*` family (neutral base,
-brasa, acero), taken from the `m1-*` variables of the `.pen` and
-`docs/handoff/muush-1.0/`. The v1 families (`--bone-*`, `--ink-*`, `--red-*`,
-`--wine-*`) remain only until feature 47 removes them; new code MUST NOT use
-them.
+the Muush 1.0 redesign the palette is the neutral base, brasa and acero
+families (`--negro-*`, `--carbon-*`, `--gris-*`, `--blanco`, `--red-muush-*`,
+`--crimson-*`, `--oxblood-*`, `--coral-*`, `--arena-*`, `--acero-*`), taken
+from the `m1-*` variables of the `.pen` and `docs/handoff/muush-1.0/`. Token,
+utility, component and Storybook names carry **no version marker** (no `m1`,
+`v2`): they are the final names. Everything that belongs to the v1 design is
+quarantined until feature 47 deletes it: the token families `--bone-*`,
+`--ink-*`, `--red-*`, `--wine-*` and any `legacy-*` token, the components in
+`app/shared/ui/legacy/`, and the Storybook group `Legacy v1/`. New code MUST
+NOT use any of them.
 
 The fluid scale exists so a component states its intent once
 (`text-display`) and the desktop↔mobile difference resolves through
@@ -367,4 +399,4 @@ Amendments require:
 - MINOR: New principle added or materially expanded.
 - PATCH: Clarification, wording, typo fix.
 
-**Version**: 2.1.0 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-10-31
+**Version**: 2.1.1 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-01

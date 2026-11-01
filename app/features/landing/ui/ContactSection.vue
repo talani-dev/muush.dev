@@ -4,10 +4,10 @@ import {
   type ContactFormContent,
   type ContactSubmitter,
 } from '@/features/forms'
-import LinkArrow from '@/shared/ui/LinkArrow.vue'
-import Pill from '@/shared/ui/Pill.vue'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import LinkArrow from '@/shared/ui/legacy/LinkArrow.vue'
+import Pill from '@/shared/ui/legacy/Pill.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 
 /**
  * `06 CTA final` — the landing's sixth and last section before the footer,

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import DotGrid from '@/shared/ui/DotGrid.vue'
+import DotGrid from '@/shared/ui/legacy/DotGrid.vue'
 import NotFoundContent from './NotFoundContent.vue'
 
 /**
@@ -17,7 +17,7 @@ import NotFoundContent from './NotFoundContent.vue'
 const HOST = 'relative isolate min-h-screen overflow-clip bg-ink-500'
 
 const meta = {
-  title: 'Shell/NotFoundContent',
+  title: 'Legacy v1/Shell/NotFoundContent',
   component: NotFoundContent,
   parameters: { layout: 'fullscreen' },
   render: args => ({

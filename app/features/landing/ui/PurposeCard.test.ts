@@ -1,6 +1,6 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import GlassPanel from '@/shared/ui/GlassPanel.vue'
+import GlassPanel from '@/shared/ui/legacy/GlassPanel.vue'
 import PurposeCard from './PurposeCard.vue'
 
 /**

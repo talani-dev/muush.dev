@@ -12,7 +12,7 @@ import LanguageToggle from './LanguageToggle.vue'
  * and `switchLabel` are fixtures, resolved by `logic/` in the real app.
  */
 const meta = {
-  title: 'Shell/LanguageToggle',
+  title: 'Legacy v1/Shell/LanguageToggle',
   component: LanguageToggle,
 } satisfies Meta<typeof LanguageToggle>
 

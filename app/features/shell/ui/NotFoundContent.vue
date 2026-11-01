@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { ResolvedShellItem } from '@/features/shell/data/types'
-import Pill from '@/shared/ui/Pill.vue'
-import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import Pill from '@/shared/ui/legacy/Pill.vue'
+import PrimaryButton from '@/shared/ui/legacy/PrimaryButton.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 import NotFoundRings from './NotFoundRings.vue'
 
 /**

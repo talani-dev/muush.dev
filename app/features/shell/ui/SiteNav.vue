@@ -7,8 +7,8 @@ import type {
 } from '@/features/shell/data/types'
 import { useMobileMenu } from '@/features/shell/logic/useMobileMenu'
 import { useNavScrollReveal } from '@/features/shell/logic/useNavScrollReveal'
-import Lockup from '@/shared/ui/Lockup.vue'
-import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
+import Lockup from '@/shared/ui/legacy/Lockup.vue'
+import PrimaryButton from '@/shared/ui/legacy/PrimaryButton.vue'
 import LanguageToggle from './LanguageToggle.vue'
 import MobileMenu from './MobileMenu.vue'
 

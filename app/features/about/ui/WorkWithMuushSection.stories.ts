@@ -16,7 +16,7 @@ import WorkWithMuushSection from './WorkWithMuushSection.vue'
  * (`docs/business/rules.md` § R23).
  */
 const meta = {
-  title: 'About/WorkWithMuushSection',
+  title: 'Legacy v1/About/WorkWithMuushSection',
   component: WorkWithMuushSection,
   parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof WorkWithMuushSection>

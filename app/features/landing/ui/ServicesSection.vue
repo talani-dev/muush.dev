@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ServiceNodeContent } from '@/features/landing/data/servicesContent'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 import ServicesConstellation from './ServicesConstellation.vue'
 import ServicesTimeline from './ServicesTimeline.vue'
 

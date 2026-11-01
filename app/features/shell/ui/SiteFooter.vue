@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ResolvedFooterColumn } from '@/features/shell/data/types'
-import Lockup from '@/shared/ui/Lockup.vue'
+import Lockup from '@/shared/ui/legacy/Lockup.vue'
 import FooterColumn from './FooterColumn.vue'
 
 /**

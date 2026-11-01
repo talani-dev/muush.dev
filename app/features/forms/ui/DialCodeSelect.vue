@@ -74,7 +74,7 @@ const selected = computed(() =>
     </select>
     <span
       aria-hidden="true"
-      class="dial-face pointer-events-none flex items-center gap-field-label-gap rounded-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-100"
+      class="dial-face pointer-events-none flex items-center gap-field-label-gap rounded-legacy-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-100"
       :class="error ? 'border-red-400' : 'border-glass-line'"
     >
       <span>{{ selected?.flag }} {{ selected?.dialCode }}</span>

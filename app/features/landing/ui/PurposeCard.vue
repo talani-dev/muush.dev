@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import GlassPanel from '@/shared/ui/GlassPanel.vue'
+import GlassPanel from '@/shared/ui/legacy/GlassPanel.vue'
 
 /**
  * One Golden Circle block on a red glass surface: a label and a copy block.

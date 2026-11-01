@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import type { ResolvedFooterColumn } from '@/features/shell/data/types'
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
-import Wordmark from '@/shared/ui/Wordmark.vue'
+import Wordmark from '@/shared/ui/legacy/Wordmark.vue'
 import SiteFooter from './SiteFooter.vue'
 
 const columns: ResolvedFooterColumn[] = [
