@@ -2921,3 +2921,85 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
   design-extract.md is the daily measurement reference. It is human-owned,
   so it was not edited.
 - 2026-10-31 · Reviewer run 2 APPROVED; N1 fixed by the leader. Feature 41 → done; history entry written, current.md reset.
+
+## 2026-11-01 — Feature 42: m1_visual_foundation (done)
+
+- Change (sdd: true): the Muush 1.0 / v2 visual foundation on branch `feat/v2-visual-foundation` (from `muush-v2`, merges back into `muush-v2`, never master). Spec package `specs/042-m1-visual-foundation/` (65 tasks, all checked); values from the `.pen` via the leader (`pen-extract-42.md`).
+  - Tokens: every handoff `tokens.css` variable in `global.css` plus an `@theme inline` block (colour, font, fluid text with line-height/tracking, radii, spacing, blur, shadow, ease); `.pen` overrides for the hero heading (96 px at 1440) and large paragraph; edge (`borde-*`) and focus utilities; reduced motion zeroes the motion durations. Canvas (`html` and layout root) is Negro 950. No Google Fonts request added; Poppins 500 added to the self-hosted weights.
+  - Primitives in `app/shared/ui/`: Pill, PrimaryButton, GlassButton, GlassSurface, Heading, RotatingPill (2.6 s rotation, pauses on hover, honours reduced motion, screen-reader list), ShaderBackground (client-only WebGL with the liston and acanalado shaders, poster fallback, off-screen/hidden-tab pause, single still frame under reduced motion, DPR 1x below 768 px and max 1.5x on desktop, `pointer-events:none`, `aria-hidden`). Logic in `shaderFrame`, `shaderRenderer`, `useShaderCanvas`, `useRotatingText`, `backgroundPresets`; tests and stories for each.
+  - Cursor and spotlight (features 8 and 34) kept and recoloured to Red muush 500 #E5352F (`public/cursor/you.svg`, `--dot-paper-lit-color`).
+  - Follow-ups: the primary button arrow is visible at every width (pen-extract § 9); forced-colours inset outline on the lit edge (review-42 S1); no draw while the tab is hidden (advisory 1).
+- Naming reorganization (approved by Roberto 2026-11-01, constitution 2.1.1): no version marker in any v2 name (M1/m1 dropped from components, tokens, files and stories); v1 components moved to `app/shared/ui/legacy/` via 25 staged `git mv` renames; 8 colliding v1 tokens renamed `legacy-*`; v1 stories moved to the Storybook group `Legacy v1/`; Storybook reordered without duplicate titles. DotGrid and SocialIcon stay in place (DotGrid is the spotlight's substrate). Commit note in `impl_42_naming.md`: commit the staged `legacy/` moves on their own before the v2 files to keep `git log --follow`.
+- Reviewer run 1 (`review-42.md`) APPROVED with should-fix S1 (forced-colours boundary); S1 and advisories 1 and 6 fixed by the implementer.
+- Security warning on the implementer's last run: leader audit found no out-of-scope or config changes; the trigger is unknown. Roberto approved a fresh implementer for the naming work and a fresh reviewer for all of 42 with a security focus.
+- Reviewer run 2 (`review-42b.md`, fresh, security focus) APPROVED. Security review of the full diff found nothing beyond expected in-scope changes. S1 (stale token name in a comment in `public/cursor/you.svg`) fixed by the leader, comment only; `tests/brand-cursor.test.ts` passes. Advisories 1, 2, 3, 5, 7 carried into feature 43.
+- `./init.sh` exits 0.
+- Reports: `pen-extract-42.md`, `spec_m1_visual_foundation.md`, `impl_m1_visual_foundation.md`, `impl_42_naming.md`, `review-42.md`, `review-42b.md`, `impl_42_closeout.md`.
+- Not committed (Roberto's instruction: no commits without explicit request).
+
+### Session log (from current.md)
+
+- 2026-10-31 · Roberto: "Si, dale 42". Branch created from `muush-v2` at a2a99cd.
+- 2026-10-31 · Leader extract: the `.pen` hero heading is 96 px at 1440, but the
+  handoff `--m1-h-hero` caps at 84 px. The `.pen` wins (R32).
+- 2026-10-31 · spec_author: package written at `specs/042-m1-visual-foundation/`
+  (spec, plan, research, data-model, contracts, quickstart, tasks; 65 tasks).
+  Feature 42 → `spec_ready`. Four clarifications applied provisionally for the
+  gate (cursor recolour, mobile heading tracking/size, focus ring, rotating-pill
+  hover pause). Summary: `docs/harness/progress/spec_m1_visual_foundation.md`.
+- 2026-10-31 · spec_author: package specs/042-m1-visual-foundation → spec_ready.
+  Leader re-checked the mobile frames (pen-extract-42 § 8: heading tracking 0
+  at 390 and −0.035 em at 1440; section 28 at 390; card radius 24). spec_author
+  is folding these in.
+- 2026-10-31 · ⏸ Roberto APPROVED spec 042 ("si, lo veo bien"), including the
+  provisional answers: cursor recoloured to #E5352F; focus 2 px Blanco
+  outline, 3 px offset, :focus-visible only; rotating pill pauses on hover;
+  spotlight on plain black and hidden under shaders accepted; red cursor on
+  red button accepted; favicon → Red muush 500 in feature 43; Trabaja con
+  muush reuses the diagnóstico poster.
+- 2026-10-31 · spec_author: package updated to pen extract § 8. Heading
+  tracking is fluid (0 at 390 → about −0.035 em at 1440); the section heading
+  is 28 at 390, with 30/32/34 as per-use overrides for 44/46; service-card
+  radius 24 and a 24 px card title (−0.6 px) added. Clarification Q2 and the
+  card-radius question are resolved. Status stays `spec_ready`.
+- 2026-10-31 · spec_author folded in pen-extract § 8 (Q2 and card radius resolved). 42 → in_progress; implementer launched.
+- 2026-10-31 · implementer: started tasks.md (65 tasks). Clarifications Q1–Q4 treated as CONFIRMED (Roberto 2026-10-31). Favicon excluded (feature 43).
+- 2026-10-31 · implementer: Phase 1–2 done. Shaders + 6 posters copied (cmp identical), arrow-right icon, Storybook `negro` swatch (+ Poppins 500 in the catalogue's font link). m1 `:root`, `@theme inline`, edge/focus utilities in global.css; `tests/m1-tokens.test.ts` 111/111. T010: `duration-(--m1-rapido)`, `bg-(image:--m1-btn-fondo)`, `brightness-(--…)`, `scale-(--…)` all emitted in `.output/public/_nuxt/*.css`.
+- 2026-10-31 · implementer: US1 done (T013–T018). Canvas `html` + layout root → Negro 950; Poppins [500, 600]; `m1-tokens.stories.ts`. `pnpm test` 101 files / 1520 tests green. Build greps: no Google Fonts, Poppins 500 face emitted, `html{background-color:var(--m1-negro-950)}`, nothing from docs/handoff, no `.output/server`.
+- 2026-10-31 · implementer: US2 done (T019–T035). M1GlassSurface, M1Pill, M1PrimaryButton, M1GlassButton, M1Heading + tests + stories. Measured on the BUILT catalogue (`storybook-static`, headless Chrome via CDP, `Emulation.setDeviceMetricsOverride`, fonts loaded): primary hero 252.52×55 @1440, 177.75×44 @390 (no visible arrow; the arrow keeps an invisible 20 px slot, which is what makes 178 come out — INFERRED, flagged); nav 194.3×41 (target 195×40); glass 197.13×52 @1440 (198×53), 144.22×42 @390 (145×41); pill h 36 @390 and @1440; headings hero 34/96, sección 28/56, proceso 28/52, diagnóstico 34/64 px, tracking ≈0 @390 and −3.499/−1.96/−1.819/−2.2395 px @1440. All within SC-002's 1 px. SC-003: no horizontal overflow at 360/768/1024/1280/1920 on 9 stories. Clipped text/overlap not machine-checked (by eye in review).
+- 2026-11-01 · implementer: US3 done (T036–T047). shaderFrame (utils, + vitest include for `app/shared/utils/**`), shaderRenderer, useShaderCanvas, backgroundPresets, M1ShaderBackground + tests + stories. Browser checks on the BUILT catalogue (headless Chrome, SwiftShader WebGL, drawArrays counted per canvas): homeHero ready, ~30 draws/s in view; DPR: 1440@2× → canvas 2160 (1.5×), 767@3× → 767 (1×), 390@3× → 390; three stacked sections → only the ones within the 100 px look-ahead draw (top: [30,30,0], bottom: [0,30,30]); hidden tab (second tab activated, visibilityState hidden) → [0,0], shown again → [30,30]; reduced motion (CDP emulated media) → exactly 1 draw, still 1 after +1 s; FAQ: elementFromPoint hits the SECTION (click-through), 0 image nodes and no canvas in the AX tree; `--disable-webgl` → canvas `hidden`, poster loaded, 0 draws. Eager+high on homeHero/faq, lazy on howWeWork. No-JS: Storybook cannot render without JS; covered by the SSR test (`renderToString` contains the poster `<img>`).
+- 2026-11-01 · implementer: US4 done (T048–T054). useRotatingText + M1RotatingPill + tests + stories; pill-motion token assertions added to m1-tokens.test.ts. Built catalogue, headless Chrome: label changes every 2599/2600/2601 ms and wraps; pointer resting on the pill holds the label for 6 s and rotation resumes after leaving; reduced motion (emulated) + reload stays on "Estrategia tecnológica" after 6 s; AX tree: 1 list, 4 list items, 0 live regions, the only static texts are the four items (animated label is aria-hidden). VoiceOver itself not run (no interactive session); the AX tree is what it reads.
+- 2026-11-01 · implementer: US5 done (T055–T059). `--dot-paper-lit-color: var(--m1-red-muush-500)`; `public/cursor/you.svg` 3× #CF3147 → #E5352F (comment rewritten, no `--`); two tests repinned (not deleted). `git diff` on CursorSpotlight.vue, useCursorSpotlight.ts, DotGrid.vue and the cursor rules: empty. Generated site served locally, headless Chrome at 1440 on /es/, /en/, /es/nosotros/, /en/about/, /es/404/, /en/404/: html + layout root rgb(5,5,5); footer rgb(38,38,38) (Ink 500 band, expected until 43); after a mouse move the spotlight mounts and paints rgb(229,53,47) dots; cursor `you.svg 1 9, auto` / `…, pointer` on links / `text` in fields; reduced motion → no spotlight.
+- 2026-11-01 · implementer: Phase 8 done (T060–T065). Literal scan 23/23; every new .vue < 200 lines (largest M1PrimaryButton 122); `createShaderRenderer` split to stay ≈30 lines. `./init.sh` exit 0: typecheck, check, test (113 files / 1697 tests), generate, storybook:build all OK. Live pages match spec "What changes visually": canvas Negro 950, footer Ink 500 band, red shift on cursor and lit dots, nothing else. Clarifications Q1–Q4: all CONFIRMED by Roberto 2026-10-31 (none pending); spec.md wording updated. Deviations and flags: see `docs/harness/progress/impl_m1_visual_foundation.md`. Note: a `nuxt dev` (pid 43034, started 23:06, not the implementer's) was running during the gate; the prerender took 578 s alongside it but passed.
+- 2026-11-01 · implementer: implementation complete → docs/harness/progress/impl_m1_visual_foundation.md. Status left at `in_progress` for the leader.
+- 2026-11-01 · implementer: follow-up done. M1PrimaryButton arrow now visible at every width (pen extract § 9); hero @390 re-measured 177.75×44 with a visible 20×20 arrow; spec/research/contract/tasks wording corrected; ./init.sh exit 0 (113 files / 1697 tests). Report § 6.
+- 2026-11-01 · Implementer PASS (65/65 tasks, 1697 tests); leader corrected the mobile arrow (pen-extract § 9) and the implementer fixed it. 42 → reviewing; reviewer launched.
+- 2026-11-01 · Reviewer APPROVED with should-fix S1 (forced-colours boundary, a spec edge case). The leader sends it back to in_progress to fix S1, plus advisories 1 and 6, before close-out.
+- 2026-11-01 · implementer: review S1 closed (forced-colours inset outline on m1-borde-luz, verified in headless Chrome, sizes unchanged), advisory 1 (no draw while hidden) and 6 (spec status). ./init.sh exit 0, 1699 tests. Report § 7.
+- 2026-11-01 · Security warning on the 42 implementer's last run; leader audit found no out-of-scope or config changes (exact trigger unknown). Roberto approved: (a) naming reorganization — no version marker (drop M1/m1), v1 moved to app/shared/ui/legacy/ + legacy-* tokens + Storybook 'Legacy v1/'; constitution 2.1.1 applied; (b) fresh implementer for it, then a fresh reviewer for all of 42 with a security focus.
+- 2026-11-01 · Naming implementer PASS (impl_42_naming.md): v1 moved to app/shared/ui/legacy/ (staged git mv), M1/m1 dropped, 8 collisions → legacy-*, Storybook reordered; DotGrid and SocialIcon left in place (DotGrid is the spotlight's substrate). 42 → reviewing; fresh reviewer launched with a security focus.
+- 2026-11-01 · Fresh reviewer APPROVED (review-42b.md); security: nothing found, trigger of the earlier warning unknown. S1 (stale m1 token name in public/cursor/you.svg comment) fixed by the leader (comment only). Advisories 1, 2, 3, 5, 7 carried into feature 43. Close-out launched.
+
+### Reopened · Shared/UI quarantine (2026-11-01)
+
+- Roberto's decisions (Storybook review, 2026-11-01): `Shared/UI` holds only v2 components. The spotlight effect (CursorSpotlight + DotGrid) is retired in v2; the custom "You" cursor stays. Lockup, Wordmark and SocialIcon go to legacy now, and feature 43 builds their v2 versions. Feature 42 reopened → `in_progress`.
+- Moves (`impl_42_naming.md` § "Follow-up · Shared/UI quarantine"), all staged `git mv` renames, paths, imports and story titles only:
+  - `app/shared/ui/{CursorSpotlight,DotGrid,Lockup,Wordmark,SocialIcon}.{vue,test.ts,stories.ts}` → `app/shared/ui/legacy/`.
+  - `app/shared/logic/useCursorSpotlight.{ts,test.ts}` → `app/shared/logic/legacy/` (new folder).
+  - Story titles `Shared/UI/X` → `Legacy v1/Shared/UI/X`. `Shared/UI` now holds only GlassButton, GlassSurface, Heading, Pill, PrimaryButton, RotatingPill and ShaderBackground; 44 unique story titles.
+  - Import paths updated in `app/layouts/default.vue`, `SiteNav.{vue,test.ts}`, `SiteFooter.{vue,test.ts}`, `MobileMenu.vue`, `NotFoundContent.stories.ts`, `shell/data/types.ts` and `legacy/SectionBackdrop.stories.ts`. Assets (`logomark-on-ink.svg`, `app/assets/social/*.svg`, dot-paper tokens) not moved. The layout still mounts the spotlight; removing it is feature 43's job.
+  - `./init.sh` exit 0 (113 files / 1699 tests).
+- Reviewer run 3 (`review-42c.md`) APPROVED, no blocking or should-fix findings. Advisories:
+  1. Acceptance item 8 of 42 still says the spotlight "sigue funcionando"; when 43 retires it, 43's spec and tests must state that item 8 is superseded. Carried into feature 43 acceptance by the leader.
+  2. `app/shared/ui/tokens.stories.ts` (`Foundations/Tokens`) is a story in a component folder; could move to a foundations location later (optional).
+  3. Live v1 shell code imports from `legacy/`; expected until 43 builds the v2 Lockup, Wordmark and social icons. Feature 47's grep criterion will catch leftovers.
+- Not committed
+
+#### Session log (from current.md)
+
+- 2026-11-01 · Roberto (Storybook review): Shared/UI must hold only v2. Decisions: the spotlight effect
+  (CursorSpotlight + DotGrid) is retired in v2; the custom "You" cursor stays. Lockup, Wordmark and
+  SocialIcon go to legacy now; feature 43 builds v2 versions. muush-1.0.md § 1 and features 42/43/47 updated.
+  42 reopened → in_progress.
+- 2026-11-01 · Implementer PASS: 5 components + useCursorSpotlight moved to legacy (paths only). 42 → reviewing; reviewer launched.
+- 2026-11-01 · Reviewer APPROVED (review-42c.md, 3 advisories). Advisory 1 carried into feature 43 acceptance; 2 and 3 noted (optional / expected until 43). Close-out launched.
