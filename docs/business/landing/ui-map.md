@@ -1,5 +1,9 @@
 # Landing — mapa de UI (comportamiento)
 
+> ⚠️ **Describe el diseño v1 (claro, radar, glows).** Para el rediseño Muush 1.0
+> (v2, features 41–48) manda [`docs/business/muush-1.0.md`](/docs/business/muush-1.0.md).
+> Este archivo se retira o reescribe en la feature 47. Aprobado por Roberto el 2026-10-31.
+
 > Fuente: Notion → Project State → Landing · Mapa de UI. Sincronizado
 > 2026-08-27. Última actualización de la fuente: 2026-08-24.
 >
