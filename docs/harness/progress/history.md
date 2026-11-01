@@ -2877,3 +2877,47 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
 - 2026-10-20 · Reviewer APPROVED; acceptance #6 pending production deploy. Leader reworded contract § 7 V-8. Feature stays `reviewing` until post-deploy checks.
 - 2026-10-20 · Deployed v1.7.3 (run 39538804706, 2026-10-21 03:33 UTC). Post-deploy header, S3 metadata and CloudFront Hit/age checks CONFIRMED; text-change check NOT run.
 - 2026-10-20 · Roberto chose option (b): defer the text-change check to the next copy deploy. Feature 40 → done; history entry written, current.md reset.
+
+## 2026-10-31 — Feature 41: v2_foundation_docs (done)
+
+- Change (sdd: false, docs/config only, done by the leader): foundation for the Muush 1.0 / v2 redesign on branch `docs/v2-foundation` (from `muush-v2`, merges back into `muush-v2`, never master).
+  - `muush-v2` integration branch created; handoff package copied to `docs/handoff/muush-1.0/` (reference to translate into Vue + Tailwind, never copied as-is).
+  - v2 features 41–48 registered in `feature_list.json`; features 15, 18, 19 marked `superseded` (new status).
+  - `.husky/pre-commit` allows commits on `muush-v2`; `biome.json` excludes `docs/handoff`.
+  - AGENTS.md: handoff pointer, v2 branch flow, responsive anchors (390/1440 match the `.pen`; sizes/spacing may adapt in between).
+  - Constitution 2.0.1 → 2.1.0: Art. VII moves to the `--m1-*` token family, Poppins 500 for headlines, responsive anchor rule; Development Workflow says design values come from the `.pen` via the leader, and v1 design documents are not a fallback. Sync Impact Report lists the templates and the agent guidance files reviewed.
+  - `docs/business/muush-1.0.md` (new, authoritative for v2) and a v1 notice on `branding.md`, `landing/design-extract.md`, `landing/ui-map.md`, `landing/content.md`. Text approved by Roberto before writing (approval recorded; ordering UNVERIFIED by the reviewer).
+  - `.claude/agents/implementer.md` and `spec_author.md` no longer send agents to the v1 docs for v2 design values.
+  - No app/ or tests/ change. `./init.sh` exits 0.
+- Reviewer run 1 REJECTED (B1: agent files contradicted the amended workflow; S1–S5, A1, A3). All fixed by the leader.
+- Reviewer run 2 APPROVED. New finding N1 (duplicate "5." numbering in `implementer.md`) fixed by the leader.
+- Still open for Roberto (advisory A2): `docs/business/rules.md` § R32 still names design-extract.md as the daily measurement reference. Human-owned, not edited; the constitution overrides it.
+- Reviewer: `review-41.md`. Proposal: `v2-foundation-proposal.md`.
+- Not committed (Roberto's instruction: no commits without explicit request).
+
+### Session log (from current.md)
+
+- 2026-10-31 · Roberto: branch `muush-v2`; one 2.0.0 bump at the end; remove
+  the diagnostic "sitio web o redes" field for now (backend unchanged);
+  privacy checkbox gates submit and is not sent; Propósito and Proyectos are
+  retired; sizes/spacing may adapt outside the 390/1440 anchors; features
+  compressed to 41–47.
+- 2026-10-31 · Roberto: privacy notice and terms get their own pages inside v2
+  (text comes later) → feature 48; custom cursor and spotlight stay; features
+  15, 18, 19 marked `superseded` (new status).
+- 2026-10-31 · Roberto approved proposal A (constitution 2.0.1 → 2.1.0) and B
+  (new `docs/business/muush-1.0.md` + v1 notice on branding.md,
+  design-extract.md, ui-map.md, content.md). He approved the draft text,
+  which now lives at `docs/business/muush-1.0.md`.
+- 2026-10-31 · Roberto: Preguntas at `/es/preguntas` ↔ `/en/faq` and indexed
+  ("necesitamos indexar todo"); same for the legal pages.
+- 2026-10-31 · Reviewer run 1 REJECTED. Fixed: `implementer.md` and
+  `spec_author.md` no longer send agents to the v1 docs for design values;
+  Sync Impact Report lists the agent files; constitution clarifies "v1 design
+  documents"; AGENTS.md says 41–48; feature 47 branch wording; feature 43
+  legal-link criterion points at feature 48; feature 41 description matches
+  the approved strategy; proposal C1 resolved.
+- Open for Roberto (advisory A2): `docs/business/rules.md` § R32 still says
+  design-extract.md is the daily measurement reference. It is human-owned,
+  so it was not edited.
+- 2026-10-31 · Reviewer run 2 APPROVED; N1 fixed by the leader. Feature 41 → done; history entry written, current.md reset.
