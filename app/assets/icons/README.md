@@ -68,3 +68,18 @@ Used by `FileField.vue` (feature 020, `app/features/forms/`) as the CV
 upload control's affordance glyph
 (`docs/business/landing/design-extract.md` § FormField, "upload" variant).
 Same stroke-attribute convention as `x.svg` and `chevron-down.svg`.
+
+### `arrow-right.svg`
+
+| | |
+|---|---|
+| Source | lucide `arrow-right` (ISC licence) |
+| Original viewBox | `0 0 24 24` — already square, unchanged |
+| Transform applied | none |
+| Stripped | `width="24"`, `height="24"`, `class` |
+
+Used by `PrimaryButton.vue` (feature 42, Muush 1.0) as the trailing arrow
+of the primary button, which the Kit draws as the lucide `arrow-right` at
+20×20 (hero) and 16×16 (nav) in Blanco
+(`docs/harness/progress/pen-extract-42.md` § 2). Decorative: the button's
+accessible name is its label. Same stroke-attribute convention as `x.svg`.
