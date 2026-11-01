@@ -1,0 +1,94 @@
+/* ==========================================================
+   muush 1.0 · variables de diseño
+   Valores exactos de muush.pen (variables m1-* y componentes
+   "M1 · Botón primario", "M1 · Botón vidrio", "M1 · Pill").
+   Dark mode único: no hay tema claro.
+   ========================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Poppins:wght@500;600&display=swap");
+
+:root {
+  /* ---------- Base neutra (80% de la superficie) ---------- */
+  --m1-negro-950: #050505;   /* fondo principal */
+  --m1-negro-900: #0B0B0B;   /* secciones alternas, vidrio */
+  --m1-carbon-800: #1A1A1A;  /* campos y tarjetas */
+  --m1-carbon-700: #2C2C2C;  /* líneas y bordes */
+  --m1-gris-400: #8C8C8A;    /* texto de apoyo, segunda línea de titulares */
+  --m1-blanco: #F4F4F2;      /* titulares y texto */
+
+  /* ---------- Brasa (cálido) ---------- */
+  --m1-red-muush-500: #E5352F; /* único acento sólido */
+  --m1-crimson-600: #8E2A1E;
+  --m1-oxblood-800: #4A1715;
+  --m1-coral-300: #C9604A;     /* tope cálido: nada de naranja */
+  --m1-arena-300: #B38B7B;
+
+  /* ---------- Acero (frío) ---------- */
+  --m1-acero-200: #A6B6B2;     /* punto de aliados */
+  --m1-acero-400: #4A676B;     /* par frío del degradado */
+  --m1-acero-800: #1F3236;
+
+  /* ---------- Texto con opacidad ---------- */
+  --m1-texto: var(--m1-blanco);
+  --m1-texto-suave: rgba(244, 244, 242, 0.70); /* párrafos */
+  --m1-texto-tenue: rgba(244, 244, 242, 0.40); /* placeholders */
+  --m1-linea: rgba(244, 244, 242, 0.12);       /* bordes de vidrio */
+  --m1-linea-fuerte: rgba(244, 244, 242, 0.20);
+
+  /* ---------- Tipografía ---------- */
+  --m1-font-titulo: "Poppins", system-ui, sans-serif;   /* titulares y wordmark, peso 500 */
+  --m1-font-texto: "Instrument Sans", system-ui, sans-serif;
+
+  /* Escala móvil → escritorio */
+  --m1-h-hero: clamp(34px, 6vw + 10px, 84px);   /* "Hablamos negocio / y código." */
+  --m1-h-seccion: clamp(28px, 3vw + 14px, 56px);
+  --m1-h-tarjeta: clamp(19px, 1vw + 14px, 26px);
+  --m1-p-grande: clamp(16px, 0.5vw + 14px, 20px);
+  --m1-p: 15px;
+  --m1-p-chico: 13px;
+  --m1-etiqueta: 12px;
+  --m1-interlineado-titulo: 1.15;
+  --m1-interlineado-texto: 1.5;
+
+  /* ---------- Forma ---------- */
+  --m1-radio-control: 12px;   /* idioma, menú, cerrar, redes: MISMA forma */
+  --m1-radio-campo: 12px;
+  --m1-radio-tarjeta: 22px;
+  --m1-radio-tile: 28px;      /* ícono de vidrio de servicios */
+  --m1-radio-pill: 999px;     /* pills y botones */
+  --m1-control: 36px;         /* lado de los controles cuadrados */
+
+  /* ---------- Espaciado ---------- */
+  --m1-gutter: 24px;           /* margen lateral móvil */
+  --m1-gutter-desktop: 80px;
+  --m1-seccion-y: 72px;        /* padding vertical de sección en móvil */
+  --m1-seccion-y-desktop: 120px;
+
+  /* ---------- Vidrio ---------- */
+  --m1-vidrio-fondo: rgba(11, 11, 11, 0.70);    /* #0B0B0BB3 */
+  --m1-vidrio-blur: blur(30px);
+  --m1-vidrio-borde: linear-gradient(180deg, rgba(244,244,242,.25), rgba(244,244,242,.04));
+  --m1-vidrio-sombra: 0 30px 80px rgba(0, 0, 0, 0.67);
+  --m1-nav-fondo: rgba(11, 11, 11, 0.45);       /* #0B0B0B73 */
+
+  /* ---------- Botón primario (M1 · Botón primario) ---------- */
+  --m1-btn-fondo: linear-gradient(180deg, #EC4A44 0%, #E5352F 55%, #C42A25 100%);
+  --m1-btn-borde: rgba(255, 255, 255, 0.20);
+  --m1-btn-sombra: 0 10px 32px rgba(229, 53, 47, 0.33);
+
+  /* ---------- Botón secundario (M1 · Botón vidrio) ---------- */
+  --m1-btn2-fondo: rgba(26, 26, 26, 0.55);      /* #1A1A1A8C */
+
+  /* ---------- Movimiento ---------- */
+  --m1-ease: cubic-bezier(.2, .7, .2, 1);
+  --m1-rapido: 180ms;
+  --m1-medio: 320ms;
+  --m1-lento: 700ms;
+
+  /* ---------- Contenedor ---------- */
+  --m1-max: 1280px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --m1-rapido: 0ms; --m1-medio: 0ms; --m1-lento: 0ms; }
+}

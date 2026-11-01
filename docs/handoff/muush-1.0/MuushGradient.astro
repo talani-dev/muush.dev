@@ -1,0 +1,32 @@
+---
+// Fondo animado de una sección. Va como primer hijo de la sección (position: relative).
+// <MuushGradient shader="liston" poster="/posters/hero-liston.webp" uniforms={{ u_tdark: 1 }} />
+import liston from './shaders/m1-liston.glsl?raw';
+import acanalado from './shaders/m1-acanalado.glsl?raw';
+import brasaAcero from './shaders/m1-brasa-acero.glsl?raw';
+
+interface Props {
+  shader: 'liston' | 'acanalado' | 'brasa-acero';
+  uniforms?: Record<string, number>;
+  poster: string;
+  opacity?: number;
+}
+const { shader, uniforms = {}, poster, opacity = 1 } = Astro.props;
+const sources = { liston, acanalado, 'brasa-acero': brasaAcero };
+---
+<div class="muush-gradient" aria-hidden="true" style={`opacity:${opacity};background-image:url(${poster})`}>
+  <canvas data-fragment={sources[shader]} data-uniforms={JSON.stringify(uniforms)}></canvas>
+</div>
+
+<style>
+  .muush-gradient { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: #050505 center / cover no-repeat; }
+  .muush-gradient canvas { width: 100%; height: 100%; display: block; }
+  .muush-gradient canvas[data-fallback='true'] { display: none; }
+</style>
+
+<script>
+  import { MuushGradient } from './muush-gradient.js';
+  document.querySelectorAll<HTMLCanvasElement>('.muush-gradient canvas').forEach((c) => {
+    new MuushGradient(c, { fragment: c.dataset.fragment!, uniforms: JSON.parse(c.dataset.uniforms || '{}') });
+  });
+</script>
