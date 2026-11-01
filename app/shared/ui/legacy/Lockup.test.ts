@@ -1,8 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import Lockup from '@/shared/ui/Lockup.vue'
-import lockupSource from '@/shared/ui/Lockup.vue?raw'
-import Wordmark from '@/shared/ui/Wordmark.vue'
+import Lockup from '@/shared/ui/legacy/Lockup.vue'
+import lockupSource from '@/shared/ui/legacy/Lockup.vue?raw'
+import Wordmark from '@/shared/ui/legacy/Wordmark.vue'
 
 /** The markup between `<template>` and `</template>`, comments excluded. */
 const template = lockupSource.slice(

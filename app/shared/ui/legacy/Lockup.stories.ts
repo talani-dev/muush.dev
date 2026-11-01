@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import Lockup from '@/shared/ui/Lockup.vue'
+import Lockup from '@/shared/ui/legacy/Lockup.vue'
 
 /**
  * The brand mark the nav and the footer both compose: the on-ink isotipo
@@ -11,7 +11,7 @@ import Lockup from '@/shared/ui/Lockup.vue'
  * thickness is written anywhere in the component.
  */
 const meta = {
-  title: 'Shared/UI/Lockup',
+  title: 'Legacy v1/Shared/UI/Lockup',
   component: Lockup,
 } satisfies Meta<typeof Lockup>
 

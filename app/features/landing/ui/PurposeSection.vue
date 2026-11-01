@@ -2,9 +2,9 @@
 import { useTemplateRef } from 'vue'
 import type { PurposeNodeContent } from '@/features/landing/data/purposeContent'
 import { usePurposeArcRadii } from '@/features/landing/logic/usePurposeArcRadii'
-import Pill from '@/shared/ui/Pill.vue'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import Pill from '@/shared/ui/legacy/Pill.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 import PurposeCarousel from './PurposeCarousel.vue'
 import PurposeConstellation from './PurposeConstellation.vue'
 

@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import SocialIcon, { type SocialNetwork } from '@/shared/ui/SocialIcon.vue'
+import SocialIcon, {
+  type SocialNetwork,
+} from '@/shared/ui/legacy/SocialIcon.vue'
 
 /**
  * The 48×48 dark-glass squares of the mobile menu, from
@@ -17,7 +19,7 @@ import SocialIcon, { type SocialNetwork } from '@/shared/ui/SocialIcon.vue'
  * locked to the vendor's pure white.
  */
 const meta = {
-  title: 'Shared/UI/SocialIcon',
+  title: 'Legacy v1/Shared/UI/SocialIcon',
   component: SocialIcon,
 } satisfies Meta<typeof SocialIcon>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PurposeNodeContent } from '@/features/landing/data/purposeContent'
-import Radar from '@/shared/ui/Radar.vue'
+import Radar from '@/shared/ui/legacy/Radar.vue'
 import PurposeCard from './PurposeCard.vue'
 
 /**

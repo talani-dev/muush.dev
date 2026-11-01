@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import HeroStack from '@/shared/ui/HeroStack.vue'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import HeroStack from '@/shared/ui/legacy/HeroStack.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 
 /**
  * `01 Hero` of Nosotros/About — the page's first section, and explicitly the

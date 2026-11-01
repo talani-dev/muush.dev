@@ -3,7 +3,7 @@
  * TextField — the `text` / `email` / `tel` variants of `FormField`
  * (`docs/business/landing/design-extract.md` § FormField). Label above,
  * control below: fill `bg-glass-bone`, border `border-glass-line`, radius
- * `--radius-control`, padding `--spacing-field-y`/`-x` — all reused, already
+ * `--radius-legacy-control`, padding `--spacing-field-y`/`-x` — all reused, already
  * generic tokens (`plan.md` § 5.1).
  *
  * Presentational only (Constitution Article V): no composable, no i18n. All
@@ -61,7 +61,7 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
         :readonly="readonly"
         :aria-invalid="Boolean(error)"
         :aria-describedby="error ? `${id}-error` : undefined"
-        class="rounded-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-100 focus-visible:outline-red-400"
+        class="rounded-legacy-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-100 focus-visible:outline-red-400"
         :class="[
           error ? 'border-red-400' : 'border-glass-line',
           { 'min-w-0 flex-1': $slots.leading },

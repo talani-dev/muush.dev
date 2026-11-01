@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import Radar, { type RadarSize } from '@/shared/ui/Radar.vue'
+import Radar, { type RadarSize } from '@/shared/ui/legacy/Radar.vue'
 
 /**
  * The three radar sizes of docs/business/landing/design-extract.md § 2, as
@@ -22,7 +22,7 @@ import Radar, { type RadarSize } from '@/shared/ui/Radar.vue'
  * belongs to that section.
  */
 const meta = {
-  title: 'Shared/UI/Radar',
+  title: 'Legacy v1/Shared/UI/Radar',
   component: Radar,
 } satisfies Meta<typeof Radar>
 

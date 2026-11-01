@@ -1,4 +1,4 @@
-import type { SocialNetwork } from '@/shared/ui/SocialIcon.vue'
+import type { SocialNetwork } from '@/shared/ui/legacy/SocialIcon.vue'
 
 /**
  * The shell's content model.

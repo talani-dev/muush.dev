@@ -2,8 +2,8 @@
 import { useTemplateRef } from 'vue'
 import type { ServiceNodeContent } from '@/features/landing/data/servicesContent'
 import { useServicesLyrics } from '@/features/landing/logic/useServicesLyrics'
-import Pill from '@/shared/ui/Pill.vue'
-import Radar from '@/shared/ui/Radar.vue'
+import Pill from '@/shared/ui/legacy/Pill.vue'
+import Radar from '@/shared/ui/legacy/Radar.vue'
 import ServiceItem from './ServiceItem.vue'
 
 /**

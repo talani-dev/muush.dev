@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import LinkArrow from '@/shared/ui/LinkArrow.vue'
-import linkArrowSource from '@/shared/ui/LinkArrow.vue?raw'
+import LinkArrow from '@/shared/ui/legacy/LinkArrow.vue'
+import linkArrowSource from '@/shared/ui/legacy/LinkArrow.vue?raw'
 
 const markup = linkArrowSource.slice(
   linkArrowSource.indexOf('<template>'),

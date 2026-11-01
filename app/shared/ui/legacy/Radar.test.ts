@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import Radar, { type RadarSize } from '@/shared/ui/Radar.vue'
+import Radar, { type RadarSize } from '@/shared/ui/legacy/Radar.vue'
 
 /**
  * Footprint and dot from docs/business/landing/design-extract.md § 2

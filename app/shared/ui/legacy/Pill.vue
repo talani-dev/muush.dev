@@ -8,7 +8,7 @@ import Radar from './Radar.vue'
  *
  * `label` is the only content input. The eleven instances in the design
  * differ in nothing else, and the 13 → 12 type difference between frames is
- * carried by the fluid `text-pill` role, not by a size prop.
+ * carried by the fluid `text-legacy-pill` role, not by a size prop.
  *
  * A long label wraps rather than truncating: this sits next to navigation
  * and silently losing a word would be worse than a taller capsule.
@@ -26,9 +26,11 @@ const { label } = defineProps<Props>()
 
 <template>
   <span
-    class="inline-flex items-center gap-pill-gap rounded-full border border-glass-line bg-glass-dark py-pill-y ps-pill-start pe-pill-end"
+    class="inline-flex items-center gap-legacy-pill-gap rounded-full border border-glass-line bg-glass-dark py-legacy-pill-y ps-pill-start pe-pill-end"
   >
     <Radar size="sm" />
-    <span class="font-instrument text-pill text-bone-200">{{ label }}</span>
+    <span class="font-instrument text-legacy-pill text-bone-200">{{
+      label
+    }}</span>
   </span>
 </template>

@@ -13,7 +13,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite'
  * wrong. Nothing here adds or overrides a token.
  */
 const meta = {
-  title: 'Foundations/Design tokens',
+  title: 'Legacy v1/Foundations/Tokens',
 } satisfies Meta
 
 export default meta
@@ -91,7 +91,7 @@ const typeRoles: { className: string; specimen: string }[] = [
   },
   { className: 'text-form-label', specimen: 'Correo' },
   { className: 'text-input-value', specimen: 'support@muush.dev' },
-  { className: 'text-pill', specimen: 'Technology solution studio' },
+  { className: 'text-legacy-pill', specimen: 'Technology solution studio' },
   { className: 'text-meta', specimen: 'Próximamente' },
   { className: 'text-wordmark', specimen: 'muush.dev' },
   { className: 'text-button', specimen: 'Cuéntanos tu proyecto' },

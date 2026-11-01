@@ -7,7 +7,7 @@ import SectionGlow, {
   type RedGlowOpacity,
   type Wine300GlowOpacity,
   type Wine400GlowOpacity,
-} from '@/shared/ui/SectionGlow.vue'
+} from '@/shared/ui/legacy/SectionGlow.vue'
 
 /** The colour+opacity pairs the component accepts, as it accepts them. */
 type GlowFill =

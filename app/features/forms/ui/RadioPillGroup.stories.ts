@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import RadioPillGroup from './RadioPillGroup.vue'
 
 const meta = {
-  title: 'Forms/RadioPillGroup',
+  title: 'Legacy v1/Forms/RadioPillGroup',
   component: RadioPillGroup,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof RadioPillGroup>

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import CursorSpotlight from '@/shared/ui/CursorSpotlight.vue'
+import CursorSpotlight from '@/shared/ui/legacy/CursorSpotlight.vue'
 
 /*
  * Both files are read from disk rather than imported. The Tailwind Vite plugin
@@ -18,7 +18,7 @@ const globalCss = readFileSync(
 )
 
 const source = readFileSync(
-  resolve(process.cwd(), 'app/shared/ui/CursorSpotlight.vue'),
+  resolve(process.cwd(), 'app/shared/ui/legacy/CursorSpotlight.vue'),
   'utf8'
 )
 

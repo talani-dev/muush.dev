@@ -6,9 +6,9 @@ import {
   useShellNavigation,
   useSiteSeo,
 } from '@/features/shell'
-import { useCursorSpotlight } from '@/shared/logic/useCursorSpotlight'
-import CursorSpotlight from '@/shared/ui/CursorSpotlight.vue'
-import DotGrid from '@/shared/ui/DotGrid.vue'
+import { useCursorSpotlight } from '@/shared/logic/legacy/useCursorSpotlight'
+import CursorSpotlight from '@/shared/ui/legacy/CursorSpotlight.vue'
+import DotGrid from '@/shared/ui/legacy/DotGrid.vue'
 
 /**
  * The chrome every page inherits: the nav above, the page below, the footer

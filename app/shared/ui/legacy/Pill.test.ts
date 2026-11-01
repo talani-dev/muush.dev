@@ -1,8 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import Pill from '@/shared/ui/Pill.vue'
-import pillSource from '@/shared/ui/Pill.vue?raw'
-import Radar from '@/shared/ui/Radar.vue'
+import Pill from '@/shared/ui/legacy/Pill.vue'
+import pillSource from '@/shared/ui/legacy/Pill.vue?raw'
+import Radar from '@/shared/ui/legacy/Radar.vue'
 
 describe('Pill', () => {
   it('should render a small radar when mounted', () => {
@@ -27,8 +27,8 @@ describe('Pill', () => {
       'border',
       'border-glass-line',
       'bg-glass-dark',
-      'gap-pill-gap',
-      'py-pill-y',
+      'gap-legacy-pill-gap',
+      'py-legacy-pill-y',
       'ps-pill-start',
       'pe-pill-end',
     ]) {

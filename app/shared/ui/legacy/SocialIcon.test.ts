@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import SocialIcon, { type SocialNetwork } from '@/shared/ui/SocialIcon.vue'
+import SocialIcon, {
+  type SocialNetwork,
+} from '@/shared/ui/legacy/SocialIcon.vue'
 
 const profile = {
   href: 'https://instagram.com/muush.dev',

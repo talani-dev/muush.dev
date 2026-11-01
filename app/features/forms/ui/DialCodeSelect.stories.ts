@@ -4,7 +4,7 @@ import DialCodeSelect from './DialCodeSelect.vue'
 
 /* Visual classes UNVERIFIED against the `.pen` (feature 32 spec OA-10). */
 const meta = {
-  title: 'Forms/DialCodeSelect',
+  title: 'Legacy v1/Forms/DialCodeSelect',
   component: DialCodeSelect,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof DialCodeSelect>

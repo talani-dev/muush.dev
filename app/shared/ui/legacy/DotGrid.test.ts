@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import DotGrid from '@/shared/ui/DotGrid.vue'
+import DotGrid from '@/shared/ui/legacy/DotGrid.vue'
 
 /*
  * Both files are read from disk rather than imported. The Tailwind Vite plugin
@@ -19,7 +19,7 @@ const globalCss = readFileSync(
 )
 
 const dotGridSource = readFileSync(
-  resolve(process.cwd(), 'app/shared/ui/DotGrid.vue'),
+  resolve(process.cwd(), 'app/shared/ui/legacy/DotGrid.vue'),
   'utf8'
 )
 

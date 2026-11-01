@@ -4,7 +4,7 @@ import WhatsappField from './WhatsappField.vue'
 
 /* Visual classes UNVERIFIED against the `.pen` (feature 32 spec OA-10). */
 const meta = {
-  title: 'Forms/WhatsappField',
+  title: 'Legacy v1/Forms/WhatsappField',
   component: WhatsappField,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof WhatsappField>

@@ -40,9 +40,9 @@ const { variant, padding = 'default', as = 'div' } = defineProps<Props>()
  */
 const surfaceByVariant = {
   'red-strong':
-    'bg-glass-red-strong border border-glass-red-strong-line backdrop-blur-glass-red rounded-panel',
+    'bg-glass-red-strong border border-glass-red-strong-line backdrop-blur-glass-red rounded-legacy-panel',
   'red-soft':
-    'bg-glass-red-soft border border-glass-red-soft-line backdrop-blur-glass-red rounded-panel',
+    'bg-glass-red-soft border border-glass-red-soft-line backdrop-blur-glass-red rounded-legacy-panel',
   'bone-strong':
     'bg-glass-bone-strong border border-glass-line backdrop-blur-glass rounded-panel-sm',
   bone: 'bg-glass-bone border border-glass-line backdrop-blur-glass rounded-panel-sm',

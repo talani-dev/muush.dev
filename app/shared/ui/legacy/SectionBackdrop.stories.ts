@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import DotGrid from '@/shared/ui/DotGrid.vue'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import DotGrid from '@/shared/ui/legacy/DotGrid.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 
 /**
  * The container a section puts its own glows in — and the demonstration that
@@ -23,7 +23,7 @@ import SectionGlow from '@/shared/ui/SectionGlow.vue'
  * relation the rule protects is unchanged (`rules.md` § R37).
  */
 const meta = {
-  title: 'Shared/UI/SectionBackdrop',
+  title: 'Legacy v1/Shared/UI/SectionBackdrop',
   component: SectionBackdrop,
 } satisfies Meta<typeof SectionBackdrop>
 

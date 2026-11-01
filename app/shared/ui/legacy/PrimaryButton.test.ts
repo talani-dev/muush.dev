@@ -4,8 +4,8 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import PrimaryButton, {
   type ButtonVariant,
-} from '@/shared/ui/PrimaryButton.vue'
-import buttonSource from '@/shared/ui/PrimaryButton.vue?raw'
+} from '@/shared/ui/legacy/PrimaryButton.vue'
+import buttonSource from '@/shared/ui/legacy/PrimaryButton.vue?raw'
 
 /*
  * Read as a file rather than imported: the Tailwind Vite plugin claims every
@@ -87,14 +87,14 @@ describe('PrimaryButton', () => {
 
        Two assertions and no prose-sensitive third one on purpose: a guard that
        greps for an English word is the trap § R56 of `findings.md` records,
-       where a doc comment turned this file red. `rounded-control` and an
+       where a doc comment turned this file red. `rounded-legacy-control` and an
        arbitrary radius are class strings, not prose. */
-    expect(buttonSource).not.toContain('rounded-control')
+    expect(buttonSource).not.toContain('rounded-legacy-control')
     expect(buttonSource).not.toMatch(/rounded-\[/)
   })
 
   it('should keep the control radius token alive when this component no longer consumes it', () => {
-    /* This component was `--radius-control`'s last consumer, so as of feature
+    /* This component was `--radius-legacy-control`'s last consumer, so as of feature
        022 nothing in `app/` references the token. It is not dead code: 12px is
        still the design's control radius, and the consumer that is coming is
        **`FormField`** — `design-extract.md § FormField`, `cornerRadius 12`, 13
@@ -110,7 +110,7 @@ describe('PrimaryButton', () => {
 
        Retire this the day `FormField` lands: from then on its own test is what
        keeps the token honest. */
-    expect(globalCss).toMatch(/--radius-control:\s*0\.75rem/)
+    expect(globalCss).toMatch(/--radius-legacy-control:\s*0\.75rem/)
   })
 
   it('should carry the nav variant tokens sized for the 221×48 CTA box', () => {
@@ -121,7 +121,7 @@ describe('PrimaryButton', () => {
        measurement: (221 − 176.546875 content px) ÷ 2. Read from source, not
        the emitted stylesheet — a minifier is free to reformat `0.9375rem`
        and this assertion should not depend on that (contrast
-       `--radius-control` above, same technique). */
+       `--radius-legacy-control` above, same technique). */
     expect(globalCss).toMatch(/--spacing-btn-nav-y:\s*0\.9375rem/)
     expect(globalCss).toMatch(/--spacing-btn-nav-x:\s*1\.3892rem/)
     expect(globalCss).toMatch(/--text-button-sm:\s*0\.9375rem/)

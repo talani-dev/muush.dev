@@ -4,9 +4,9 @@ import {
   type ApplicationFormContent,
   type ApplicationSubmitter,
 } from '@/features/forms'
-import Pill from '@/shared/ui/Pill.vue'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import Pill from '@/shared/ui/legacy/Pill.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 
 /**
  * `Work with muush` — the About page's second section (after `AboutHeroSection`,

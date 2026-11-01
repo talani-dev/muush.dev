@@ -7,7 +7,7 @@ import FormOutcome from './FormOutcome.vue'
  * translated through their content composables.
  */
 const meta = {
-  title: 'Forms/FormOutcome',
+  title: 'Legacy v1/Forms/FormOutcome',
   component: FormOutcome,
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof FormOutcome>

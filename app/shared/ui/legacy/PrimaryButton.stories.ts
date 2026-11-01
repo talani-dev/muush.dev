@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import PrimaryButton, {
   type ButtonVariant,
-} from '@/shared/ui/PrimaryButton.vue'
+} from '@/shared/ui/legacy/PrimaryButton.vue'
 
 /**
  * The site's single animated control, from
@@ -30,7 +30,7 @@ import PrimaryButton, {
  * used to set a cursor at all (`docs/harness/findings.md` § R56).
  */
 const meta = {
-  title: 'Shared/UI/PrimaryButton',
+  title: 'Legacy v1/Shared/UI/PrimaryButton',
   component: PrimaryButton,
   render: args => ({
     components: { PrimaryButton },

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { ref } from 'vue'
-import { useCursorSpotlight } from '@/shared/logic/useCursorSpotlight'
-import CursorSpotlight from '@/shared/ui/CursorSpotlight.vue'
-import DotGrid from '@/shared/ui/DotGrid.vue'
+import { useCursorSpotlight } from '@/shared/logic/legacy/useCursorSpotlight'
+import CursorSpotlight from '@/shared/ui/legacy/CursorSpotlight.vue'
+import DotGrid from '@/shared/ui/legacy/DotGrid.vue'
 
 /**
  * The one component in this system whose whole point is invisible in a
@@ -37,7 +37,7 @@ import DotGrid from '@/shared/ui/DotGrid.vue'
  * owner Clau**; it is a single token, so a value costs one line.
  */
 const meta = {
-  title: 'Shared/UI/CursorSpotlight',
+  title: 'Legacy v1/Shared/UI/CursorSpotlight',
   component: CursorSpotlight,
 } satisfies Meta<typeof CursorSpotlight>
 

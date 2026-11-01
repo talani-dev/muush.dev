@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import GlassPanel, { type GlassVariant } from '@/shared/ui/GlassPanel.vue'
+import GlassPanel, {
+  type GlassVariant,
+} from '@/shared/ui/legacy/GlassPanel.vue'
 
 /**
  * Guards the six-row recipe of docs/business/landing/design-extract.md § 1.
@@ -12,14 +14,14 @@ const surfaceByVariant: Record<GlassVariant, string[]> = {
     'bg-glass-red-strong',
     'border-glass-red-strong-line',
     'backdrop-blur-glass-red',
-    'rounded-panel',
+    'rounded-legacy-panel',
     'p-glass-red',
   ],
   'red-soft': [
     'bg-glass-red-soft',
     'border-glass-red-soft-line',
     'backdrop-blur-glass-red',
-    'rounded-panel',
+    'rounded-legacy-panel',
     'p-glass-red',
   ],
   'bone-strong': [

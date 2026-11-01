@@ -40,7 +40,7 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
       :readonly="readonly"
       :aria-invalid="Boolean(error)"
       :aria-describedby="error ? `${id}-error` : undefined"
-      class="h-contact-textarea-h resize-none rounded-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-200 focus-visible:outline-red-400"
+      class="h-contact-textarea-h resize-none rounded-legacy-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-200 focus-visible:outline-red-400"
       :class="error ? 'border-red-400' : 'border-glass-line'"
       @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
     />

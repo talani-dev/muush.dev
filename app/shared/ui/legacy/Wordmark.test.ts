@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import Wordmark from '@/shared/ui/Wordmark.vue'
+import Wordmark from '@/shared/ui/legacy/Wordmark.vue'
 
 describe('Wordmark', () => {
   it('should render muush, the dot and dev when the form is full', () => {

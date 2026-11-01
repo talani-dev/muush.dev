@@ -44,7 +44,7 @@ import PurposeSection from './PurposeSection.vue'
  * (`docs/business/rules.md` § R23).
  */
 const meta = {
-  title: 'Landing/PurposeSection',
+  title: 'Legacy v1/Landing/PurposeSection',
   component: PurposeSection,
   parameters: {
     layout: 'fullscreen',

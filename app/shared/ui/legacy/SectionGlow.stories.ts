@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import SectionGlow, { type GlowSize } from '@/shared/ui/SectionGlow.vue'
+import SectionGlow, { type GlowSize } from '@/shared/ui/legacy/SectionGlow.vue'
 
 /**
  * The radial background layer of the whole site: 21 circles, 11 on Landing
@@ -23,7 +23,7 @@ import SectionGlow, { type GlowSize } from '@/shared/ui/SectionGlow.vue'
  * smoothly, with no jump at any width.
  */
 const meta = {
-  title: 'Shared/UI/SectionGlow',
+  title: 'Legacy v1/Shared/UI/SectionGlow',
   component: SectionGlow,
 } satisfies Meta<typeof SectionGlow>
 

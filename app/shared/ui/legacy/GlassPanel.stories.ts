@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import GlassPanel, { type GlassVariant } from '@/shared/ui/GlassPanel.vue'
+import GlassPanel, {
+  type GlassVariant,
+} from '@/shared/ui/legacy/GlassPanel.vue'
 
 /**
  * The six glass surfaces of docs/business/landing/design-extract.md § 1.
@@ -14,7 +16,7 @@ import GlassPanel, { type GlassVariant } from '@/shared/ui/GlassPanel.vue'
  * the fluid radius and padding move without a breakpoint.
  */
 const meta = {
-  title: 'Shared/UI/GlassPanel',
+  title: 'Legacy v1/Shared/UI/GlassPanel',
   component: GlassPanel,
   render: args => ({
     components: { GlassPanel },

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import Wordmark from '@/shared/ui/Wordmark.vue'
+import Wordmark from '@/shared/ui/legacy/Wordmark.vue'
 
 /**
  * The two official lockups of `branding.md`, set in Poppins — the only
@@ -15,7 +15,7 @@ import Wordmark from '@/shared/ui/Wordmark.vue'
  * suspect.
  */
 const meta = {
-  title: 'Shared/UI/Wordmark',
+  title: 'Legacy v1/Shared/UI/Wordmark',
   component: Wordmark,
 } satisfies Meta<typeof Wordmark>
 

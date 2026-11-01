@@ -12,7 +12,7 @@ import HeroStack from './HeroStack.vue'
  * runtime (`docs/business/rules.md` § R23).
  */
 const meta = {
-  title: 'Shared/UI/HeroStack',
+  title: 'Legacy v1/Shared/UI/HeroStack',
   component: HeroStack,
   parameters: {
     layout: 'padded',

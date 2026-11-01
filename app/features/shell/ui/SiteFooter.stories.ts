@@ -22,7 +22,7 @@ import SiteFooter from './SiteFooter.vue'
  * distributes what is left (`docs/business/rules.md` § R24).
  */
 const meta = {
-  title: 'Shell/SiteFooter',
+  title: 'Legacy v1/Shell/SiteFooter',
   component: SiteFooter,
 } satisfies Meta<typeof SiteFooter>
 

@@ -6,7 +6,7 @@ import type {
   ResolvedSocial,
 } from '@/features/shell/data/types'
 import { useMobileMenu } from '@/features/shell/logic/useMobileMenu'
-import Wordmark from '@/shared/ui/Wordmark.vue'
+import Wordmark from '@/shared/ui/legacy/Wordmark.vue'
 import SiteNav from './SiteNav.vue'
 
 const items: ResolvedShellItem[] = [

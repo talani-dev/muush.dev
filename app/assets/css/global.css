@@ -1084,10 +1084,12 @@ html {
   --text-input-value--letter-spacing: 0em;
   --text-input-value--font-weight: 400;
 
-  --text-pill: clamp(0.75rem, 0.7268rem + 0.0952vw, 0.8125rem);
-  --text-pill--line-height: 1.2;
-  --text-pill--letter-spacing: 0.054em;
-  --text-pill--font-weight: 500;
+  /* `legacy-`: v1 only, renamed 2026-11-01 because `--text-pill` is now the v2
+     pill label. Feature 47 deletes it. */
+  --text-legacy-pill: clamp(0.75rem, 0.7268rem + 0.0952vw, 0.8125rem);
+  --text-legacy-pill--line-height: 1.2;
+  --text-legacy-pill--letter-spacing: 0.054em;
+  --text-legacy-pill--font-weight: 500;
 
   /* El diseño documenta un rango; se usa el punto medio (rules.md § R6) */
   --text-meta: clamp(0.7188rem, 0.6955rem + 0.0952vw, 0.7813rem);
@@ -1138,7 +1140,7 @@ html {
    * Roles del shell (design-extract.md § 9.bis y § 10 · FooterColumn).
    *
    * Las alturas de línea de los roles de una sola línea no vienen del diseño:
-   * son la misma convención que ya usan --text-pill, --text-button y
+   * son la misma convención que ya usan --text-legacy-pill, --text-button y
    * --text-form-label. La única excepción está marcada abajo.
    *
    * Donde los dos frames implican valores de `em` ligeramente distintos se usa
@@ -1201,10 +1203,12 @@ html {
   --spacing-form-gap: clamp(0.875rem, 0.8286rem + 0.1905vw, 1rem);
   --spacing-lockup-gap: clamp(0.5625rem, 0.4929rem + 0.2857vw, 0.75rem);
   --spacing-isotipo: clamp(2.5rem, 2.2214rem + 1.1429vw, 3.25rem);
-  --spacing-pill-y: 0.5625rem;
+  /* `legacy-pill-y` and `legacy-pill-gap` below: v1 only, renamed 2026-11-01
+     because the unprefixed names are now the v2 pill's. Feature 47 deletes them. */
+  --spacing-legacy-pill-y: 0.5625rem;
   --spacing-pill-start: 0.625rem;
   --spacing-pill-end: 1.25rem;
-  --spacing-pill-gap: 0.6875rem;
+  --spacing-legacy-pill-gap: 0.6875rem;
   --spacing-btn-y: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
   --spacing-btn-hero-x: clamp(1.625rem, 1.4857rem + 0.5714vw, 2rem);
   --spacing-btn-submit-x: clamp(1.75rem, 1.6571rem + 0.381vw, 2rem);
@@ -1470,7 +1474,7 @@ html {
    *
    * Solo hay token para la geometría que la escala fluida NO carga ya. Todo
    * tamaño de tipo y de control del Hero sale de un rol que ya existe arriba
-   * —--text-display, --text-body-lg, --text-pill, --text-button,
+   * —--text-display, --text-body-lg, --text-legacy-pill, --text-button,
    * --text-link— y el margen de página lo aporta <main> con --spacing-page,
    * que el Hero hereda y NUNCA redeclara (spec FR-016).
    *
@@ -2054,16 +2058,19 @@ html {
      La cápsula del Pill usa rounded-full, no un token propio — y desde la
      feature 22 el botón primario también: Roberto resolvió el 2026-09-08 que
      va en píldora en TODAS sus instancias, así que ya no consume
-     --radius-control. El token se queda porque el 12 sigue siendo el radio de
+     --radius-legacy-control. El token se queda porque el 12 sigue siendo el radio de
      control del diseño: lo pide FormField (design-extract.md § FormField,
      cornerRadius 12) cuando se construyan los formularios. Este comentario no
      es lo que lo protege: lo guarda una aserción en
-     app/shared/ui/PrimaryButton.test.ts, porque un token sin consumidor
+     app/shared/ui/legacy/PrimaryButton.test.ts, porque un token sin consumidor
      defendido solo con prosa es como la variante '920' de SectionGlow estuvo a
      punto de irse por código muerto. */
-  --radius-panel: clamp(1.125rem, 1.0321rem + 0.381vw, 1.375rem);
+  /* `legacy-panel` and `legacy-control`: v1 only, renamed 2026-11-01 because
+     `--radius-panel` and `--radius-control` are now v2 radii. `panel-sm` did
+     not collide and keeps its name. Feature 47 deletes them. */
+  --radius-legacy-panel: clamp(1.125rem, 1.0321rem + 0.381vw, 1.375rem);
   --radius-panel-sm: clamp(1.125rem, 1.0786rem + 0.1905vw, 1.25rem);
-  --radius-control: 0.75rem;
+  --radius-legacy-control: 0.75rem;
   --radius-icon: 0.625rem;
   /* Las dos barras de la hamburguesa llevan cornerRadius 1 (§ 9.bis) */
   --radius-burger-bar: 0.0625rem;

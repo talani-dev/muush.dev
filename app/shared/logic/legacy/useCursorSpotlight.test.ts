@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, ref } from 'vue'
-import { useCursorSpotlight } from '@/shared/logic/useCursorSpotlight'
+import { useCursorSpotlight } from '@/shared/logic/legacy/useCursorSpotlight'
 
 /**
  * The composable is the whole of this feature's off-switches, and `happy-dom`

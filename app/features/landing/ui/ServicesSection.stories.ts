@@ -25,7 +25,7 @@ import ServicesSection from './ServicesSection.vue'
  * (`docs/business/rules.md` § R23).
  */
 const meta = {
-  title: 'Landing/ServicesSection',
+  title: 'Legacy v1/Landing/ServicesSection',
   component: ServicesSection,
   parameters: {
     layout: 'fullscreen',

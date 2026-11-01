@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import Pill from '@/shared/ui/Pill.vue'
+import Pill from '@/shared/ui/legacy/Pill.vue'
 
 /**
  * The section capsule of docs/business/landing/design-extract.md § 3 —
@@ -9,7 +9,7 @@ import Pill from '@/shared/ui/Pill.vue'
  * prop precisely because the same capsule serves /es/ and /en/.
  */
 const meta = {
-  title: 'Shared/UI/Pill',
+  title: 'Legacy v1/Shared/UI/Pill',
   component: Pill,
 } satisfies Meta<typeof Pill>
 

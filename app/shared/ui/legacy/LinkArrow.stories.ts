@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import LinkArrow from '@/shared/ui/LinkArrow.vue'
+import LinkArrow from '@/shared/ui/legacy/LinkArrow.vue'
 
 /**
  * The secondary CTA of docs/business/landing/design-extract.md § 7 — four
@@ -10,7 +10,7 @@ import LinkArrow from '@/shared/ui/LinkArrow.vue'
  * to it and the focus indicator must be visible.
  */
 const meta = {
-  title: 'Shared/UI/LinkArrow',
+  title: 'Legacy v1/Shared/UI/LinkArrow',
   component: LinkArrow,
   render: args => ({
     components: { LinkArrow },

@@ -122,7 +122,7 @@ const fileSummary = computed(() =>
     }}</label>
     <label
       :for="id"
-      class="flex cursor-pointer items-center gap-upload-gap rounded-control border bg-glass-bone-faint px-field-x py-upload-y font-instrument text-input-value"
+      class="flex cursor-pointer items-center gap-upload-gap rounded-legacy-control border bg-glass-bone-faint px-field-x py-upload-y font-instrument text-input-value"
       :class="[
         error ? 'border-red-400' : 'border-glass-line-faint',
         readonly ? 'pointer-events-none opacity-60' : '',

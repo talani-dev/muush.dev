@@ -3,8 +3,8 @@ import { resolve } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import { h } from 'vue'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 
 /* Read from disk for the same two reasons as `DotGrid.test.ts`: a
    `<style scoped>` block never reaches a mounted component under `happy-dom`,
@@ -16,7 +16,7 @@ const globalCss = readFileSync(
 )
 
 const backdropSource = readFileSync(
-  resolve(process.cwd(), 'app/shared/ui/SectionBackdrop.vue'),
+  resolve(process.cwd(), 'app/shared/ui/legacy/SectionBackdrop.vue'),
   'utf8'
 )
 

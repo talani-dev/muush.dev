@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import DotGrid from '@/shared/ui/DotGrid.vue'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import DotGrid from '@/shared/ui/legacy/DotGrid.vue'
+import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
+import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 
 /**
  * The site's dotted paper, and the only place the four-layer background is
@@ -33,7 +33,7 @@ import SectionGlow from '@/shared/ui/SectionGlow.vue'
  * diameters are `clamp()`s, so the dots must stay put while the glows resize.
  */
 const meta = {
-  title: 'Shared/UI/DotGrid',
+  title: 'Legacy v1/Shared/UI/DotGrid',
   component: DotGrid,
 } satisfies Meta<typeof DotGrid>
 
