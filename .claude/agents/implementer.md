@@ -51,8 +51,11 @@ Rules:
    plausible-looking number, and do not fall back to the v1 documents.
 3. Colors and typography come from the tokens in `app/assets/css/global.css`
    consumed as Tailwind utilities — use the token, don't re-derive a raw
-   hex. In v2 that is the `--m1-*` family; new code must not use the v1
-   families (`--bone-*`, `--ink-*`, `--red-*`, `--wine-*`).
+   hex. In v2 those are the unprefixed families (`--negro-*`, `--red-muush-*`,
+   `--acero-*`, …), with no version marker in any name. New code must not use
+   anything quarantined for v1: the `--bone-*`, `--ink-*`, `--red-*`,
+   `--wine-*` and `legacy-*` tokens, `app/shared/ui/legacy/`, or the Storybook
+   `Legacy v1/` group (constitution Art. VII).
 4. `branding.md`, `landing/design-extract.md`, `landing/ui-map.md` and
    `landing/content.md` describe the withdrawn v1 design. Use them only
    when working on v1 code; for v2, `muush-1.0.md` wins.
