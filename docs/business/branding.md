@@ -1,5 +1,9 @@
 # Branding — sistema visual
 
+> ⚠️ **Describe el diseño v1 (claro, radar, glows).** Para el rediseño Muush 1.0
+> (v2, features 41–48) manda [`docs/business/muush-1.0.md`](/docs/business/muush-1.0.md).
+> Este archivo se retira o reescribe en la feature 47. Aprobado por Roberto el 2026-10-31.
+
 > Fuente: Notion → Branding (branding book v1.0, actualizado con la
 > sesión de materiales/superficies del 2026-08-17) y Project State
 > (dirección visual v2 de la landing, 2026-08-18). Sincronizado 2026-08-27.

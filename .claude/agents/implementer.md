@@ -33,24 +33,33 @@ interactive session — a subagent does not inherit it, no matter what its
 discovering this; one filled the gap with invented measurements and its
 spec had to be thrown away.
 
-**`docs/business/landing/design-extract.md` is the source of truth for
-every measurement.** The leader extracts values from the design file and
-writes them there: geometry, colors, spacing, typography, per-variant
-values, and prop surfaces derived from real design instances.
+**The `.pen` is the source of truth, and the leader is your only window
+into it** (constitution, Development Workflow; `rules.md` § R32). The
+leader extracts the values your feature needs — geometry, colors, spacing,
+typography, frame ids — and passes them in your task.
 
 Rules:
 
-1. Read `design-extract.md` for any geometry/color/spacing/type value.
-   Never guess one, and never claim you inspected the design file.
+1. Take visual values from your task, from the spec package, and — for the
+   Muush 1.0 redesign (features 41–48) — from `docs/business/muush-1.0.md`
+   (decisions, structure, approved copy) and `docs/handoff/muush-1.0/`
+   (exact tokens and behavior, as reference code to translate into Vue +
+   Tailwind, never to copy). Never guess a value, and never claim you
+   inspected the design file.
 2. If a value you need is genuinely missing, **stop and report the gap**
    to the leader so it can be extracted. Do not interpolate a
-   plausible-looking number.
-3. Colors and typography come from `docs/business/branding.md`, already
-   applied as Tailwind tokens by feature 001 — use the token, don't
-   re-derive a raw hex.
-4. `design-extract.md` § 11 lists known corrections where the design file
-   and the older Notion-derived docs disagree. The extract wins.
-5. Presentational pieces are `.vue` in `app/features/<feature>/ui/` or `app/shared/ui/`; real
+   plausible-looking number, and do not fall back to the v1 documents.
+3. Colors and typography come from the tokens in `app/assets/css/global.css`
+   consumed as Tailwind utilities — use the token, don't re-derive a raw
+   hex. In v2 that is the `--m1-*` family; new code must not use the v1
+   families (`--bone-*`, `--ink-*`, `--red-*`, `--wine-*`).
+4. `branding.md`, `landing/design-extract.md`, `landing/ui-map.md` and
+   `landing/content.md` describe the withdrawn v1 design. Use them only
+   when working on v1 code; for v2, `muush-1.0.md` wins.
+5. Responsive anchors (constitution Art. VII): match the design at 390 and
+   1440 px; at other widths sizes and spacing may adapt, color, components,
+   copy and behavior may not.
+6. Presentational pieces are `.vue` in `app/features/<feature>/ui/` or `app/shared/ui/`; real
    interactivity is a composable in `logic/` (Constitution Article II).
    Never `.tsx` — this project is Nuxt 4 + Vue.
 

@@ -12,11 +12,13 @@
       "reviewing",
       "done",
       "human_confirm",
-      "blocked"
+      "blocked",
+      "superseded"
     ],
     "reviewing_required_before_done": true,
     "sdd_required_when": "feature has \"sdd\": true",
-    "human_confirm_means": "Esperando una decisión, un valor o copy que solo un humano puede dar. La duda está en docs/harness/progress/pending-decisions.md. Introducido 2026-09-08 por Roberto para una corrida autónoma nocturna."
+    "human_confirm_means": "Esperando una decisión, un valor o copy que solo un humano puede dar. La duda está en docs/harness/progress/pending-decisions.md. Introducido 2026-09-08 por Roberto para una corrida autónoma nocturna.",
+    "superseded_means": "Reemplazada por otra feature y que ya no se va a construir. La descripción dice cuál la reemplaza. Introducido 2026-10-31 por Roberto para las features v1 que absorbe el rediseño Muush 1.0."
   },
   "features": [
     {
@@ -316,7 +318,7 @@
       "id": 15,
       "name": "projects_section",
       "title": "Proyectos — bento asimétrico en escritorio, carrusel horizontal en móvil, cuatro slots reservados",
-      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `BiKea` (1440x900), móvil `x9OR6w` (390x560). ESCRITORIO: bento asimétrico estático de cuatro slots con tamaños distintos — Caso 01 620x560, Caso 02 636x265, Caso 03 y 04 306x265. Heading 52px/600 «Nuestro trabajo», nota de 13px. MÓVIL: carrusel horizontal de cuatro cartas de 252x290, con barra de progreso (track 342x3, thumb 97x3) y hint «Desliza →» de 11px/500. Heading a 34px. DISCREPANCIA DEL ARCHIVO DE DISEÑO detectada 2026-09-08: en el frame móvil la etiqueta del Caso 04 dice «Caso 03» — está duplicada. Confirmarlo con Clau antes de replicarlo. La sección no crea stacking context ni pinta fondo opaco, o sus glows saltan encima de la sábana de puntos sin error alguno (rules.md §§ R28, R37). Los glows llegan por el mecanismo de la feature 6, sin editar SectionGlow, DotGrid ni SectionBackdrop. Offsets relativos a la sección, nunca las coordenadas absolutas de página que registra el diseño (rules.md §§ R29, R48). Glow: wine-400 14% size 880-500 (centro 1500,3440 · 470,3050). DIFERIDA POR ROBERTO 2026-09-08: no se construye hasta que él lo diga. La razón no es técnica — hacen falta más colaboradores, más proyectos que presentar y más red. Una sección que existe vacía se lee como sitio incompleto, y el diseño mismo la rotula «Espacio reservado». Sigue en `blocked` hasta instrucción explícita suya; no la desbloquea ningún agente ni el hecho de que sus dependencias cierren.",
+      "description": "REEMPLAZADA 2026-10-31 (Roberto) por el rediseño Muush 1.0: Proyectos se retira de la home en v2. No se construye. Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `BiKea` (1440x900), móvil `x9OR6w` (390x560). ESCRITORIO: bento asimétrico estático de cuatro slots con tamaños distintos — Caso 01 620x560, Caso 02 636x265, Caso 03 y 04 306x265. Heading 52px/600 «Nuestro trabajo», nota de 13px. MÓVIL: carrusel horizontal de cuatro cartas de 252x290, con barra de progreso (track 342x3, thumb 97x3) y hint «Desliza →» de 11px/500. Heading a 34px. DISCREPANCIA DEL ARCHIVO DE DISEÑO detectada 2026-09-08: en el frame móvil la etiqueta del Caso 04 dice «Caso 03» — está duplicada. Confirmarlo con Clau antes de replicarlo. La sección no crea stacking context ni pinta fondo opaco, o sus glows saltan encima de la sábana de puntos sin error alguno (rules.md §§ R28, R37). Los glows llegan por el mecanismo de la feature 6, sin editar SectionGlow, DotGrid ni SectionBackdrop. Offsets relativos a la sección, nunca las coordenadas absolutas de página que registra el diseño (rules.md §§ R29, R48). Glow: wine-400 14% size 880-500 (centro 1500,3440 · 470,3050). DIFERIDA POR ROBERTO 2026-09-08: no se construye hasta que él lo diga. La razón no es técnica — hacen falta más colaboradores, más proyectos que presentar y más red. Una sección que existe vacía se lee como sitio incompleto, y el diseño mismo la rotula «Espacio reservado». Sigue en `blocked` hasta instrucción explícita suya; no la desbloquea ningún agente ni el hecho de que sus dependencias cierren.",
       "acceptance": [
         "Escritorio renderiza el bento asimétrico con los cuatro tamaños exactos del frame `BiKea` — no es una rejilla uniforme",
         "Móvil renderiza el carrusel horizontal con barra de progreso en red-400 y el hint «Desliza →», sin flechas y sin loop (ui-map.md § 6)",
@@ -331,7 +333,7 @@
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
       ],
       "sdd": true,
-      "status": "blocked",
+      "status": "superseded",
       "depends_on": [9]
     },
     {
@@ -382,7 +384,7 @@
       "id": 18,
       "name": "team_section",
       "title": "Nosotros — Equipo, tres integrantes con foto en blanco y negro",
-      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `aaGPf` (1440x820), móvil `eQGAW` (390x1180). ESCRITORIO: Pill + rejilla de 1280x511 con tres columnas de 409x511, gap 20. MÓVIL: las tres apiladas a 342x317, cada una con foto de 342x260 y bloque de datos de 342x43. Los tres son Roberto, Claudia y Alexa. DOS COSAS PENDIENTES QUE NO SON DEL CÓDIGO: los nombres del diseño dicen «Nombre y apellido» — son placeholder, los reales entran con la sesión de fotos B&N (decisions-open.md, discrepancia D3). Y las fotos no existen todavía. DIFERIDA POR ROBERTO 2026-09-08: no se construye hasta que él lo diga. La razón no es técnica — hacen falta más colaboradores, más proyectos que presentar y más red. Una sección que existe vacía se lee como sitio incompleto, y el diseño mismo la rotula «Espacio reservado». Sigue en `blocked` hasta instrucción explícita suya; no la desbloquea ningún agente ni el hecho de que sus dependencias cierren.",
+      "description": "REEMPLAZADA 2026-10-31 (Roberto) por el rediseño Muush 1.0: Nosotros 1.0 (feature 46) trae su propia sección 'Cómo se arma'. No se construye. Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `aaGPf` (1440x820), móvil `eQGAW` (390x1180). ESCRITORIO: Pill + rejilla de 1280x511 con tres columnas de 409x511, gap 20. MÓVIL: las tres apiladas a 342x317, cada una con foto de 342x260 y bloque de datos de 342x43. Los tres son Roberto, Claudia y Alexa. DOS COSAS PENDIENTES QUE NO SON DEL CÓDIGO: los nombres del diseño dicen «Nombre y apellido» — son placeholder, los reales entran con la sesión de fotos B&N (decisions-open.md, discrepancia D3). Y las fotos no existen todavía. DIFERIDA POR ROBERTO 2026-09-08: no se construye hasta que él lo diga. La razón no es técnica — hacen falta más colaboradores, más proyectos que presentar y más red. Una sección que existe vacía se lee como sitio incompleto, y el diseño mismo la rotula «Espacio reservado». Sigue en `blocked` hasta instrucción explícita suya; no la desbloquea ningún agente ni el hecho de que sus dependencias cierren.",
       "acceptance": [
         "Escritorio renderiza la rejilla de tres columnas del frame `aaGPf`; móvil las apila según `eQGAW`",
         "Las fotos son en blanco y negro y su tratamiento queda tokenizado, no aplicado a mano en cada instancia",
@@ -396,14 +398,14 @@
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
       ],
       "sdd": false,
-      "status": "blocked",
+      "status": "superseded",
       "depends_on": [17]
     },
     {
       "id": 19,
       "name": "network_section",
       "title": "Nosotros — Network, con el globo terráqueo declarado como espacio reservado",
-      "description": "Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `Hvx0f` (1440x860), móvil `AWefb` (390x760). Pill + copy de 34px/600 a 820px (escritorio) o 22px/600 a 342px (móvil), más un bloque «Reservado · globo» de 1280x520 / 342x480 que el propio diseño rotula como espacio reservado. ORDEN INVERTIDO ENTRE VIEWPORTS: en escritorio el bloque reservado va ARRIBA de la Pill y la copy; en móvil va ABAJO. No es un descuido del extracto, está así en los dos frames. El globo NO se construye — el diseño lo declara reservado. La copy está marcada como BORRADOR. DIFERIDA POR ROBERTO 2026-09-08: no se construye hasta que él lo diga. La razón no es técnica — hacen falta más colaboradores, más proyectos que presentar y más red. Una sección que existe vacía se lee como sitio incompleto, y el diseño mismo la rotula «Espacio reservado». Sigue en `blocked` hasta instrucción explícita suya; no la desbloquea ningún agente ni el hecho de que sus dependencias cierren.",
+      "description": "REEMPLAZADA 2026-10-31 (Roberto) por el rediseño Muush 1.0: Nosotros 1.0 (feature 46) trae 'Dónde estamos' con el mapa de la feature 44. No se construye. Medidas extraídas por el leader del .pen el 2026-09-08 (rules.md § R32 — un subagente no puede abrirlo; si le falta un valor, lo pide). Frames: escritorio `Hvx0f` (1440x860), móvil `AWefb` (390x760). Pill + copy de 34px/600 a 820px (escritorio) o 22px/600 a 342px (móvil), más un bloque «Reservado · globo» de 1280x520 / 342x480 que el propio diseño rotula como espacio reservado. ORDEN INVERTIDO ENTRE VIEWPORTS: en escritorio el bloque reservado va ARRIBA de la Pill y la copy; en móvil va ABAJO. No es un descuido del extracto, está así en los dos frames. El globo NO se construye — el diseño lo declara reservado. La copy está marcada como BORRADOR. DIFERIDA POR ROBERTO 2026-09-08: no se construye hasta que él lo diga. La razón no es técnica — hacen falta más colaboradores, más proyectos que presentar y más red. Una sección que existe vacía se lee como sitio incompleto, y el diseño mismo la rotula «Espacio reservado». Sigue en `blocked` hasta instrucción explícita suya; no la desbloquea ningún agente ni el hecho de que sus dependencias cierren.",
       "acceptance": [
         "Renderiza Pill y copy con los tamaños de cada frame, y el bloque reservado con su nota y su detalle tal como el diseño los rotula",
         "El orden se invierte entre viewports — reservado arriba en escritorio, abajo en móvil — porque así están los dos frames; se implementa con orden de layout, no duplicando markup",
@@ -417,7 +419,7 @@
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
       ],
       "sdd": false,
-      "status": "blocked",
+      "status": "superseded",
       "depends_on": [17]
     },
     {
@@ -874,6 +876,157 @@
       "sdd": false,
       "status": "done",
       "depends_on": [36, 39]
+    },
+    {
+      "id": 41,
+      "name": "v2_foundation_docs",
+      "title": "v2 — Fundación: constitución, docs/business y mapa para agentes",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. Antes de cualquier spec. (1) Enmienda a la constitución vía /speckit-constitution: § VII pasa de --bone/ink/red/wine a la familia --m1-*; Poppins 500 deja de ser solo logo y pasa a titulares; se agrega la regla responsive de anclas 390/1440. (2) docs/business/ es humano. Estrategia aprobada por Roberto 2026-10-31: un documento nuevo docs/business/muush-1.0.md, autoritativo para v2 (decisiones, sistema visual, estructura, copy ES/EN), más un aviso de 'esto es v1' al inicio de branding.md, landing/design-extract.md, landing/ui-map.md y landing/content.md; los documentos v1 se retiran en la 47. Roberto aprueba el texto antes de escribirlo. (3) AGENTS.md apunta a docs/handoff/muush-1.0/ y explica que es referencia, no código a copiar. Frames de producción: Landing ES `Tng1t`, EN `ZL2Vo`, ES móvil `V2s7T`, EN móvil `mJxKt`; Kit `Cs3AJ`.",
+      "acceptance": [
+        "La enmienda a la constitución está aprobada por Roberto y aplicada; la versión de la constitución sube y el Sync Impact Report lista los templates afectados",
+        "Cada cambio en docs/business/ lo aprobó Roberto antes de escribirse; ninguno lo escribió un subagente",
+        "AGENTS.md menciona docs/handoff/muush-1.0/ y la regla de anclas responsive",
+        "Ningún archivo de app/ o tests/ cambia; ./init.sh pasa"
+      ],
+      "sdd": false,
+      "status": "done",
+      "depends_on": []
+    },
+    {
+      "id": 42,
+      "name": "m1_visual_foundation",
+      "title": "v2 — Base visual: tokens 1.0, primitivos y fondos animados WebGL",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. TOKENS: traduce componentes/tokens.css a global.css + @theme de Tailwind (base neutra negro/carbón/gris/blanco, brasa, acero, texto con opacidad, escala fluida clamp(), radios, vidrio, botones, movimiento); modo oscuro único, body en --m1-negro-950. Los tokens v1 conviven hasta la feature 47. NO se copia el @import de Google Fonts: las fuentes siguen resolviéndose como hoy. PRIMITIVOS del Kit `Cs3AJ` y componentes del .pen: `XqFl6` M1 · Pill, `FcCCF` M1 · Botón primario, `p0X8nQ` M1 · Botón vidrio, `uUENh` M1 · Isotipo (el logo no cambia), tarjeta de vidrio, titular de dos tonos (blanco + gris 400, Poppins 500), pill rotativo (rotatePill, cada 2.6 s). FONDOS: porta muush-gradient.js + MuushGradient.astro a componente Vue + composable solo cliente, sin dependencias; shaders m1-liston.glsl y m1-acanalado.glsl con los uniforms por sección del README; posters/*.webp como respaldo. El cursor personalizado y el spotlight (features 8 y 34) SE QUEDAN (Roberto, 2026-10-31): se ajustan para que se vean bien sobre el fondo oscuro con los tokens m1.",
+      "acceptance": [
+        "Todas las variables de tokens.css existen en global.css con el mismo valor y quedan expuestas como utilidades Tailwind; no se agregan requests a fonts.googleapis.com",
+        "Botón primario, botón vidrio, pill y vidrio coinciden con el Kit (botón primario: texto blanco 19 px semibold)",
+        "Fondos: pausa fuera de pantalla y con la pestaña oculta; con prefers-reduced-motion un solo cuadro fijo; sin WebGL, sin JS y mientras carga se ve el póster; DPR 1x en < 768 px y máximo 1.5x en escritorio; pointer-events:none y aria-hidden",
+        "El pill rotativo respeta prefers-reduced-motion y es accesible para lectores de pantalla",
+        "El sitio sigue siendo estático: nada corre en servidor (Artículo IV)",
+        "El cursor personalizado y el spotlight (features 8 y 34) siguen funcionando y se ven bien sobre el fondo oscuro",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados (Artículo VI)",
+        "Cero hex o px hardcodeados en componentes; todo resuelve por tokens m1 de global.css consumidos como utilidades Tailwind (Artículo VII)",
+        "Coincide con el .pen a 390 y 1440 px; sin scroll horizontal, texto cortado ni solapes a 360, 768, 1024, 1280 y 1920 px",
+        "Storybook cubre lo construido en ambos viewports y ambos locales, con tests de componente (Artículo X)",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [41]
+    },
+    {
+      "id": 43,
+      "name": "m1_site_shell",
+      "title": "v2 — Shell: nav flotante, header inteligente, menú móvil y footer",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. Nav escritorio `FJIoc` (lockup, Servicios · Nosotros · Preguntas al centro, idioma, CTA 'Diagnóstico gratis' / 'Free assessment'). Móvil `DIS32`: isotipo, idioma y hamburguesa de 36×36 radio 12. Menú abierto `chQ4f`/`QpUCy`: pantalla completa con vidrio y listón, cierra con X/Esc/link, bloquea scroll. Header: se oculta al bajar 80 px y vuelve al subir, no se oculta con el menú abierto. Footer escritorio `K3vvqL` (4 columnas) y móvil `kJfw5` (contacto primero como botones). Se retira del shell lo que el diseño 1.0 ya no tiene (papel punteado, glows de sección). Aviso de privacidad y Términos tendrán páginas propias (Roberto, 2026-10-31); aún sin diseño ni texto: se construyen en la feature 48.",
+      "acceptance": [
+        "El toggle de idioma sigue resolviendo la ruta equivalente por el mapa de rutas i18n (Artículo VI)",
+        "'Blog · próximamente' no es link; los links de Aviso de privacidad y Términos apuntan a las rutas de la feature 48. Si la 48 aún no existe al construir la 43, se muestran como texto sin link hasta que existan",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados (Artículo VI)",
+        "Cero hex o px hardcodeados en componentes; todo resuelve por tokens m1 de global.css consumidos como utilidades Tailwind (Artículo VII)",
+        "Coincide con el .pen a 390 y 1440 px; sin scroll horizontal, texto cortado ni solapes a 360, 768, 1024, 1280 y 1920 px",
+        "Storybook cubre lo construido en ambos viewports y ambos locales, con tests de componente (Artículo X)",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [42]
+    },
+    {
+      "id": 44,
+      "name": "m1_home_page",
+      "title": "v2 — Home completa: Hero, Qué es muush, Servicios y Cómo trabajamos; retiro de Propósito y Proyectos",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. Orden del .pen `Tng1t` (EN `ZL2Vo`, móvil `V2s7T`/`mJxKt`): Hero → Qué es muush → Servicios → Cómo trabajamos → Diagnóstico y contacto (feature 45) → Footer. HERO `NVg3Y` sobre listón `T4ce58`: pill rotativo con los 4 servicios, titular 96 px a 1440, subtítulo 20 px, CTAs 'Diagnóstico gratis' y 'Cómo trabajamos'. QUÉ ES MUUSH `esV29`: mapa de puntos 1408×470 con pines Equipo (rojo) y Aliados (acero 200) y leyenda; móvil `nfrT8` con pestañas América / Europa y zoom animado del mismo mapa (REGIONES en componentes.js). El SVG del mapa lo exporta el leader del .pen y Nosotros lo reutiliza. SERVICIOS `TztwR`: 4 tarjetas de vidrio con ícono y degradado + franja 'También, si lo necesitas'; móvil `HeOLx` carrusel con scroll-snap e indicador; cuadrícula de 4 desde 1024 px. CÓMO TRABAJAMOS `KYUSn` sobre acanalado `XC9xg`: 5 pasos, horizontal en escritorio y vertical en móvil `H5atpX`; animación de partida: la línea se llena en red muush con el scroll (--m1-progreso). Clau define la final con Roberto. Retira Propósito y Proyectos de la home (Roberto, 2026-10-31).",
+      "acceptance": [
+        "La home coincide con `Tng1t`/`ZL2Vo` a 1440 y `V2s7T`/`mJxKt` a 390",
+        "El mapa es un asset estático sin requests externos; pestañas móviles accesibles por teclado",
+        "El indicador del carrusel refleja la tarjeta visible",
+        "Con prefers-reduced-motion la línea de Cómo trabajamos aparece encendida completa",
+        "Propósito y Proyectos ya no se renderizan; ningún link apunta a anclas que ya no existen; SEO técnico (feature 35) intacto",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados (Artículo VI)",
+        "Cero hex o px hardcodeados en componentes; todo resuelve por tokens m1 de global.css consumidos como utilidades Tailwind (Artículo VII)",
+        "Coincide con el .pen a 390 y 1440 px; sin scroll horizontal, texto cortado ni solapes a 360, 768, 1024, 1280 y 1920 px",
+        "Storybook cubre lo construido en ambos viewports y ambos locales, con tests de componente (Artículo X)",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [43]
+    },
+    {
+      "id": 45,
+      "name": "m1_forms",
+      "title": "v2 — Formularios rediseñados: diagnóstico (home) y aplicación (Nosotros)",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. Un solo código para ambos, como el handoff. Diagnóstico `mMSV2` sobre listón `k3Anb`, estados `uUEnn`/`Vh9NI`, móvil `Bw4IB`/`qUy14`. Aplicación (en Nosotros) `VtxDP`, estados `w9Owd`/`gNda1`, móvil `u1CDBO`/`H3cNSD`. Reusa la lógica existente (Turnstile, contratos /contact, /careers/upload y /careers sin cambios) con la UI nueva. Escritorio: todos los campos en una vista; móvil: dos pasos con barra de progreso que conservan los datos. Aviso de privacidad: checkbox obligatorio que habilita el botón y NO viaja en el payload (Roberto, 2026-10-31). DECISIÓN de Roberto 2026-10-31: el campo 'Tu sitio web o redes (opcional)' que trae el diseño del diagnóstico NO se construye por ahora, porque /contact no lo recibe; el backend no se modifica. Comparado campo por campo por el leader: el resto de los campos de ambos formularios ya existe en el contrato. Las listas de identidad (6) y área/rol (24) siguen como hoy: el diseño 1.0 no las muestra abiertas.",
+      "acceptance": [
+        "El formulario de diagnóstico NO incluye el campo 'Tu sitio web o redes (opcional)' (Roberto, 2026-10-31); ningún contrato del backend cambia",
+        "El botón de enviar está deshabilitado hasta marcar el aviso; el aviso no viaja en el payload",
+        "Los payloads cumplen exactamente docs/business/landing/form-api-contract.md",
+        "Estados Enviando, Faltan datos, Error al enviar y Enviado como en el .pen; los datos se conservan si falla el envío",
+        "WhatsApp solo aparece si se elige; CV solo PDF de máximo 10 MB",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados (Artículo VI)",
+        "Cero hex o px hardcodeados en componentes; todo resuelve por tokens m1 de global.css consumidos como utilidades Tailwind (Artículo VII)",
+        "Coincide con el .pen a 390 y 1440 px; sin scroll horizontal, texto cortado ni solapes a 360, 768, 1024, 1280 y 1920 px",
+        "Storybook cubre lo construido en ambos viewports y ambos locales, con tests de componente (Artículo X)",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [44]
+    },
+    {
+      "id": 46,
+      "name": "m1_secondary_pages",
+      "title": "v2 — Nosotros, Preguntas y 404 con el diseño 1.0",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. NOSOTROS `gQ0NG`/`D1CqYA`, móvil `trkk7`/`XoSI5`: hero sobre listón, 'Cómo se arma' (Equipo base, Talent pool, Aliados), 'Dónde estamos' (mapa de la feature 44), 'Trabaja con muush' sobre listón con el formulario de la feature 45. Reemplaza las secciones v1 de las features 18 y 19. PREGUNTAS `FXvwz`/`Gc1U5`, móvil `pDsNQ`/`qSDZU`: ruta nueva en ambos idiomas; hoy solo 'En construcción 🚧' / 'Under construction 🚧' con CTAs 'Diagnóstico gratis' y 'Agenda una llamada' sobre acanalado. 404 `X9EQIz`/`zV0qI`, móvil `Y2fsOQ`/`son4B`: 'Volvamos a un lugar conocido.' sobre acanalado, manteniendo el comportamiento de las features 36 y 39. Uniforms de cada fondo según el README del handoff.",
+      "acceptance": [
+        "Preguntas vive en /es/preguntas ↔ /en/faq (Roberto, 2026-10-31) y el toggle de idioma la resuelve",
+        "Preguntas SE INDEXA aunque diga 'En construcción': sin noindex, con canonical, hreflang y entrada en el sitemap como el resto de páginas (Roberto, 2026-10-31: 'necesitamos indexar todo')",
+        "Los tests existentes de la 404 y de LanguageToggle siguen verdes",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados (Artículo VI)",
+        "Cero hex o px hardcodeados en componentes; todo resuelve por tokens m1 de global.css consumidos como utilidades Tailwind (Artículo VII)",
+        "Coincide con el .pen a 390 y 1440 px; sin scroll horizontal, texto cortado ni solapes a 360, 768, 1024, 1280 y 1920 px",
+        "Storybook cubre lo construido en ambos viewports y ambos locales, con tests de componente (Artículo X)",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [45]
+    },
+    {
+      "id": 48,
+      "name": "m1_legal_pages",
+      "title": "v2 — Páginas de Aviso de privacidad y Términos y condiciones",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. Decisión de Roberto 2026-10-31: Aviso de privacidad y Términos y condiciones tendrán páginas propias y entran en v2. Al registrarse NO existe diseño en el .pen ni texto legal: Clau hace el diseño y el texto lo entregan después. Cuando esta feature llegue a su turno sin diseño o sin texto, pasa a human_confirm. Los links del footer (feature 43) y del checkbox de privacidad de los formularios (feature 45) apuntan a estas rutas.",
+      "acceptance": [
+        "Existen ambas páginas en ES y EN con segmentos traducidos y el toggle de idioma las resuelve",
+        "Ambas páginas se indexan: sin noindex y con entrada en el sitemap (Roberto, 2026-10-31)",
+        "El texto legal es exactamente el que entregue Roberto, en ambos idiomas; ningún agente redacta texto legal",
+        "Los links del footer y del checkbox de los formularios llevan a estas páginas",
+        "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados (Artículo VI)",
+        "Cero hex o px hardcodeados en componentes; todo resuelve por tokens m1 de global.css consumidos como utilidades Tailwind (Artículo VII)",
+        "Coincide con el .pen a 390 y 1440 px; sin scroll horizontal, texto cortado ni solapes a 360, 768, 1024, 1280 y 1920 px",
+        "Storybook cubre lo construido en ambos viewports y ambos locales, con tests de componente (Artículo X)",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": false,
+      "status": "pending",
+      "depends_on": [43]
+    },
+    {
+      "id": 47,
+      "name": "v2_cleanup_and_release",
+      "title": "v2 — Limpieza de v1 y release 2.0.0 (merge de muush-v2 a master)",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: esta feature trabaja directamente en `muush-v2` y es la ÚNICA que mergea `muush-v2` a master, con aprobación explícita de Roberto. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. LIMPIEZA: se eliminan tokens bone/ink/red/wine, papel punteado, glows, radar y componentes/stories/tests v1 sin uso. RELEASE: bump único a 2.0.0 en muush-v2 (no hay bumps por feature en v2). QA local en ES y EN a 360/390/768/1024/1280/1440/1920, con reduced-motion y sin WebGL. El merge de muush-v2 a master dispara el deploy a producción: requiere aprobación explícita de Roberto para esa acción. El cursor personalizado y el spotlight NO se retiran (Roberto, 2026-10-31).",
+      "acceptance": [
+        "grep no encuentra --bone-, --ink-, --red-, --wine- ni componentes v1 en app/",
+        "package.json en 2.0.0 como último commit de muush-v2",
+        "./init.sh pasa en muush-v2 justo antes del merge",
+        "Roberto aprobó explícitamente el merge/deploy"
+      ],
+      "sdd": false,
+      "status": "pending",
+      "depends_on": [46, 48]
     }
   ]
 }
