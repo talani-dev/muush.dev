@@ -21,12 +21,18 @@ tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 
    > **You cannot open the `.pen` design file, and you must not try.** The
    > Pencil MCP exists only in the main interactive session; a subagent
-   > never inherits it. `docs/business/landing/design-extract.md` holds
-   > every measurement the leader extracted — that is your source of truth
-   > for geometry, colors, spacing and typography. If a value is missing
-   > from it, say so and mark it `[NEEDS CLARIFICATION]`; **never invent a
-   > measurement and never claim you inspected the design file.** A prior
-   > spec was discarded for exactly that.
+   > never inherits it. The leader extracts the values a feature needs and
+   > passes them in your task (constitution, Development Workflow;
+   > `rules.md` § R32). For the Muush 1.0 redesign (features 41–48) also
+   > read `docs/business/muush-1.0.md` (decisions, structure, approved
+   > copy, frame ids) and `docs/handoff/muush-1.0/` (exact tokens and
+   > behavior, reference code to translate into Vue + Tailwind). The v1
+   > documents (`branding.md`, `landing/design-extract.md`,
+   > `landing/ui-map.md`, `landing/content.md`) describe the withdrawn
+   > design: do not take v2 values from them. If a value is missing, say
+   > so and mark it `[NEEDS CLARIFICATION]`; **never invent a measurement
+   > and never claim you inspected the design file.** A prior spec was
+   > discarded for exactly that.
 3. Read the feature's section in `feature_list.json` (id, name, acceptance
    criteria).
 4. If the feature touches existing pages/components, read relevant prior
