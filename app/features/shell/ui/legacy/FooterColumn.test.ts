@@ -5,7 +5,7 @@ import FooterColumn from './FooterColumn.vue'
 
 const items: ResolvedShellItem[] = [
   { label: 'Proyectos', href: '/es#proyectos', external: false },
-  { label: 'Nosotros', href: '/es/nosotros', external: false, current: true },
+  { label: 'Nosotros', href: '/es/nosotros', external: false, current: 'page' },
   { label: 'WhatsApp', href: 'https://wa.me/525639060739', external: true },
   { label: 'FAQ' },
 ]

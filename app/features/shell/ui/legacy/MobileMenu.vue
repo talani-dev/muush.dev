@@ -6,9 +6,9 @@ import type {
   ResolvedSocial,
   ShellLocale,
 } from '@/features/shell/data/types'
+import LanguageToggle from '@/features/shell/ui/LanguageToggle.vue'
 import Lockup from '@/shared/ui/legacy/Lockup.vue'
 import SocialIcon from '@/shared/ui/legacy/SocialIcon.vue'
-import LanguageToggle from './LanguageToggle.vue'
 
 /**
  * The open mobile menu of `design-extract.md` § 9.bis: a full-viewport
