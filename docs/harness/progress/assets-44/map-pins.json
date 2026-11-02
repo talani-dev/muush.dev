@@ -1,0 +1,56 @@
+[
+  {
+    "city": "CDMX",
+    "x": 338,
+    "y": 254,
+    "kind": "team"
+  },
+  {
+    "city": "Puebla",
+    "x": 342,
+    "y": 255,
+    "kind": "team"
+  },
+  {
+    "city": "Mérida",
+    "x": 373,
+    "y": 248,
+    "kind": "team"
+  },
+  {
+    "city": "Dublín",
+    "x": 681,
+    "y": 134,
+    "kind": "team"
+  },
+  {
+    "city": "NYC",
+    "x": 431,
+    "y": 179,
+    "kind": "team"
+  },
+  {
+    "city": "Ámsterdam",
+    "x": 722,
+    "y": 138,
+    "kind": "partner"
+  },
+  {
+    "city": "Estonia",
+    "x": 795,
+    "y": 113,
+    "kind": "soon"
+  },
+  {
+    "city": "San Francisco",
+    "x": 252,
+    "y": 189,
+    "kind": "team"
+  },
+  {
+    "city": "Los Ángeles",
+    "x": 268,
+    "y": 202,
+    "kind": "team"
+  }
+]
