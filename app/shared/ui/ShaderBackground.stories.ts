@@ -30,13 +30,19 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
+/**
+ * The section presets. The mobile menu's (feature 43) is a full-screen
+ * layer, not a section, and is reviewed in `Shell/MobileMenu`.
+ */
+type SectionPreset = Exclude<BackgroundPresetName, 'mobileMenu'>
+
 /*
  * Section heights of the handoff README (hero 1000, Nosotros hero 820,
  * Preguntas 1100, 404 760 px), as rem. Story frame only: each section owns
  * its real height in features 44–46. `100svh` for the uses the README does
  * not size.
  */
-const SECTION_HEIGHT: Record<BackgroundPresetName, string> = {
+const SECTION_HEIGHT: Record<SectionPreset, string> = {
   homeHero: '62.5rem',
   howWeWork: '100svh',
   assessment: '100svh',
@@ -53,7 +59,7 @@ interface SectionCopy {
   secondary: string
 }
 
-const COPY: Record<BackgroundPresetName, SectionCopy> = {
+const COPY: Record<SectionPreset, SectionCopy> = {
   homeHero: {
     first: 'Hablamos negocio',
     second: 'y código.',
@@ -123,7 +129,7 @@ const components = {
   GlassButton,
 }
 
-function section(preset: BackgroundPresetName, copy = COPY[preset]): Story {
+function section(preset: SectionPreset, copy = COPY[preset]): Story {
   return {
     args: { preset },
     render: () => ({

@@ -53,6 +53,15 @@ describe('ShaderBackground', () => {
     expect(poster.classes()).toContain('object-cover')
   })
 
+  it('should render no poster and keep the canvas when the preset has none', () => {
+    /* Feature 43 · the mobile menu's listón (research R7): its fallback is
+       the host's own background, so there is no `<img>` to load. */
+    const wrapper = render('mobileMenu')
+
+    expect(wrapper.find('img').exists()).toBe(false)
+    expect(wrapper.find('canvas').exists()).toBe(true)
+  })
+
   for (const preset of ['homeHero', 'aboutHero', 'faq', 'notFound'] as const) {
     it(`should load the poster eagerly at high priority when the preset is ${preset}`, () => {
       const poster = render(preset).find('img')

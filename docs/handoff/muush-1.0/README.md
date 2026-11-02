@@ -60,7 +60,7 @@ Cada fondo cubre su sección completa (`position:absolute; inset:0`) y el conten
 | Diagnóstico y contacto | `liston` | 1 | `u_y0:1.0, u_y1:0.35, u_th:0.11, u_amp:0.06, u_twist:0.5, u_tx:0.27, u_ty:0.45, u_trx:0.25, u_try:0.35, u_tdark:0.75, u_fadeT:0.3, u_fadeB:0.05` |
 | Footer | ninguno (negro) | | |
 
-Todos llevan además `u_flip:1` (ya viene por default en el motor). Los uniforms que no se pasan toman el `@default` del shader.
+Todos llevan además `u_flip:1` (ya viene por default en el motor). Los uniforms que no se pasan toman el `@default` del shader: el motor los lee del propio `.glsl` con `MuushGradient.defaults()` (corregido el 2026-11-01; antes quedaban en 0 y el listón del hero no se dibujaba).
 
 Qué controla cada uniform:
 - `u_speed` velocidad (1 = la de Pencil) · `u_grain` grano.
