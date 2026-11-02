@@ -200,9 +200,11 @@ export default defineNuxtConfig({
 
   /*
    * The brand type, self-hosted. Muush 1.0 (feature 42, Constitution VII)
-   * sets Poppins 500 for headings, the logo and the wordmark, and Instrument
-   * Sans for everything else at 400 / 500 / 600. Poppins 600 stays only
-   * because the v1 components still use it; feature 47 removes it with them.
+   * sets Poppins 500 for headings and Instrument Sans for everything else at
+   * 400 / 500 / 600. The wordmark keeps the weights the design draws
+   * (feature 43, Constitution 2.1.2 Article VII, Roberto 2026-11-01):
+   * "muush." at 600 and "dev" at 400, so Poppins 600 stays and Poppins 400
+   * is added for the "dev" run alone.
    * The set is closed: the type tokens in global.css name these weights and
    * no other, so a weight added here would be bytes no page asks for, and one
    * missing would be synthesised by the browser. No `@import` from Google
@@ -229,7 +231,7 @@ export default defineNuxtConfig({
       subsets: ['latin', 'latin-ext'],
     },
     families: [
-      { name: 'Poppins', provider: 'google', weights: [500, 600] },
+      { name: 'Poppins', provider: 'google', weights: [400, 500, 600] },
       { name: 'Instrument Sans', provider: 'google', weights: [400, 500, 600] },
     ],
     throwOnError: true,
