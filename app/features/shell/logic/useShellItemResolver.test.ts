@@ -63,17 +63,6 @@ describe('createShellItemResolver', () => {
     ).toBe('/es/nosotros#trabaja-con-muush')
   })
 
-  it('should append the hash as written when the destination is a legacy hash', () => {
-    const { resolveHref } = createShellItemResolver(stubDeps())
-
-    expect(
-      resolveHref({
-        labelKey: 'x',
-        destination: { kind: 'legacyHash', name: 'index', hash: '#proposito' },
-      })
-    ).toBe('/es#proposito')
-  })
-
   it('should append the encoded message when the destination is external with a messageKey', () => {
     const { resolveHref } = createShellItemResolver(stubDeps())
 

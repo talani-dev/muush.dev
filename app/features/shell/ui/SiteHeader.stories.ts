@@ -9,6 +9,8 @@ import { SHELL_COPY } from './shellFixtures.testing'
  * 40 × 40 language, 195 × 40 CTA). "Móvil (390)": the 342 × 60
  * bar 16 from the top (isotipo 40 × 22, two 36 × 36 controls). Scroll the
  * tall canvas: it hides past 80 px going down and returns going up.
+ * From `lg` the link bar sits on the page centre between two equal tracks
+ * (feature 44, FR-040, Roberto review 2026-11-02).
  */
 const meta = {
   title: 'Shell/SiteHeader',

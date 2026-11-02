@@ -7,21 +7,21 @@ import {
 } from './notFound'
 
 describe('not-found content model', () => {
-  it('should list exactly three shortcuts in the order purpose, services, about when read', () => {
+  it('should list exactly two shortcuts in the order services, about when read', () => {
+    /* Feature 44: the Propósito shortcut left with its section (FR-026). */
     expect(NOT_FOUND_SHORTCUTS.map(item => item.labelKey)).toEqual([
-      'shell.notFound.shortcuts.purpose',
       'shell.notFound.shortcuts.services',
       'shell.notFound.shortcuts.about',
     ])
   })
 
-  it('should use only route, anchor or the transitional legacy hash when read', () => {
+  it('should use only route or anchor destinations when read', () => {
     const kinds = [NOT_FOUND_HOME, ...NOT_FOUND_SHORTCUTS].map(
       item => item.destination.kind
     )
 
     for (const kind of kinds) {
-      expect(['route', 'anchor', 'legacyHash']).toContain(kind)
+      expect(['route', 'anchor']).toContain(kind)
     }
   })
 
@@ -29,15 +29,9 @@ describe('not-found content model', () => {
     expect(NOT_FOUND_HOME.destination).toEqual({ kind: 'route', name: 'index' })
   })
 
-  it('should keep the v1 purpose hash and the declared services anchor when read', () => {
-    /* Feature 43: the v1 404 still links Propósito until feature 46. */
-    const [purpose, services, about] = NOT_FOUND_SHORTCUTS
+  it('should point services at the declared anchor and about at its route when read', () => {
+    const [services, about] = NOT_FOUND_SHORTCUTS
 
-    expect(purpose?.destination).toEqual({
-      kind: 'legacyHash',
-      name: 'index',
-      hash: '#proposito',
-    })
     expect(services?.destination).toEqual({
       kind: 'anchor',
       name: 'index',

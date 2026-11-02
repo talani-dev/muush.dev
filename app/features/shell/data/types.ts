@@ -49,16 +49,6 @@ export type ShellDestination =
     }
   | { kind: 'anchor'; name: ShellRouteName; anchor: SectionAnchor }
   | {
-      /**
-       * The v1 404's `#proposito` shortcut only (`data/notFound.ts`). The
-       * v1 sections it points at carry no declared anchor; feature 46
-       * replaces that page and deletes this member with it.
-       */
-      kind: 'legacyHash'
-      name: ShellRouteName
-      hash: string
-    }
-  | {
       kind: 'external'
       href: string
       /**

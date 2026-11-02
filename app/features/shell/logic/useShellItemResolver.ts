@@ -60,8 +60,6 @@ export function createShellItemResolver({
         return localePath({ name: destination.name })
       case 'anchor':
         return `${localePath({ name: destination.name })}#${destination.anchor}`
-      case 'legacyHash':
-        return `${localePath({ name: destination.name })}${destination.hash}`
       case 'external': {
         const { href, messageKey } = destination
         if (!messageKey) return href

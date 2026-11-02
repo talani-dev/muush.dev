@@ -123,9 +123,11 @@ watch(
         <div
           class="flex h-header-alto items-center justify-between rounded-header border border-linea bg-nav-fondo pr-header-fin pl-header-inicio backdrop-blur-header"
         >
+          <!-- No `aria-current` on the logo (feature 44, FR-028; see SiteHeader). -->
           <NuxtLink
             :to="home"
             :aria-label="homeLabel"
+            :aria-current="undefined"
             class="inline-flex rounded-control foco"
             @click="emit('itemChosen', home)"
           >

@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createSSRApp, h, nextTick } from 'vue'
+import { type Component, createSSRApp, h, nextTick } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import type { ResolvedShellItem } from '@/features/shell/data/types'
 import { useMobileMenu } from '@/features/shell/logic/useMobileMenu'
@@ -11,6 +11,7 @@ import LanguageToggle from './LanguageToggle.vue'
 import MenuButton from './MenuButton.vue'
 import NavLinkBar from './NavLinkBar.vue'
 import SiteHeader from './SiteHeader.vue'
+import { ExactActiveLinkStub } from './shellFixtures.testing'
 
 /**
  * Feature 43 · FR-001…FR-014, FR-029, contract § 3. The composables are the
@@ -44,10 +45,14 @@ let frames: FrameRequestCallback[] = []
 const realRaf = window.requestAnimationFrame
 const mounted: Array<{ unmount: () => void }> = []
 
-function render(props: Record<string, unknown> = {}) {
+function render(
+  props: Record<string, unknown> = {},
+  stubs: Record<string, Component> = {}
+) {
   const wrapper = mount(SiteHeader, {
     props: { ...PROPS, ...props },
     attachTo: document.body,
+    global: { stubs },
   })
   mounted.push(wrapper)
   return wrapper
@@ -97,6 +102,17 @@ describe('SiteHeader · structure (US1, US3)', () => {
 
   /* Roberto 2026-11-01 (spec FR-059): the isotipo alone at every width; the
    * desktop .pen frame's full lockup is superseded in the header only. */
+  it('should never mark the logo as the current page when the router marks its link', () => {
+    /* Feature 44 · FR-028 (review-43c nit 5): the stub marks every link
+       exact-active, as the router does on the home page. */
+    const logo = render({}, { NuxtLink: ExactActiveLinkStub }).find(
+      'a[aria-label="Inicio de muush"]'
+    )
+
+    expect(logo.exists()).toBe(true)
+    expect(logo.attributes('aria-current')).toBeUndefined()
+  })
+
   it('should show the isotipo alone with no wordmark at every width when rendered', () => {
     const wrapper = render()
     const lockups = wrapper.findAllComponents(Lockup)
@@ -122,6 +138,31 @@ describe('SiteHeader · structure (US1, US3)', () => {
         'justify-between',
       ])
     )
+  })
+
+  it('should centre the link bar on the nav between two equal tracks from lg when rendered', () => {
+    /* Feature 44 · FR-040 (Roberto review 2026-11-02): `1fr auto 1fr`
+       (`grid-cols-cabecera`, pinned in design-tokens.test.ts), the isotipo
+       at the start of its track and the language + CTA group at the end of
+       its, so unequal slot widths no longer push the bar off centre. The
+       mobile bar keeps its `flex justify-between`. Measured in headless
+       Chrome at 1024 / 1280 / 1440 / 1920 (impl_home_page.md). */
+    const wrapper = render()
+    const nav = wrapper.find('nav')
+    const [logo, bar, group] = nav.element.children
+
+    expect(nav.classes()).toEqual(
+      expect.arrayContaining([
+        'flex',
+        'justify-between',
+        'lg:grid',
+        'lg:grid-cols-cabecera',
+      ])
+    )
+    expect(nav.element.children).toHaveLength(3)
+    expect(logo?.classList).toContain('lg:justify-self-start')
+    expect(bar?.contains(wrapper.findComponent(NavLinkBar).element)).toBe(true)
+    expect(group?.classList).toContain('lg:justify-self-end')
   })
 
   it('should hand the items to the link bar, shown from lg only, when rendered', () => {

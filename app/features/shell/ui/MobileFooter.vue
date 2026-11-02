@@ -52,9 +52,15 @@ const {
     class="flex flex-col gap-footer-movil-bloques px-gutter pt-footer-movil-arriba pb-footer-movil-abajo"
   >
     <div class="flex flex-col items-start gap-footer-movil-marca">
+      <!--
+        `aria-current` cleared on purpose (feature 44, FR-028; review-43c nit
+        5): the router marks any exact-active link "current page", and on the
+        home that would announce the logo as well as the Home item.
+      -->
       <NuxtLink
         :to="home"
         :aria-label="homeLabel"
+        :aria-current="undefined"
         class="inline-flex rounded-control foco"
       >
         <Lockup />
