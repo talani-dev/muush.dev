@@ -1,21 +1,22 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import chevronDown from '@/assets/icons/chevron-down.svg?raw'
+import FieldBlock from './FieldBlock.vue'
+import {
+  describedBy,
+  LINE_CONTROL_CLASSES,
+  strokeClasses,
+} from './fieldAnatomy'
 
 /**
- * SelectField — the `select` variant of `FormField`: same control recipe as
- * `TextField`, plus the `chevron-down` affordance
- * (`docs/business/landing/design-extract.md` § FormField).
+ * SelectField — a v2 select (feature 45, spec FR-021; pen extract-45 § 2):
+ * the one-line anatomy plus the lucide `chevron-down` at 16 px in Gris 400.
  *
- * A native `<select>`, not a custom listbox: a custom control needs no
- * bespoke option rendering, and a native control keeps keyboard and
- * assistive-technology behaviour for free — the same reasoning feature 20's
- * "Área y rol" grouped select relies on (plan.md D-4) rather than
- * reproducing the `.pen`'s two-column popover, which no browser can draw
- * from a native `<optgroup>` anyway.
- *
- * `groups` is additive to the existing flat `options` shape: exactly one of
- * the two is supplied per call site. `ContactForm`'s "¿cómo te identificas?"
- * field keeps passing `options` with zero changes to its own call site.
+ * Native `<select>`, as since features 16 / 20: keyboard, Esc, type-ahead,
+ * the screen-reader announcement and the mobile picker are the browser's.
+ * Flat `options` or `groups` (`<optgroup>`, "Área y rol"). The placeholder is
+ * a hidden, disabled empty option, so the empty value shows it and can never
+ * be picked again. Presentational.
  */
 interface Option {
   value: string
@@ -31,13 +32,9 @@ interface Props {
   id: string
   label: string
   modelValue: string
-  /** Existing flat shape — untouched. */
-  options?: Option[]
-  /** NEW — when supplied, renders `<optgroup>` per group instead of flat
-   * `<option>`s (data-model.md § 7). */
-  groups?: OptionGroup[]
-  /** The unselected placeholder option's label. */
   placeholder: string
+  options?: Option[]
+  groups?: OptionGroup[]
   error?: string
   required?: boolean
   readonly?: boolean
@@ -47,22 +44,26 @@ const {
   id,
   label,
   modelValue,
+  placeholder,
   options,
   groups,
-  placeholder,
   error,
   required = false,
   readonly = false,
 } = defineProps<Props>()
 
 defineEmits<{ 'update:modelValue': [value: string] }>()
+
+const controlClasses = computed(() => [
+  LINE_CONTROL_CLASSES,
+  'cursor-pointer appearance-none pe-select-fin *:bg-carbon-800 *:text-blanco',
+  modelValue === '' ? 'text-texto-tenue md:text-gris-400' : '',
+  strokeClasses(Boolean(error)),
+])
 </script>
 
 <template>
-  <div class="flex flex-col gap-field-label-gap">
-    <label :for="id" class="font-instrument text-form-label text-bone-300">{{
-      label
-    }}</label>
+  <FieldBlock :id="id" :label="label" :error="error">
     <div class="relative">
       <select
         :id="id"
@@ -70,9 +71,8 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
         :required="required"
         :disabled="readonly"
         :aria-invalid="Boolean(error)"
-        :aria-describedby="error ? `${id}-error` : undefined"
-        class="w-full appearance-none rounded-legacy-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-100 focus-visible:outline-red-400"
-        :class="error ? 'border-red-400' : 'border-glass-line'"
+        :aria-describedby="describedBy(id, error)"
+        :class="controlClasses"
         @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
       >
         <option value="" disabled hidden>{{ placeholder }}</option>
@@ -103,27 +103,21 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
       </select>
       <span
         aria-hidden="true"
-        class="pointer-events-none absolute inset-y-0 end-field-x flex items-center text-bone-300"
-        v-html="chevronDown"
-      />
+        class="pointer-events-none absolute inset-y-0 end-campo-x flex items-center text-gris-400 md:end-campo-x-escritorio"
+      >
+        <span class="icono size-campo-icono" v-html="chevronDown" />
+      </span>
     </div>
-    <p
-      v-if="error"
-      :id="`${id}-error`"
-      class="font-instrument text-form-label text-red-400"
-    >
-      {{ error }}
-    </p>
-  </div>
+  </FieldBlock>
 </template>
 
 <style scoped>
-/*
- * `:deep()` is required: content injected by `v-html` is not rewritten by
- * Vue's scoped-style transform (`docs/business/rules.md` § R14).
- */
-:deep(svg) {
-  width: var(--spacing-field-icon);
-  height: var(--spacing-field-icon);
+/* `:deep()`: Vue's scoped transform does not reach `v-html` content
+   (app/assets/icons/README.md). The wrapper's `size-campo-icono` (16 px,
+   pen extract-45 § 2) decides the size; the glyph fills it. */
+.icono :deep(svg) {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 </style>

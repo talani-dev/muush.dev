@@ -24,6 +24,13 @@ import arrowRight from '@/assets/icons/arrow-right.svg?raw'
  * mobile box is 14 + 120 label + 10 gap + 20 arrow + 14 = 178 wide and
  * 12 + 20 + 12 = 44 tall. Only `icon=false` removes it.
  *
+ * `unavailable` (feature 45, spec FR-009, contract): the button is shown
+ * at 70 % opacity with the not-allowed cursor (pen extract-45 § 8) and
+ * carries `aria-disabled="true"`, but stays focusable and clickable, so a
+ * keyboard user reaches it and hears why (`describedBy`, the id of a
+ * visually hidden hint). The form's own guard decides what a click does.
+ * Native `disabled` stays for "busy" ("Enviando…").
+ *
  * The edge is the painted `borde-luz` band, not a CSS border: a border
  * would add 2 px to every box above, where the `.pen`'s stroke adds none.
  *
@@ -44,6 +51,8 @@ interface Props {
   size?: PrimaryButtonSize
   icon?: boolean
   disabled?: boolean
+  unavailable?: boolean
+  describedBy?: string
 }
 
 const {
@@ -54,6 +63,8 @@ const {
   size = 'hero',
   icon = true,
   disabled = false,
+  unavailable = false,
+  describedBy,
 } = defineProps<Props>()
 
 const BASE_CLASSES =
@@ -71,7 +82,16 @@ const ICON_CLASSES = {
   block: 'size-boton-icono',
 } satisfies Record<PrimaryButtonSize, string>
 
-const rootClasses = computed(() => [BASE_CLASSES, SIZE_CLASSES[size]])
+/* The brand cursor rules in `global.css` set the not-allowed cursor from
+   `aria-disabled`; the utility covers forced-colours mode, where they are
+   off. */
+const UNAVAILABLE_CLASSES = 'opacity-70 cursor-not-allowed'
+
+const rootClasses = computed(() => [
+  BASE_CLASSES,
+  SIZE_CLASSES[size],
+  unavailable ? UNAVAILABLE_CLASSES : '',
+])
 const iconClasses = computed(() => ['icono shrink-0', ICON_CLASSES[size]])
 </script>
 
@@ -96,7 +116,14 @@ const iconClasses = computed(() => ['icono shrink-0', ICON_CLASSES[size]])
       v-html="arrowRight"
     />
   </a>
-  <button v-else :type="type" :disabled="disabled" :class="rootClasses">
+  <button
+    v-else
+    :type="type"
+    :disabled="disabled"
+    :aria-disabled="unavailable || undefined"
+    :aria-describedby="describedBy"
+    :class="rootClasses"
+  >
     <span>{{ label }}</span>
     <span
       v-if="icon"

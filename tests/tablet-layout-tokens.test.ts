@@ -35,21 +35,14 @@ function trackRatios(tracks: string): number[] {
   )
 }
 
-describe('tablet layout · the two forms go side by side from 64rem', () => {
+/*
+ * Feature 45 retired the v1 Contacto section and its `--contact-*` tracks:
+ * the v2 "Diagnóstico y contacto" lays out with the `diagnostico` grid
+ * tokens (tests/design-tokens.test.ts). Work with muush keeps its v1 grid
+ * until feature 46.
+ */
+describe('tablet layout · the work form goes side by side from 64rem', () => {
   const sections = [
-    {
-      name: 'Contacto',
-      file: [
-        'app',
-        'features',
-        'landing',
-        'ui',
-        'legacy',
-        'ContactSection.vue',
-      ],
-      tracks: '--contact-cols',
-      gap: '--contact-col-gap',
-    },
     {
       name: 'Work with muush',
       file: ['app', 'features', 'about', 'ui', 'WorkWithMuushSection.vue'],
@@ -86,6 +79,8 @@ describe('tablet layout · the two forms go side by side from 64rem', () => {
 
   it('should leave no fixed column width behind when declared', () => {
     for (const name of [
+      '--contact-cols',
+      '--contact-col-gap',
       '--contact-left-w',
       '--contact-form-w',
       '--work-left-w',

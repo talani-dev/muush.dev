@@ -1,7 +1,10 @@
+import type { ContactFormContent, ContactSubmitter } from '@/features/forms'
+import type { AssessmentContent } from '@/features/landing/data/assessmentContent'
 import type { HeroContent } from '@/features/landing/data/heroContent'
 import type { HowWeWorkContent } from '@/features/landing/data/howWeWorkContent'
 import type { ServicesContent } from '@/features/landing/data/servicesContent'
 import type { WhoWeAreContent } from '@/features/landing/data/whoWeAreContent'
+import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import { MAP_COPY } from '@/shared/ui/mapFixtures.testing'
 
 /**
@@ -252,4 +255,172 @@ export const HOW_WE_WORK_COPY: Record<FixtureLocale, HowWeWorkContent> = {
       },
     ],
   },
+}
+
+/**
+ * Feature 45 · "Diagnóstico y contacto" (`muush-1.0.md` § 4.6). The form's
+ * copy below is what `useContactFormContent` resolves from
+ * `forms.contact.*`, typed through the `forms` barrel (Article III); the
+ * forms module keeps its own fixtures for its own stories.
+ */
+export const ASSESSMENT_COPY: Record<FixtureLocale, AssessmentContent> = {
+  es: {
+    pill: 'Primer paso',
+    headingFirst: 'Pide tu diagnóstico',
+    headingSecond: 'sin costo.',
+    body: 'Cuéntanos qué quieres resolver y te respondemos en 24 horas hábiles.',
+    receivesLabel: 'Lo que recibes',
+    receives: [
+      'Una revisión de tu sitio y tus herramientas',
+      'Qué conviene hacer primero y por qué',
+      'Si hace falta ir a fondo, qué incluye y cuánto cuesta',
+    ],
+    callQuestion: '¿Prefieres hablar?',
+    callLink: 'Agenda una llamada',
+    callHref: CALL_BOOKING_URL,
+  },
+  en: {
+    pill: 'First step',
+    headingFirst: 'Request your',
+    headingSecond: 'free assessment.',
+    body: "Tell us what you want to solve and we'll reply within 24 business hours.",
+    receivesLabel: 'What you get',
+    receives: [
+      'A review of your website and tools',
+      'What to do first, and why',
+      "If it needs a deeper look, what's included and what it costs",
+    ],
+    callQuestion: 'Prefer to talk?',
+    callLink: 'Book a call',
+    callHref: CALL_BOOKING_URL,
+  },
+}
+
+const COUNTRIES = [
+  { code: 'MX', name: 'México', dialCode: '+52', flag: '🇲🇽' },
+  { code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴' },
+  { code: 'US', name: 'Estados Unidos', dialCode: '+1', flag: '🇺🇸' },
+] as const
+
+function assessmentForm(locale: FixtureLocale): ContactFormContent {
+  const es = locale === 'es'
+  const email = es
+    ? 'Escribe un correo como nombre@empresa.com'
+    : 'Enter an email like name@company.com'
+  const step = (n: 1 | 2, title: string) =>
+    es ? `Paso ${n} de 2 · ${title}` : `Step ${n} of 2 · ${title}`
+  return {
+    fields: {
+      name: {
+        label: es ? 'Nombre' : 'Name',
+        placeholder: es ? 'Nombre y apellido' : 'First and last name',
+        errorRequired: es ? 'Escribe tu nombre.' : 'Enter your name.',
+      },
+      email: {
+        label: es ? 'Correo' : 'Email',
+        placeholder: es ? 'tu@correo.com' : 'you@email.com',
+        errorRequired: email,
+        errorFormat: email,
+      },
+      company: {
+        label: es ? 'Empresa o proyecto' : 'Company or project',
+        placeholder: es ? 'Nombre de la empresa' : 'Company name',
+      },
+      identity: {
+        label: es ? '¿Cómo te identificas?' : 'You are a…',
+        placeholder: es ? 'Selecciona una opción' : 'Select an option',
+        errorRequired: es ? 'Elige una opción.' : 'Choose an option.',
+        options: {
+          realEstate: es ? 'Bienes raíces/inmobiliaria' : 'Real estate',
+          creator: es
+            ? 'Creador de contenido/marca personal'
+            : 'Content creator/personal brand',
+          company: es
+            ? 'Empresa pública o privada'
+            : 'Public or private company',
+          independent: es
+            ? 'Emprendedor o persona física'
+            : 'Independent or sole proprietor',
+          startup: 'Startup',
+          other: es ? 'Otro' : 'Other',
+        },
+      },
+      need: {
+        label: es ? '¿Qué necesitas?' : 'What do you need?',
+        placeholder: es
+          ? 'Cuéntanos en un par de líneas qué quieres resolver.'
+          : 'Tell us in a couple of lines what you want to solve.',
+        errorRequired: es
+          ? 'Cuéntanos qué necesitas.'
+          : 'Tell us what you need.',
+        errorLength: es ? 'Cuéntanos un poco más.' : 'Tell us a bit more.',
+      },
+      contactPreference: {
+        label: es
+          ? '¿Cómo prefieres que te contactemos?'
+          : 'How should we contact you?',
+        options: { email: es ? 'Correo' : 'Email', whatsapp: 'WhatsApp' },
+      },
+      whatsappCountry: {
+        label: es ? 'Lada del país' : 'Country code',
+        errorInvalid: es
+          ? 'Elige la lada de tu país.'
+          : 'Choose your country code.',
+        options: [...COUNTRIES],
+      },
+      whatsapp: {
+        label: es ? 'Número de WhatsApp' : 'WhatsApp number',
+        errorRequired: es ? 'Escribe tu número.' : 'Enter your number.',
+        errorDigits: es
+          ? 'Deben ser entre 6 y 14 dígitos.'
+          : 'Must be 6 to 14 digits.',
+      },
+    },
+    progress: {
+      1: step(1, es ? 'Tus datos' : 'Your details'),
+      2: step(2, es ? 'Tu negocio' : 'Your business'),
+    },
+    continue: es ? 'Continuar' : 'Continue',
+    back: es ? '← Atrás' : '← Back',
+    privacy: {
+      label: es
+        ? 'Acepto el aviso de privacidad y que muush me contacte sobre mi diagnóstico.'
+        : 'I accept the privacy notice and agree to be contacted by muush about my assessment.',
+      requiredHint: es
+        ? 'Acepta el aviso de privacidad para enviar.'
+        : 'Accept the privacy notice to send.',
+    },
+    submit: es ? 'Quiero mi diagnóstico' : 'Get my assessment',
+    sending: es ? 'Enviando…' : 'Sending…',
+    retry: es ? 'Intentar de nuevo' : 'Try again',
+    error: {
+      before: es
+        ? 'El envío se interrumpió. Tus datos siguen aquí: vuelve a intentarlo o escríbenos a'
+        : 'Sending was interrupted. Your details are still here: try again or write to us at',
+      email: 'support@muush.dev',
+      href: 'mailto:support@muush.dev',
+      after: '.',
+    },
+    success: {
+      title: es ? 'Recibimos tu solicitud.' : 'We got your request.',
+      body: es
+        ? 'Te respondemos en 24 horas hábiles por el medio que elegiste. Si prefieres adelantar, agenda una llamada.'
+        : "We'll reply within 24 business hours through the channel you chose. If you'd like to move faster, book a call.",
+      action: {
+        label: es ? 'Agenda una llamada' : 'Book a call',
+        href: CALL_BOOKING_URL,
+      },
+    },
+  }
+}
+
+export const ASSESSMENT_FORM_COPY: Record<FixtureLocale, ContactFormContent> = {
+  es: assessmentForm('es'),
+  en: assessmentForm('en'),
+}
+
+/** A catalogue submitter: nothing reaches the network. */
+export const STORY_ASSESSMENT_SUBMITTER: ContactSubmitter = {
+  engage: () => undefined,
+  submit: async () => ({ kind: 'success' }),
 }

@@ -79,6 +79,10 @@ export interface FormSubmitStateOptions<
   now?: () => number
   /** The busy state a valid attempt enters; `sending` by default. */
   busyStateFor?: (values: V) => BusyState
+  /** Called with the first invalid field just before it is focused, so a
+   * stepped form can show that field's step first (feature 45, spec
+   * FR-007). Absent: nothing happens before focus (the v1 forms). */
+  revealField?: (fieldId: F) => void
 }
 
 export interface FormSubmitStateReturn<F extends string> {
@@ -114,6 +118,12 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
     () => Object.keys(errors.value)[0] as F | undefined
   )
 
+  function revealAndFocusFirstInvalid(): void {
+    const fieldId = firstInvalidFieldId.value
+    if (fieldId) options.revealField?.(fieldId)
+    void focusField(fieldId)
+  }
+
   function onEngage(): void {
     const host = options.challengeHost.value
     if (host) submitter.engage(host)
@@ -135,7 +145,7 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
         values.value
       )
       state.value = 'invalid'
-      void focusField(firstInvalidFieldId.value)
+      revealAndFocusFirstInvalid()
       return
     }
     state.value = 'server-error'
@@ -162,7 +172,7 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
 
     if (firstInvalidFieldId.value) {
       state.value = 'invalid'
-      void focusField(firstInvalidFieldId.value)
+      revealAndFocusFirstInvalid()
       return
     }
     if (guard.isBlocked()) {

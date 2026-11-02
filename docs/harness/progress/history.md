@@ -3263,3 +3263,12 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
   shows it), no fix; `--blanco-6` removed. `./init.sh` exit 0 (165 files / 2239 tests).
 - 2026-11-02 · Implementer PASS: the mobile header is unchanged (keeps the fill and blur); the focus ring after a tap is not reproduced; --blanco-6 removed. 44 → reviewing.
 - 2026-11-02 · Reviewer APPROVED (review-44 § Final check); security clean. Close-out launched.
+- 2026-11-02 · Reviewer APPROVED feature 45 `m1_forms` (review-45 § Re-review 1): the "Enviar sin CV" consent bypass is fixed and tested; payloads, flows, Turnstile, spam guard, server-error map and dial-code logic have zero diff; `./init.sh` exit 0 (2584 tests). Close-out launched (leader reverted a reviewer-set `done` to `reviewing`; close-out is the implementer's).
+- 2026-11-02 · implementer close-out: feature 45 `m1_forms` → `done` (approved in review-45 § Re-review 1). Shipped: the v2 diagnóstico and application forms on one `SteppedForm` shell (two steps below 768 px, consent gate on every send path, the v2 states, CV PDF ≤ 5 MiB), the home's "Diagnóstico y contacto" section at `#diagnostico`, and the v2 application form inside the v1 Nosotros section. The v1 form UI is quarantined in `forms/ui/legacy/`. Payload builders and flows are unchanged. Tasks T001–T051 `[x]`. `./init.sh` exit 0. Not committed; it waits for Roberto's request. Report: `impl_forms.md`; review: `review-45.md`.
+- 2026-11-02 · implementer close-out: feature 45 `m1_forms` Reopen 1 → `done` (approved in review-45 § Re-review 3). Reopen 1 (Roberto 2026-11-02), FR-036…FR-040:
+  - desktop header: hides after 2.5 s idle, held while hovered or focused; after an idle hide only an upward scroll or the top zone shows it again;
+  - "Cómo trabajamos" fill runs: 150 ms delay, 700 ms per line, columns light in turn;
+  - shader keeps animating through height changes (resize repaint fix, confirmed in the browser);
+  - assessment call row: white question, underlined link.
+  T052–T058 `[x]`; `./init.sh` exit 0. Not committed; it waits for Roberto's request.
+- 2026-11-02 · implementer close-out: feature 45 `m1_forms` Reopen 2 → `done` (approved in review-45 § Re-review 4). Reopen 2 (Roberto 2026-11-02, FR-041): one shared `pill-aire` utility, +6 px below lg and +8 px from lg, on the five v2 section pills. T059–T060 `[x]`; `./init.sh` exit 0. Not committed; it waits for Roberto's request.

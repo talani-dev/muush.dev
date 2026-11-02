@@ -11,15 +11,22 @@ import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 
 /**
  * `Work with muush` — the About page's second section (after `AboutHeroSection`,
- * feature 17), and the second consumer of `forms/` (after `ContactSection.vue`,
- * feature 16). Chrome only: Pill, headline, body, three reused glow tokens,
- * the two-column ↔ stacked layout, and `ApplicationForm` imported from
- * `forms/`'s barrel and nothing else (Constitution Article III) — this file
- * imports no `forms/` internal.
+ * feature 17), and a consumer of `forms/` (with the home's
+ * `AssessmentSection.vue`). Chrome only: Pill, headline, body, three reused
+ * glow tokens, the two-column ↔ stacked layout, and `ApplicationForm`
+ * imported from `forms/`'s barrel and nothing else (Constitution Article
+ * III) — this file imports no `forms/` internal.
+ *
+ * Feature 45 (Roberto 2026-11-02, pen extract-45 § 7 Q1): the barrel's
+ * `ApplicationForm` is now the Muush 1.0 form — the glass panel, the privacy
+ * consent, two steps below 768 px and the v2 states — mounted in this
+ * otherwise v1 section (pill, headline, body, glows and grid unchanged).
+ * The panel fills the form column up to its 600 cap, start-aligned. The page
+ * looks mixed until feature 46 rebuilds the section.
  *
  * It calls **no Nuxt composable**: copy arrives already translated from
- * `logic/useWorkContent.ts`, the same discipline `AboutHeroSection.vue` and
- * `ContactSection.vue` already follow (`rules.md` § R23). The form's own
+ * `logic/useWorkContent.ts`, the same discipline `AboutHeroSection.vue`
+ * already follows (`rules.md` § R23). The form's own
  * content (`formContent`) is resolved by whoever composes this section
  * (`app/pages/about.vue`) calling `useApplicationFormContent` from the
  * `forms` barrel directly — never by this component, keeping this file
@@ -40,7 +47,7 @@ import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
  * separation between the two (plan.md D-3, `rules.md` § R49), not a leftover
  * computed from a page-absolute y minus sections that do not exist in the DOM.
  *
- * ## The layout mechanism — identical to `ContactSection.vue`
+ * ## The layout mechanism
  *
  * Mobile: plain flow, DOM order (left block, then form) — no override
  * needed. Desktop (`lg` and above): a two-column CSS grid, left block beside
@@ -48,10 +55,9 @@ import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
  * hand-written CSS in `<style scoped>` reading `:root`-declared tokens
  * (`rules.md` § R18) — `--work-cols` / `--work-col-gap` live in `:root`, not
  * `@theme inline`, because they are read only by this hand-written rule and
- * never by a Tailwind utility class, the same placement `ContactSection.vue`'s
- * own `--contact-cols` / `--contact-col-gap` use for the identical reason
- * (`rules.md` § R18's own warning: an `@theme inline` token with no scanned
- * utility consumer never reaches `:root` at all).
+ * never by a Tailwind utility class (`rules.md` § R18's own warning: an
+ * `@theme inline` token with no scanned utility consumer never reaches
+ * `:root` at all).
  *
  * Feature 38 (Roberto 2026-10-19, round 2): the grid still starts at `lg`,
  * but its fixed `clamp()` widths only fitted from ~1440 and overflowed the
@@ -122,8 +128,7 @@ defineProps<Props>()
  * Mobile: plain flow, DOM order (text, form) — no override needed. Desktop:
  * a two-column grid, left column beside a form column. `grid-template-areas`
  * has no Tailwind utility, so this is hand-written CSS reading the `:root`
- * tokens `<style scoped>` needs (`rules.md` § R18), same mechanism
- * `ContactSection.vue` already uses.
+ * tokens `<style scoped>` needs (`rules.md` § R18).
  */
 .work-layout {
   display: flex;

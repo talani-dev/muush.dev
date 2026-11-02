@@ -20,6 +20,10 @@ import WorldMap from '@/shared/ui/WorldMap.vue'
  * From `lg` the section has no side padding so the map can reach its drawn
  * 1408 inside 1440; the heading keeps the gutter so it never meets the edge
  * between 1024 and 1440 (the body and legend are narrower than that).
+ *
+ * Feature 45, reopen 2 (Roberto 2026-11-02, spec 045 FR-041): the pill
+ * carries `pill-aire`, 6 px more space above the heading below `lg` and
+ * 8 px from it, a deliberate departure from the `.pen`.
  */
 type Props = WhoWeAreContent
 
@@ -41,7 +45,7 @@ const {
   <section
     class="flex flex-col items-center gap-mapa-gap px-gutter py-mapa-y text-center lg:px-0"
   >
-    <Pill :label="pill" />
+    <Pill class="pill-aire" :label="pill" />
     <Heading
       :level="2"
       size="seccion"

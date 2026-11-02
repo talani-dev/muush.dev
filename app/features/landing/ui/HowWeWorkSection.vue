@@ -20,6 +20,10 @@ import ProcessTimeline from './ProcessTimeline.vue'
  *
  * The acanalado fades to black at its bottom edge, so the section after it
  * starts on the canvas.
+ *
+ * Feature 45, reopen 2 (Roberto 2026-11-02, spec 045 FR-041): the pill
+ * carries `pill-aire`, 6 px more space above the heading below `lg` and
+ * 8 px from it, a deliberate departure from the `.pen`.
  */
 type Props = HowWeWorkContent
 
@@ -34,7 +38,7 @@ const { pill, headingFirst, headingSecond, steps } = defineProps<Props>()
         <div
           class="flex flex-col items-start gap-cabeza-gap lg:items-center lg:text-center"
         >
-          <Pill :label="pill" />
+          <Pill class="pill-aire" :label="pill" />
           <Heading
             :level="2"
             size="proceso"

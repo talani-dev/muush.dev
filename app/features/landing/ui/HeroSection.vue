@@ -26,6 +26,10 @@ import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
  * to sections of this page, so they work without scripting; `aria-current`
  * is cleared because the router marks any link to the current path as the
  * current page, hash or not (the header CTA's precedent).
+ *
+ * Feature 45, reopen 2 (Roberto 2026-11-02, spec 045 FR-041): the pill
+ * carries `pill-aire`, 6 px more space above the heading below `lg` and
+ * 8 px from it, a deliberate departure from the `.pen`.
  */
 interface Props {
   pillItems: string[]
@@ -56,7 +60,7 @@ const {
     <div
       class="relative z-10 flex flex-1 flex-col items-center gap-portada-gap px-gutter pt-portada-arriba pb-portada-abajo text-center max-lg:justify-center"
     >
-      <RotatingPill :items="pillItems" />
+      <RotatingPill class="pill-aire" :items="pillItems" />
       <Heading
         :level="1"
         size="hero"

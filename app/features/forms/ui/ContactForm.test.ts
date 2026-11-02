@@ -1,92 +1,36 @@
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type {
-  ContactFieldId,
-  ContactFormContent,
-} from '@/features/forms/data/contactFields'
+import type { ContactFieldId } from '@/features/forms/data/contactFields'
+import { FORM_STEPS_MEDIA_QUERY } from '@/features/forms/data/formSteps'
 import {
   type ContactSubmitter,
-  HONEYPOT_FIELD_NAME,
   MIN_FILL_TIME_MS,
   type SubmissionOutcome,
 } from '@/features/forms/data/submissionContract'
-import { buildCountryOptions } from '@/features/forms/logic/countryOptions'
+import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
+import { installMatchMedia } from '@/shared/logic/fakeMediaQuery.testing'
 import ContactForm from './ContactForm.vue'
+import { CONTACT_FORM_COPY } from './formsFixtures.testing'
 
-/** Fixture content — already-translated, the shape `useContactContent`-style
- * logic would resolve for this feature. */
-const content: ContactFormContent = {
-  fields: {
-    name: { label: 'Nombre', errorRequired: 'Escribe tu nombre' },
-    email: {
-      label: 'Correo',
-      errorRequired: 'Escribe tu correo',
-      errorFormat: 'Correo inválido',
-    },
-    company: { label: 'Empresa o proyecto' },
-    identity: {
-      label: '¿Cómo te identificas?',
-      errorRequired: 'Elige una opción',
-      options: {
-        realEstate: 'Bienes raíces/inmobiliaria',
-        creator: 'Creador de contenido',
-        company: 'Empresa',
-        independent: 'Emprendedor o persona física',
-        startup: 'Startup',
-        other: 'Otro',
-      },
-    },
-    need: {
-      label: '¿Qué necesitas?',
-      errorRequired: 'Cuéntanos qué necesitas',
-      errorLength: 'Necesitamos un poco más de detalle',
-    },
-    contactPreference: {
-      label: '¿Cómo prefieres que te contactemos?',
-      options: { email: 'Correo', whatsapp: 'WhatsApp' },
-    },
-    whatsappCountry: {
-      label: 'Lada del país',
-      errorInvalid: 'Elige la lada de tu país',
-      options: buildCountryOptions('es-MX'),
-    },
-    whatsapp: {
-      label: 'Número de WhatsApp',
-      errorRequired: 'Escribe tu número',
-      errorDigits: 'Deben ser entre 6 y 14 dígitos',
-    },
-  },
-  submit: 'Enviar',
-  sending: 'Enviando…',
-  success: {
-    titleByChannel: {
-      email: 'Listo, te respondemos por correo.',
-      whatsapp: 'Listo, te respondemos por WhatsApp.',
-    },
-  },
-  error: {
-    title: 'No pudimos enviarlo.',
-    fallback: 'support@muush.dev',
-  },
-}
-
+/** Feature 45 · the v2 diagnóstico form (spec US1–US3, US5). */
+const content = CONTACT_FORM_COPY.es
 const mounted: VueWrapper[] = []
-
-/* The minimum fill time reads `Date.now()`; tests move this clock instead of
-   sleeping. */
 let clock = 0
+let restoreMedia: () => void = () => undefined
 
 beforeEach(() => {
   clock = 1_000_000
   vi.spyOn(Date, 'now').mockImplementation(() => clock)
+  window.HTMLElement.prototype.scrollIntoView = vi.fn()
 })
 
 afterEach(() => {
   while (mounted.length > 0) mounted.pop()?.unmount()
+  restoreMedia()
   vi.restoreAllMocks()
+  document.body.replaceChildren()
 })
 
-/** A submitter that never touches the network: it records and answers. */
 function stubSubmitter(
   outcome: SubmissionOutcome<ContactFieldId> = { kind: 'success' }
 ) {
@@ -96,17 +40,19 @@ function stubSubmitter(
   }
 }
 
-interface MountOverrides {
-  previewState?: 'sending' | 'success' | 'server-error'
-  submitter?: ContactSubmitter
-}
-
-function mountForm(overrides: MountOverrides = {}) {
+async function mountForm({
+  stepped = false,
+  submitter = stubSubmitter() as ContactSubmitter,
+} = {}) {
+  restoreMedia = installMatchMedia({
+    [FORM_STEPS_MEDIA_QUERY]: stepped,
+  }).restore
   const wrapper = mount(ContactForm, {
-    props: { content, submitter: stubSubmitter(), ...overrides },
+    props: { content, submitter },
     attachTo: document.body,
   })
   mounted.push(wrapper)
+  await flushPromises()
   return wrapper
 }
 
@@ -114,459 +60,356 @@ async function fillValid(wrapper: VueWrapper): Promise<void> {
   await wrapper.find('#name').setValue('Ana')
   await wrapper.find('#email').setValue('ana@muush.dev')
   await wrapper.find('#identity').setValue('company')
-  await wrapper
-    .find('#need')
-    .setValue('Necesitamos un rediseño completo del sitio.')
+  await wrapper.find('#need').setValue('Necesitamos un rediseño del sitio.')
 }
 
-/** Fill validly, let the minimum fill time pass, submit, settle. */
-async function submitValid(wrapper: VueWrapper): Promise<void> {
-  await fillValid(wrapper)
+async function tick(wrapper: VueWrapper): Promise<void> {
+  await wrapper.find('#privacy').setValue(true)
+}
+
+async function submit(wrapper: VueWrapper): Promise<void> {
   clock += MIN_FILL_TIME_MS
   await wrapper.find('form').trigger('submit')
   await flushPromises()
 }
 
-describe('ContactForm · the card surface (feature 34, A2)', () => {
-  it('should keep its glass card covering the page when rendered', () => {
-    /* Feature 34, amendment A2 (Roberto, 2026-10-14): the form cards keep
-       their glass and keep covering the dots and the spotlight's red dots,
-       as the footer's flat ink-500 does (A2 revision 1, 2026-10-15). A
-       regression guard: it passes today. */
-    const classes = mountForm().classes()
+const submitButton = (wrapper: VueWrapper) =>
+  wrapper.find('button[type="submit"]')
 
-    expect(classes).toContain('bg-glass-dark-contact')
-    expect(classes).toContain('backdrop-blur-glass-dark')
-  })
-})
+/** The button's label, without the arrow glyph's SVG title. */
+const submitLabel = (wrapper: VueWrapper) =>
+  submitButton(wrapper).find('span').text()
 
-describe('ContactForm · the seven fields', () => {
-  it('should render the six always-present controls in ui-map.md order', () => {
-    const wrapper = mountForm()
+describe('ContactForm · the single view (US1)', () => {
+  it('should render every field in the design order and no website field when wide', async () => {
+    const wrapper = await mountForm()
     const ids = wrapper
       .findAll('input, select, textarea')
-      .map(el => el.attributes('id'))
+      .map(control => control.attributes('id') ?? control.attributes('name'))
       .filter(Boolean)
 
-    expect(ids).toEqual(['name', 'email', 'company', 'identity', 'need'])
+    expect(ids).toEqual([
+      'name',
+      'email',
+      'company',
+      'identity',
+      'need',
+      'contactPreference',
+      'contactPreference',
+      'privacy',
+      'muush_website',
+    ])
+    expect(wrapper.find('#website').exists()).toBe(false)
+    expect(wrapper.text()).not.toMatch(/sitio web|website/i)
+    expect(wrapper.find('[aria-live]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain(content.continue)
   })
 
-  it('should render the submit control as a native submit button inside a form', () => {
-    const wrapper = mountForm()
-    const form = wrapper.find('form')
-    const button = form.find('button[type="submit"]')
+  it('should show the submit unavailable with its hint while the box is unticked', async () => {
+    const wrapper = await mountForm()
+    const button = submitButton(wrapper)
+    const hintId = button.attributes('aria-describedby')
 
-    expect(form.exists()).toBe(true)
-    expect(form.attributes('novalidate')).toBe('')
-    expect(button.exists()).toBe(true)
-    expect(button.text()).toBe(content.submit)
+    expect(button.attributes('aria-disabled')).toBe('true')
+    expect(button.attributes('disabled')).toBeUndefined()
+    expect(document.getElementById(hintId ?? '')?.textContent).toBe(
+      content.privacy.requiredHint
+    )
+
+    await tick(wrapper)
+
+    expect(submitButton(wrapper).attributes('aria-disabled')).toBeUndefined()
+    expect(submitButton(wrapper).attributes('aria-describedby')).toBeUndefined()
   })
 
-  it('should fix the submit button to its desktop width and centre it only from lg up', () => {
-    /*
-     * Feature 025 (corrected). `<form class="flex flex-col gap-form-gap">`
-     * has no `items-*`, so every child inherits `align-items: stretch` —
-     * right for the fields at every width, and right for the submit button
-     * too, but only below `lg`: the `.pen`'s real node (`bTYw7`) is
-     * `width: "fill_container"` on mobile and `width: 216` EXPLICIT at `lg`.
-     * `lg:w-btn-submit-w`/`lg:self-center` guard exactly that split — neither
-     * class is unscoped, and neither lands on the `<form>` itself (which
-     * would also un-stretch the inputs).
-     */
-    const button = mountForm().find('button[type="submit"]')
+  it('should send nothing and focus the box when submitted unticked by click, Enter or script', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = await mountForm({ submitter })
+    await fillValid(wrapper)
+    clock += MIN_FILL_TIME_MS
 
-    expect(button.classes()).toContain('lg:w-btn-submit-w')
-    expect(button.classes()).toContain('lg:self-center')
-    expect(button.classes()).not.toContain('self-center')
-    expect(button.classes()).not.toContain('w-btn-submit-w')
-  })
-
-  it('should show no error before any submit is attempted, even on an empty form', () => {
-    /* `ui-map.md` § 7's "Idle" row: the empty form's own resting state shows
-       no red borders and no messages — those belong to "Validación fallida"
-       and only appear once Enviar has actually been clicked. */
-    const wrapper = mountForm()
-
-    expect(wrapper.text()).not.toContain(content.fields.name.errorRequired)
-    expect(wrapper.find('#name').attributes('aria-invalid')).toBe('false')
-  })
-
-  it('should show every required error and focus the first invalid field on an empty submit', async () => {
-    const wrapper = mountForm()
+    await submitButton(wrapper).trigger('click')
+    await wrapper.find('#name').trigger('keydown', { key: 'Enter' })
+    ;(wrapper.find('form').element as HTMLFormElement).requestSubmit()
     await wrapper.find('form').trigger('submit')
     await flushPromises()
 
-    expect(wrapper.text()).toContain(content.fields.name.errorRequired)
-    expect(wrapper.text()).toContain(content.fields.email.errorRequired)
-    expect(wrapper.text()).toContain(content.fields.identity.errorRequired)
-    expect(wrapper.text()).toContain(content.fields.need.errorRequired)
-    expect(wrapper.find('#name').attributes('aria-invalid')).toBe('true')
-  })
-
-  it('should show no field error on a valid submit', async () => {
-    const wrapper = mountForm()
-
-    await submitValid(wrapper)
-
-    expect(wrapper.text()).not.toContain(content.fields.name.errorRequired)
-  })
-})
-
-describe('ContactForm · the WhatsApp field', () => {
-  it('should not render the WhatsApp field while the preference is email', () => {
-    expect(mountForm().find('#whatsapp').exists()).toBe(false)
-  })
-
-  it('should mount, then remove and forget the field across a round trip', async () => {
-    const wrapper = mountForm()
-
-    await wrapper
-      .find('input[name="contactPreference"][value="whatsapp"]')
-      .setValue(true)
-    expect(wrapper.find('#whatsapp').exists()).toBe(true)
-
-    await wrapper.find('#whatsapp').setValue('5639060739')
-    await wrapper
-      .find('input[name="contactPreference"][value="email"]')
-      .setValue(true)
-    expect(wrapper.find('#whatsapp').exists()).toBe(false)
-
-    await wrapper
-      .find('input[name="contactPreference"][value="whatsapp"]')
-      .setValue(true)
-    expect((wrapper.find('#whatsapp').element as HTMLInputElement).value).toBe(
-      ''
-    )
-  })
-})
-
-describe('ContactForm · the dial-code selector (feature 32)', () => {
-  async function chooseWhatsapp(wrapper: VueWrapper): Promise<void> {
-    await wrapper
-      .find('input[name="contactPreference"][value="whatsapp"]')
-      .setValue(true)
-  }
-
-  /* Feature 32 Amendment A1, without the edge (dev, preview, Storybook): a
-     submitter with no `lookupCountry` keeps Mexico and requests nothing. */
-  it('should show Mexico and request nothing when the submitter has no country lookup', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch')
-    const wrapper = mountForm()
-
-    await wrapper.find('#name').trigger('focusin')
-    await chooseWhatsapp(wrapper)
-    await flushPromises()
-
-    expect(
-      (wrapper.find('#whatsappCountry').element as HTMLSelectElement).value
-    ).toBe('MX')
-    expect(fetchSpy).not.toHaveBeenCalled()
-  })
-
-  it('should show the reported country when the submitter lookup answers Colombia', async () => {
-    const wrapper = mountForm({
-      submitter: { ...stubSubmitter(), lookupCountry: async () => 'CO' },
-    })
-
-    await wrapper.find('#name').trigger('focusin')
-    await chooseWhatsapp(wrapper)
-    await flushPromises()
-
-    expect(
-      (wrapper.find('#whatsappCountry').element as HTMLSelectElement).value
-    ).toBe('CO')
-  })
-
-  it('should show the selector before the number when switching to WhatsApp', async () => {
-    const wrapper = mountForm()
-
-    expect(wrapper.find('#whatsappCountry').exists()).toBe(false)
-    await chooseWhatsapp(wrapper)
-
-    const ids = wrapper.findAll('select, input').map(node => node.element.id)
-    expect(ids.indexOf('whatsappCountry')).toBe(ids.indexOf('whatsapp') - 1)
-    expect(wrapper.find('#whatsappCountry').attributes('aria-label')).toBe(
-      content.fields.whatsappCountry.label
-    )
-  })
-
-  it('should pass the picked country and the typed number to the submitter when submitted', async () => {
-    const submitter = stubSubmitter()
-    const wrapper = mountForm({ submitter })
-
-    await chooseWhatsapp(wrapper)
-    await wrapper.find('#whatsappCountry').setValue('CO')
-    await wrapper.find('#whatsapp').setValue('300 123 4567')
-    await submitValid(wrapper)
-
-    expect(submitter.submit.mock.calls[0]?.[0]).toMatchObject({
-      contactPreference: 'whatsapp',
-      whatsappCountry: 'CO',
-      whatsapp: '300 123 4567',
-    })
-  })
-
-  it('should show the 6 to 14 digit message and send nothing when the number is too short', async () => {
-    const submitter = stubSubmitter()
-    const wrapper = mountForm({ submitter })
-
-    await chooseWhatsapp(wrapper)
-    await wrapper.find('#whatsapp').setValue('12345')
-    await submitValid(wrapper)
-
-    expect(wrapper.text()).toContain(content.fields.whatsapp.errorDigits)
     expect(submitter.submit).not.toHaveBeenCalled()
+    expect(document.activeElement?.id).toBe('privacy')
   })
 
-  it('should keep the picked country when switching to email and back', async () => {
-    const wrapper = mountForm()
-
-    await chooseWhatsapp(wrapper)
-    await wrapper.find('#whatsappCountry').setValue('CO')
-    await wrapper
-      .find('input[name="contactPreference"][value="email"]')
-      .setValue(true)
-    await chooseWhatsapp(wrapper)
-
-    expect(
-      (wrapper.find('#whatsappCountry').element as HTMLSelectElement).value
-    ).toBe('CO')
-  })
-
-  it('should mark and focus the selector when the server rejects the dial code, and clear it on another pick', async () => {
-    const wrapper = mountForm({
-      submitter: stubSubmitter({
-        kind: 'field-errors',
-        fields: ['whatsappCountry'],
-      }),
-    })
-
-    await chooseWhatsapp(wrapper)
-    await wrapper.find('#whatsappCountry').setValue('CO')
-    await wrapper.find('#whatsapp').setValue('3001234567')
-    await submitValid(wrapper)
-
-    const select = wrapper.find('#whatsappCountry')
-    expect(select.attributes('aria-invalid')).toBe('true')
-    expect(wrapper.find('#whatsappCountry-error').text()).toBe(
-      'Elige la lada de tu país'
-    )
-    expect(document.activeElement?.id).toBe('whatsappCountry')
-    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
-
-    await select.setValue('MX')
-    expect(wrapper.find('#whatsappCountry-error').exists()).toBe(false)
-  })
-})
-
-describe('ContactForm · submitting', () => {
-  it('should disable the button, show the sending label and lock the fields while the request is in flight', async () => {
+  it('should send the exact values once with no consent, website or honeypot key when ticked and valid', async () => {
     const submitter = stubSubmitter()
-    submitter.submit.mockReturnValue(new Promise(() => undefined))
-    const wrapper = mountForm({ submitter })
+    const wrapper = await mountForm({ submitter })
+    await fillValid(wrapper)
+    await tick(wrapper)
 
-    await submitValid(wrapper)
-
-    const button = wrapper.find('button[type="submit"]')
-    expect(button.attributes('disabled')).toBe('')
-    expect(button.text()).toBe(content.sending)
-    expect(wrapper.find('#name').attributes('readonly')).toBe('')
-    expect(wrapper.find('form').attributes('aria-busy')).toBe('true')
-  })
-
-  it('should call the submitter once when submit fires again during sending', async () => {
-    const submitter = stubSubmitter()
-    submitter.submit.mockReturnValue(new Promise(() => undefined))
-    const wrapper = mountForm({ submitter })
-
-    await submitValid(wrapper)
-    await wrapper.find('form').trigger('submit')
-    await flushPromises()
+    await submit(wrapper)
 
     expect(submitter.submit).toHaveBeenCalledTimes(1)
-  })
-
-  it('should replace the form with a focused status naming the chosen channel on success', async () => {
-    const wrapper = mountForm()
-
-    await wrapper
-      .find('input[name="contactPreference"][value="whatsapp"]')
-      .setValue(true)
-    await wrapper.find('#whatsapp').setValue('55 1234 5678')
-    await submitValid(wrapper)
-
-    const status = wrapper.find('[role="status"]')
-    expect(wrapper.find('form').exists()).toBe(false)
-    expect(status.text()).toBe(content.success.titleByChannel.whatsapp)
-    expect(document.activeElement).toBe(status.find('p').element)
-  })
-
-  it('should keep every value and show the alert with the support link on failure', async () => {
-    const wrapper = mountForm({
-      submitter: stubSubmitter({ kind: 'failure' }),
+    const values = submitter.submit.mock.calls[0]?.[0]
+    expect(values).toEqual({
+      name: 'Ana',
+      email: 'ana@muush.dev',
+      company: '',
+      identity: 'company',
+      need: 'Necesitamos un rediseño del sitio.',
+      contactPreference: 'email',
+      whatsappCountry: 'MX',
+      whatsapp: '',
     })
-
-    await submitValid(wrapper)
-
-    expect(wrapper.find('form').exists()).toBe(true)
-    expect(wrapper.find('[role="alert"]').text()).toContain(content.error.title)
-    expect(wrapper.find('a[href="mailto:support@muush.dev"]').exists()).toBe(
-      true
+    expect(Object.keys(values ?? {})).not.toEqual(
+      expect.arrayContaining(['privacy'])
     )
+  })
+
+  it('should show the WhatsApp row only while WhatsApp is chosen', async () => {
+    const wrapper = await mountForm()
+    expect(wrapper.find('#whatsapp').exists()).toBe(false)
+
+    await wrapper.find('input[value="whatsapp"]').setValue(true)
+    expect(wrapper.find('#whatsapp').exists()).toBe(true)
+    expect(wrapper.find('#whatsappCountry').exists()).toBe(true)
+
+    await wrapper.find('input[value="email"]').setValue(true)
+    await flushPromises()
+    expect(wrapper.find('#whatsapp').exists()).toBe(false)
+  })
+})
+
+describe('ContactForm · states (US1, US3)', () => {
+  it('should mark each invalid field with its tied help line and focus the first when sent invalid', async () => {
+    const wrapper = await mountForm()
+    await tick(wrapper)
+
+    await submit(wrapper)
+
+    const name = wrapper.find('#name')
+    expect(name.attributes('aria-invalid')).toBe('true')
+    expect(name.attributes('aria-describedby')).toBe('name-error')
+    expect(wrapper.find('#name-error').text()).toBe('Escribe tu nombre.')
+    expect(wrapper.find('#email-error').text()).toBe(
+      'Escribe un correo como nombre@empresa.com'
+    )
+    expect(name.classes()).toContain('border-red-muush-500')
+    expect(document.activeElement?.id).toBe('name')
+  })
+
+  it('should clear a field’s error as soon as its value is valid', async () => {
+    const wrapper = await mountForm()
+    await tick(wrapper)
+    await submit(wrapper)
+
+    await wrapper.find('#name').setValue('Ana')
+
+    expect(wrapper.find('#name-error').exists()).toBe(false)
+  })
+
+  it('should keep every value, show the notice and offer a retry when the send fails', async () => {
+    const submitter = stubSubmitter({ kind: 'failure' })
+    const wrapper = await mountForm({ submitter })
+    await fillValid(wrapper)
+    await tick(wrapper)
+
+    await submit(wrapper)
+
+    const notice = wrapper.find('[role="alert"]')
+    expect(notice.text()).toContain(content.error.before)
+    expect(notice.find('a').attributes('href')).toBe('mailto:support@muush.dev')
+    expect(submitLabel(wrapper)).toBe('Intentar de nuevo')
     expect((wrapper.find('#name').element as HTMLInputElement).value).toBe(
       'Ana'
     )
-    expect((wrapper.find('#need').element as HTMLTextAreaElement).value).toBe(
-      'Necesitamos un rediseño completo del sitio.'
-    )
-  })
 
-  it('should send again from the error state when submitted again', async () => {
-    const submitter = stubSubmitter({ kind: 'failure' })
-    const wrapper = mountForm({ submitter })
-
-    await submitValid(wrapper)
-    await wrapper.find('form').trigger('submit')
-    await flushPromises()
-
+    await submit(wrapper)
     expect(submitter.submit).toHaveBeenCalledTimes(2)
   })
 
-  it('should engage the submitter with the card host on first focus', async () => {
+  it('should send nothing and focus the box when Intentar de nuevo is pressed after unticking it', async () => {
+    /* review-45: every send path of the diagnóstico form is the guarded
+       submit; this pins the retry after a failure. */
+    const submitter = stubSubmitter({ kind: 'failure' })
+    const wrapper = await mountForm({ submitter })
+    await fillValid(wrapper)
+    await tick(wrapper)
+    await submit(wrapper)
+    await wrapper.find('#privacy').setValue(false)
+
+    await submitButton(wrapper).trigger('click')
+    await submit(wrapper)
+
+    expect(submitter.submit).toHaveBeenCalledTimes(1)
+    expect(document.activeElement?.id).toBe('privacy')
+    expect(submitButton(wrapper).attributes('aria-disabled')).toBe('true')
+  })
+
+  it('should show the notice when the spam guard trips', async () => {
     const submitter = stubSubmitter()
-    const wrapper = mountForm({ submitter })
+    const wrapper = await mountForm({ submitter })
+    await fillValid(wrapper)
+    await tick(wrapper)
 
-    await wrapper.find('#name').trigger('focusin')
-
-    expect(submitter.engage).toHaveBeenCalledTimes(1)
-    const host = submitter.engage.mock.calls[0]?.[0]
-    expect(host).toBeInstanceOf(HTMLElement)
-    expect(wrapper.find('form').element.contains(host ?? null)).toBe(false)
-  })
-
-  it('should never call fetch from the component, whatever the outcome', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch')
-    const wrapper = mountForm({
-      submitter: stubSubmitter({ kind: 'failure' }),
-    })
-
-    await submitValid(wrapper)
-
-    expect(fetchSpy).not.toHaveBeenCalled()
-  })
-})
-
-describe('ContactForm · server field errors', () => {
-  it('should mark the inputs the server rejected, focus the first, and show no alert', async () => {
-    const wrapper = mountForm({
-      submitter: stubSubmitter({
-        kind: 'field-errors',
-        fields: ['email', 'whatsapp'],
-      }),
-    })
-
-    await wrapper
-      .find('input[name="contactPreference"][value="whatsapp"]')
-      .setValue(true)
-    await wrapper.find('#whatsapp').setValue('5512345678')
-    await submitValid(wrapper)
-
-    const email = wrapper.find('#email')
-    expect(email.attributes('aria-invalid')).toBe('true')
-    expect(email.classes()).toContain('border-red-400')
-    expect(wrapper.text()).toContain(content.fields.email.errorFormat)
-    expect(wrapper.text()).toContain(content.fields.whatsapp.errorDigits)
-    expect(document.activeElement).toBe(email.element)
-    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
-  })
-
-  it('should clear a field mark once the visitor edits that field', async () => {
-    const wrapper = mountForm({
-      submitter: stubSubmitter({ kind: 'field-errors', fields: ['email'] }),
-    })
-
-    await submitValid(wrapper)
-    await wrapper.find('#email').setValue('ana.ruiz@muush.dev')
-
-    expect(wrapper.find('#email').attributes('aria-invalid')).toBe('false')
-  })
-})
-
-describe('ContactForm · anti-spam', () => {
-  it('should render the honeypot inside the form, out of the Tab order', () => {
-    const honeypot = mountForm().find(
-      `form input[name="${HONEYPOT_FIELD_NAME}"]`
-    )
-
-    expect(honeypot.exists()).toBe(true)
-    expect(honeypot.attributes('tabindex')).toBe('-1')
-  })
-
-  it('should send nothing and show the generic error when the honeypot is filled', async () => {
-    const submitter = stubSubmitter()
-    const wrapper = mountForm({ submitter })
-
-    await wrapper
-      .find(`input[name="${HONEYPOT_FIELD_NAME}"]`)
-      .setValue('https://spam.example')
-    await submitValid(wrapper)
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
 
     expect(submitter.submit).not.toHaveBeenCalled()
     expect(wrapper.find('[role="alert"]').exists()).toBe(true)
-    expect((wrapper.find('#name').element as HTMLInputElement).value).toBe(
-      'Ana'
-    )
   })
 
-  it('should send nothing when submitted before the minimum fill time, then send after it', async () => {
+  it('should send once, lock the fields and read Enviando… while sending', async () => {
     const submitter = stubSubmitter()
-    const wrapper = mountForm({ submitter })
-
+    submitter.submit.mockReturnValue(new Promise(() => undefined))
+    const wrapper = await mountForm({ submitter })
     await fillValid(wrapper)
-    await wrapper.find('form').trigger('submit')
-    await flushPromises()
-    expect(submitter.submit).not.toHaveBeenCalled()
+    await tick(wrapper)
 
-    clock += MIN_FILL_TIME_MS
-    await wrapper.find('form').trigger('submit')
-    await flushPromises()
+    await submit(wrapper)
+    await submit(wrapper)
+
     expect(submitter.submit).toHaveBeenCalledTimes(1)
+    expect(submitLabel(wrapper)).toBe('Enviando…')
+    expect(submitButton(wrapper).attributes('disabled')).toBeDefined()
+    expect(wrapper.find('#name').attributes('readonly')).toBeDefined()
+  })
+
+  it('should replace the form with the announced, focused confirmation when the send succeeds', async () => {
+    const wrapper = await mountForm()
+    await fillValid(wrapper)
+    await tick(wrapper)
+
+    await submit(wrapper)
+
+    expect(wrapper.find('form').exists()).toBe(false)
+    const status = wrapper.find('[role="status"]')
+    expect(status.find('h3').text()).toBe('Recibimos tu solicitud.')
+    expect(document.activeElement).toBe(status.find('h3').element)
+    expect(status.find('a').attributes('href')).toBe(CALL_BOOKING_URL)
+    expect(status.find('[data-punto]').classes()).toContain('pulso')
   })
 })
 
-describe('ContactForm · previewState is a Storybook-only display override', () => {
-  it('should render no outcome markup when previewState is absent', () => {
-    const wrapper = mountForm()
+describe('ContactForm · two steps below 768 px (US2)', () => {
+  it('should show step 1 with its progress, Continuar and no submit fields when narrow', async () => {
+    const wrapper = await mountForm({ stepped: true })
 
-    expect(wrapper.text()).not.toContain(content.sending)
-    expect(wrapper.find('[role="status"]').exists()).toBe(false)
-    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
-  })
-
-  it('should disable the submit control and mark fields read-only when previewState is sending', () => {
-    const wrapper = mountForm({ previewState: 'sending' })
-
-    expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBe(
-      ''
+    expect(wrapper.find('[aria-live="polite"]').text()).toBe(
+      'Paso 1 de 2 · Tus datos'
     )
-    expect(wrapper.text()).toContain(content.sending)
-    expect(wrapper.find('#name').attributes('readonly')).toBe('')
-  })
-
-  it('should replace the form with the confirmation copy when previewState is success', () => {
-    const wrapper = mountForm({ previewState: 'success' })
-
-    expect(wrapper.find('form').exists()).toBe(false)
-    expect(wrapper.text()).toContain(content.success.titleByChannel.email)
-  })
-
-  it('should keep the captured form and add the fallback link when previewState is server-error', () => {
-    const wrapper = mountForm({ previewState: 'server-error' })
-
-    expect(wrapper.find('form').exists()).toBe(true)
-    expect(wrapper.text()).toContain(content.error.title)
-    expect(wrapper.find('a[href="mailto:support@muush.dev"]').exists()).toBe(
-      true
+    expect(wrapper.findAll('[data-segmento]')).toHaveLength(2)
+    expect(wrapper.find('#name').isVisible()).toBe(true)
+    expect(wrapper.find('#company').isVisible()).toBe(false)
+    expect(wrapper.find('#privacy').isVisible()).toBe(false)
+    const group = wrapper.find('[role="group"]')
+    expect(group.attributes('aria-labelledby')).toBe(
+      wrapper.find('[aria-live="polite"]').attributes('id')
     )
+  })
+
+  it('should stay on step 1, show only its errors and focus the name when Continuar finds it empty', async () => {
+    const wrapper = await mountForm({ stepped: true })
+
+    await wrapper.find('button[type="button"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('#name-error').exists()).toBe(true)
+    expect(wrapper.find('#need-error').exists()).toBe(false)
+    expect(wrapper.find('#company').isVisible()).toBe(false)
+    expect(document.activeElement?.id).toBe('name')
+  })
+
+  it('should move to step 2, announce it and focus Empresa when step 1 is valid', async () => {
+    const wrapper = await mountForm({ stepped: true })
+    await wrapper.find('#name').setValue('Ana')
+    await wrapper.find('#email').setValue('ana@muush.dev')
+
+    await wrapper.find('button[type="button"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('[aria-live="polite"]').text()).toBe(
+      'Paso 2 de 2 · Tu negocio'
+    )
+    expect(wrapper.find('#company').isVisible()).toBe(true)
+    expect(document.activeElement?.id).toBe('company')
+  })
+
+  it('should keep every value when going back and forth', async () => {
+    const wrapper = await mountForm({ stepped: true })
+    await wrapper.find('#name').setValue('Ana')
+    await wrapper.find('#email').setValue('ana@muush.dev')
+    await wrapper.find('button[type="button"]').trigger('click')
+    await flushPromises()
+    await wrapper.find('#company').setValue('muush')
+
+    const back = wrapper
+      .findAll('button[type="button"]')
+      .find(button => button.text() === content.back)
+    await back?.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('#name').isVisible()).toBe(true)
+    expect((wrapper.find('#name').element as HTMLInputElement).value).toBe(
+      'Ana'
+    )
+    expect((wrapper.find('#company').element as HTMLInputElement).value).toBe(
+      'muush'
+    )
+  })
+
+  it('should return to step 1 and focus the email when the server marks it from step 2', async () => {
+    const submitter = stubSubmitter({ kind: 'field-errors', fields: ['email'] })
+    const wrapper = await mountForm({ stepped: true, submitter })
+    await fillValid(wrapper)
+    await wrapper.find('button[type="button"]').trigger('click')
+    await flushPromises()
+    await tick(wrapper)
+
+    await submit(wrapper)
+
+    expect(wrapper.find('[aria-live="polite"]').text()).toBe(
+      'Paso 1 de 2 · Tus datos'
+    )
+    expect(wrapper.find('#email-error').exists()).toBe(true)
+    expect(document.activeElement?.id).toBe('email')
+  })
+
+  it('should continue instead of submitting when Enter is pressed on step 1', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = await mountForm({ stepped: true, submitter })
+    await fillValid(wrapper)
+
+    await submit(wrapper)
+
+    expect(submitter.submit).not.toHaveBeenCalled()
+    expect(wrapper.find('#company').isVisible()).toBe(true)
+  })
+})
+
+describe('ContactForm · assistive technology (US5)', () => {
+  it('should tie a visible label to every control', async () => {
+    const wrapper = await mountForm()
+
+    for (const id of ['name', 'email', 'company', 'identity', 'need']) {
+      expect(wrapper.find(`label[for="${id}"]`).exists(), id).toBe(true)
+    }
+    expect(wrapper.find('label[for="privacy"]').text()).toBe(
+      content.privacy.label
+    )
+  })
+
+  it('should expose the contact choice as one named radio group', async () => {
+    const wrapper = await mountForm()
+    const group = wrapper.find('[role="radiogroup"]')
+    const radios = group.findAll('input[type="radio"]')
+
+    expect(
+      document.getElementById(group.attributes('aria-labelledby') ?? '')
+        ?.textContent
+    ).toBe(content.fields.contactPreference.label)
+    expect(new Set(radios.map(radio => radio.attributes('name')))).toEqual(
+      new Set(['contactPreference'])
+    )
+    expect(
+      radios.filter(radio => (radio.element as HTMLInputElement).checked)
+    ).toHaveLength(1)
   })
 })

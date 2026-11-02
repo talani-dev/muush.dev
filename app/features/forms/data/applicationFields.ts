@@ -4,6 +4,7 @@ import {
   type CountryOption,
   DEFAULT_COUNTRY,
 } from '@/features/forms/data/countries'
+import type { FormChromeContent } from '@/features/forms/data/formChrome'
 
 /**
  * The application form's field model — the "Work with muush" section's eight
@@ -13,7 +14,8 @@ import {
  *
  * Plain types and named constants only — no Vue, no Nuxt, no validation
  * logic. `logic/useApplicationForm.ts` imports this; this file imports
- * nothing but `countries.ts` and `contactFields.ts`'s `ContactPreference`,
+ * nothing but `countries.ts`, the type of `formChrome.ts` (feature 45) and
+ * `contactFields.ts`'s `ContactPreference`,
  * the latter re-exported rather
  * than redeclared so the two forms' radio share one type
  * (Constitution Article II — `data/` never imports from `logic/`/`ui/`, and
@@ -205,8 +207,11 @@ export type RoleId = (typeof ROLE_IDS)[number]
 
 /**
  * What `logic/`/`ui/` receive: already-translated field content, resolved by
- * whichever module composes `ApplicationForm` (`about` for this feature) —
- * same shape `ContactFormContent` establishes for the sibling form.
+ * `useApplicationFormContent` from `forms.application.*`. Since feature 45
+ * the v2 shape: the shared form chrome (`formChrome.ts`), the fields, the
+ * "Subiendo CV…" label and the failed-upload notice (feature 031, spec
+ * FR-034). The v1 shape lives on as `LegacyApplicationFormContent` in
+ * `data/legacy/`.
  */
 export interface ApplicationFormFieldContent {
   label: string
@@ -218,12 +223,11 @@ export interface ApplicationFormFieldContent {
   errorInvalid?: string
 }
 
-export interface ApplicationFormContent {
+export interface ApplicationFormContent extends FormChromeContent {
   fields: {
     name: ApplicationFormFieldContent
     email: ApplicationFormFieldContent
-    /** `placeholder` is required here (unlike the base shape): `SelectField`'s
-     * placeholder prop is required, not optional. */
+    /** `placeholder` is required: the select's empty option shows it. */
     areaRole: ApplicationFormFieldContent & {
       placeholder: string
       areas: Record<AreaId, string>
@@ -232,8 +236,7 @@ export interface ApplicationFormContent {
     }
     portfolio: ApplicationFormFieldContent
     linkedin: ApplicationFormFieldContent
-    /** `placeholder` is required here for the same reason as `areaRole`:
-     * `FileField`'s placeholder prop is required. */
+    /** `placeholder` is required: the empty CV box shows it. */
     cv: ApplicationFormFieldContent & { placeholder: string }
     contactPreference: ApplicationFormFieldContent & {
       options: Record<ContactPreference, string>
@@ -246,14 +249,10 @@ export interface ApplicationFormContent {
     }
     whatsapp: ApplicationFormFieldContent
   }
-  submit: string
-  /** The submit label while a request is in flight (feature 029, FR-019). */
-  sending: string
-  /** The submit label while the CV is being authorized/uploaded (feature
-   * 031, FR-012). */
+  /** The submit label while the CV is authorized and uploaded (feature 031,
+   * FR-012). */
   uploading: string
-  success: { title: string }
-  /** The CV error and its two actions (feature 031, FR-003). */
-  cvUploadError: { message: string; retry: string; submitWithoutCv: string }
-  error: { title: string; fallback: string }
+  /** The failed CV upload: the application was not sent (feature 031;
+   * Clarifications Q2, Roberto 2026-11-02). */
+  cvUploadError: { message: string; submitWithoutCv: string }
 }

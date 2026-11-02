@@ -558,6 +558,12 @@ the tests named in FR-045 to FR-049.
   `pnpm storybook:build` and `./init.sh` MUST pass. The site stays static
   (Article IV).
 
+> **Amendment, 2026-11-02 (feature 45, reopen 1, Roberto).** From `lg` the
+> header also hides after 2.5 s with no scrolling and never hides while the
+> pointer is over it or focus is inside it. On desktop it slides without a
+> fade. FR-013 still holds (focus reveals it); mobile is unchanged. See
+> `specs/045-forms/spec.md` FR-036 and FR-037.
+
 ### What changes visually on the live pages after 43
 
 "Live" means the `muush-v2` integration build. Production does not change

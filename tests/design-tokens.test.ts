@@ -637,3 +637,177 @@ describe('design tokens · the home (feature 44)', () => {
     }
   })
 })
+
+/**
+ * Feature 45 · the form and section tokens (pen extract-45 §§ 1–5, 8;
+ * data-model § 5). The form's two anatomies are constant pairs swapped at
+ * `md`; the section values between the anchors are fluid.
+ */
+describe('design tokens · the forms (feature 45)', () => {
+  const FLUID: [string, number, number][] = [
+    ['--spacing-diagnostico-abajo', 72, 140],
+    ['--spacing-diagnostico-gap', 24, 72],
+    ['--spacing-diagnostico-izq', 24, 26],
+    ['--text-cuerpo-diagnostico', 16, 18],
+    ['--text-cuerpo-diagnostico--line-height', 24, 27.9],
+  ]
+
+  for (const [name, mobile, desktop] of FLUID) {
+    it(`should resolve ${name} to ${mobile} px at 390 and ${desktop} px at 1440 when evaluated`, () => {
+      const value = (declared(name) ?? '').replaceAll(/\s+/g, ' ')
+
+      expect(value, name).toMatch(/^clamp\(/)
+      expect(Math.abs(clampPx(value, MOBILE_ANCHOR) - mobile)).toBeLessThan(
+        TOLERANCE_PX
+      )
+      expect(Math.abs(clampPx(value, DESKTOP_ANCHOR) - desktop)).toBeLessThan(
+        TOLERANCE_PX
+      )
+    })
+  }
+
+  const FIXED: [string, number][] = [
+    ['--panel-form-ancho', 600],
+    ['--whatsapp-alto', 120],
+    ['--container-cuerpo-diagnostico', 500],
+    ['--spacing-recibes-arriba', 8],
+    ['--spacing-recibes-gap', 14],
+    ['--spacing-recibe-gap', 12],
+    ['--spacing-recibe-burbuja', 24],
+    ['--spacing-recibe-icono', 14],
+    ['--text-recibe', 16],
+    ['--spacing-llamada-arriba', 18],
+    ['--spacing-llamada-gap', 14],
+    ['--spacing-llamada-enlace', 8],
+    ['--text-llamada', 15],
+    ['--spacing-panel-movil', 20],
+    ['--spacing-formulario-gap', 14],
+    ['--spacing-formulario-gap-escritorio', 18],
+    ['--spacing-formulario-fila', 14],
+    ['--spacing-campo-gap', 7],
+    ['--spacing-campo-gap-escritorio', 8],
+    ['--spacing-campo-alto', 46],
+    ['--spacing-campo-alto-escritorio', 50],
+    ['--spacing-campo-x', 14],
+    ['--spacing-campo-x-escritorio', 16],
+    ['--spacing-area-alto', 96],
+    ['--spacing-area-y', 12],
+    ['--spacing-area-y-escritorio', 14],
+    ['--spacing-campo-icono', 16],
+    ['--spacing-select-fin', 40],
+    ['--radius-campo-escritorio', 14],
+    ['--text-etiqueta-campo', 12],
+    ['--text-etiqueta-campo-escritorio', 12],
+    ['--text-etiqueta-campo-escritorio--letter-spacing', 0.3],
+    ['--text-campo', 14],
+    ['--text-campo-escritorio', 15],
+    ['--text-ayuda', 13],
+    ['--spacing-segmento-caja', 4],
+    ['--spacing-segmento-caja-escritorio', 5],
+    ['--spacing-segmento-gap', 4],
+    ['--spacing-segmento-gap-escritorio', 6],
+    ['--spacing-segmento-y', 8],
+    ['--spacing-segmento-y-escritorio', 9],
+    ['--spacing-segmento-x', 14],
+    ['--spacing-segmento-x-escritorio', 20],
+    ['--spacing-segmento-punto-gap', 8],
+    ['--text-segmento', 13],
+    ['--text-segmento-escritorio', 14],
+    ['--spacing-check', 18],
+    ['--radius-check', 5],
+    ['--spacing-privacidad-gap', 10],
+    ['--spacing-privacidad-gap-escritorio', 12],
+    ['--text-privacidad', 12],
+    ['--text-privacidad-escritorio', 13],
+    ['--spacing-progreso-gap', 10],
+    ['--text-progreso', 12],
+    ['--spacing-barra-paso-ancho', 28],
+    ['--spacing-barra-paso-alto', 4],
+    ['--spacing-barra-paso-gap', 4],
+    ['--radius-barra-paso', 2],
+    ['--spacing-atras-y', 6],
+    ['--spacing-atras-x', 10],
+    ['--radius-aviso', 10],
+    ['--spacing-aviso-punto', 8],
+    ['--spacing-aviso-y', 12],
+    ['--spacing-aviso-y-escritorio', 14],
+    ['--spacing-aviso-x', 14],
+    ['--spacing-aviso-x-escritorio', 16],
+    ['--spacing-aviso-gap', 10],
+    ['--spacing-aviso-gap-escritorio', 12],
+    ['--text-aviso', 13],
+    ['--text-aviso-escritorio', 14],
+    ['--spacing-exito-tile', 56],
+    ['--spacing-exito-tile-escritorio', 64],
+    ['--radius-exito', 18],
+    ['--spacing-exito-punto', 14],
+    ['--spacing-exito-y', 40],
+    ['--spacing-exito-x', 8],
+    ['--text-exito', 26],
+    ['--text-exito-escritorio', 32],
+    ['--text-exito-cuerpo', 16],
+    ['--container-exito', 420],
+  ]
+
+  for (const [name, px] of FIXED) {
+    it(`should declare ${name} as ${px} px at both anchors when the stylesheet loads`, () => {
+      expect(normalise(declared(name) ?? ''), name).toBe(`${px}px`)
+    })
+  }
+
+  it('should pin the form line boxes and weights when the stylesheet loads', () => {
+    const exact: [string, string][] = [
+      ['--text-etiqueta-campo--font-weight', '400'],
+      ['--text-etiqueta-campo-escritorio--font-weight', '600'],
+      ['--text-privacidad--line-height', '1.4'],
+      ['--text-privacidad-escritorio--line-height', '1.45'],
+      ['--text-aviso--line-height', '1.45'],
+      ['--text-aviso-escritorio--line-height', '1.45'],
+      ['--text-exito--font-weight', '500'],
+      ['--text-exito-escritorio--font-weight', '500'],
+      ['--text-exito-cuerpo--line-height', 'var(--interlineado-texto)'],
+      ['--grid-template-rows-diagnostico', '1fr auto auto 1fr'],
+      [
+        '--grid-template-columns-diagnostico',
+        'minmax(var(--diagnostico-izq-min), 1fr) minmax(0, var(--panel-form-ancho))',
+      ],
+      ['--diagnostico-izq-min', '22rem'],
+    ]
+    for (const [name, value] of exact) {
+      expect(declared(name)?.replaceAll(/\s+/g, ' '), name).toBe(value)
+    }
+  })
+
+  it('should derive the notice colours from the palette when the stylesheet loads', () => {
+    for (const [name, percent] of [
+      ['--rojo-12', 12],
+      ['--rojo-40', 40],
+    ] as const) {
+      expect(normalise(declared(name) ?? ''), name).toBe(
+        normalise(
+          `color-mix(in srgb, var(--red-muush-500) ${percent}%, transparent)`
+        )
+      )
+    }
+    expect(
+      globalCss.match(/@utility borde-aviso\s*\{([\s\S]*?)\n\}/)?.[1]
+    ).toMatch(/--borde:\s*var\(--rojo-40\);/)
+  })
+
+  it('should declare no form token twice when the stylesheet loads', () => {
+    const names = [
+      ...FLUID.map(([name]) => name),
+      ...FIXED.map(([name]) => name),
+      '--rojo-12',
+      '--rojo-40',
+      '--grid-template-columns-diagnostico',
+      '--grid-template-rows-diagnostico',
+    ]
+    for (const name of names) {
+      const declarations = globalCss.match(
+        new RegExp(`(?:^|[\\s;{])${name}:`, 'g')
+      )
+      expect(declarations?.length, name).toBe(1)
+    }
+  })
+})

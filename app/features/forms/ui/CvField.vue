@@ -1,82 +1,107 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ApplicationFormContent } from '@/features/forms/data/applicationFields'
-import CvUploadError from './CvUploadError.vue'
-import FileField, { type FileFieldRejection } from './FileField.vue'
+import {
+  type CvFileVerdict,
+  classifyCvFile,
+} from '@/features/forms/logic/cvFileCheck'
+import FieldBlock from './FieldBlock.vue'
+import {
+  AREA_CONTROL_CLASSES,
+  describedBy,
+  strokeClasses,
+} from './fieldAnatomy'
 
 /**
- * CvField — the application form's CV control plus everything feature 031
- * hangs off it: the immediate format/size refusal and, after a failed
- * upload, `CvUploadError` with its two actions. Extracted from
- * `ApplicationForm.vue` to keep it under 200 lines (Constitution Article V;
- * feature 031 research R9). Presentational: props in, events out.
+ * CvField — the application form's CV box (feature 45, spec FR-020; pen
+ * extract-45 § 5; research R7): a 96-tall box in the field anatomy, padding
+ * 14 / 16, the placeholder "Adjunta tu CV en PDF · máximo 5 MB" (15 / 400
+ * Gris 400 on desktop) or, once chosen, the file name in Blanco. No icon
+ * (§ 5). The text sits top-left, like the textarea it matches.
  *
- * The visible error is the selection refusal when there is one (spec
- * FR-013), else the submit-time validation message the parent passes.
+ * The whole box is the `<label>` of a visually hidden
+ * `<input type="file" accept="application/pdf">`: a click anywhere opens the
+ * picker, Enter or Space on the focused input opens it too, and the box
+ * draws the keyboard ring (`<style>`). A file `classifyCvFile` refuses is
+ * never kept: the input is emptied and `reject` tells the form, which shows
+ * the error at once and sends nothing (feature 031 FR-013). This component
+ * builds no request. Presentational.
  */
 interface Props {
   id: string
+  label: string
+  placeholder: string
   modelValue: File | null
-  content: ApplicationFormContent['fields']['cv']
-  uploadErrorContent: ApplicationFormContent['cvUploadError']
-  /** The submit-time validation message, if any. */
   error?: string
-  rejection: FileFieldRejection | null
-  uploadFailed: boolean
-  readonly: boolean
-  required: boolean
+  required?: boolean
+  readonly?: boolean
 }
 
 const {
   id,
+  label,
+  placeholder,
   modelValue,
-  content,
-  uploadErrorContent,
   error,
-  rejection,
-  uploadFailed,
-  readonly,
-  required,
+  required = false,
+  readonly = false,
 } = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [file: File | null]
-  reject: [kind: FileFieldRejection]
-  retry: []
-  'submit-without-cv': []
+  reject: [kind: Exclude<CvFileVerdict, 'accepted'>]
 }>()
 
-const REJECTION_MESSAGE_KEY = {
-  format: 'errorFormat',
-  size: 'errorSize',
-} as const
+function onChange(event: Event): void {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0] ?? null
+  if (file === null) {
+    emit('update:modelValue', null)
+    return
+  }
+  const verdict = classifyCvFile(file)
+  if (verdict !== 'accepted') {
+    input.value = ''
+    emit('reject', verdict)
+    return
+  }
+  emit('update:modelValue', file)
+}
 
-const uploadErrorId = computed(() => `${id}-upload-error`)
-const shownError = computed(() =>
-  rejection ? content[REJECTION_MESSAGE_KEY[rejection]] : error
-)
+const boxClasses = computed(() => [
+  AREA_CONTROL_CLASSES,
+  'caja flex h-area-alto cursor-pointer items-start',
+  modelValue ? 'text-blanco' : 'text-texto-tenue md:text-gris-400',
+  readonly ? 'pointer-events-none' : '',
+  strokeClasses(Boolean(error)),
+])
 </script>
 
 <template>
-  <FileField
-    :id="id"
-    :model-value="modelValue"
-    :label="content.label"
-    :placeholder="content.placeholder"
-    :error="shownError"
-    :described-by="uploadFailed ? uploadErrorId : undefined"
-    :readonly="readonly"
-    :required="required"
-    @update:model-value="emit('update:modelValue', $event)"
-    @reject="emit('reject', $event)"
-  />
-  <CvUploadError
-    v-if="uploadFailed"
-    :id="uploadErrorId"
-    :message="uploadErrorContent.message"
-    :retry-label="uploadErrorContent.retry"
-    :submit-without-cv-label="uploadErrorContent.submitWithoutCv"
-    @retry="emit('retry')"
-    @submit-without-cv="emit('submit-without-cv')"
-  />
+  <FieldBlock :id="id" :label="label" :error="error">
+    <label :class="boxClasses">
+      <span class="min-w-0 break-words">{{
+        modelValue?.name ?? placeholder
+      }}</span>
+      <input
+        :id="id"
+        type="file"
+        accept="application/pdf"
+        class="sr-only"
+        :required="required && !modelValue"
+        :disabled="readonly"
+        :aria-invalid="Boolean(error)"
+        :aria-describedby="describedBy(id, error)"
+        @change="onChange"
+      >
+    </label>
+  </FieldBlock>
 </template>
+
+<style scoped>
+/* The keyboard ring of the shared controls (`foco`), on the box, since its
+   input is visually hidden. */
+.caja:has(:focus-visible) {
+  outline: var(--foco-ancho) solid var(--blanco);
+  outline-offset: var(--foco-separacion);
+}
+</style>

@@ -1,181 +1,144 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { ref } from 'vue'
-import type { ContactFormContent } from '@/features/forms/data/contactFields'
-import type { ContactSubmitter } from '@/features/forms/data/submissionContract'
-import { buildCountryOptions } from '@/features/forms/logic/countryOptions'
+import type { ContactFormValues } from '@/features/forms/data/contactFields'
 import ContactForm from './ContactForm.vue'
+import {
+  CONTACT_FORM_COPY,
+  type FixtureLocale,
+  STORY_CONTACT_SUBMITTER,
+} from './formsFixtures.testing'
 
 /**
- * Every state is reachable on the shipped page since feature 029. The
- * catalogue still pins `Sending`, `Success*` and `ServerError` through the
- * Storybook-only `previewState` display override, because a story cannot
- * drive a real network flow. No page or section passes that prop.
- *
- * Every story gets a stub `submitter`: nothing here reaches the network. On
- * `Idle`, a real valid submit (after the 3 s minimum fill time) shows
- * "Enviando…" for a moment and then the confirmation.
+ * The v2 diagnóstico form (feature 45; pen extract-45 §§ 2–4, frames
+ * `uUEnn` / `Vh9NI` desktop, `Bw4IB` / `qUy14` mobile). At "Móvil (390)"
+ * it is two steps; at "Escritorio (1440)" one view. On the idle stories
+ * everything works against a stub submitter: tick the box, fill the form
+ * and send (after the 3 s minimum fill time) to see "Enviando…" and
+ * "Enviado". The other states are pinned with the Storybook-only
+ * `previewState` / `previewStep`; no page passes them.
  */
 const meta = {
-  title: 'Legacy v1/Forms/ContactForm',
+  title: 'Forms/ContactForm',
   component: ContactForm,
+  globals: { backgrounds: { value: 'negro' } },
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof ContactForm>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Long enough to see the sending state, short enough not to bore. */
-const STUB_REPLY_MS = 1_200
-
-const stubSubmitter: ContactSubmitter = {
-  engage: () => undefined,
-  submit: () =>
-    new Promise(resolve =>
-      setTimeout(() => resolve({ kind: 'success' }), STUB_REPLY_MS)
-    ),
+const VIEWPORTS = {
+  mobile: { viewport: { value: 'mobile' } },
+  desktop: { viewport: { value: 'desktop' } },
 }
 
-const spanish: ContactFormContent = {
-  fields: {
-    name: { label: 'Nombre', errorRequired: 'Escribe tu nombre' },
-    email: {
-      label: 'Correo',
-      errorRequired: 'Escribe tu correo',
-      errorFormat: 'Formato de correo inválido',
-    },
-    company: { label: 'Empresa o proyecto' },
-    identity: {
-      label: '¿Cómo te identificas?',
-      errorRequired: 'Elige una opción',
-      options: {
-        realEstate: 'Bienes raíces/inmobiliaria',
-        creator: 'Creador de contenido/marca personal',
-        company: 'Empresa pública o privada',
-        independent: 'Emprendedor o persona física',
-        startup: 'Startup',
-        other: 'Otro',
-      },
-    },
-    need: {
-      label: '¿Qué necesitas?',
-      errorRequired: 'Cuéntanos qué necesitas',
-      errorLength: 'Cuéntanos un poco más',
-    },
-    contactPreference: {
-      label: '¿Cómo prefieres que te contactemos?',
-      options: { email: 'Correo', whatsapp: 'WhatsApp' },
-    },
-    whatsappCountry: {
-      label: 'Lada del país',
-      errorInvalid: 'Elige la lada de tu país',
-      options: buildCountryOptions('es-MX'),
-    },
-    whatsapp: {
-      label: 'Número de WhatsApp',
-      errorRequired: 'Escribe tu número',
-      errorDigits: 'Deben ser entre 6 y 14 dígitos',
-    },
+const FILLED: Record<FixtureLocale, Partial<ContactFormValues>> = {
+  es: {
+    name: 'María Fernanda Ruiz',
+    email: 'mf.ruiz@ejemplo.mx',
+    company: 'Inmobiliaria Altavista',
+    identity: 'realEstate',
+    need: 'Queremos rehacer el sitio de la desarrolladora.',
   },
-  submit: 'Enviar',
-  sending: 'Enviando…',
-  success: {
-    titleByChannel: {
-      email:
-        'Listo, ya lo recibimos. Te respondemos por correo en menos de 24 horas hábiles.',
-      whatsapp:
-        'Listo, ya lo recibimos. Te respondemos por WhatsApp en menos de 24 horas hábiles.',
-    },
-  },
-  error: {
-    title:
-      'No pudimos enviarlo. Escríbenos a support@muush.dev o por WhatsApp y lo resolvemos.',
-    fallback: 'support@muush.dev',
+  en: {
+    name: 'Mary Ruiz',
+    email: 'mary@example.com',
+    company: 'Altavista Realty',
+    identity: 'realEstate',
+    need: 'We want to rebuild our developer website.',
   },
 }
 
-export const Idle: Story = {
-  args: { content: spanish, submitter: stubSubmitter },
-}
+/** Faltan datos: an empty name and a malformed email (pen extract § 3). */
+const MISSING: Partial<ContactFormValues> = { email: 'mf.ruiz@' }
 
-/**
- * `Validación fallida` is a **real** reachable state (FR-013) — not a
- * `previewState` branch. This story shows it by triggering a real submit on
- * mount (`HTMLFormElement.requestSubmit()`, no new dependency, no
- * interactions addon): the same click a visitor makes, run once so the
- * catalogue can show the result at rest.
- */
-export const ValidationFailed: Story = {
-  args: { content: spanish, submitter: stubSubmitter },
-  render: args => ({
-    components: { ContactForm },
-    setup: () => ({ args }),
-    mounted() {
-      ;(this.$el as HTMLElement).querySelector('form')?.requestSubmit()
+function story(
+  locale: FixtureLocale,
+  viewport: keyof typeof VIEWPORTS,
+  extra: Partial<Story['args']> = {}
+): Story {
+  return {
+    args: {
+      content: CONTACT_FORM_COPY[locale],
+      submitter: STORY_CONTACT_SUBMITTER,
+      ...extra,
     },
-    template: '<ContactForm v-bind="args" />',
-  }),
+    globals: VIEWPORTS[viewport],
+  }
 }
 
-export const Sending: Story = {
-  args: { content: spanish, submitter: stubSubmitter, previewState: 'sending' },
-}
+export const EsMobile390: Story = story('es', 'mobile')
+export const EnMobile390: Story = story('en', 'mobile')
+export const EsDesktop1440: Story = story('es', 'desktop')
+export const EnDesktop1440: Story = story('en', 'desktop')
 
-/** The confirmation names the channel picked (spec OA-4); this one is the
- * default, Correo. */
-export const Success: Story = {
-  args: { content: spanish, submitter: stubSubmitter, previewState: 'success' },
-}
+/** Step 2 "Tu negocio", with step 1 already filled. */
+export const EsStep2Mobile390: Story = story('es', 'mobile', {
+  previewStep: 2,
+  initial: { name: FILLED.es.name, email: FILLED.es.email },
+})
+export const EnStep2Mobile390: Story = story('en', 'mobile', {
+  previewStep: 2,
+  initial: { name: FILLED.en.name, email: FILLED.en.email },
+})
 
-/** Same confirmation when the visitor picked WhatsApp: the form switches to
- * WhatsApp on mount, the way a visitor would, before the override shows the
- * outcome. */
-export const SuccessByWhatsapp: Story = {
-  args: { content: spanish, submitter: stubSubmitter },
-  render: args => ({
-    components: { ContactForm },
-    setup: () => ({ args, previewState: ref<'success' | undefined>() }),
-    mounted() {
-      ;(
-        (this.$el as HTMLElement).querySelector(
-          'input[name="contactPreference"][value="whatsapp"]'
-        ) as HTMLInputElement | null
-      )?.click()
-      this.previewState = 'success'
-    },
-    template: '<ContactForm v-bind="args" :preview-state="previewState" />',
-  }),
-}
+export const EsMissingDataMobile390: Story = story('es', 'mobile', {
+  previewState: 'invalid',
+  initial: MISSING,
+})
+export const EnMissingDataDesktop1440: Story = story('en', 'desktop', {
+  previewState: 'invalid',
+  initial: MISSING,
+})
+export const EsMissingDataDesktop1440: Story = story('es', 'desktop', {
+  previewState: 'invalid',
+  initial: MISSING,
+})
 
-export const ServerError: Story = {
-  args: {
-    content: spanish,
-    submitter: stubSubmitter,
-    previewState: 'server-error',
+export const EsSendingDesktop1440: Story = story('es', 'desktop', {
+  previewState: 'sending',
+  initial: FILLED.es,
+})
+export const EnSendingMobile390: Story = story('en', 'mobile', {
+  previewState: 'sending',
+  previewStep: 2,
+  initial: FILLED.en,
+})
+
+export const EsSendErrorDesktop1440: Story = story('es', 'desktop', {
+  previewState: 'server-error',
+  initial: FILLED.es,
+})
+export const EnSendErrorDesktop1440: Story = story('en', 'desktop', {
+  previewState: 'server-error',
+  initial: FILLED.en,
+})
+export const EsSendErrorMobile390: Story = story('es', 'mobile', {
+  previewState: 'server-error',
+  previewStep: 2,
+  initial: FILLED.es,
+})
+
+export const EsSentDesktop1440: Story = story('es', 'desktop', {
+  previewState: 'success',
+})
+export const EnSentDesktop1440: Story = story('en', 'desktop', {
+  previewState: 'success',
+})
+export const EsSentMobile390: Story = story('es', 'mobile', {
+  previewState: 'success',
+})
+export const EnSentMobile390: Story = story('en', 'mobile', {
+  previewState: 'success',
+})
+
+/** WhatsApp chosen: the dial code and number row appears (FR-019). */
+export const EsWhatsappDesktop1440: Story = story('es', 'desktop', {
+  initial: {
+    ...FILLED.es,
+    contactPreference: 'whatsapp',
+    whatsapp: '55 4433 2211',
   },
-}
-
-/**
- * Feature 32 Amendment A1: a stub port that reports Colombia, as the site's
- * edge would for a visitor there (`GET /__geo`). The form switches to
- * WhatsApp on mount, the way a visitor would, and the selector moves from
- * Mexico to Colombia. The other stories omit `lookupCountry` on purpose:
- * that is Storybook without the edge, so Mexico and no request.
- */
-export const ReportedCountryColombia: Story = {
-  args: {
-    content: spanish,
-    submitter: { ...stubSubmitter, lookupCountry: async () => 'CO' },
-  },
-  render: args => ({
-    components: { ContactForm },
-    setup: () => ({ args }),
-    mounted() {
-      ;(
-        (this.$el as HTMLElement).querySelector(
-          'input[name="contactPreference"][value="whatsapp"]'
-        ) as HTMLInputElement | null
-      )?.click()
-    },
-    template: '<ContactForm v-bind="args" />',
-  }),
-}
+})
+export const EnWhatsappMobile390: Story = story('en', 'mobile', {
+  initial: { contactPreference: 'whatsapp' },
+})

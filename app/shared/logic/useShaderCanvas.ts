@@ -151,7 +151,20 @@ class ShaderCanvas {
     this.update()
   }
 
-  /** Applies the DPR cap for the current width, then repaints if paused. */
+  /**
+   * Applies the DPR cap for the current width and, when the backing store
+   * changed size, repaints at once.
+   *
+   * Feature 45, reopen 1 (Roberto 2026-11-02): assigning `canvas.width` or
+   * `canvas.height` clears the drawing buffer. ResizeObserver callbacks run
+   * after the frame's rAF draw, so while the section's height animated (the
+   * form's WhatsApp row opening or closing) every frame was painted with a
+   * cleared canvas, and the poster showed through: the listón looked frozen
+   * or restarted. The repaint here, in the same frame, fixes it at the root,
+   * running or paused. A resize only updates the backing store and the
+   * resolution uniform: the clock (`startedAt`), the program and the context
+   * are never touched.
+   */
   private readonly resize = (): void => {
     if (!this.renderer) return
     const ratio = capPixelRatio(window.devicePixelRatio, window.innerWidth)
@@ -160,10 +173,12 @@ class ShaderCanvas {
       this.canvas.clientHeight,
       ratio
     )
+    const changed = this.canvas.width !== width || this.canvas.height !== height
     if (this.canvas.width !== width) this.canvas.width = width
     if (this.canvas.height !== height) this.canvas.height = height
     this.renderer.resize(width, height)
-    if (!this.frame && this.visible && !document.hidden) this.draw()
+    if (!this.visible || document.hidden) return
+    if (changed || !this.frame) this.draw()
   }
 
   private readonly tick = (): void => {

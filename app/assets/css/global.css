@@ -644,7 +644,8 @@
 
   /*
    * Contacto · CTA final (feature 016). Read by hand-written CSS (the
-   * WhatsApp field's `<Transition>` in `ContactForm.vue`), so it goes in
+   * WhatsApp field's `<Transition>` in the v1 `ui/legacy/WhatsappField.vue`,
+   * quarantined since feature 45), so it goes in
    * `:root` and NOT in `@theme inline` — Tailwind v4 has no theme namespace
    * for `transition-duration` (rules.md § R18, findings.md § R52).
    *
@@ -657,49 +658,16 @@
   --duration-contact-whatsapp-toggle: 0.2s;
 
   /*
-   * Contacto's two desktop column tracks, read by `ContactSection.vue`'s
-   * `<style scoped>` grid (hand-written CSS, so `:root` and not
-   * `@theme inline` — rules.md § R18). A whole track list, not two widths:
-   * `fr` cannot appear inside `calc()`, so the ratio has to live here.
-   *
-   * Feature 38 (Roberto 2026-10-19, round 2): the grid starts at 64rem
-   * (1024) as before, and its tracks are PROPORTIONAL to the 1440 frame rather than
-   * the old `clamp()` widths, which only fitted the content box at exactly
-   * 1440 and overflowed it by `556.8 − 0.38667·W` px at every width from 1024
-   * to 1439 (measured, docs/harness/progress/audit_tablet_layout_and_pill_
-   * fixes.md). At ≥1440 the content box is 1280 = 556 + 64 + 660, so the
-   * tracks resolve to exactly the frame's 556 / 660 — no change there.
-   * `minmax(0, …)` stops a long word from widening a track past its share.
-   *
-   * 660 (form) is CONFIRMED (design-extract.md § 10, frames `Xrs80`/`r3PHqc`).
-   * ⚠️ 556 (left block) is UNVERIFIED: derived as `1440 − 80×2 − 660(form) −
-   * 64(gap)`, the gap itself seeded from the footer's column gap
-   * (rules.md § R24). Flagged for the leader to confirm against the real frame
-   * (rules.md § R32 point 4).
-   */
-  --contact-cols: minmax(0, 556fr) minmax(0, 660fr);
-  /* ⚠️ UNVERIFIED — dueño Clau. The gap between the two desktop columns; no
-     internal measurement for this section's left block reached this
-     implementation beyond the two frame widths. Seeded from the footer's own
-     column gap (rules.md § R24), as the 556 in `--contact-cols` was. */
-  --contact-col-gap: 4rem;
-  /* ⚠️ UNVERIFIED — dueño Clau. The left block's own internal stack gap
-     (Pill → heading → body → alt route). Seeded near `--spacing-hero-gap`'s
-     24 → 34 range at its desktop value, since no measurement for this
-     section's own left block reached this implementation. */
-  --contact-left-gap: 1.5rem;
-
-  /*
    * Work with muush · About's second section (feature 020). Frame widths
    * read from the leader's 2026-09-08 brief: Left 520×318 (D) / 342×258 (M),
    * form 660×744 (D) / 342×665 (M) — CONFIRMED. Read only by
    * `WorkWithMuushSection.vue`'s hand-written `<style scoped>` grid, never by
    * a Tailwind utility class, so these live here and NOT in `@theme inline`
-   * — the same placement `--contact-cols` uses above, for the identical
-   * reason (`rules.md` § R18: an `@theme inline` token with no scanned
+   * — the same placement the v1 contact section's tracks used (retired with
+   * that section in feature 45), for the identical reason (`rules.md` § R18: an `@theme inline` token with no scanned
    * utility consumer never reaches `:root` at all).
    *
-   * Feature 38: same recipe as `--contact-cols` — a proportional track list
+   * Feature 38: a proportional track list
    * for the ≥64rem grid. 520 + 100 + 660 = 1280, the content box from 1440
    * up, so the frame widths are exact there and the tracks shrink together
    * below it (the old `clamp()` widths overflowed by `606.2 − 0.42095·W` px
@@ -1084,11 +1052,53 @@
      Roberto review 2026-11-02 asked for "slightly", 1.03–1.05). Never
      applied under reduced motion (`motion-safe:` on the consumer). */
   --paso-escala: 1.04;
+
+  /*
+   * ---------- Forms (feature 45) ----------
+   * Values from `docs/harness/progress/pen-extract-45.md` (frames `mMSV2` /
+   * `ASEvR` section, `uUEnn` / `Bw4IB` diagnóstico states, `VtxDP` /
+   * `u1CDBO` application), section named on each group. Only colours and
+   * values read by hand-written CSS live here; the plain lengths are in the
+   * `@theme inline` block below.
+   */
+  /* The "Aviso" notice: Red muush 500 at 12 % fill, 40 % edge (§ 3). */
+  --rojo-12: color-mix(in srgb, var(--red-muush-500) 12%, transparent);
+  --rojo-40: color-mix(in srgb, var(--red-muush-500) 40%, transparent);
+  /* The desktop form panel is 600 wide (§ 1); the section grid reads it. */
+  --panel-form-ancho: 37.5rem;
+  /*
+   * The section's left column never narrows below 352 px (DERIVED, not
+   * drawn): from 1024 the two columns stay side by side (the feature 38
+   * rule Roberto set for the v1 forms), and below ~1280 a fixed 600 panel
+   * left the 64 px-scale heading too little room ("diagnóstico" ran under
+   * the panel at 1024). The panel gives way instead; at 1440 the column is
+   * 1280 − 72 − 600 = 608, so the anchor is unchanged.
+   */
+  --diagnostico-izq-min: 22rem;
+
+  /*
+   * Feature 45, reopen 2 (Roberto 2026-11-02: "sube todos los pills de las
+   * sections, un poquito… para que no se vea tan pegado"): extra air
+   * between a v2 section's pill and its heading, added below the pill on
+   * top of each section's own gap. 6 px below `lg`, 8 px from it (the
+   * media rule below). A deliberate departure from the `.pen`. One token,
+   * read by the `pill-aire` utility, so every pill moves together.
+   */
+  --pill-aire: 0.375rem;
+  /*
+   * The WhatsApp row's open height for its height + opacity transition
+   * (handoff `ui-map.md` § 7 behaviour, kept from feature 16): label 15 +
+   * gap 8 + control 50 + two help lines; `max-height`, so it only needs to
+   * be at least that tall (DERIVED, not drawn).
+   */
+  --whatsapp-alto: 7.5rem;
 }
 
 @media (width >= 64rem) {
   :root {
     --header-offset: 5.5rem;
+    /* Feature 45, reopen 2: the pill's extra air from `lg`. */
+    --pill-aire: 0.5rem;
   }
 }
 
@@ -1219,6 +1229,16 @@ html {
     [contenteditable]:not([contenteditable="false"])
   ) {
     cursor: text;
+  }
+
+  /*
+   * 5. Feature 45 · a control shown but unavailable (the form submit until
+   *    the privacy box is ticked, pen extract-45 § 8): the system
+   *    not-allowed cursor. Last, so it wins over rule 3 for an enabled
+   *    `<button aria-disabled="true">`, which stays focusable on purpose.
+   */
+  :where([aria-disabled="true"]) {
+    cursor: not-allowed;
   }
 }
 
@@ -2149,92 +2169,6 @@ html {
   --spacing-services-closer-gap-m: 2.5rem;
 
   /*
-   * ═══ Contacto · `06 CTA final` (feature 016) ═══
-   *
-   * Consumed as UTILITY (`pt-*`, `top-*`, `left-*`, `w-*`, `h-*`, `gap-*`,
-   * `py-*`, `px-*`, `size-*`), per `findings.md` § R47. Hand-written-CSS
-   * tokens (the WhatsApp toggle's duration, the contrast colour) live above,
-   * in `:root`.
-   *
-   * ⚠️ None is named `--spacing-glow-*` / `--color-glow-*` (rules.md § R36).
-   */
-
-  /*
-   * ⚠️ UNVERIFIED — dueño: leader/Clau. `05 Proyectos` (feature 15) is
-   * `blocked` indefinitely, so this section renders directly after Servicios
-   * on the real page instead of after Proyectos as the full design draws.
-   * Seeded from Servicios' own documented 110px desktop remainder
-   * (`ServicesSection.vue`'s doc comment) — the same "leftover belongs to
-   * whatever renders next" rule R49 already established — with the mobile
-   * value estimated by continuing the shrinking pattern the prior three
-   * sections show (Hero 74→207, Propósito 90→254, Servicios 55→101).
-   */
-  --spacing-contact-top: clamp(3.125rem, 1.7321rem + 5.7143vw, 6.875rem);
-  /* ⚠️ UNVERIFIED — dueño Clau. The left block's own internal stack gap
-     (Pill → heading → body); no measurement reached this implementation
-     beyond the two frame widths. Seeded from `--spacing-hero-gap`'s own
-     24 → 34 range — the closest analogous stack in the design (spec A-01
-     notes the copy itself is placeholder for the same reason). One token per
-     role, per this file's own convention, even though the range coincides. */
-  --spacing-contact-text-gap: clamp(1.5rem, 1.2679rem + 0.9524vw, 2.125rem);
-
-  /* Form/left-block column tracks. Declared in `:root` as `--contact-cols`,
-     not here: the two-column desktop layout is CSS Grid in `ContactSection.vue`'s
-     `<style scoped>` (hand-written, R18) and needs no `w-*` utility of its
-     own — the grid track sizes the child. */
-
-  /*
-   * Anclas de los tres glows de la sección — seis tokens (rules.md § R48).
-   * Page-absolute centres from the leader's 2026-09-08 reading of `Xrs80` /
-   * `r3PHqc` (`feature_list.json` #16): foco 1170,4310 (D) · 410,3560 (M);
-   * wine 1580,4520 (D) · 480,3840 (M); cierre 190,4630 (D) · 80,3960 (M).
-   *
-   * Horizontal is CONFIRMED: `x − 80` (D) / `x − 24` (M), the same page
-   * margin every prior section subtracts.
-   *
-   * ⚠️ Vertical is NOT fully confirmed. Section `06 CTA final` sits after
-   * `05 Proyectos` in the full design, and Proyectos (feature 15) is
-   * `blocked` — deferred indefinitely, not merely unbuilt — so this section
-   * renders directly after Servicios on the real page. Converting the design's
-   * page-absolute `y` requires the page-absolute `y` of this section's own top
-   * edge in the FULL stitched design (with Proyectos present), which only the
-   * `.pen` can supply and which this implementation session was not given.
-   * What IS confirmed are the three glows' relative vertical spread —
-   * `wine − foco` and `cierre − foco`, arithmetic over given values, true
-   * regardless of the unknown origin. The baseline below anchors `foco` at
-   * the section's own top edge (`0`) as a documented placeholder, not a
-   * measurement; `wine`/`cierre` are that baseline plus the confirmed deltas.
-   * Flagged for leader confirmation (rules.md § R32 point 4) rather than
-   * silently presented as a design value.
-   */
-  --spacing-contact-glow-foco-x: clamp(
-    24.125rem,
-    7.7821rem +
-    67.0476vw,
-    68.125rem
-  );
-  --spacing-contact-glow-foco-y: 0rem;
-  --spacing-contact-glow-wine-x: clamp(
-    28.5rem,
-    4.2643rem +
-    99.4286vw,
-    93.75rem
-  );
-  --spacing-contact-glow-wine-y: clamp(
-    13.125rem,
-    19.125rem -
-    6.6667vw,
-    17.5rem
-  );
-  --spacing-contact-glow-cierre-x: clamp(
-    3.5rem,
-    2.2464rem +
-    5.1429vw,
-    6.875rem
-  );
-  --spacing-contact-glow-cierre-y: clamp(20rem, 26.8571rem - 7.619vw, 25rem);
-
-  /*
    * ═══ About · `01 Hero` de Nosotros (feature 017) ═══
    *
    * Frames leídos por el líder del `.pen` el 2026-09-08 (rules.md § R32):
@@ -2353,8 +2287,8 @@ html {
   --spacing-work-top: clamp(0rem, -3.0179rem + 12.381vw, 8.125rem);
   /* ⚠️ UNVERIFIED — dueño Clau. The left block's own internal stack gap
      (Pill → heading → body); no measurement beyond the two frame widths
-     reached this implementation. Seeded from `--spacing-contact-text-gap`'s
-     own range — the closest analogous left-block stack in this codebase. */
+     reached this implementation. Seeded from the v1 contact section's text
+     gap (retired in feature 45) — the closest analogous left-block stack. */
   --spacing-work-text-gap: clamp(1.5rem, 1.2679rem + 0.9524vw, 2.125rem);
 
   /*
@@ -2364,13 +2298,12 @@ html {
    * 80,3610 (M).
    *
    * Horizontal is CONFIRMED: `x − 80` (D) / `x − 24` (M) — the same page
-   * margin every prior section subtracts. These three x values are IDENTICAL
-   * to Contacto's own (`--spacing-contact-glow-*-x`): the two sections share
-   * a horizontal glow position while scrolling to different vertical ones, a
+   * margin every prior section subtracts. These three x values were
+   * IDENTICAL to the v1 contact section's own (retired in feature 45), a
    * real coincidence in the source data, not a copy-paste.
    *
-   * ⚠️ Vertical origin is NOT confirmed, same limitation `--spacing-contact-glow-*`
-   * already recorded: this section's own page-absolute top edge in the FULL
+   * ⚠️ Vertical origin is NOT confirmed, the same limitation the v1 contact
+   * glows recorded: this section's own page-absolute top edge in the FULL
    * stitched design depends on Team's and Network's heights, and both stay
    * `blocked` — deferred, not merely unbuilt. What IS confirmed is the three
    * glows' relative vertical spread (arithmetic over the given page-absolute
@@ -3059,6 +2992,185 @@ html {
   --spacing-compromiso-movil-punto: 0.3125rem;
   --text-compromiso-movil: 0.75rem;
   --text-compromiso-movil--line-height: normal;
+
+  /*
+   * ---------- Forms (feature 45) ----------
+   * Source: `docs/harness/progress/pen-extract-45.md`, section named on each
+   * group. The form has two anatomies (§ 2 desktop, § 4 mobile) that swap at
+   * `md` together with the view (two steps below 768, one view from it;
+   * spec FR-002), so each anatomy value is a pair of constants (`…` mobile,
+   * `…-escritorio` desktop) and the component swaps them at `md`, as feature
+   * 44 does at `lg` for its two layouts. The section values between the
+   * anchors are fluid. Line boxes marked 1.2 are DERIVED: the `.pen` sizes
+   * auto-height Instrument Sans at 1.2 × its size (feature 43 link bar,
+   * feature 44 tabs).
+   */
+  --color-rojo-12: var(--rojo-12);
+  --color-rojo-40: var(--rojo-40);
+
+  /* Section (§§ 1, 4, 8): padding 72 / 24 → 120 / 80 / 140 / 80 (top is the
+     shared `bloque-y`, x the gutters); gap 24 → 72; left column gap 24 → 26;
+     body 16 / 1.5 → 18 / 1.55, 500 wide. From `lg` the grid is the fluid
+     left column beside the 600 panel; rows 1fr / auto / auto / 1fr centre
+     the left column against the panel ("items vertically centred").
+     Between 1024 and ~1280 the panel narrows so the left column keeps
+     `--diagnostico-izq-min` (responsive latitude, Constitution VII). */
+  --spacing-diagnostico-abajo: clamp(4.5rem, 2.9214rem + 6.4762vw, 8.75rem);
+  --spacing-diagnostico-gap: clamp(1.5rem, 0.3857rem + 4.5714vw, 4.5rem);
+  --spacing-diagnostico-izq: clamp(1.5rem, 1.4536rem + 0.1905vw, 1.625rem);
+  --text-cuerpo-diagnostico: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
+  --text-cuerpo-diagnostico--line-height: clamp(
+    1.5rem,
+    1.4095rem +
+    0.3714vw,
+    1.7438rem
+  );
+  --container-cuerpo-diagnostico: 31.25rem;
+  --container-panel-form: var(--panel-form-ancho);
+  --grid-template-columns-diagnostico: minmax(var(--diagnostico-izq-min), 1fr)
+    minmax(0, var(--panel-form-ancho));
+  --grid-template-rows-diagnostico: 1fr auto auto 1fr;
+
+  /* "Lo que recibes" (§ 1): padding-top 8, gap 14; rows gap 12; bubble 24
+     with a 14 check; row text 16 / 400 (line box ASSUMED 1.5, the running
+     text default: the rows wrap on mobile and § 1 gives no line-height). */
+  --spacing-recibes-arriba: 0.5rem;
+  --spacing-recibes-gap: 0.875rem;
+  --spacing-recibe-gap: 0.75rem;
+  --spacing-recibe-burbuja: 1.5rem;
+  --spacing-recibe-icono: 0.875rem;
+  --text-recibe: 1rem;
+  --text-recibe--line-height: var(--interlineado-texto);
+  --text-recibe--font-weight: 400;
+
+  /* "Llamada" row (§§ 1, 8; same at both anchors): padding-top 18, gap 14;
+     link gap 8; 15 px (line box 1.2). The arrow is 16 (`boton-icono-nav`). */
+  --spacing-llamada-arriba: 1.125rem;
+  --spacing-llamada-gap: 0.875rem;
+  --spacing-llamada-enlace: 0.5rem;
+  --text-llamada: 0.9375rem;
+  --text-llamada--line-height: 1.2;
+
+  /* Panel (§§ 2, 4): mobile padding 20, radius 22 (`tarjeta`), gap 14;
+     desktop padding 36 (`panel`), radius 28 (`panel`), gap 18; two-field
+     rows gap 14. */
+  --spacing-panel-movil: 1.25rem;
+  --spacing-formulario-gap: 0.875rem;
+  --spacing-formulario-gap-escritorio: 1.125rem;
+  --spacing-formulario-fila: 0.875rem;
+
+  /* Field block (§§ 2, 4): gap 7 / 8; control 46 / 50 tall, padding x
+     14 / 16, radius 12 (`campo`) / 14; textarea and CV box 96 tall, padding
+     y 12 (mobile, handoff `.m1-campo textarea`; § 4 gives none) / 14; the
+     chevron 16, so a select reserves 16 + 16 + 8 on its end (DERIVED). */
+  --spacing-campo-gap: 0.4375rem;
+  --spacing-campo-gap-escritorio: 0.5rem;
+  --spacing-campo-alto: 2.875rem;
+  --spacing-campo-alto-escritorio: 3.125rem;
+  --spacing-campo-x: 0.875rem;
+  --spacing-campo-x-escritorio: 1rem;
+  --spacing-area-alto: 6rem;
+  --spacing-area-y: 0.75rem;
+  --spacing-area-y-escritorio: 0.875rem;
+  --spacing-campo-icono: 1rem;
+  --spacing-select-fin: 2.5rem;
+  --radius-campo-escritorio: 0.875rem;
+
+  /* Field type (§§ 2–4): label 12 / 400 mobile, 12 / 600 tracking 0.3
+     desktop (line box 1.2); value 14 / 15; help line 13 / 400. */
+  --text-etiqueta-campo: 0.75rem;
+  --text-etiqueta-campo--line-height: 1.2;
+  --text-etiqueta-campo--font-weight: 400;
+  --text-etiqueta-campo-escritorio: 0.75rem;
+  --text-etiqueta-campo-escritorio--line-height: 1.2;
+  --text-etiqueta-campo-escritorio--letter-spacing: 0.01875rem;
+  --text-etiqueta-campo-escritorio--font-weight: 600;
+  --text-campo: 0.875rem;
+  --text-campo-escritorio: 0.9375rem;
+  --text-ayuda: 0.8125rem;
+  --text-ayuda--line-height: 1.2;
+  --text-ayuda--font-weight: 400;
+
+  /* Segmented control (§§ 2, 4, 8). Mobile: container padding and gap 4,
+     radius 12 (`campo`); option 8 / 14, radius 9 (`pestana`), 13 / 600, no
+     dot. Desktop: container padding 5, gap 6, pill; option 9 / 20, pill,
+     14 px, dot 6 (`punto-activo`) 8 before the text. Line box 1.2. */
+  --spacing-segmento-caja: 0.25rem;
+  --spacing-segmento-caja-escritorio: 0.3125rem;
+  --spacing-segmento-gap: 0.25rem;
+  --spacing-segmento-gap-escritorio: 0.375rem;
+  --spacing-segmento-y: 0.5rem;
+  --spacing-segmento-y-escritorio: 0.5625rem;
+  --spacing-segmento-x: 0.875rem;
+  --spacing-segmento-x-escritorio: 1.25rem;
+  --spacing-segmento-punto-gap: 0.5rem;
+  --text-segmento: 0.8125rem;
+  --text-segmento--line-height: 1.2;
+  --text-segmento-escritorio: 0.875rem;
+  --text-segmento-escritorio--line-height: 1.2;
+
+  /* Privacy row (§§ 2, 8): checkbox 18, radius 5; gap 10 / 12; text
+     12 / 1.4 mobile, 13 / 1.45 desktop. */
+  --spacing-check: 1.125rem;
+  --radius-check: 0.3125rem;
+  --spacing-privacidad-gap: 0.625rem;
+  --spacing-privacidad-gap-escritorio: 0.75rem;
+  --text-privacidad: 0.75rem;
+  --text-privacidad--line-height: 1.4;
+  --text-privacidad-escritorio: 0.8125rem;
+  --text-privacidad-escritorio--line-height: 1.45;
+
+  /* Progress row (§ 4): gap 10; label 12 (600, handoff
+     `.m1-form__progreso`; line box 1.2); two segments 28 × 4, radius 2,
+     gap 4. */
+  --spacing-progreso-gap: 0.625rem;
+  --text-progreso: 0.75rem;
+  --text-progreso--line-height: 1.2;
+  --text-progreso--font-weight: 600;
+  --spacing-barra-paso-ancho: 1.75rem;
+  --spacing-barra-paso-alto: 0.25rem;
+  --spacing-barra-paso-gap: 0.25rem;
+  --radius-barra-paso: 0.125rem;
+
+  /* "← Atrás" (§ 4): 14 / 400 Gris 400 (`nota`); padding 6 / 10 from the
+     handoff's `.m1-atras` (§ 4 gives none), for a touchable box. */
+  --spacing-atras-y: 0.375rem;
+  --spacing-atras-x: 0.625rem;
+
+  /* "Aviso" (§§ 3, 8): radius 10; an 8 px dot; mobile padding 12 / 14,
+     gap 10, 13 / 1.45; desktop padding 14 / 16, gap 12, 14 / 1.45. */
+  --radius-aviso: 0.625rem;
+  --spacing-aviso-punto: 0.5rem;
+  --spacing-aviso-y: 0.75rem;
+  --spacing-aviso-y-escritorio: 0.875rem;
+  --spacing-aviso-x: 0.875rem;
+  --spacing-aviso-x-escritorio: 1rem;
+  --spacing-aviso-gap: 0.625rem;
+  --spacing-aviso-gap-escritorio: 0.75rem;
+  --text-aviso: 0.8125rem;
+  --text-aviso--line-height: 1.45;
+  --text-aviso-escritorio: 0.875rem;
+  --text-aviso-escritorio--line-height: 1.45;
+
+  /* "Enviado" (§§ 3, 8): tile 56 / 64, radius 18 / 20 (`franja`); dot 14;
+     title Poppins 26 / 32 / 500 (line box `--interlineado-titulo`); text
+     16 / 1.5, 420 wide. The stack's own padding 40 / 8 is the handoff's
+     `.m1-exito` (the `.pen` lists none). */
+  --spacing-exito-tile: 3.5rem;
+  --spacing-exito-tile-escritorio: 4rem;
+  --radius-exito: 1.125rem;
+  --spacing-exito-punto: 0.875rem;
+  --spacing-exito-y: 2.5rem;
+  --spacing-exito-x: 0.5rem;
+  --text-exito: 1.625rem;
+  --text-exito--line-height: var(--interlineado-titulo);
+  --text-exito--font-weight: 500;
+  --text-exito-escritorio: 2rem;
+  --text-exito-escritorio--line-height: var(--interlineado-titulo);
+  --text-exito-escritorio--font-weight: 500;
+  --text-exito-cuerpo: 1rem;
+  --text-exito-cuerpo--line-height: var(--interlineado-texto);
+  --container-exito: 26.25rem;
 }
 
 /*
@@ -3215,6 +3327,18 @@ html {
 @utility pulso-tenue {
   --pulso-fantasma: var(--texto-tenue);
   --pulso-borde: var(--trazo-anillo);
+}
+
+/* Feature 45, reopen 2 · the space below a v2 section pill (`--pill-aire`,
+   6 → 8 px at `lg`). On the pill's call site, never inside `Pill`. */
+@utility pill-aire {
+  margin-block-end: var(--pill-aire);
+}
+
+/* Feature 45 · the form notice ("Aviso"): flat Red 40 % (pen extract-45
+   § 3). */
+@utility borde-aviso {
+  --borde: var(--rojo-40);
 }
 
 /* Feature 44 · the mobile commitment chip: flat Red 25 % (§ 4). */

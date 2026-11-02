@@ -1,175 +1,173 @@
 <script setup lang="ts">
 import { computed, onMounted, useTemplateRef } from 'vue'
-import type { ContactFormContent } from '@/features/forms/data/contactFields'
+import type {
+  ContactFieldId,
+  ContactFormContent,
+  ContactFormValues,
+} from '@/features/forms/data/contactFields'
+import {
+  CONTACT_STEP_FIELDS,
+  type FormStep,
+} from '@/features/forms/data/formSteps'
 import type { ContactSubmitter } from '@/features/forms/data/submissionContract'
-import { fieldErrorMessage } from '@/features/forms/logic/fieldErrorMessage'
 import { toFieldOptions } from '@/features/forms/logic/selectOptions'
+import { useConsentGate } from '@/features/forms/logic/useConsentGate'
 import { useContactForm } from '@/features/forms/logic/useContactForm'
-import PrimaryButton from '@/shared/ui/legacy/PrimaryButton.vue'
-import FormOutcome from './FormOutcome.vue'
-import HoneypotField from './HoneypotField.vue'
-import RadioPillGroup from './RadioPillGroup.vue'
+import { useFormSteps } from '@/features/forms/logic/useFormSteps'
+import { useFormView } from '@/features/forms/logic/useFormView'
+import ContactChannelField from './ContactChannelField.vue'
+import NameEmailRow from './NameEmailRow.vue'
 import SelectField from './SelectField.vue'
+import SendNotice from './SendNotice.vue'
+import SteppedForm from './SteppedForm.vue'
 import TextareaField from './TextareaField.vue'
 import TextField from './TextField.vue'
-import WhatsappField from './WhatsappField.vue'
 
 /**
- * ContactForm — the seven fields of `docs/business/landing/ui-map.md` § 7 and
- * the real submission flow of feature 029: idle → sending → success |
- * server-error | invalid.
+ * ContactForm — the v2 diagnóstico form (feature 45, US1–US3; pen
+ * extract-45 §§ 2–4): Nombre | Correo, Empresa o proyecto | ¿Cómo te
+ * identificas?, ¿Qué necesitas?, the contact channel, the privacy consent and
+ * "Quiero mi diagnóstico", in the shared `SteppedForm` (two steps below
+ * 768 px). No website field (Roberto 2026-10-31).
  *
- * This component never touches the network (Constitution Article V, spec
- * FR-025). The page creates a `submitter` with `useContactSubmitter()` and
- * hands it down; stories and tests hand in a stub. `success` comes only from
- * the submitter's classified `ok` response (spec FR-012).
+ * The logic is the existing `useContactForm` (validation, Turnstile, spam
+ * guard, server marks, dial code), unchanged; `useFormSteps` adds the steps,
+ * `useConsentGate` blocks every submit path until the box is ticked (FR-009)
+ * and `useFormView` derives what is shown. Consent is never a form value, so
+ * it never reaches the payload. The page passes the `submitter`.
  *
- * `previewState` is a Storybook-only display override: it forces what is
- * shown, never what is sent. No page or section passes it
- * (`tests/forms-config.test.ts` asserts that).
+ * `previewState` / `previewStep` / `initial` are Storybook-only display
+ * aids; no page or section passes them (`tests/forms-config.test.ts`).
  */
 interface Props {
   content: ContactFormContent
   submitter: ContactSubmitter
-  previewState?: 'sending' | 'success' | 'server-error'
+  previewState?: 'invalid' | 'sending' | 'server-error' | 'success'
+  previewStep?: FormStep
+  initial?: Partial<ContactFormValues>
 }
 
-const { content, submitter, previewState } = defineProps<Props>()
+const props = defineProps<Props>()
 
-const challengeHost = useTemplateRef<HTMLElement>('challengeHost')
+const shell = useTemplateRef<InstanceType<typeof SteppedForm>>('shell')
+const panel = computed(() => (shell.value?.$el as HTMLElement | null) ?? null)
+const challengeHost = computed(() => shell.value?.challengeHost ?? null)
 
+const steps = useFormSteps({ stepFields: CONTACT_STEP_FIELDS, panel })
+const form = useContactForm({
+  submitter: props.submitter,
+  challengeHost,
+  initial: props.initial,
+  revealField: steps.revealField,
+})
+const { values, errors, honeypot } = form
+const { accepted, guard } = useConsentGate()
+const onGuardedSubmit = guard(form.onSubmit)
+const { isStepped, goBack } = steps
 const {
-  values,
+  shownState,
+  shownStep,
+  shownAccepted,
+  busy,
+  labelKey,
+  noticeKind,
+  errorFor,
+} = useFormView<ContactFieldId>({
+  ...steps,
+  state: form.state,
+  accepted,
   errors,
-  state,
-  honeypot,
-  markInteractive,
-  onEngage,
-  onSubmit,
-  onContactPreferenceChange,
-  onWhatsappCountryChange,
-} = useContactForm({ submitter, challengeHost })
+  stepFields: CONTACT_STEP_FIELDS,
+  fieldContent: () => props.content.fields,
+  previewState: () => props.previewState,
+  previewStep: () => props.previewStep,
+})
 
-onMounted(markInteractive)
+onMounted(form.markInteractive)
 
-const shownState = computed(() => previewState ?? state.value)
-const readonly = computed(() => shownState.value === 'sending')
-
+/* Contact never uploads, so its label is one of the other three. */
+const submitLabel = computed(() =>
+  labelKey.value === 'uploading'
+    ? props.content.sending
+    : props.content[labelKey.value]
+)
 const identityOptions = computed(() =>
-  toFieldOptions(content.fields.identity.options)
+  toFieldOptions(props.content.fields.identity.options)
 )
-const contactPreferenceOptions = computed(() =>
-  toFieldOptions(content.fields.contactPreference.options)
-)
-
-/** Error treatment appears only once a submit was attempted (`ui-map.md`
- * § 7: the idle form shows no errors at all). */
-function errorFor(field: keyof typeof errors.value): string | undefined {
-  if (state.value !== 'invalid') return undefined
-  return fieldErrorMessage(errors.value[field], content.fields[field])
-}
 </script>
 
 <template>
-  <div
-    class="rounded-panel-sm border border-glass-dark-line bg-glass-dark-contact p-glass-dark backdrop-blur-glass-dark"
+  <SteppedForm
+    ref="shell"
+    v-model:honeypot="honeypot"
+    :chrome="content"
+    :is-stepped="isStepped"
+    :step="shownStep"
+    :accepted="shownAccepted"
+    :submit-label="submitLabel"
+    :busy="busy"
+    :success="shownState === 'success' ? content.success : undefined"
+    @update:accepted="accepted = $event"
+    @submit="onGuardedSubmit"
+    @continue="steps.goNext(errors)"
+    @back="goBack"
+    @engage="form.onEngage"
   >
-    <form
-      v-if="shownState !== 'success'"
-      novalidate
-      class="flex flex-col gap-form-gap"
-      :aria-busy="shownState === 'sending'"
-      @submit="onSubmit"
-      @focusin="onEngage"
-    >
-      <TextField
-        id="name"
-        v-model="values.name"
-        :label="content.fields.name.label"
-        :error="errorFor('name')"
-        :readonly="readonly"
-        required
+    <template #details>
+      <NameEmailRow
+        v-model:name="values.name"
+        v-model:email="values.email"
+        :content="content.fields"
+        :errors="{ name: errorFor('name'), email: errorFor('email') }"
+        :readonly="busy"
       />
-      <TextField
-        id="email"
-        v-model="values.email"
-        type="email"
-        :label="content.fields.email.label"
-        :error="errorFor('email')"
-        :readonly="readonly"
-        required
-      />
-      <TextField
-        id="company"
-        v-model="values.company"
-        :label="content.fields.company.label"
-        :readonly="readonly"
-      />
-      <SelectField
-        id="identity"
-        v-model="values.identity"
-        :label="content.fields.identity.label"
-        :placeholder="content.fields.identity.label"
-        :options="identityOptions"
-        :error="errorFor('identity')"
-        :readonly="readonly"
-        required
-      />
+    </template>
+    <template #profile>
+      <div class="grid gap-formulario-fila @lg:grid-cols-2">
+        <TextField
+          id="company"
+          v-model="values.company"
+          autocomplete="organization"
+          :label="content.fields.company.label"
+          :placeholder="content.fields.company.placeholder"
+          :readonly="busy"
+        />
+        <SelectField
+          id="identity"
+          v-model="values.identity"
+          :label="content.fields.identity.label"
+          :placeholder="content.fields.identity.placeholder"
+          :options="identityOptions"
+          :error="errorFor('identity')"
+          :readonly="busy"
+          required
+        />
+      </div>
       <TextareaField
         id="need"
         v-model="values.need"
         :label="content.fields.need.label"
+        :placeholder="content.fields.need.placeholder"
         :error="errorFor('need')"
-        :readonly="readonly"
+        :readonly="busy"
         required
       />
-      <RadioPillGroup
-        id="contactPreference"
-        :model-value="values.contactPreference"
-        :label="content.fields.contactPreference.label"
-        :options="contactPreferenceOptions"
-        :readonly="readonly"
-        @update:model-value="onContactPreferenceChange($event as 'email' | 'whatsapp')"
-      />
-      <WhatsappField
-        v-model="values.whatsapp"
+    </template>
+    <template #channel>
+      <ContactChannelField
+        :preference="values.contactPreference"
         :country="values.whatsappCountry"
-        :visible="values.contactPreference === 'whatsapp'"
+        :number="values.whatsapp"
         :content="content.fields"
         :errors="{ number: errorFor('whatsapp'), country: errorFor('whatsappCountry') }"
-        :readonly="readonly"
-        @update:country="onWhatsappCountryChange"
+        :readonly="busy"
+        @update:preference="form.onContactPreferenceChange"
+        @update:country="form.onWhatsappCountryChange"
+        @update:number="values.whatsapp = $event"
       />
-      <HoneypotField v-model="honeypot" />
-
-      <!--
-        `width: 216` explicit at `lg`, `fill_container` below it (the `.pen`
-        node `bTYw7`, feature 025), so both classes stay scoped to `lg:` and
-        mobile keeps stretching to the form's width.
-      -->
-      <PrimaryButton
-        variant="submit"
-        type="submit"
-        :disabled="readonly"
-        class="lg:w-btn-submit-w lg:self-center"
-      >
-        {{ readonly ? content.sending : content.submit }}
-      </PrimaryButton>
-    </form>
-
-    <FormOutcome
-      v-if="shownState === 'success' || shownState === 'server-error'"
-      :kind="shownState"
-      :message="
-        shownState === 'success'
-          ? content.success.titleByChannel[values.contactPreference]
-          : content.error.title
-      "
-      :error-fallback="content.error.fallback"
-    />
-
-    <!-- Turnstile's host: empty in the normal flow (Invisible key). Outside
-         the form so the widget survives the form being replaced. -->
-    <div ref="challengeHost" />
-  </div>
+    </template>
+    <template v-if="noticeKind" #notice>
+      <SendNotice :kind="noticeKind" :error="content.error" />
+    </template>
+  </SteppedForm>
 </template>

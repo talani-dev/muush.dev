@@ -70,6 +70,7 @@ describe('CvUploadError', () => {
         'features',
         'forms',
         'ui',
+        'legacy',
         'CvUploadError.vue'
       ),
       'utf8'

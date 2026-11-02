@@ -1,8 +1,18 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import FieldBlock from './FieldBlock.vue'
+import {
+  AREA_CONTROL_CLASSES,
+  describedBy,
+  strokeClasses,
+} from './fieldAnatomy'
+
 /**
- * TextareaField — the `textarea` variant of `FormField`: fixed height 92,
- * value in `ink-200` rather than `ink-100`, per
- * `docs/business/landing/design-extract.md` § FormField.
+ * TextareaField — "¿Qué necesitas?" (feature 45, pen extract-45 § 2): 96
+ * tall, padding 14 / 16 (12 / 14 on mobile, the handoff's `.m1-campo
+ * textarea`). Not resizable: the handoff allows a vertical resize, but the
+ * `.pen` draws a fixed 96 box with no grip, and the `.pen` wins (R32);
+ * longer text scrolls inside it. Presentational.
  */
 interface Props {
   id: string
@@ -25,13 +35,16 @@ const {
 } = defineProps<Props>()
 
 defineEmits<{ 'update:modelValue': [value: string] }>()
+
+const controlClasses = computed(() => [
+  AREA_CONTROL_CLASSES,
+  'h-area-alto resize-none',
+  strokeClasses(Boolean(error)),
+])
 </script>
 
 <template>
-  <div class="flex flex-col gap-field-label-gap">
-    <label :for="id" class="font-instrument text-form-label text-bone-300">{{
-      label
-    }}</label>
+  <FieldBlock :id="id" :label="label" :error="error">
     <textarea
       :id="id"
       :value="modelValue"
@@ -39,17 +52,9 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
       :required="required"
       :readonly="readonly"
       :aria-invalid="Boolean(error)"
-      :aria-describedby="error ? `${id}-error` : undefined"
-      class="h-contact-textarea-h resize-none rounded-legacy-control border bg-glass-bone px-field-x py-field-y font-instrument text-input-value text-ink-200 focus-visible:outline-red-400"
-      :class="error ? 'border-red-400' : 'border-glass-line'"
+      :aria-describedby="describedBy(id, error)"
+      :class="controlClasses"
       @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
     />
-    <p
-      v-if="error"
-      :id="`${id}-error`"
-      class="font-instrument text-form-label text-red-400"
-    >
-      {{ error }}
-    </p>
-  </div>
+  </FieldBlock>
 </template>

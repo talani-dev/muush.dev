@@ -853,17 +853,18 @@ describe('static output · the Muush 1.0 home (feature 44)', () => {
   })
 })
 
-describe('static output · the landing contact section', () => {
+describe('static output · the Diagnóstico y contacto section (feature 45)', () => {
   /*
-   * Feature 016. Claims only the artefact can settle: both dangling CTAs
-   * resolve to a real, existing section, the form ships `novalidate` and a
-   * native submit with no `action`, and the compiled form chunk never uses
-   * XMLHttpRequest (SC-002, SC-004). Feature 029 superseded the original
-   * "no network call" claim: the form now submits through the single
-   * `fetch(` in `forms/logic/formsApiClient.ts`, which is guarded below in
-   * "form submission (feature 029)" and in `tests/forms-config.test.ts`.
+   * Feature 45 replaced the v1 contact section with the Muush 1.0
+   * "Diagnóstico y contacto" over the listón (spec FR-022…FR-025). Claims
+   * only the artefact can settle: the shared anchor resolves on both homes,
+   * the form ships `novalidate` with no `action`, the prerendered (and
+   * no-script) page is the single view with every field, no website field,
+   * the privacy box unticked and the submit unavailable until it is ticked
+   * (FR-008, FR-009, FR-016). The network guards stay in "form submission
+   * (feature 029)" below and in `tests/forms-config.test.ts`.
    */
-  function contactSection(route: RoutePath): string {
+  function assessmentSection(route: RoutePath): string {
     const html = documentFor(route)
     const start = html.indexOf('<section id="diagnostico"')
 
@@ -875,82 +876,94 @@ describe('static output · the landing contact section', () => {
       if (depth === 0) return html.slice(start, start + tag.index + 10)
     }
 
-    throw new Error(`unbalanced contact section in ${route}`)
+    throw new Error(`unbalanced assessment section in ${route}`)
   }
 
-  it('should carry id="diagnostico" and hold both CTAs on every landing document', () => {
-    /*
-     * The Hero's primary CTA and the header's "Diagnóstico gratis" both
-     * point at the shared `diagnostico` anchor (feature 43, spec FR-025);
-     * this v1 section is its target until feature 45 replaces it.
-     */
-    for (const route of ['/es', '/en'] as const) {
+  const HOMES = ['/es', '/en'] as const
+
+  it('should carry id="diagnostico" and the CTAs that point at it on both homes', () => {
+    for (const route of HOMES) {
       expect(documentFor(route), route).toContain('<section id="diagnostico"')
       expect(documentFor(route), route).toContain(`href="${route}#diagnostico"`)
     }
   })
 
-  it('should render a native, unactioned form with no destination when generated', () => {
-    for (const route of ['/es', '/en'] as const) {
-      const section = contactSection(route)
-      const form = section.match(/<form[^>]*>/)?.[0]
-
-      expect(form, route).toBeDefined()
-      expect(form, route).toContain('novalidate')
-      expect(form, route).not.toMatch(/\baction="/)
-      expect(section, route).toContain('type="submit"')
-    }
-  })
-
-  it('should contribute the three glows without breaking the paint order', () => {
-    for (const route of ['/es', '/en'] as const) {
-      const section = contactSection(route)
+  it('should paint the section over the listón with no v1 glow when generated', () => {
+    for (const route of HOMES) {
+      const section = assessmentSection(route)
       const root = section.match(
         /<section id="diagnostico" class="([^"]*)"/
       )?.[1]
 
-      expect(root?.split(' '), route).toContain('relative')
-      expect(root?.split(' '), route).toContain('pt-contact-top')
-      expect(
-        root?.split(' ').some(name => name.startsWith('bg-')),
-        route
-      ).toBe(false)
-      expect(
-        root
-          ?.split(' ')
-          .some(name =>
-            /^(transform|translate|scale|rotate|filter|backdrop-|opacity-|isolate|will-change|contain-|fixed|sticky|overflow-)/.test(
-              name
-            )
-          ),
-        route
-      ).toBe(false)
-
-      expect(section, route).toContain('size-glow-1500-760')
-      expect(section, route).toContain('size-glow-1000-560')
-      expect(section, route).toContain('size-glow-900-520')
+      expect(root?.split(' '), route).toEqual(
+        expect.arrayContaining(['relative', 'isolate'])
+      )
+      expect(section, route).toContain('<canvas')
+      expect(section, route).toMatch(/<img[^>]*src="[^"]*\.webp"/)
+      expect(section, route).not.toContain('size-glow-')
+      expect(section, route).not.toContain('pt-contact-top')
     }
   })
 
-  it('should add no token to the closed glow namespace when generated', () => {
-    /* `rules.md` § R36 — the guard stated where this feature can see it. */
-    const glowTokens = [
-      ...emittedCss().matchAll(/--(?:color|spacing)-glow-[\w-]+(?=\s*:)/g),
-    ].map(([token]) => token)
+  it('should render a native, unactioned form in the single view with every field when generated', () => {
+    for (const route of HOMES) {
+      const section = assessmentSection(route)
+      const form = section.match(/<form[^>]*>/)?.[0]
 
-    expect(glowTokens.filter(token => token.includes('contact'))).toEqual([])
+      expect(form, route).toContain('novalidate')
+      expect(form, route).not.toMatch(/\baction="/)
+      for (const id of [
+        'name',
+        'email',
+        'company',
+        'identity',
+        'need',
+        'privacy',
+      ]) {
+        expect(section, `${route} #${id}`).toContain(`id="${id}"`)
+      }
+      expect(section, route).toContain('role="radiogroup"')
+      expect(section, route).not.toContain('aria-live="polite"')
+    }
+  })
+
+  it('should build no website or social field when generated', () => {
+    for (const route of HOMES) {
+      const section = assessmentSection(route)
+
+      expect(section, route).not.toMatch(/id="(website|social)"/)
+      expect(section, route).not.toMatch(/sitio web o redes|website or social/i)
+    }
+  })
+
+  it('should ship the privacy box unticked and the submit unavailable until it is ticked', () => {
+    for (const route of HOMES) {
+      const section = assessmentSection(route)
+      const box = section.match(/<input[^>]*id="privacy"[^>]*>/)?.[0]
+      const submit = section.match(/<button[^>]*type="submit"[^>]*>/)?.[0]
+
+      expect(box, route).toContain('type="checkbox"')
+      /* The attribute, not the `checked:` / `disabled:` class variants. */
+      expect(box, route).not.toMatch(/\schecked(=|\s|>)/)
+      expect(submit, route).toContain('aria-disabled="true"')
+      expect(submit, route).not.toMatch(/\sdisabled(=|\s|>)/)
+      const hintId = submit?.match(/aria-describedby="([^"]+)"/)?.[1]
+      expect(section, route).toMatch(
+        new RegExp(`<p id="${hintId}" class="sr-only">`)
+      )
+    }
+  })
+
+  it("should title the section with an h2 under the hero's only h1", () => {
+    for (const route of HOMES) {
+      const section = assessmentSection(route)
+
+      expect(section, route).toMatch(/<h2[\s>]/)
+      expect(section, route).not.toMatch(/<h1[\s>]/)
+    }
   })
 
   it('should ship no XMLHttpRequest from the compiled form chunk', () => {
-    /*
-     * Feature 016's "no network call at all" guarantee is superseded by
-     * feature 029 (spec FR-011): the form now submits, through `fetch` in
-     * `forms/logic/formsApiClient.ts`. What still holds is that nothing
-     * reaches for XMLHttpRequest. The no-fake-success guarantee moved to the
-     * flow and client unit tests (success only on 200 + ok:true), and
-     * FR-025 (no fetch under `ui/`) is asserted on the sources in
-     * `tests/forms-config.test.ts`.
-     */
     const scripts = everyEmittedFile(join(OUTPUT, '_nuxt'))
       .filter(path => path.endsWith('.js'))
       .map(path => readFileSync(path, 'utf8'))

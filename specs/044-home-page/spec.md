@@ -720,6 +720,18 @@ These requirements follow FR-039 and supersede what they name.
   "Creativo" and "Marketing" chips MUST ping with the FR-035 recipe and
   token, in Acero 200; the chip keeps its size; no ping under reduced
   motion. The mobile "También" card has no chips.
+> **Amendment, 2026-11-02 (feature 45, reopen 2, Roberto).** The section
+> pills sit a little higher above their headings than drawn: +6 px below
+> `lg`, +8 px from it, through the shared `pill-aire` utility. This covers
+> the hero, Qué es muush, Servicios and Cómo trabajamos. See
+> `specs/045-forms/spec.md` FR-041.
+
+> **Amendment, 2026-11-02 (feature 45, reopen 1, Roberto).** The desktop
+> preview's red fill no longer jumps: after 150 ms it travels at a constant
+> speed to the previewed dot, lighting each column as it reaches it, and
+> runs back the same way. Instant under reduced motion. The final lit steps
+> of FR-042 are unchanged. See `specs/045-forms/spec.md` FR-038.
+
 - **FR-042** (timeline preview, desktop): from `lg`, pointing anywhere on a
   step's column, or keyboard focus on it, makes it the previewed step: the
   line is solid Red muush 500 from its start to that step's dot centre and
