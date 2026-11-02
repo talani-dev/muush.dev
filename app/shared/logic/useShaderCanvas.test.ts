@@ -407,6 +407,49 @@ describe('useShaderCanvas · resolution', () => {
   })
 })
 
+describe('useShaderCanvas · a resize while animating (feature 45, reopen 1)', () => {
+  /*
+   * Roberto 2026-11-02: switching the form's contact control changed the
+   * section height and the listón looked frozen or restarted. Assigning the
+   * canvas size clears its buffer after that frame's draw; the fix repaints
+   * in the same frame, at the running clock, without rebuilding anything.
+   */
+  it('should repaint at once, keep the clock and rebuild nothing when the canvas height changes mid-animation', async () => {
+    let now = 1000
+    vi.spyOn(performance, 'now').mockImplementation(() => now)
+    const { canvas } = await mountHost()
+    io()?.emit(true)
+    now = 3000
+    flushFrame()
+    const drawsBefore = renderer.draw.mock.calls.length
+    const lastTime = renderer.draw.mock.calls.at(-1)?.[0] as number
+
+    stubProperty(HTMLElement.prototype, 'clientHeight', 340)
+    now = 3016
+    ro()?.emit()
+
+    expect(canvas.height).toBe(510)
+    expect(renderer.resize).toHaveBeenLastCalledWith(600, 510)
+    expect(renderer.draw).toHaveBeenCalledTimes(drawsBefore + 1)
+    const repaintTime = renderer.draw.mock.calls.at(-1)?.[0] as number
+    expect(repaintTime).toBeGreaterThan(lastTime)
+    expect(repaintTime).toBeCloseTo(2.016, 5)
+    expect(createShaderRenderer).toHaveBeenCalledTimes(1)
+    expect(frames.size).toBe(1)
+  })
+
+  it('should not repaint mid-frame when a resize leaves the size unchanged while animating', async () => {
+    await mountHost()
+    io()?.emit(true)
+    flushFrame()
+    const drawsBefore = renderer.draw.mock.calls.length
+
+    ro()?.emit()
+
+    expect(renderer.draw).toHaveBeenCalledTimes(drawsBefore)
+  })
+})
+
 describe('useShaderCanvas · clean-up (FR-024)', () => {
   it('should release every observer, listener, frame and the context when unmounted', async () => {
     const removeDocument = vi.spyOn(document, 'removeEventListener')
