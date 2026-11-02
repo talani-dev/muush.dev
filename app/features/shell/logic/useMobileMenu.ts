@@ -1,4 +1,6 @@
 import { getCurrentScope, onScopeDispose, readonly, ref } from 'vue'
+/* 1024 px, Tailwind's `lg`: shared since feature 44 (`app/shared/data/layout.ts`). */
+import { DESKTOP_MEDIA_QUERY } from '@/shared/data/layout'
 
 /**
  * The mobile menu's state: the open flag, the background scroll lock, the
@@ -20,16 +22,6 @@ import { getCurrentScope, onScopeDispose, readonly, ref } from 'vue'
  * it. During prerendering nothing opens the menu, so the shared flag is
  * `false` for every generated page.
  */
-
-/**
- * 1024px — Tailwind v4's stock `lg`, so the composable and the `lg:`
- * utilities cross at the same width.
- *
- * Settled: the design has exactly two frames, 390 and 1440, and the swap at
- * 1024 px is recorded in the spec's Assumptions and pen extract-43 § 6.
- * Changing it is one value here and one prefix in the templates.
- */
-const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)'
 
 /**
  * Why the menu last closed (feature 43, spec FR-020, data-model § 7).

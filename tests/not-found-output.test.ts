@@ -24,7 +24,7 @@ interface NotFoundCopy {
   body: string
   cta: string
   shortcutsLabel: string
-  shortcuts: { purpose: string; services: string; about: string }
+  shortcuts: { services: string; about: string }
 }
 
 interface NotFoundDocument {
@@ -34,7 +34,7 @@ interface NotFoundDocument {
   lang: string
   home: string
   otherHome: string
-  shortcutHrefs: [string, string, string]
+  shortcutHrefs: [string, string]
 }
 
 const DOCUMENTS: NotFoundDocument[] = [
@@ -45,7 +45,7 @@ const DOCUMENTS: NotFoundDocument[] = [
     lang: 'es-MX',
     home: '/es',
     otherHome: '/en',
-    shortcutHrefs: ['/es#proposito', '/es#servicios', '/es/nosotros'],
+    shortcutHrefs: ['/es#servicios', '/es/nosotros'],
   },
   {
     locale: 'en',
@@ -54,7 +54,7 @@ const DOCUMENTS: NotFoundDocument[] = [
     lang: 'en-US',
     home: '/en',
     otherHome: '/es',
-    shortcutHrefs: ['/en#proposito', '/en#servicios', '/en/about'],
+    shortcutHrefs: ['/en#servicios', '/en/about'],
   },
 ]
 
@@ -203,13 +203,13 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
     expect(body).not.toMatch(/<noscript[^>]*><style>/)
   })
 
-  it('should render the three shortcuts in order inside a named nav when generated', () => {
+  /* Feature 44: two shortcuts; Propósito left the home (spec 044 FR-026). */
+  it('should render the two shortcuts in order inside a named nav when generated', () => {
     const nav = shortcutsNav(document.file, copy.shortcutsLabel)
     const links = [...nav.matchAll(/<a href="([^"]*)"[^>]*>(.*?)<\/a>/gs)]
 
     expect(links.map(link => link[1])).toEqual(document.shortcutHrefs)
     expect(links.map(link => textOf(link[2] ?? ''))).toEqual([
-      copy.shortcuts.purpose,
       copy.shortcuts.services,
       copy.shortcuts.about,
     ])
@@ -219,7 +219,7 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
     const nav = shortcutsNav(document.file, copy.shortcutsLabel)
     const separators = [...nav.matchAll(/<span([^>]*)>·<\/span>/g)]
 
-    expect(separators).toHaveLength(2)
+    expect(separators).toHaveLength(1)
     for (const separator of separators)
       expect(separator[1]).toContain('aria-hidden="true"')
   })
@@ -271,7 +271,6 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
       otherCopy.body,
       otherCopy.cta,
       otherCopy.shortcutsLabel,
-      otherCopy.shortcuts.purpose,
       otherCopy.shortcuts.about,
     ]) {
       expect(markup).not.toContain(escapeHtml(text))

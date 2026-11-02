@@ -81,6 +81,66 @@ const SHELL_SCANNED = [
   join(SHARED, 'data', 'sectionAnchors.ts'),
 ]
 
+/*
+ * Feature 44 · the v2 home (spec FR-031, SC-008): every component, story,
+ * composable and data module it creates outside `legacy/`, landing and
+ * shared. Inline map geometry is percentages from data, not lengths.
+ */
+const LANDING = join(ROOT, 'app', 'features', 'landing')
+
+const HOME_COMPONENTS = [
+  'HeroSection',
+  'WhoWeAreSection',
+  'ServicesSection',
+  'ServiceCard',
+  'ServicesCarousel',
+  'CarouselIndicator',
+  'AlsoAvailable',
+  'HowWeWorkSection',
+  'ProcessTimeline',
+  'ProcessStep',
+  'CommitmentChip',
+]
+
+const HOME_SCANNED = [
+  ...HOME_COMPONENTS.flatMap(name => [
+    join(LANDING, 'ui', `${name}.vue`),
+    join(LANDING, 'ui', `${name}.stories.ts`),
+  ]),
+  join(LANDING, 'index.ts'),
+  ...[
+    'useHeroContent.ts',
+    'useWhoWeAreContent.ts',
+    'useServicesContent.ts',
+    'useHowWeWorkContent.ts',
+    'carouselIndicator.ts',
+    'useCarouselIndicator.ts',
+    'timelineProgress.ts',
+    'useTimelineProgress.ts',
+    /* Roberto review 2026-11-02 · FR-042…FR-045. */
+    'useTimelineHover.ts',
+  ].map(name => join(LANDING, 'logic', name)),
+  ...[
+    'heroContent.ts',
+    'whoWeAreContent.ts',
+    'servicesContent.ts',
+    'howWeWorkContent.ts',
+  ].map(name => join(LANDING, 'data', name)),
+  ...['WorldMap', 'MapPin', 'MapRegionTabs', 'MapLegend'].flatMap(name => [
+    join(SHARED, 'ui', `${name}.vue`),
+    join(SHARED, 'ui', `${name}.stories.ts`),
+  ]),
+  ...['mapPins.ts', 'mapRegions.ts', 'layout.ts'].map(name =>
+    join(SHARED, 'data', name)
+  ),
+  ...['useMapRegion.ts', 'useDesktopLayout.ts'].map(name =>
+    join(SHARED, 'logic', name)
+  ),
+  join(SHARED, 'utils', 'mapGeometry.ts'),
+  join(SHARED, 'utils', 'mapCityList.ts'),
+  join(ROOT, 'app', 'pages', 'index.vue'),
+]
+
 const SCANNED = [
   ...COMPONENTS.flatMap(name => [
     join(SHARED, 'ui', `${name}.vue`),
@@ -97,6 +157,7 @@ const SCANNED = [
   join(SHARED, 'data', 'glassPresets.ts'),
   join(SHARED, 'data', 'backgroundPresets.ts'),
   ...SHELL_SCANNED,
+  ...HOME_SCANNED,
 ]
 
 const FORBIDDEN: [string, RegExp][] = [
@@ -107,6 +168,8 @@ const FORBIDDEN: [string, RegExp][] = [
      `--red-muush-500` shares the `red-` stem and is not v1. */
   ['v1 token', /--(bone|ink|red|wine)-\d/],
   ['v1 utility', /\b[\w:-]*-(bone|ink|red|wine)-\d/],
+  /* Feature 44 · any quarantined `legacy-*` token or utility. */
+  ['legacy token', /\blegacy-[\w-]+/],
 ]
 
 function withoutComments(source: string): string {

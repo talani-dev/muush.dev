@@ -3150,3 +3150,116 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
   Report: `docs/harness/progress/impl_site_shell.md` § Reopened 4. Ready for the reviewer.
 - 2026-11-01 · Implementer PASS. Root cause: switchLocalePath copies route.hash. Fix: drop the fragment and restore the section plus relative offset after navigation. Browser checks pass. 43 → reviewing.
 - 2026-11-01 · Reviewer APPROVED (review-43e.md), and the language switch was re-checked in a browser. Leader marked US2 scenario 2 and FR-029 as superseded by FR-061 (A2). A3 carried to 47; A1 is fixed in the close-out.
+
+## 2026-11-01 — Feature 44: m1_home_page (done)
+
+- Change (sdd: true): the Muush 1.0 / v2 home on branch `feat/v2-home` (from `muush-v2` at 6b606f3, merges back into `muush-v2`, never master). Spec package `specs/044-home-page/` (72 tasks, all checked, including T067–T072 from the amendments); values from the `.pen` via the leader (`pen-extract-44.md` §§ 1–11, `assets-44/`).
+  - Assets: `app/assets/map/world-dots.svg` (byte-identical copy of the leader's export, 1 693 dots, 5 730 B gzipped, inlined with `?raw`) plus a README; nine lucide glyphs normalized into `app/assets/icons/` (licence comment, `class`, `width`, `height` removed; `<title>` added; `currentColor`; stroke 1.5 on the four service glyphs, lucide's 2 on the five commitment glyphs).
+  - Shared (`app/shared/`): `data/layout.ts` (`DESKTOP_MEDIA_QUERY`, moved from `useMobileMenu`), `mapPins.ts`, `mapRegions.ts`; `logic/useDesktopLayout.ts`, `useMapRegion.ts`; `utils/mapGeometry.ts`, `mapCityList.ts` (`mapCityGroups()`, extracted after review-44); UI `WorldMap`, `MapPin`, `MapRegionTabs`, `MapLegend`. Each with tests and stories.
+  - Landing (`app/features/landing/`): data and content composables for Hero, Qué es muush, Servicios and Cómo trabajamos; `carouselIndicator` / `useCarouselIndicator`, `timelineProgress` / `useTimelineProgress`; UI `HeroSection`, `WhoWeAreSection`, `ServicesSection`, `ServiceCard`, `ServicesCarousel`, `CarouselIndicator`, `AlsoAvailable`, `HowWeWorkSection`, `ProcessTimeline`, `ProcessStep`, `CommitmentChip`. `app/pages/index.vue` composes the v2 sections and the v1 contact section; the barrel's only `legacy/` export is `ContactSection`.
+  - Moved with `git mv` into `landing/{ui,data,logic}/legacy/`: the v1 Hero, Purpose\*, Services\*, ServiceItem and ContactSection (with tests and stories, titles under `Legacy v1/`), and the v1 Purpose and Services data and logic. Deleted: the v1 seams `useHeroContent`, `usePurposeContent`, `useServicesContent`, the legacy `heroContent.ts` and its test, and the v1 `landing.hero`, `landing.purpose` and `landing.services` locale keys. Propósito and Proyectos no longer render on the home.
+  - Edited: `app/layouts/default.vue` (`<main>` frame is opt-out via `definePageMeta({ fullBleed: true })`, used only by the home; the v1 contact section carries the frame itself); `global.css` (home tokens, `borde-tile`, `borde-suave`, `borde-rojo`, `pulso` utility and `@keyframes pulso`; the feature-42 Pill ring tokens and `--rojo-20` removed); `:aria-current="undefined"` on the four logo links (closes review-43c nit 5); `.storybook/preview.ts` adds a "Móvil chico (360)" viewport. Tests: `landing-copy` rewritten, a v2 home block in `static-output` (order, one `h1`, hrefs, no retired ids, map inline, lit timeline with no script, fragment-target check, logo `aria-current`), `design-tokens` and `token-literals` extended, `forms-copy`, `tablet-layout-tokens` and `not-found-output` adjusted; `seo-output.test.ts` untouched and passing.
+  - Browser verification in headless Chrome over CDP (390/1440 anchors, 360–1920 with no overflow, map tabs by keyboard, carousel indicator, timeline fill and reverse, reduced motion, radar ping, feature-43 language switch).
+- Roberto's decisions (2026-11-01):
+  - Spec gate: approved with the provisional answers. Hero buttons in one centred row that wraps when it does not fit; accessible map with a hidden city list and a tablist named "Región del mapa" / "Map region" (EN: Dublin, Amsterdam, Los Angeles); the Cómo trabajamos line is a background gradient plus a growing red fill; pins 28 × 28 at any zoom. Earlier: the mobile step-01 description follows the design (short on mobile, full on desktop).
+  - Icons: the leader downloaded nine SVGs from lucide-static@0.469.0 (ISC) from unpkg with his approval and checked them (no scripts or links). The raw files failed Biome and were moved out of the repo to `/tmp/f44-lucide-raw/lucide/`; the icon README records them as staged and not retained.
+  - Radar ping: the halos around the red dots in the `.pen` are the v1 radar ping, not static rings (the leader had misread them). Pill dots (including the RotatingPill) and the team and partner pins show the solid dot plus a ghost (scale 1 → 3, opacity 0.6 → 0, 2.4 s ease-out, infinite; red, Acero 200 for the partner); Estonia has no ping; no ping under reduced motion (pen-extract-44 § 9, FR-034…FR-038). Lit timeline step dots ping too, on desktop and the mobile rail (§ 11, FR-039).
+  - Line heights (pen-extract-44 § 10): card title line box 34 px, step title 1.41, step number 1.23; desktop commitment chip padding 8 / 10 / 8 / 8, gap 6, blur 16; mobile "Estonia · pronto" chip 13 / 400 Blanco with a 6 px Acero 400 dot. Measured: cards 405.5 / 383 (drawn 407 / 384), Cómo trabajamos 729.4 (drawn 730).
+  - 404: keep the "Propósito" shortcut removed (it linked to `/es#proposito`, which no longer exists; FR-026). The shortcut, its i18n key and the `legacyHash` destination member are gone; the 404 shows Servicios and Nosotros.
+- Reviewer (`review-44.md`) REJECTED in the first round. Blocking: `MobileMenu.vue` at 203 lines (> 200). Should fix: missing viewport/locale stories for `ProcessTimeline`, `ServicesCarousel`, `ProcessStep` and `ServiceCard`. The implementer fixed both (`MobileMenu.vue` 199, `legacy/ContactSection.vue` 197; stories completed, with documented exceptions for `CarouselIndicator`, `MapRegionTabs` and `MapPin`) and advisories 3 (icon README path), 4 (`<main>` class binding) and 6 (`mapCityGroups()` helper).
+- Reviewer (`review-44.md` § "Re-review 2") APPROVED; security clean; no regressions; reviewer's own `./init.sh` exit 0 (164 files / 2 214 tests). Advisories left open:
+  - 4: the home still renders `<main class="">` (Vue SSR emits an empty `class` for an object binding that resolves to nothing); harmless, and the report's "no empty class" claim is inaccurate.
+  - 5: the decorative `aria-hidden` `' · '` literal in `AlsoAvailable.vue`, accepted.
+  - 7: icon `<title>` shows as a native tooltip; a README-contract question predating this feature.
+  - 8: the map runs edge to edge at 1024, allowed between the anchors; for Roberto to see on the build.
+  - Three legacy files remain over 200 lines (`PurposeCarousel` 215, `PurposeConstellation` 272, `PurposeSection` 376), unchanged since `HEAD`; feature 47 deletes them.
+  - Not verified by the reviewer: the language-switch position restore, a no-WebGL pass and a JS-disabled browser pass. The glass button primitive measures 197 × 52 / 144 × 42 against feature 42's 198 × 53 / 145 × 41 (not changed here).
+- `./init.sh` exits 0.
+- Reports: `pen-extract-44.md`, `assets-44/`, `spec_home_page.md`, `impl_home_page.md`, `review-44.md`.
+- Not committed (Roberto's instruction: no commits without explicit request).
+
+### Session log (from current.md)
+
+- 2026-11-01 · 43 merged into muush-v2 (6b606f3). Branch feat/v2-home created.
+- 2026-11-01 · The leader generated `assets-44/world-dots.svg` (1693 dots, 1408×470) and `map-pins.json` (9 pins) from the .pen.
+- 2026-11-01 · Roberto: the mobile step-01 description follows the design (short on mobile, full on desktop).
+- 2026-11-01 · spec_author: `specs/044-home-page/` written (spec, plan, research, data-model, contracts, quickstart, tasks T001–T066); feature 44 → `spec_ready`. Four provisional clarifications and the missing values are in `docs/harness/progress/spec_home_page.md`.
+- 2026-11-01 · spec_author: specs/044-home-page → spec_ready (66 tasks). The leader filled the missing values (pen-extract-44 § 8).
+- 2026-11-01 · ⏸ Roberto APPROVED spec 044 with the provisional answers, and approved downloading 9 lucide icons. The leader downloaded lucide-static@0.469.0 (ISC) from unpkg into assets-44/lucide/ and checked them: no scripts or links. 44 → in_progress.
+- 2026-11-01 · implementer: T001 map asset copied (cmp identical, 5 730 B gz); T002 nine lucide glyphs normalized into app/assets/icons (service four at stroke 1.5).
+- 2026-11-01 · implementer: T003 home tokens added to global.css (:root colours/gradients, @theme utilities, --progreso-paso zeroed under reduced motion).
+- 2026-11-01 · implementer: Phase 2 done — v1 home quarantined in landing/{ui,data,logic}/legacy (git mv), DESKTOP_MEDIA_QUERY → shared/data/layout.ts, useDesktopLayout; full suite green (137 files / 2042 tests).
+- 2026-11-01 · implementer: Phases 3–4 done — HeroSection; WorldMap (+MapPin, MapRegionTabs, MapLegend, mapPins/mapRegions/mapGeometry, useMapRegion) and WhoWeAreSection, with tests and stories.
+- 2026-11-01 · implementer: Phase 5 done — Servicios (ServiceCard, ServicesCarousel + useCarouselIndicator/activeCardIndex, CarouselIndicator, AlsoAvailable, ServicesSection).
+- 2026-11-01 · implementer: Phase 6 done — Cómo trabajamos (timelineProgress, useTimelineProgress, CommitmentChip, ProcessStep, ProcessTimeline, HowWeWorkSection).
+- 2026-11-01 · Roberto: the halos around the Pill dots and map pins are the v1 radar ping, not static rings. The leader had misread them. Scope extended (pen-extract-44 § 9) and sent to the running implementer.
+- 2026-11-01 · implementer: Phases 7–8 done (page, barrel, v1 seams deleted, copy/static-output/forms tests, logo aria-current ×4). FR-026 found the v1 404 linking /es#proposito: Propósito shortcut removed (+ legacyHash member, key). Layout <main> frame made opt-out (fullBleed page meta) so v2 sections are full bleed; v1 contact carries the frame itself.
+- 2026-11-01 · implementer: amendment 'Radar ping on markers' (Roberto) — pulso utility/keyframes/--pulso; Pill dot and map pins rebuilt (no static rings; Estonia no ping; none under reduced motion); verified in headless Chrome.
+- 2026-11-01 · implementer: ./init.sh exit 0 (163 files / 2203 tests). Report → docs/harness/progress/impl_home_page.md. Raw lucide downloads moved out of the repo to /tmp/f44-lucide-raw/lucide (they failed biome).
+- 2026-11-01 · Roberto: keep the 404 Propósito shortcut removed. Lit timeline step dots get the radar ping too (pen-extract-44 § 11).
+- 2026-11-01 · implementer: § 10 applied (card title 34 px, step 1.41 / 1.23, chip 8/10/8/8 gap 6 blur 16, Estonia chip 13/400 + 6 px Acero 400 dot) and re-measured (cards 405.5/383, Cómo trabajamos 729.4, carousel end 630.5). § 11: lit step dots ping (desktop + rail), --rojo-20 removed; 404 shortcut removal approved by Roberto.
+- 2026-11-01 · Implementer PASS. The radar ping is on the pills, pins and lit steps. The line heights from § 10 bring the cards to 405.5/383 and Cómo trabajamos to 729.4. 44 → reviewing.
+- 2026-11-01 · Reviewer REJECTED (review-44.md). Blocking: MobileMenu.vue is 203 lines (> 200). Should fix: missing viewport/locale stories for ProcessTimeline, ServicesCarousel, ProcessStep and ServiceCard. 44 → in_progress.
+- 2026-11-01 · implementer: review-44 fixes — MobileMenu 199 lines (comment only), legacy ContactSection 197; stories completed (ProcessTimeline, ServicesCarousel, ProcessStep, ServiceCard + documented exceptions); advisories 3, 4, 6 fixed; init.sh exit 0 (164 / 2214).
+- 2026-11-01 · The implementer fixed the review-44 items (MobileMenu ≤ 200 lines, stories). 44 → reviewing; review round 2 launched.
+- 2026-11-01 · Reviewer APPROVED (review-44 re-review 2); security clean. Close-out launched.
+
+### Reopened · Roberto review (2026-11-02)
+
+- Requests (Roberto, reviewing in `pnpm dev`; recorded in `feature_list.json` id 44 as REABIERTA / ACLARACIÓN / Y / Y 2 / CANCELADO):
+  - Header centring: the desktop link bar must sit at the page centre from 1024 to 1920 with no overlaps.
+  - Chip ping: the Creativo and Marketing dots in "También" get the radar ping in their own Acero 200.
+  - Timeline hover (desktop): hovering or keyboard-focusing a step grows it slightly; the line is red up to that step's dot and the unlit-track colour after it; steps up to it lit, later ones unlit; no scale under reduced motion.
+  - Desktop unlit by default (ACLARACIÓN): with no hover, all five steps are unlit and the whole line is grey; the desktop scroll fill is removed; the mobile rail keeps its scroll fill.
+  - Grey ping (Y): unlit dots also ping, in their grey; lit dots ping red.
+  - White numbers: step numbers 01–05 in Blanco on desktop and mobile.
+  - Double-trail fix: the grey dots showed two trails (static halo plus a ghost starting inside the border); must be a single trail.
+  - Transparent mobile header (Y 2): requested (no fill or blur below `lg`), then cancelled by Roberto; the mobile header keeps the `.pen` fill and blur.
+- Changes (`impl_home_page.md` § "Reopened 2026-11-02"; spec amendment FR-040…FR-048, tasks T073–T080):
+  - Header: from `lg` the nav is a `1fr auto 1fr` grid (`grid-cols-cabecera`); measured centre delta 0 px at 1024/1280/1440/1920, no overlap; mobile bar unchanged (`SiteHeader.vue`, feature 43's file, edited as tasked).
+  - Chips: `AlsoAvailable.vue` dots carry `pulso` in Acero 200.
+  - Timeline: new `useTimelineHover` composable (pointer and `:focus-visible`, pointer wins, nothing below `lg`) and pure helpers `dotProgress` / `litUpTo`; previewed column scales to 1.04 (`--paso-escala`, `motion-safe:`). `ProcessStep` splits `columnLit` (desktop) from `lit` (rail). `useTimelineProgress` is rail-only; `horizontalProgress`, `isStepLitHorizontal`, `HORIZONTAL_TRAVEL_RATIO` and `--proceso-linea` removed. Desktop at rest (including SSR, no-JS and reduced motion) is unlit with a `linea-fuerte` grey line.
+  - Numbers: desktop number `text-blanco`; mobile already Blanco, now pinned by a test.
+  - Grey ping: `pulso` ghost uses `--pulso-fantasma`; new `pulso-tenue` sets it to `--texto-tenue` (Blanco 40 %).
+  - Double trail (FR-048): the static `bg-blanco-6` halo on the dot wrapper removed; the ghost starts at the host's outer edge via `--pulso-borde` (`--trazo-anillo` on `pulso-tenue`). Verified with paused mid-animation frames in headless Chrome: one band at every time.
+  - Advisories 2, 3, 5 and 7 of the reopen review fixed (design docs marked superseded, test titles, one comment, test count); no behaviour change.
+  - Y 2: the transparent-header edits were reverted; `SiteHeader.*` is back to the approved state. The tap/click focus ring was not reproduced in headless Chrome (only keyboard focus shows it); no fix. `--blanco-6` and its theme alias removed, with negative assertions in `tests/design-tokens.test.ts`.
+- Reviews (`review-44.md`):
+  - "Reopen 2026-11-02 review": APPROVED, 7 advisories (the leader aligned acceptance item 3; 2, 3, 5 and 7 fixed; 6 read as intended); security clean.
+  - "Double-trail fix review": APPROVED; leftover `--blanco-6` token (since removed); the 0.5 px ghost overhang at DPR 1 is sub-pixel; security clean.
+  - "Final check": APPROVED, no open findings; security clean; `./init.sh` exit 0 (165 files / 2 239 tests).
+  - Advisories left open: advisory 4, the desktop still attaches passive scroll/resize listeners in `useTimelineProgress` that return without measuring (deliberately accepted). Not verified: physical devices for pointer, keyboard and focus ring; visual parity with `Tng1t` at rest (FR-044 departs from the `.pen` on purpose).
+- `./init.sh` exits 0.
+- Not committed (Roberto's instruction: no commits without explicit request).
+
+#### Session log (from current.md)
+
+- 2026-11-02 · Roberto (pnpm dev review): the header link bar is off-center; the Creativo/Marketing chip
+  dots need the radar ping in their own colour; the timeline needs a hover on the whole step (grows
+  slightly; the line is red up to the hovered dot and the off colour after it); step numbers should be
+  white. 44 reopened → in_progress.
+- 2026-11-02 · Roberto: on desktop with no hover, every step is unlit and the whole line is grey. This removes the desktop scroll fill; the mobile rail keeps its scroll fill. Sent to the implementer.
+- 2026-11-02 · Roberto: the unlit grey dots also get the radar ping, in their grey colour.
+- 2026-11-02 · implementer: header bar centred with a `1fr auto 1fr` grid (measured delta 0 px at
+  1024/1280/1440/1920); chip dots ping in Acero 200; desktop timeline preview on hover / keyboard
+  focus (scale 1.04, red to the dot, grey after); numbers Blanco. Spec amendment FR-040…FR-047.
+- 2026-11-02 · implementer: Roberto's clarification applied — no desktop scroll fill, desktop rests
+  unlit with a grey line (SSR, no-JS and reduced motion too); mobile rail keeps its scroll fill.
+  Unlit dots ping in Blanco 40 % (`pulso-tenue`). `--proceso-linea` removed. `./init.sh` exit 0
+  (2238 tests). Report: `docs/harness/progress/impl_home_page.md` § "Reopened 2026-11-02".
+- 2026-11-02 · Implementer PASS: header centred; chip ping; timeline hover with scale 1.04; desktop at rest is unlit with a grey line; grey ping on unlit dots; white numbers. 44 → reviewing.
+- 2026-11-02 · Roberto: the grey dots show two trails. Leader diagnosis: (a) the desktop unlit dot keeps the static 28px halo (bg-blanco-6 on the data-punto-paso wrapper) next to the ping; (b) the pulso ::before uses inset:0, so on the bordered unlit dot the ghost starts inside the border, and the ring plus the ghost read as two. It must be a single trail, as on the other dots.
+- 2026-11-02 · implementer: one trail on the grey dots (FR-048) — static Blanco 6 % halo removed,
+  ghost starts at the dot's outer edge (`--pulso-borde`); frames verified in headless Chrome;
+  `./init.sh` exit 0 (2239 tests).
+- 2026-11-02 · Reviewer APPROVED the reopen (review-44 § Reopen 2026-11-02), with 7 advisories. The leader aligned acceptance item 3. The double-trail fix landed after that review and still needs its own check.
+- 2026-11-02 · implementer: review-44 reopen advisories 2, 3, 5 and 7 fixed (docs, test titles, one
+  comment; no behaviour change). `./init.sh` exit 0 (165 files / 2239 tests).
+- 2026-11-02 · Roberto: the mobile header bar must be fully transparent (no fill, no blur; the 1px border stays). It diverges from the .pen. Queued until the double-trail review finishes.
+- 2026-11-02 · Reviewer APPROVED the double-trail fix (leftover: the unused --blanco-6 token). 44 → in_progress for the transparent mobile header and the --blanco-6 cleanup.
+- 2026-11-02 · Roberto reversed the transparent mobile header: it keeps the .pen fill and blur. The implementer was told to revert any edits; the focus-ring check and the --blanco-6 cleanup stay.
+- 2026-11-02 · implementer: Y 2 — transparent header cancelled by Roberto (edits reverted, header
+  byte-identical); focus ring on tap/click not reproduced in headless Chrome (only keyboard focus
+  shows it), no fix; `--blanco-6` removed. `./init.sh` exit 0 (165 files / 2239 tests).
+- 2026-11-02 · Implementer PASS: the mobile header is unchanged (keeps the fill and blur); the focus ring after a tap is not reproduced; --blanco-6 removed. 44 → reviewing.
+- 2026-11-02 · Reviewer APPROVED (review-44 § Final check); security clean. Close-out launched.

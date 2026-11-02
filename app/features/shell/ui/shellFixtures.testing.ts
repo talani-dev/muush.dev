@@ -1,3 +1,4 @@
+import { defineComponent, h } from 'vue'
 import type {
   ResolvedContactChannel,
   ResolvedFooterColumn,
@@ -235,3 +236,21 @@ export const SHELL_COPY = {
     ] satisfies ResolvedShellItem[],
   },
 }
+
+/**
+ * Feature 44 · a `NuxtLink` stand-in that behaves like the router on the
+ * current page: every link it renders is "exact active" and carries
+ * `aria-current="page"`, unless the caller's own `aria-current` attribute
+ * (which falls through after it) overrides it, as the real one does. Lets a
+ * component test prove a link clears the router's marking (FR-028).
+ */
+export const ExactActiveLinkStub = defineComponent({
+  name: 'NuxtLink',
+  props: {
+    to: { type: String, default: undefined },
+  },
+  setup(props, { slots }) {
+    return () =>
+      h('a', { href: props.to, 'aria-current': 'page' }, slots.default?.())
+  },
+})

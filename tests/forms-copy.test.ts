@@ -58,7 +58,7 @@ interface LandingContactCopy {
 
 function readLocale(name: string): {
   forms: { contact: ContactFormsCopy }
-  landing: { contact: LandingContactCopy; hero: { ctaSecondary: string } }
+  landing: { contact: LandingContactCopy }
 } {
   const file = join(process.cwd(), 'i18n', 'locales', `${name}.json`)
   return JSON.parse(readFileSync(file, 'utf8'))
@@ -194,14 +194,8 @@ describe('landing copy · CTA final left block', () => {
     }
   })
 
-  it('should reuse the Hero"s own approved secondary CTA string, per locale', () => {
-    /* Intentional duplication (data-model.md § 6, same precedent
-       `specs/013-purpose-section/spec.md` set for `what.copy`/`hero.subhead`):
-       both are approved copy for the same button in two places. */
-    expect(es.landing.contact.ctaSecondary).toBe(es.landing.hero.ctaSecondary)
-    expect(en.landing.contact.ctaSecondary).toBe(en.landing.hero.ctaSecondary)
-  })
-
+  /* Feature 44: the v2 hero has no "Agenda una llamada" action, so the
+     contact's secondary CTA no longer has a hero string to equal. */
   it('should translate the placeholder heading and body between locales', () => {
     expect(en.landing.contact.heading).not.toBe(es.landing.contact.heading)
     expect(en.landing.contact.body).not.toBe(es.landing.contact.body)

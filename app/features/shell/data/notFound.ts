@@ -25,18 +25,12 @@ export const NOT_FOUND_HOME: ShellItem = {
 /**
  * The shortcuts row, in render order (reference README § Qué hay en la página).
  *
- * The v1 404 stays until feature 46 replaces it. Propósito points at the v1
- * section's own `#proposito`, which is no declared anchor (the v2 home has
- * no Propósito), so it keeps the transitional `legacyHash` destination;
- * feature 46 deletes both. Servicios uses the declared anchor (feature 43).
+ * The v1 404 stays until feature 46 replaces it. Its first shortcut,
+ * Propósito (`#proposito`), was removed in feature 44: the home no longer
+ * has that section (Roberto, 2026-10-31), and spec 044 FR-026 allows no
+ * link to an id its page lacks. Servicios uses the declared anchor.
  */
-const PURPOSE_HASH = '#proposito'
-
 export const NOT_FOUND_SHORTCUTS: ShellItem[] = [
-  {
-    labelKey: 'shell.notFound.shortcuts.purpose',
-    destination: { kind: 'legacyHash', name: 'index', hash: PURPOSE_HASH },
-  },
   {
     labelKey: 'shell.notFound.shortcuts.services',
     destination: {

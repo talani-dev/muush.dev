@@ -26,53 +26,114 @@
   },
   "landing": {
     "hero": {
-      "eyebrow": "Technology solution studio",
-      "headline": "We speak business and code.",
-      "subhead": "We design and build digital solutions around your business.",
-      "ctaPrimary": "Tell us about your project",
-      "ctaSecondary": "Book a call"
+      "pill": {
+        "strategy": "Technology strategy",
+        "software": "Software, web and cloud",
+        "automation": "Automation, data and AI",
+        "design": "Product design and UX"
+      },
+      "headline": {
+        "first": "We speak business",
+        "second": "and code."
+      },
+      "subtitle": "We design and build the digital solutions your business uses every day.",
+      "primary": "Free assessment",
+      "secondary": "How we work"
     },
-    "purpose": {
-      "eyebrow": "Purpose",
-      "carouselLabel": "Purpose",
-      "why": {
-        "label": "Why",
-        "copy": "Software rarely fails because of how it's built. It fails because nobody translated the business problem; knowing what's worth building is what changes the outcome."
+    "whoWeAre": {
+      "pill": "Who we are",
+      "heading": {
+        "first": "A core team and trusted partners,",
+        "second": "shaped by what your project needs."
       },
-      "how": {
-        "label": "How",
-        "copy": "First, we understand how you operate; then we decide what gets built. We translate before we build."
+      "body": "Strategy, design and engineering work together from day one. When the project calls for it, we bring in partners held to the same standard, wherever they are.",
+      "legend": {
+        "team": "Team",
+        "partner": "Partners",
+        "soon": "Estonia · soon",
+        "anywhere": "We work with clients in any country."
       },
-      "what": {
-        "label": "What",
-        "copy": "We design and build digital solutions your business uses every day."
+      "regions": {
+        "label": "Map region",
+        "america": "Americas",
+        "europe": "Europe"
+      },
+      "cities": {
+        "cdmx": "CDMX",
+        "puebla": "Puebla",
+        "merida": "Mérida",
+        "dublin": "Dublin",
+        "nyc": "NYC",
+        "sanFrancisco": "San Francisco",
+        "losAngeles": "Los Angeles",
+        "amsterdam": "Amsterdam",
+        "estonia": "Estonia"
       }
     },
     "services": {
-      "eyebrow": "Services",
-      "consulting": {
-        "name": "Technology Consulting & Strategy",
-        "brief": "We diagnose your actual situation, design the solution, and tell you what's worth doing, even when the answer is to do less."
+      "pill": "Services",
+      "heading": {
+        "first": "What we do",
+        "second": "for your business."
       },
-      "software": {
-        "name": "Software & Digital Solutions",
-        "brief": "Platforms, internal systems, portals, and integrations built around how your business actually works, not the other way around."
+      "cards": {
+        "strategy": {
+          "title": "Technology\nstrategy",
+          "description": "A clear diagnosis and a plan for what to do, and in what order, before you invest."
+        },
+        "software": {
+          "title": "Software, web\nand cloud",
+          "description": "Websites, systems, portals and apps, with the cloud they run on and your tools connected."
+        },
+        "automation": {
+          "title": "Automation,\ndata and AI",
+          "description": "Processes that run themselves, data that turns into decisions, and AI where it truly helps."
+        },
+        "design": {
+          "title": "Product design\nand UX",
+          "description": "Screens so clear your team uses them without a manual."
+        }
       },
-      "cloud": {
-        "name": "Cloud, Infrastructure & DevOps",
-        "brief": "What holds everything up once it's live: infrastructure, automated deploys, monitoring and security. The part nobody notices until it's needed."
+      "also": {
+        "label": "Also, if you need it",
+        "creative": "Creative",
+        "marketing": "Marketing",
+        "note": "Content, photo, video, social media and ads with our partners. Always quoted separately."
+      }
+    },
+    "howWeWork": {
+      "pill": "How we work",
+      "heading": {
+        "first": "First we understand how you operate,",
+        "second": "then we decide what gets built."
       },
-      "automation": {
-        "name": "Automation, Data & AI",
-        "brief": "We automate the repetitive and turn your data into decisions. AI where it adds value, not where it sounds good."
-      },
-      "product": {
-        "name": "Product, UI/UX & Experience",
-        "brief": "We turn complex technology into something people use without a manual. Product and experience, from research to prototype."
-      },
-      "delivery": {
-        "label": "Delivery",
-        "copy": "And one capability runs through all five: we carry the project from start to finish, including scope, timelines, quality and launch."
+      "steps": {
+        "assessment": {
+          "title": "Assessment",
+          "description": "A quick review to see what's worth solving. If it needs a deeper look, that's quoted separately.",
+          "descriptionShort": "A quick review to see what's worth solving.",
+          "commitment": "We tell you what fits best"
+        },
+        "proposal": {
+          "title": "Proposal",
+          "description": "Scope, timeline and cost in writing.",
+          "commitment": "Only what you need"
+        },
+        "design": {
+          "title": "Design",
+          "description": "You see how it works before anything is built.",
+          "commitment": "You approve every screen"
+        },
+        "build": {
+          "title": "Build",
+          "description": "We work in stages and show you every step.",
+          "commitment": "One point of contact"
+        },
+        "launch": {
+          "title": "Launch and support",
+          "description": "We launch it and get your team ready.",
+          "commitment": "Documented and all yours"
+        }
       }
     },
     "contact": {
@@ -326,7 +387,6 @@
       "cta": "Back to home",
       "shortcutsLabel": "Shortcuts",
       "shortcuts": {
-        "purpose": "Purpose",
         "services": "Services",
         "about": "About us"
       }

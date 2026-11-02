@@ -397,3 +397,243 @@ describe('design tokens · guards (FR-002, FR-005, FR-008)', () => {
     expect(declared('--foco-separacion')).toBe('0.1875rem')
   })
 })
+
+/**
+ * Feature 44 · the home tokens (data-model § 6; pen extract-44 §§ 1–4, 8).
+ * Fluid values are evaluated at both anchors; constants are pinned as
+ * declared. Nothing new may be declared twice: a second declaration of the
+ * same key would silently win in one of the two blocks.
+ */
+describe('design tokens · the home (feature 44)', () => {
+  const FLUID: [string, number, number][] = [
+    ['--spacing-portada-alto', 740, 1000],
+    ['--spacing-portada-arriba', 110, 290],
+    ['--spacing-portada-gap', 22, 28],
+    ['--spacing-portada-botones-gap', 8, 14],
+    ['--spacing-portada-botones-arriba', 8, 0],
+    ['--spacing-mapa-y', 72, 110],
+    ['--spacing-mapa-gap', 24, 28],
+    ['--spacing-leyenda-gap', 16, 22],
+    ['--spacing-bloque-y', 72, 120],
+    ['--spacing-cabeza-gap', 24, 22],
+    ['--spacing-servicios-gap', 24, 44],
+    ['--text-servicios-titulo', 30, 56],
+    ['--text-servicios-titulo--line-height', 34.5, 61.6],
+    ['--spacing-tarjetas-gap', 14, 20],
+    ['--spacing-proceso-gap', 24, 64],
+    ['--text-paso', 17, 22],
+    ['--text-paso--letter-spacing', 0, -0.4],
+    ['--text-paso-texto', 14, 15],
+    ['--text-paso-texto--line-height', 20.3, 22.5],
+  ]
+
+  for (const [name, mobile, desktop] of FLUID) {
+    it(`should resolve ${name} to ${mobile} px at 390 and ${desktop} px at 1440 when evaluated`, () => {
+      const value = (declared(name) ?? '').replaceAll(/\s+/g, ' ')
+
+      expect(value, name).toMatch(/^clamp\(/)
+      expect(Math.abs(clampPx(value, MOBILE_ANCHOR) - mobile)).toBeLessThan(
+        TOLERANCE_PX
+      )
+      expect(Math.abs(clampPx(value, DESKTOP_ANCHOR) - desktop)).toBeLessThan(
+        TOLERANCE_PX
+      )
+    })
+  }
+
+  const FIXED: [string, number][] = [
+    ['--spacing-portada-abajo', 60],
+    ['--container-medida', 640],
+    ['--container-mapa', 1408],
+    ['--container-mapa-ventana', 640],
+    ['--radius-caja', 16],
+    ['--spacing-pin', 28],
+    ['--spacing-pin-nucleo', 8],
+    ['--spacing-selector', 4],
+    ['--spacing-pestana-y', 8],
+    ['--spacing-pestana-x', 16],
+    ['--radius-pestana', 9],
+    ['--text-pestana', 14],
+    ['--spacing-chip-y', 7],
+    ['--spacing-chip-x', 11],
+    ['--spacing-chip-gap', 6],
+    ['--spacing-tarjeta-movil', 290],
+    ['--spacing-tarjeta-visual', 210],
+    ['--spacing-tile', 96],
+    ['--spacing-tile-icono', 40],
+    ['--spacing-tarjeta-texto-arriba', 22],
+    ['--spacing-tarjeta-texto-x', 24],
+    ['--spacing-tarjeta-texto-abajo', 28],
+    ['--spacing-tarjeta-texto-gap', 10],
+    ['--spacing-indicador-activo', 22],
+    ['--spacing-indicador-punto', 6],
+    ['--spacing-indicador-gap', 6],
+    ['--radius-indicador', 3],
+    ['--spacing-franja-grupo', 18],
+    ['--spacing-franja-chip-x', 14],
+    ['--spacing-franja-chip-gap', 8],
+    ['--spacing-chip-punto', 6],
+    ['--spacing-tambien', 20],
+    ['--spacing-tambien-gap', 8],
+    ['--text-rotulo', 11],
+    ['--text-rotulo-movil', 12],
+    ['--text-tambien', 18],
+    ['--text-nota', 14],
+    ['--spacing-pasos', 20],
+    ['--spacing-paso', 16],
+    ['--spacing-paso-punto', 28],
+    ['--spacing-paso-nucleo', 12],
+    ['--spacing-linea-proceso', 2],
+    ['--spacing-linea-proceso-arriba', 13],
+    ['--spacing-riel', 14],
+    ['--spacing-riel-gap', 14],
+    ['--spacing-riel-punto', 12],
+    ['--spacing-riel-centro', 6],
+    ['--spacing-linea-riel', 1],
+    ['--spacing-paso-movil', 112],
+    ['--spacing-paso-texto', 6],
+    ['--text-paso-numero', 13],
+    ['--spacing-compromiso-alto', 38],
+    ['--spacing-compromiso', 8],
+    ['--spacing-compromiso-fin', 10],
+    ['--text-servicio--line-height', 34],
+    ['--spacing-burbuja', 22],
+    ['--spacing-burbuja-icono', 12],
+    ['--text-compromiso', 13],
+    ['--spacing-compromiso-movil-y', 6],
+    ['--spacing-compromiso-movil-x', 10],
+    ['--spacing-compromiso-movil-punto', 5],
+    ['--text-compromiso-movil', 12],
+    ['--trazo-anillo', 1.5],
+  ]
+
+  for (const [name, px] of FIXED) {
+    it(`should declare ${name} as ${px} px at both anchors when the stylesheet loads`, () => {
+      expect(normalise(declared(name) ?? ''), name).toBe(`${px}px`)
+    })
+  }
+
+  it('should derive the home colours from the palette when the stylesheet loads', () => {
+    const mixes: [string, string, number][] = [
+      ['--blanco-10', 'blanco', 10],
+      ['--blanco-25', 'blanco', 25],
+      ['--rojo-10', 'red-muush-500', 10],
+      ['--rojo-15', 'red-muush-500', 15],
+      ['--rojo-25', 'red-muush-500', 25],
+      ['--mapa-punto', 'blanco', 18],
+    ]
+    for (const [name, family, percent] of mixes) {
+      expect(normalise(declared(name) ?? ''), name).toBe(
+        normalise(
+          `color-mix(in srgb, var(--${family}) ${percent}%, transparent)`
+        )
+      )
+    }
+    expect(declared('--compromiso-icono')).toBe('#e98a77')
+    expect(declared('--mapa-opacidad')).toBe('0.8')
+  })
+
+  it('should drop the drawn process gradient when the stylesheet loads', () => {
+    /* Roberto review 2026-11-02 (FR-044): the desktop line is the unlit
+       track (Blanco 20 %) at rest and red only up to a previewed step; the
+       .pen gradient no longer paints anywhere. */
+    expect(declared('--proceso-linea')).toBeUndefined()
+    /* FR-048: no timeline dot paints a static halo, so the Blanco 6 % that
+       drew it has no reader and is gone. */
+    expect(declared('--blanco-6')).toBeUndefined()
+    expect(globalCss).not.toContain('--color-blanco-6')
+  })
+
+  it('should time the timeline fill at 120 ms and zero it under reduced motion when the stylesheet loads', () => {
+    expect(declared('--progreso-paso')).toBe('120ms')
+    const reducedBlocks = [
+      ...globalCss.matchAll(
+        /@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g
+      ),
+    ]
+      .map(match => match[1] ?? '')
+      .join('\n')
+    expect(reducedBlocks).toMatch(/--progreso-paso:\s*0ms;/)
+  })
+
+  /* `--progreso-paso` is left out: its reduced-motion zero is a deliberate
+     second declaration, pinned by the test above. */
+  it('should declare no home token twice when the stylesheet loads', () => {
+    const names = [
+      ...FLUID.map(([name]) => name),
+      ...FIXED.map(([name]) => name),
+      '--rojo-25',
+      '--mapa-punto',
+      '--luz-crimson',
+      '--tile-fondo',
+      '--borde-tile',
+      '--tile-sombra',
+    ]
+    for (const name of names) {
+      const declarations = globalCss.match(
+        new RegExp(`(?:^|[\\s;{])${name}:`, 'g')
+      )
+      expect(declarations?.length, name).toBe(1)
+    }
+  })
+
+  it('should ping the markers with the v1 radar recipe rebuilt in v2 when the stylesheet loads', () => {
+    /* Pen extract-44 § 9 (Roberto 2026-11-01): ghost 1 → 3, 0.6 → 0,
+       2.4 s ease-out, infinite, in the dot's own colour; none under reduced
+       motion; no static ring tokens left. */
+    expect(declared('--pulso')).toBe('2.4s')
+    const keyframes =
+      globalCss.match(/@keyframes pulso\s*\{([\s\S]*?)\n\}/)?.[1] ?? ''
+    expect(normalise(keyframes)).toBe(
+      normalise(
+        'from { opacity: 0.6; transform: scale(1); } to { opacity: 0; transform: scale(3); }'
+      )
+    )
+    const utility =
+      globalCss.match(/@utility pulso\s*\{([\s\S]*?)\n\}/)?.[1] ?? ''
+    expect(utility).toMatch(
+      /animation:\s*pulso var\(--pulso\) ease-out infinite;/
+    )
+    expect(utility).toMatch(
+      /background-color:\s*var\(--pulso-fantasma, inherit\);/
+    )
+    /* FR-047: the unlit timeline dot pings in its ring's Blanco 40 %. */
+    expect(
+      globalCss.match(/@utility pulso-tenue\s*\{([\s\S]*?)\n\}/)?.[1]
+    ).toMatch(/--pulso-fantasma:\s*var\(--texto-tenue\);/)
+    /* FR-048: one trail. The ghost starts at the host's outer edge: 0 for
+       borderless hosts, the ring width for the unlit timeline dot. */
+    expect(utility).toMatch(
+      /inset:\s*calc\(-1 \* var\(--pulso-borde, 0rem\)\);/
+    )
+    expect(
+      globalCss.match(/@utility pulso-tenue\s*\{([\s\S]*?)\n\}/)?.[1]
+    ).toMatch(/--pulso-borde:\s*var\(--trazo-anillo\);/)
+    expect(utility).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)\s*\{\s*&::before\s*\{\s*content:\s*none;/
+    )
+    expect(globalCss).not.toMatch(
+      /--(rojo-20|punto-halo2?|pin-equipo-anillo|pin-aliado-(halo|anillo)|spacing-pill-halo|spacing-pin-halo):/
+    )
+  })
+
+  it('should give the step title and number the .pen line boxes when the stylesheet loads', () => {
+    /* Pen extract-44 § 10: 31 for a 22 px title, 16 for a 13 px number. */
+    expect(declared('--text-paso--line-height')).toBe('1.41')
+    expect(declared('--text-paso-numero--line-height')).toBe('1.23')
+  })
+
+  it('should pin the Roberto review 2026-11-02 tokens once each when the stylesheet loads', () => {
+    /* FR-040: the header row's equal outer tracks; FR-043: the step's
+       subtle hover growth, within the asked 1.03–1.05. */
+    expect(declared('--grid-template-columns-cabecera')).toBe('1fr auto 1fr')
+    const scale = Number(declared('--paso-escala'))
+    expect(scale).toBe(1.04)
+    for (const name of ['--grid-template-columns-cabecera', '--paso-escala']) {
+      expect(
+        globalCss.match(new RegExp(`(?:^|[\\s;{])${name}:`, 'g'))?.length,
+        name
+      ).toBe(1)
+    }
+  })
+})

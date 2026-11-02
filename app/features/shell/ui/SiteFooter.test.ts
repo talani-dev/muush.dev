@@ -1,14 +1,23 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import type { Component } from 'vue'
 import FooterColumns from './FooterColumns.vue'
 import MobileFooter from './MobileFooter.vue'
 import SiteFooter from './SiteFooter.vue'
-import { SHELL_COPY, SOCIALS } from './shellFixtures.testing'
+import {
+  ExactActiveLinkStub,
+  SHELL_COPY,
+  SOCIALS,
+} from './shellFixtures.testing'
 
 /** Feature 43 · FR-030…FR-035, contract § 7; pen extract-43 § 6. */
-function render(locale: 'es' | 'en' = 'es') {
+function render(
+  locale: 'es' | 'en' = 'es',
+  stubs: Record<string, Component> = {}
+) {
   const copy = SHELL_COPY[locale]
   return mount(SiteFooter, {
+    global: { stubs },
     props: {
       columns: copy.columns,
       contactChannels: copy.contactChannels,
@@ -26,6 +35,19 @@ function render(locale: 'es' | 'en' = 'es') {
 }
 
 describe('SiteFooter', () => {
+  it('should never mark the logo as the current page when the router marks its link', () => {
+    /* Feature 44 · FR-028 (review-43c nit 5): the stub marks every link
+       exact-active, as the router does on the home page. */
+    const logos = render('es', { NuxtLink: ExactActiveLinkStub }).findAll(
+      'a[aria-label="Inicio de muush"]'
+    )
+
+    expect(logos.length).toBeGreaterThan(0)
+    for (const logo of logos) {
+      expect(logo.attributes('aria-current')).toBeUndefined()
+    }
+  })
+
   it('should be a named, transparent footer with a Blanco 8 % rule when rendered', () => {
     const footer = render().find('footer')
 

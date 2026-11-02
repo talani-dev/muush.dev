@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ref } from 'vue'
+import { type Component, ref } from 'vue'
 import type {
   ResolvedShellItem,
   ResolvedSocial,
@@ -12,6 +12,7 @@ import LanguageToggle from './LanguageToggle.vue'
 import MenuButton from './MenuButton.vue'
 import MobileMenu from './MobileMenu.vue'
 import SocialLinks from './SocialLinks.vue'
+import { ExactActiveLinkStub } from './shellFixtures.testing'
 
 /**
  * Feature 43 · FR-015…FR-023, contract § 6. The shader composable is
@@ -57,10 +58,14 @@ const PROPS = {
 
 const mounted: Array<{ unmount: () => void }> = []
 
-function render(props: Record<string, unknown> = {}) {
+function render(
+  props: Record<string, unknown> = {},
+  stubs: Record<string, Component> = {}
+) {
   const wrapper = mount(MobileMenu, {
     props: { ...PROPS, ...props },
     attachTo: document.body,
+    global: { stubs },
   })
   mounted.push(wrapper)
   return wrapper
@@ -197,6 +202,17 @@ describe('MobileMenu · closing and focus (FR-018, FR-020)', () => {
     expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0 })
     scrollTo.mockRestore()
     window.history.replaceState(null, '', '/')
+  })
+
+  it('should never mark the logo as the current page when the router marks its link', () => {
+    /* Feature 44 · FR-028 (review-43c nit 5): the stub marks every link
+       exact-active, as the router does on the home page. */
+    const logo = render({}, { NuxtLink: ExactActiveLinkStub }).find(
+      'a[aria-label="Inicio de muush"]'
+    )
+
+    expect(logo.exists()).toBe(true)
+    expect(logo.attributes('aria-current')).toBeUndefined()
   })
 
   it('should emit itemChosen when the logo or the language is chosen', async () => {

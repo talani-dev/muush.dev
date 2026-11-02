@@ -21,9 +21,15 @@ import NavLinkBar from './NavLinkBar.vue'
  *   0 10 0 16; the isotipo, then the language and menu controls (gap 8).
  *   No CTA (pen extract-43 § 3).
  * - from `lg`, the floating nav: a transparent 1280 × 64 row 24 from the top
- *   with three slots set `space-between` (isotipo | link bar | language +
- *   CTA, gap 12), so the link bar sits in the centre of the free space.
- *   The first slot holds the isotipo alone, no wordmark (FR-059).
+ *   with three slots (isotipo | link bar | language + CTA, gap 12). The
+ *   first slot holds the isotipo alone, no wordmark (FR-059).
+ *
+ * The desktop row is a `1fr auto 1fr` grid (`grid-cols-cabecera`), not
+ * `space-between`: the isotipo slot is narrower than the language + CTA
+ * group, so `space-between` centred the link bar in the free space, off the
+ * page centre. With two equal outer tracks the bar sits on the nav's centre,
+ * which is the page centre (feature 44, FR-040; Roberto review 2026-11-02);
+ * the isotipo justifies to the start of its track, the group to the end.
  *
  * One row rather than two copies keeps exactly one home link, one toggle
  * and one `<nav>` landmark in the document.
@@ -102,12 +108,18 @@ watch(isOpen, async opened => {
   >
     <nav
       :aria-label="navLabel"
-      class="pointer-events-auto mx-auto flex h-header-alto max-w-contenido items-center justify-between rounded-header border border-linea bg-nav-fondo pr-header-fin pl-header-inicio backdrop-blur-header lg:pointer-events-none lg:h-header-alto-desktop lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none"
+      class="pointer-events-auto mx-auto flex h-header-alto max-w-contenido items-center justify-between lg:grid lg:grid-cols-cabecera rounded-header border border-linea bg-nav-fondo pr-header-fin pl-header-inicio backdrop-blur-header lg:pointer-events-none lg:h-header-alto-desktop lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none"
     >
+      <!--
+        `aria-current` cleared on purpose (feature 44, FR-028; review-43c nit
+        5): the router marks any exact-active link "current page", and on the
+        home that would announce the logo as well as the Home item.
+      -->
       <NuxtLink
         :to="home"
         :aria-label="homeLabel"
-        class="pointer-events-auto inline-flex rounded-control foco"
+        :aria-current="undefined"
+        class="pointer-events-auto inline-flex rounded-control foco lg:justify-self-start"
       >
         <!-- Isotipo only at every width, no wordmark (Roberto 2026-11-01,
              spec FR-059): the desktop .pen frame shows the full lockup; the
@@ -120,7 +132,7 @@ watch(isOpen, async opened => {
       </div>
 
       <div
-        class="pointer-events-auto flex items-center gap-header-grupo-movil lg:gap-header-grupo"
+        class="pointer-events-auto flex items-center gap-header-grupo-movil lg:justify-self-end lg:gap-header-grupo"
       >
         <LanguageToggle
           :locale="locale"

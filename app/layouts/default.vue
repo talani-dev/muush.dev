@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
 import {
   MobileMenu,
   type ShellLocale,
@@ -83,6 +83,16 @@ watch(
 )
 
 /*
+ * Feature 44 · the page frame. The v1 pages (About, the 404) still sit in
+ * the v1 frame: centred at `shell-max` with the `px-page` inset. A Muush
+ * 1.0 page whose sections are full bleed (shader backgrounds edge to edge,
+ * each section carrying its own drawn padding) opts out with
+ * `definePageMeta({ fullBleed: true })`; the home does since feature 44.
+ * Features 46–47 retire the v1 frame with the last v1 page.
+ */
+const isFullBleed = computed(() => route.meta.fullBleed === true)
+
+/*
  * The `hreflang` alternates and the `lang` attribute, from the same i18n
  * route table the toggle resolves against (Constitution Article VI).
  *
@@ -130,7 +140,7 @@ useSiteSeo()
     />
 
     <div :inert="isOpen">
-      <main class="mx-auto max-w-shell-max px-page">
+      <main :class="{ 'mx-auto max-w-shell-max px-page': !isFullBleed }">
         <slot />
       </main>
 

@@ -45,7 +45,7 @@ interface Props {
   cta: ResolvedShellItem
   /** Accessible name of the shortcuts landmark ("Atajos" / "Shortcuts"). */
   shortcutsLabel: string
-  /** Exactly three, in render order: purpose, services, about. */
+  /** In render order: services, about (Propósito removed in feature 44). */
   shortcuts: ResolvedShellItem[]
 }
 
