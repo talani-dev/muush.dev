@@ -979,7 +979,7 @@
         "El botón de enviar está deshabilitado hasta marcar el aviso; el aviso no viaja en el payload",
         "Los payloads cumplen exactamente docs/business/landing/form-api-contract.md",
         "Estados Enviando, Faltan datos, Error al enviar y Enviado como en el .pen; los datos se conservan si falla el envío",
-        "WhatsApp solo aparece si se elige; CV solo PDF de máximo 10 MB",
+        "WhatsApp solo aparece si se elige; CV solo PDF de máximo 5 MB (5 MiB, límite del contrato; Roberto 2026-11-02)",
         "Toda la copy vive en i18n/locales/{es,en}.json con ambos locales presentes; tests/i18n-parity.test.ts sigue verde; cero strings hardcodeados (Artículo VI)",
         "Cero hex o px hardcodeados en componentes; todo resuelve por los tokens v2 de global.css (sin prefijo de versión) consumidos como utilidades Tailwind (Artículo VII)",
         "Coincide con el .pen a 390 y 1440 px; sin scroll horizontal, texto cortado ni solapes a 360, 768, 1024, 1280 y 1920 px",
@@ -987,14 +987,14 @@
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
       ],
       "sdd": true,
-      "status": "pending",
+      "status": "done",
       "depends_on": [44]
     },
     {
       "id": 46,
       "name": "m1_secondary_pages",
       "title": "v2 — Nosotros, Preguntas y 404 con el diseño 1.0",
-      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. NOSOTROS `gQ0NG`/`D1CqYA`, móvil `trkk7`/`XoSI5`: hero sobre listón, 'Cómo se arma' (Equipo base, Talent pool, Aliados), 'Dónde estamos' (mapa de la feature 44), 'Trabaja con muush' sobre listón con el formulario de la feature 45. Reemplaza las secciones v1 de las features 18 y 19. PREGUNTAS `FXvwz`/`Gc1U5`, móvil `pDsNQ`/`qSDZU`: ruta nueva en ambos idiomas; hoy solo 'En construcción 🚧' / 'Under construction 🚧' con CTAs 'Diagnóstico gratis' y 'Agenda una llamada' sobre acanalado. 404 `X9EQIz`/`zV0qI`, móvil `Y2fsOQ`/`son4B`: 'Volvamos a un lugar conocido.' sobre acanalado, manteniendo el comportamiento de las features 36 y 39. Uniforms de cada fondo según el README del handoff.",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. NOSOTROS `gQ0NG`/`D1CqYA`, móvil `trkk7`/`XoSI5`: hero sobre listón, 'Cómo se arma' (Equipo base, Talent pool, Aliados), 'Dónde estamos' (mapa de la feature 44), 'Trabaja con muush' sobre listón con el formulario de la feature 45. Reemplaza las secciones v1 de las features 18 y 19. PREGUNTAS `FXvwz`/`Gc1U5`, móvil `pDsNQ`/`qSDZU`: ruta nueva en ambos idiomas; hoy solo 'En construcción 🚧' / 'Under construction 🚧' con CTAs 'Diagnóstico gratis' y 'Agenda una llamada' sobre acanalado. 404 `X9EQIz`/`zV0qI`, móvil `Y2fsOQ`/`son4B`: 'Volvamos a un lugar conocido.' sobre acanalado, manteniendo el comportamiento de las features 36 y 39. Uniforms de cada fondo según el README del handoff. ADVISORY (Roberto 2026-11-02, feature 45 reopen 2): todo pill v2 sobre un heading usa el token/utilidad compartida de espacio extra bajo el pill (+6 px <1024, +8 px ≥1024) definida en app/assets/css/global.css; aplica también a los pills de Nosotros, Preguntas y 404.",
       "acceptance": [
         "Preguntas vive en /es/preguntas ↔ /en/faq (Roberto, 2026-10-31) y el toggle de idioma la resuelve",
         "Preguntas SE INDEXA aunque diga 'En construcción': sin noindex, con canonical, hreflang y entrada en el sitemap como el resto de páginas (Roberto, 2026-10-31: 'necesitamos indexar todo')",
