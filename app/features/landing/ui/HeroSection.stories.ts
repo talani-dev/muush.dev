@@ -101,7 +101,7 @@ export const MobileEnglish: Story = {
 export const WithContactSection: Story = {
   args: {
     ...spanish,
-    contactHref: '/es#contacto',
+    contactHref: '/es#diagnostico',
   },
   globals: { viewport: { value: 'desktop' } },
 }

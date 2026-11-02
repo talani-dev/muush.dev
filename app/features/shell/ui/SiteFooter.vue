@@ -1,110 +1,112 @@
 <script setup lang="ts">
-import type { ResolvedFooterColumn } from '@/features/shell/data/types'
-import Lockup from '@/shared/ui/legacy/Lockup.vue'
-import FooterColumn from './FooterColumn.vue'
+import type {
+  ResolvedContactChannel,
+  ResolvedFooterColumn,
+  ResolvedShellItem,
+  ResolvedSocial,
+} from '@/features/shell/data/types'
+import Lockup from '@/shared/ui/Lockup.vue'
+import FooterColumns from './FooterColumns.vue'
+import MobileFooter from './MobileFooter.vue'
+import ShellItemLink from './ShellItemLink.vue'
 
 /**
- * The footer of `design-extract.md` § 9.bis: an ink-500 surface carrying the
- * brand block, four columns and the bottom bar. One responsive component, not
- * one per page — § 9.bis verified the footer is byte-identical between the
- * Landing and About frames in both viewports.
+ * The Muush 1.0 footer (feature 43, spec FR-030…FR-035, contract § 7; pen
+ * extract-43 § 6). Full width and transparent over the Negro 950 canvas,
+ * with a 1 px Blanco 8 % rule on top. Two layouts, swapped at `lg`:
  *
- * The flat ink-500 is Roberto's decision (feature 34, A2 revision 1,
- * 2026-10-15): it covers the dotted paper and the cursor spotlight's red dots
- * by design. Removing it is a design change, not a fix.
+ * - from `lg` (`K3vvqL`): padding 72 80 40 80, gap 56. The top row is
+ *   `space-between`: the brand block (340 wide, gap 18: lockup 176 × 31,
+ *   tagline Poppins 20 / 500 tracking −0.4, the category 14 / 1.5 Gris 400)
+ *   and the four columns. The bottom row, over its own 1 px Blanco 8 %
+ *   rule (padding-top 24): copyright left, privacy and terms right (gap
+ *   24), all 13 / 400 Gris 400. Content caps at 1280 above 1440.
+ * - below `lg`: `MobileFooter` (`kJfw5`).
  *
- * Every `lg:` below changes **layout** and nothing else: four columns become
- * two rows of two, and the bottom bar's two texts stop sharing a row. No
- * `clamp()` can express a change of order and count; a size, padding, radius
- * or blur behind a breakpoint would be a real violation (spec FR-047).
+ * The inactive layout is `display: none`, so only one is announced.
  */
 interface Props {
-  /** Exactly four, in the order the design fixes. */
   columns: ResolvedFooterColumn[]
-  /** Resolved href for the brand lockup. */
+  contactChannels: ResolvedContactChannel[]
+  mobileLinks: ResolvedShellItem[]
+  socials: ResolvedSocial[]
+  legal: ResolvedShellItem[]
   home: string
+  homeLabel: string
   tagline: string
   category: string
   copyright: string
-  location: string
+  label: string
 }
 
-const { columns, home, tagline, category, copyright, location } =
-  defineProps<Props>()
+const {
+  columns,
+  contactChannels,
+  mobileLinks,
+  socials,
+  legal,
+  home,
+  homeLabel,
+  tagline,
+  category,
+  copyright,
+  label,
+} = defineProps<Props>()
 </script>
 
 <template>
-  <footer class="bg-ink-500">
-    <!--
-      The cap includes the gutter, so the content box above 1440 is the same
-      1280 the design frame draws rather than growing to 1440.
-      ⚠️ The cap itself is UNVERIFIED — no frame exists wider than 1440 and no
-      document states this behaviour (spec A-02, flagged for Clau).
-    -->
+  <footer :aria-label="label" class="border-t border-blanco-8">
     <div
-      class="mx-auto flex max-w-shell-max flex-col gap-footer-gap px-page pt-footer-top pb-footer-bottom"
+      data-escritorio
+      class="hidden px-gutter-desktop pt-footer-arriba pb-footer-abajo lg:block"
     >
-      <!--
-        Top row. `justify-between` and no declared horizontal gap, because the
-        design over-constrains this row: Marca 340 + gap 80 + Columnas 912 =
-        1332 against a 1280 content box. The gap is what yields — the brand
-        block keeps its 340, the columns flex from a 180 basis, and whatever
-        is left (28px at exactly 1440) becomes the separation
-        (docs/business/rules.md § R24, spec FR-060). The vertical gap is
-        declared on the y axis only, so it applies to the stacked arrangement
-        and does nothing once the row is horizontal.
-      -->
-      <div
-        class="flex flex-col gap-y-footer-gap lg:flex-row lg:justify-between"
-      >
-        <div
-          class="flex flex-col gap-footer-brand-gap lg:w-footer-brand-w lg:shrink-0"
-        >
-          <NuxtLink
-            :to="home"
-            class="self-start text-bone-100 focus-visible:outline-red-400"
+      <div class="mx-auto flex max-w-contenido flex-col gap-footer-bloques">
+        <div class="flex justify-between gap-footer-columnas">
+          <div
+            class="flex min-w-0 shrink basis-footer-marca-ancho flex-col items-start gap-footer-marca"
           >
-            <Lockup />
-          </NuxtLink>
-          <p class="font-instrument text-footer-tagline text-ink-100">
-            {{ tagline }}
-          </p>
-          <p class="font-instrument text-footer-category text-ink-300">
-            {{ category }}
-          </p>
+            <NuxtLink
+              :to="home"
+              :aria-label="homeLabel"
+              class="inline-flex rounded-control foco"
+            >
+              <Lockup />
+            </NuxtLink>
+            <p class="font-titulo text-lema text-blanco">{{ tagline }}</p>
+            <p class="font-texto text-categoria text-gris-400">
+              {{ category }}
+            </p>
+          </div>
+          <FooterColumns :columns="columns" />
         </div>
 
-        <!--
-          Two rows of two below `lg`, four across at and above it. The column
-          gap is the design's own 20 → 64; the row gap is the container gap,
-          which is what separates `Columnas 1` from `Columnas 2` in the mobile
-          frame.
-        -->
         <div
-          class="grid grid-cols-2 gap-x-footer-cols-gap gap-y-footer-gap lg:flex lg:min-w-0"
-        >
-          <FooterColumn
-            v-for="column in columns"
-            :key="column.title"
-            :title="column.title"
-            :items="column.items"
-            class="lg:basis-footer-col-w lg:min-w-0"
-          />
-        </div>
-      </div>
-
-      <!--
-        Bottom bar. The two frames differ in arrangement, not only in size:
-        one row apart at `lg`, stacked below it.
-      -->
-      <div class="border-t border-hairline-footer pt-footer-bar-gap">
-        <div
-          class="flex flex-col gap-y-footer-bar-stack font-instrument text-footer-bottom text-ink-300 lg:flex-row lg:justify-between"
+          class="flex justify-between gap-footer-legal border-t border-blanco-8 pt-footer-legal font-texto text-p-chico text-gris-400"
         >
           <p>{{ copyright }}</p>
-          <p>{{ location }}</p>
+          <p class="flex gap-footer-legal">
+            <ShellItemLink
+              v-for="item in legal"
+              :key="item.label"
+              :item="item"
+            />
+          </p>
         </div>
       </div>
     </div>
+
+    <MobileFooter
+      data-movil
+      class="lg:hidden"
+      :contact-channels="contactChannels"
+      :links="mobileLinks"
+      :socials="socials"
+      :legal="legal"
+      :home="home"
+      :home-label="homeLabel"
+      :tagline="tagline"
+      :category="category"
+      :copyright="copyright"
+    />
   </footer>
 </template>

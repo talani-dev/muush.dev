@@ -28,6 +28,8 @@ import { useShaderCanvas } from '@/shared/logic/useShaderCanvas'
  * after a lost GPU context, and before the first frame (FR-021). The canvas
  * above it is transparent until `isReady`, fades in over `--medio`
  * (0 ms under reduced motion), and is removed from view on `isFallback`.
+ * A preset without a poster (the mobile menu's, feature 43) renders no
+ * `<img>`: its fallback is the host's own background showing through.
  * No `<ClientOnly>`: the server render and the first client render agree
  * (research R7). Above-the-fold presets load the poster eagerly at high
  * priority, since it may be the LCP image; the others lazily.
@@ -51,6 +53,7 @@ const { isReady, isFallback } = useShaderCanvas(canvas, config)
     class="pointer-events-none absolute inset-0 z-0 overflow-hidden bg-negro-950 print:hidden"
   >
     <img
+      v-if="config.poster"
       :src="config.poster"
       alt=""
       decoding="async"

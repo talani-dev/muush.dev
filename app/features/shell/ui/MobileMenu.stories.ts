@@ -1,97 +1,65 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import type {
-  ResolvedShellItem,
-  ResolvedSocial,
-} from '@/features/shell/data/types'
+import { onUnmounted } from 'vue'
 import MobileMenu from './MobileMenu.vue'
+import { SHELL_COPY, SOCIALS } from './shellFixtures.testing'
 
 /**
- * The open menu of `design-extract.md` § 9.bis, at the 390 frame it is drawn
- * for: the full-viewport dark-glass panel, the nav row with the close
- * control, the four destinations, the divider and the three social buttons.
- *
- * Two things it deliberately does **not** contain: a primary button — on
- * mobile the only call to action is the social row (`decisions-open.md`,
- * 2026-09-06) — and the `BG · base` and `Dotted paper` layers the frame
- * stacks beneath it. Those are the page showing through the blur, and
- * repainting them here would double them (spec A-03). In this catalogue the
- * blur therefore has the story background to work with, not a page.
- *
- * The item block, the divider and the social row are laid out in **flow**,
- * not at the frame's y176 / y448 / y493 — a real phone is rarely 844px tall
- * (`docs/business/rules.md` § R12).
+ * The open mobile menu (feature 43, FR-015…FR-023; pen extract-43 § 4,
+ * `chQ4f` / `QpUCy`) at "Móvil (390)": Negro 950 base, the menu listón,
+ * Negro 950 70 % glass with 24 px blur; the bar with Cerrar; links in
+ * Poppins 32 / 500 from y 150; the divider at y 440; social buttons at
+ * y 480. Tab cycles inside; Cerrar emits `close`.
  */
 const meta = {
-  title: 'Legacy v1/Shell/MobileMenu',
+  title: 'Shell/MobileMenu',
   component: MobileMenu,
-  globals: { viewport: { value: 'mobile' } },
+  globals: { backgrounds: { value: 'negro' }, viewport: { value: 'mobile' } },
+  parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof MobileMenu>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-const socials: ResolvedSocial[] = [
-  {
-    network: 'linkedin',
-    href: 'https://www.linkedin.com/company/muush-dev',
-    label: 'LinkedIn',
-  },
-  {
-    network: 'instagram',
-    href: 'https://www.instagram.com/muush.dev',
-    label: 'Instagram',
-  },
-  {
-    network: 'tiktok',
-    href: 'https://www.tiktok.com/@muush.dev',
-    label: 'TikTok',
-  },
-]
-
-/* Three items, not four (feature 24) — `Proyectos`/`Projects` dropped from
-   the mobile menu, matching `MENU_ITEMS`. */
-const spanishItems: ResolvedShellItem[] = [
-  { label: 'Propósito', href: '/es#proposito' },
-  { label: 'Servicios', href: '/es#servicios' },
-  { label: 'Nosotros', href: '/es/nosotros' },
-]
-
-const englishItems: ResolvedShellItem[] = [
-  { label: 'Purpose', href: '/en#proposito' },
-  { label: 'Services', href: '/en#servicios' },
-  { label: 'About us', href: '/en/about' },
-]
-
-export const Spanish: Story = {
-  args: {
+function args(locale: 'es' | 'en') {
+  const copy = SHELL_COPY[locale]
+  return {
     open: true,
-    items: spanishItems,
-    socials,
-    home: '/es',
-    locale: 'es',
-    localeSwitchHref: '/en',
-    localeSwitchLabel: 'Cambiar a inglés',
-    label: 'Menú',
-    closeLabel: 'Cerrar menú',
-  },
+    items: copy.items,
+    socials: SOCIALS,
+    home: copy.home,
+    homeLabel: copy.homeLabel,
+    locale,
+    localeSwitchHref: copy.localeSwitchHref,
+    localeSwitchLabel: copy.localeSwitchLabel,
+    label: copy.menuLabel,
+    closeLabel: copy.menuCloseLabel,
+  }
 }
 
-export const English: Story = {
-  args: {
-    open: true,
-    items: englishItems,
-    socials,
-    home: '/en',
-    locale: 'en',
-    localeSwitchHref: '/es',
-    localeSwitchLabel: 'Switch to Spanish',
-    label: 'Menu',
-    closeLabel: 'Close menu',
+/**
+ * The browser refuses WebGL while this story is mounted, as a GPU-less
+ * device would: no listón, the base and the glass alone (FR-022).
+ */
+const withoutWebGl = () => ({
+  setup() {
+    const original = HTMLCanvasElement.prototype.getContext
+    const refuseWebGl = function (
+      this: HTMLCanvasElement,
+      ...params: Parameters<typeof original>
+    ) {
+      return params[0] === 'webgl' ? null : original.apply(this, params)
+    } as typeof original
+    HTMLCanvasElement.prototype.getContext = refuseWebGl
+    onUnmounted(() => {
+      HTMLCanvasElement.prototype.getContext = original
+    })
   },
-}
+  template: '<story />',
+})
 
-/** Closed, the component renders nothing at all — no hidden panel left in
- *  the document to catch focus. */
-export const Closed: Story = {
-  args: { ...Spanish.args, open: false },
+export const OpenEs390: Story = { args: args('es') }
+export const OpenEn390: Story = { args: args('en') }
+export const OpenEsWithoutWebGl390: Story = {
+  args: args('es'),
+  decorators: [withoutWebGl],
 }

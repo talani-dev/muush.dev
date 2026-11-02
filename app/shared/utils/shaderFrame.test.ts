@@ -18,7 +18,7 @@ describe('shaderFrame · constants', () => {
     expect(MOBILE_PIXEL_RATIO).toBe(1)
     expect(DESKTOP_MAX_PIXEL_RATIO).toBe(1.5)
     expect(STILL_TIME_SECONDS).toBe(12)
-    expect(SHADER_DEFAULTS).toEqual({ u_speed: 1, u_flip: 1, u_grain: 0.07 })
+    expect(SHADER_DEFAULTS).toEqual({ u_speed: 1, u_flip: 1, u_grain: 0.03 })
   })
 })
 
@@ -76,7 +76,7 @@ describe('withShaderDefaults', () => {
     expect(withShaderDefaults({ u_tx: 0.5 })).toEqual({
       u_speed: 1,
       u_flip: 1,
-      u_grain: 0.07,
+      u_grain: 0.03,
       u_tx: 0.5,
     })
   })

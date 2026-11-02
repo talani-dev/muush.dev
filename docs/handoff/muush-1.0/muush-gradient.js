@@ -3,13 +3,14 @@
 // - Pausa cuando el canvas sale de pantalla o la pestaña se oculta.
 // - Con prefers-reduced-motion dibuja un solo cuadro fijo.
 // - En pantallas chicas baja la resolución para cuidar batería.
+// - Los uniforms que no se pasan toman el @default del shader (2026-11-01).
 
 const VERT = `attribute vec2 a_pos;void main(){gl_Position=vec4(a_pos,0.0,1.0);}`;
 
 export class MuushGradient {
   constructor(canvas, { fragment, uniforms = {}, stillTime = 12.0 } = {}) {
     this.canvas = canvas;
-    this.uniforms = { u_speed: 1, u_flip: 1, u_grain: 0.07, ...uniforms };
+    this.uniforms = { ...MuushGradient.defaults(fragment), u_speed: 1, u_flip: 1, u_grain: 0.07, ...uniforms };
     this.stillTime = stillTime;
     this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.visible = false;
@@ -31,6 +32,18 @@ export class MuushGradient {
     new ResizeObserver(() => { this.#resize(); if (!this.raf) this.#draw(this.#time()); }).observe(canvas);
     new IntersectionObserver(([e]) => { this.visible = e.isIntersecting; this.#loop(); }, { rootMargin: '100px' }).observe(canvas);
     document.addEventListener('visibilitychange', () => this.#loop());
+  }
+
+  // Lee los @default de cada uniform del shader (los mismos que usa Pencil).
+  // Sin esto, un uniform que no se pasa vale 0 y el degradado puede desaparecer.
+  static defaults(fragment = '') {
+    const out = {};
+    const re = /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*uniform\s+float\s+(\w+)/g;
+    for (const [, doc, name] of fragment.matchAll(re)) {
+      const m = /@default\s+(-?[\d.]+)/.exec(doc);
+      if (m) out[name] = parseFloat(m[1]);
+    }
+    return out;
   }
 
   set(uniforms) { Object.assign(this.uniforms, uniforms); if (!this.raf) this.#draw(this.#time()); }

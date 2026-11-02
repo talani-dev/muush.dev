@@ -4,10 +4,10 @@ import { getCurrentScope, onScopeDispose, readonly, ref } from 'vue'
  * The mobile menu's state: the open flag, the background scroll lock, the
  * Escape listener and the two lifecycle triggers that close it on their own.
  *
- * It lives here rather than inside `SiteNav` because a lock that outlives its
- * panel leaves the whole site unscrollable with nothing on screen to blame —
- * the failure this composable exists to make impossible (spec FR-009,
- * FR-028, FR-029).
+ * It lives here rather than inside `SiteHeader` because a lock that
+ * outlives its panel leaves the whole site unscrollable with nothing on
+ * screen to blame — the failure this composable exists to make impossible
+ * (spec FR-009, FR-028, FR-029).
  *
  * **No new dependency.** VueUse would have supplied `useScrollLock` and
  * `onKeyStroke`, and it is not in the tree; adding a supply-chain surface for
@@ -16,22 +16,31 @@ import { getCurrentScope, onScopeDispose, readonly, ref } from 'vue'
  * **The state is module-scoped on purpose.** A document has exactly one such
  * surface, and two independent instances would desynchronise the lock from
  * the flag. The layout reads `isOpen` to mark everything behind the panel
- * `inert`, while `SiteNav` owns the controls that flip it. During
- * prerendering nothing opens the menu, so the shared flag is `false` for
- * every generated page.
+ * `inert`, while `SiteHeader` and `MobileMenu` own the controls that flip
+ * it. During prerendering nothing opens the menu, so the shared flag is
+ * `false` for every generated page.
  */
 
 /**
  * 1024px — Tailwind v4's stock `lg`, so the composable and the `lg:`
  * utilities cross at the same width.
  *
- * ⚠️ UNVERIFIED: the design has exactly two frames, 390 and 1440, and no
- * document states where the layout swaps (spec A-01). Flagged for Clau;
- * reversing it is one value here and one prefix in the templates.
+ * Settled: the design has exactly two frames, 390 and 1440, and the swap at
+ * 1024 px is recorded in the spec's Assumptions and pen extract-43 § 6.
+ * Changing it is one value here and one prefix in the templates.
  */
 const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)'
 
+/**
+ * Why the menu last closed (feature 43, spec FR-020, data-model § 7).
+ * `dismiss` (Cerrar, Esc, history, resize to desktop) sends focus back to the
+ * menu button; `navigate` (a link or the language chosen) leaves focus to
+ * the navigation that follows.
+ */
+export type MenuCloseReason = 'dismiss' | 'navigate'
+
 const isOpen = ref(false)
+const lastCloseReason = ref<MenuCloseReason | null>(null)
 
 /** Captured on open, restored exactly on close. */
 let lockedScrollY = 0
@@ -46,13 +55,18 @@ function lockScroll() {
   style.right = '0'
 }
 
+/**
+ * `instant`, because `html` scrolls smoothly when motion is allowed (feature
+ * 43, research R5): without it the restore would visibly glide down from
+ * the top of the page instead of putting the visitor back where they were.
+ */
 function releaseScroll() {
   const { style } = document.body
   style.position = ''
   style.top = ''
   style.left = ''
   style.right = ''
-  window.scrollTo(0, lockedScrollY)
+  window.scrollTo({ top: lockedScrollY, left: 0, behavior: 'instant' })
 }
 
 function handleEscape(event: KeyboardEvent) {
@@ -85,9 +99,10 @@ function open() {
   isOpen.value = true
 }
 
-function close() {
+function close(reason: MenuCloseReason = 'dismiss') {
   if (!isOpen.value) return
 
+  lastCloseReason.value = reason
   isOpen.value = false
   window.removeEventListener('keydown', handleEscape)
   window.removeEventListener('popstate', handleHistoryNavigation)
@@ -103,10 +118,11 @@ export function useMobileMenu() {
    * and the flag can never disagree with the lock because `isOpen` is exposed
    * read-only and both are written in the same two functions.
    */
-  if (getCurrentScope()) onScopeDispose(close)
+  if (getCurrentScope()) onScopeDispose(() => close())
 
   return {
     isOpen: readonly(isOpen),
+    lastCloseReason: readonly(lastCloseReason),
     open,
     close,
   }

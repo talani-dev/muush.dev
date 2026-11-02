@@ -4,6 +4,7 @@ import {
   type ApplicationFormContent,
   type ApplicationSubmitter,
 } from '@/features/forms'
+import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import Pill from '@/shared/ui/legacy/Pill.vue'
 import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
@@ -72,7 +73,11 @@ defineProps<Props>()
 </script>
 
 <template>
-  <section id="work" class="relative pt-work-top">
+  <!--
+    Feature 43: the shared `trabaja-con-muush` anchor, so the footer's
+    "Trabaja con muush" lands here until feature 46 replaces this section.
+  -->
+  <section :id="SECTION_ANCHORS.workWithUs" class="relative pt-work-top">
     <SectionBackdrop>
       <SectionGlow
         color="red-400"

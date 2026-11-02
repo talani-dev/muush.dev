@@ -1,4 +1,4 @@
-import { SHELL_ANCHORS } from './navigation'
+import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import type { ShellItem } from './types'
 
 /**
@@ -8,7 +8,7 @@ import type { ShellItem } from './types'
  * (`specs/036-not-found-page/reference/404.html` and its `README.md`, § Qué
  * hay en la página). The page lives in the shell rather than in a module of
  * its own because it is built only from the shell's vocabulary — route names,
- * `SHELL_ANCHORS`, the destination resolver — and is reachable from every
+ * section anchors, the destination resolver — and is reachable from every
  * path (`specs/036-not-found-page/research.md` R5).
  *
  * Keys and destination descriptors only; `logic/` resolves both
@@ -22,18 +22,27 @@ export const NOT_FOUND_HOME: ShellItem = {
   destination: { kind: 'route', name: 'index' },
 }
 
-/** The shortcuts row, in render order (reference README § Qué hay en la página). */
+/**
+ * The shortcuts row, in render order (reference README § Qué hay en la página).
+ *
+ * The v1 404 stays until feature 46 replaces it. Propósito points at the v1
+ * section's own `#proposito`, which is no declared anchor (the v2 home has
+ * no Propósito), so it keeps the transitional `legacyHash` destination;
+ * feature 46 deletes both. Servicios uses the declared anchor (feature 43).
+ */
+const PURPOSE_HASH = '#proposito'
+
 export const NOT_FOUND_SHORTCUTS: ShellItem[] = [
   {
     labelKey: 'shell.notFound.shortcuts.purpose',
-    destination: { kind: 'anchor', name: 'index', hash: SHELL_ANCHORS.purpose },
+    destination: { kind: 'legacyHash', name: 'index', hash: PURPOSE_HASH },
   },
   {
     labelKey: 'shell.notFound.shortcuts.services',
     destination: {
       kind: 'anchor',
       name: 'index',
-      hash: SHELL_ANCHORS.services,
+      anchor: SECTION_ANCHORS.services,
     },
   },
   {

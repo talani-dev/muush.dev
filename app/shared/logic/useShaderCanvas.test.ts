@@ -222,6 +222,30 @@ describe('useShaderCanvas · fallback', () => {
     expect(state.isReady.value).toBe(false)
   })
 
+  it('should fall back with no unhandled rejection when the shader source fails to load', async () => {
+    /* Feature 43 · FR-045 (review-42b advisory 1): a lazy chunk that cannot
+       be fetched. Vitest fails the run on an unhandled rejection, so passing
+       here also proves the rejection is handled. */
+    const unhandled = vi.fn()
+    process.on('unhandledRejection', unhandled)
+    const load = vi
+      .spyOn(
+        SHADER_SOURCES as Record<'liston', () => Promise<string>>,
+        'liston'
+      )
+      .mockRejectedValue(new Error('chunk failed to load'))
+    restore.push(() => load.mockRestore())
+
+    const { state } = await mountHost()
+    await flushPromises()
+    process.off('unhandledRejection', unhandled)
+
+    expect(state.isFallback.value).toBe(true)
+    expect(state.isReady.value).toBe(false)
+    expect(createShaderRenderer).not.toHaveBeenCalled()
+    expect(unhandled).not.toHaveBeenCalled()
+  })
+
   it('should fall back and stop drawing when the GPU context is lost', async () => {
     const { state, canvas } = await mountHost()
     io()?.emit(true)
@@ -268,10 +292,26 @@ describe('useShaderCanvas · gating', () => {
 
     expect(renderer.draw.mock.calls[0]?.[1]).toMatchObject({
       u_speed: 1,
-      u_grain: 0.07,
+      u_grain: 0.03,
       u_flip: 1,
       u_tx: 0.5,
       u_fadeB: 0.06,
+    })
+  })
+
+  it('should fill the uniforms the preset omits with the shader @default when drawing', async () => {
+    await mountHost()
+    io()?.emit(true)
+    flushFrame()
+
+    /* homeHero passes no listón geometry: it must come from liston.glsl. */
+    expect(renderer.draw.mock.calls[0]?.[1]).toMatchObject({
+      u_y0: 0.98,
+      u_y1: 0.5,
+      u_th: 0.1,
+      u_amp: 0.07,
+      u_twist: 0.6,
+      u_ty: 0.53,
     })
   })
 

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { effectScope } from 'vue'
 import { useMobileMenu } from './useMobileMenu'
 
@@ -141,5 +141,65 @@ describe('useMobileMenu', () => {
 
     expect(document.body.style.position).toBe('')
     expect(useMobileMenu().isOpen.value).toBe(false)
+  })
+  describe('close reason (feature 43, spec FR-020)', () => {
+    it('should record dismiss when closed with no reason', () => {
+      const { open, close, lastCloseReason } = useMobileMenu()
+
+      open()
+      close()
+
+      expect(lastCloseReason.value).toBe('dismiss')
+    })
+
+    it('should record navigate when closed because an item was chosen', () => {
+      const { open, close, lastCloseReason } = useMobileMenu()
+
+      open()
+      close('navigate')
+
+      expect(lastCloseReason.value).toBe('navigate')
+    })
+
+    it('should record dismiss when Escape closes it', () => {
+      const { open, close, lastCloseReason } = useMobileMenu()
+      open()
+      close('navigate')
+      open()
+
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+
+      expect(lastCloseReason.value).toBe('dismiss')
+    })
+
+    it('should record dismiss when history or the desktop breakpoint closes it', () => {
+      const { open, lastCloseReason } = useMobileMenu()
+      open()
+      window.dispatchEvent(new PopStateEvent('popstate'))
+      expect(lastCloseReason.value).toBe('dismiss')
+
+      setViewportWidth(MOBILE_FRAME)
+      open()
+      setViewportWidth(DESKTOP_FRAME)
+      expect(lastCloseReason.value).toBe('dismiss')
+    })
+  })
+
+  it('should restore the scroll instantly when the page scrolls smoothly', () => {
+    /* `html { scroll-behavior: smooth }` (feature 43, research R5) would
+       otherwise animate the restore down from the top. */
+    const spy = vi.spyOn(window, 'scrollTo')
+    const { open, close } = useMobileMenu()
+    scrollTo(SCROLL_OFFSET)
+
+    open()
+    close()
+
+    expect(spy).toHaveBeenLastCalledWith({
+      top: SCROLL_OFFSET,
+      left: 0,
+      behavior: 'instant',
+    })
+    spy.mockRestore()
   })
 })

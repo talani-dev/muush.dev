@@ -113,8 +113,11 @@ function mountSection() {
 }
 
 describe('WorkWithMuushSection · structure', () => {
-  it('should carry id="work" on its section root when mounted', () => {
-    expect(mountSection().find('section').attributes('id')).toBe('work')
+  it('should carry the shared trabaja-con-muush anchor on its section root when mounted', () => {
+    /* Feature 43 · the footer's "Trabaja con muush" target (spec FR-025). */
+    expect(mountSection().find('section').attributes('id')).toBe(
+      'trabaja-con-muush'
+    )
   })
 
   it('should render the Pill, headline, body and one application form when mounted', () => {

@@ -121,7 +121,7 @@ export const OnTheAboutPage: Story = {
     ...Spanish.args,
     items: [
       { label: 'Servicios', href: '/es#servicios' },
-      { label: 'Nosotros', href: '/es/nosotros', current: true },
+      { label: 'Nosotros', href: '/es/nosotros', current: 'page' },
     ],
   },
 }

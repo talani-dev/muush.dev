@@ -1038,3 +1038,27 @@ Nuxt en este repo genera `.nuxt` dentro de `node_modules/.cache/nuxt/.nuxt`. Un 
 ### R74 · `cached-locale-configs` de i18n sale vacío en `/es` y `/en` según el orden del prerender
 
 En el payload prerenderizado de `/es` y `/en`, el estado `cached-locale-configs` de `@nuxtjs/i18n` a veces es `{}` y a veces viene lleno. El implementer de la feature 30 lo reprodujo en `HEAD` sin cambios: salió lleno en 1 de 3 builds. Depende del orden del prerender en paralelo y existía antes de la feature 30. **Qué hacer:** al comparar la salida de dos builds, no tomar una diferencia en esa clave como regresión; normalizarla o compararla aparte. Impacto en runtime: UNVERIFIED.
+
+## Feature 043 · Shell de Muush 1.0 — hallazgos de implementación (2026-11-01)
+
+### R75 · `NuxtLink` marca `aria-current="page"` en un enlace a una sección de la página actual
+
+`RouterLink` (y por lo tanto `NuxtLink`) pone `aria-current="page"` y la clase
+`router-link-exact-active` cuando la **ruta** coincide, ignorando el fragmento.
+En `/es`, un enlace a `/es#diagnostico` sale anunciado como "página actual"
+aunque apunta a una sección. Verificado en el HTML generado de la feature 43:
+el CTA del header salía con `aria-current="page"` en `/es` y `/en`.
+
+**Qué hacer:** en un enlace a una sección, pasar `:aria-current` explícito
+(`undefined` lo quita: el atributo que llega por `$attrs` pisa el del
+`RouterLink`). `NavLinkBar.vue` y `SiteHeader.vue` lo hacen. Las features 44–46
+lo van a necesitar en el CTA del hero y en cualquier otro botón que apunte a
+`#diagnostico` o `#como-trabajamos` desde la misma página.
+
+### R76 · `python3 -m http.server` no sirve el 404 de Nuxt
+
+Para verificar `.output/public` en un navegador sin dependencias se puede
+servir con `python3 -m http.server`, pero una ruta inexistente devuelve el 404
+del propio servidor, no `es/404/index.html` (en S3 + CloudFront eso lo hace la
+configuración de errores). Para probar la página 404 hay que abrir
+`/es/404/` directamente.

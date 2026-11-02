@@ -12,10 +12,15 @@ import posterFaq from '@/assets/backgrounds/preguntas-acanalado.webp'
  * poster and whether that poster is above the fold.
  *
  * Only the listón and the vidrio acanalado ship; brasa-acero is reserved for
- * another brand (handoff README). Every preset carries `u_flip: 1`; omitted
- * uniforms take the shader's own `@default`, and `u_speed` / `u_grain` the
- * engine defaults of `shaderFrame.ts`. The uniform values are the README's,
- * which the `.pen` fills use too (pen extract § 6).
+ * another brand (handoff README). Every preset carries `u_flip: 1`. A preset
+ * lists overrides only: every uniform it omits takes the `@default` of its
+ * `.glsl`, read at runtime by `readShaderDefaults`
+ * (`utils/shaderUniformDefaults.ts`) and merged by `withShaderDefaults`
+ * (`utils/shaderFrame.ts`) under the engine base values (`u_speed`,
+ * `u_flip`, `u_grain`) and then the preset. WebGL would otherwise leave it
+ * at 0 — the cause of the missing hero listón and acanalado ribs fixed on
+ * 2026-11-01. The uniform values are the README's, which the `.pen` fills
+ * use too (pen extract § 6).
  *
  * Posters are imported as modules so the build hashes them under `_nuxt/`;
  * nothing is served from `docs/` (FR-025).
@@ -30,13 +35,18 @@ export type BackgroundPresetName =
   | 'workWithUs'
   | 'faq'
   | 'notFound'
+  | 'mobileMenu'
 
 export interface BackgroundPreset {
   shader: ShaderName
   /** Overrides only; `u_flip: 1` always included. */
   uniforms: Readonly<Record<`u_${string}`, number>>
-  /** Hashed asset URL of the still frame. */
-  poster: string
+  /**
+   * Hashed asset URL of the still frame. Optional since feature 43: the
+   * mobile menu's listón has none in the handoff, and without one the
+   * fallback is the host's own background (research R7).
+   */
+  poster?: string
   /** `high`: above the fold, may be the LCP image, loaded eagerly. */
   priority: 'high' | 'lazy'
 }
@@ -169,12 +179,33 @@ export const BACKGROUND_PRESETS: Readonly<
     poster: posterNotFound,
     priority: 'high',
   },
+  /*
+   * The open mobile menu (feature 43, spec FR-015; pen extract-43 § 4,
+   * frames `chQ4f` / `QpUCy`). Not in the handoff README table, and the
+   * handoff ships no poster for it, so it has none: without WebGL the
+   * menu's Negro 950 base and its glass show alone. Mounted only while the
+   * menu is open.
+   */
+  mobileMenu: {
+    shader: 'liston',
+    uniforms: {
+      u_flip: 1,
+      u_y0: 1.02,
+      u_y1: 0.8,
+      u_th: 0.06,
+      u_amp: 0.03,
+      u_tdark: 0,
+    },
+    priority: 'lazy',
+  },
 }
 
 /**
  * The GLSL sources, loaded on demand so a page bundles only the shader it
- * shows. The files are byte-for-byte copies of the handoff's two shaders
- * (research R8); only the version prefix was dropped from their file names.
+ * shows. The files are copies of the handoff's two shaders (research R8),
+ * with the version prefix dropped from their file names and one deliberate
+ * divergence: the grain hash in `finish()` no longer depends on `u_time`, so
+ * the grain is static (Roberto 2026-11-01, feature 43 spec FR-057).
  */
 export const SHADER_SOURCES: Readonly<
   Record<ShaderName, () => Promise<string>>

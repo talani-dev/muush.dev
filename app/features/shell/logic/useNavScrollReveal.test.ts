@@ -32,6 +32,7 @@ function scrollTo(offset: number) {
 
 interface MountedReveal {
   isNavVisible: () => boolean
+  reveal: () => void
   unmount: () => void
 }
 
@@ -54,6 +55,7 @@ function mountReveal(isMobileMenuOpen = ref(false)): MountedReveal {
 
   return {
     isNavVisible: () => tracked?.isNavVisible.value === true,
+    reveal: () => tracked?.reveal(),
     unmount: () => wrapper.unmount(),
   }
 }
@@ -182,5 +184,30 @@ describe('useNavScrollReveal', () => {
     scrollTo(200)
 
     expect(frames).toHaveLength(0)
+  })
+  describe('reveal (feature 43, spec FR-013)', () => {
+    it('should show a hidden header when reveal is called', () => {
+      const nav = mountReveal()
+      scrollTo(200)
+      scrollTo(260)
+      expect(nav.isNavVisible()).toBe(false)
+
+      nav.reveal()
+
+      expect(nav.isNavVisible()).toBe(true)
+    })
+
+    it('should need a fresh 10 px downward run to hide again when revealed', () => {
+      const nav = mountReveal()
+      scrollTo(200)
+      scrollTo(260)
+      nav.reveal()
+
+      scrollTo(265)
+      expect(nav.isNavVisible()).toBe(true)
+
+      scrollTo(275)
+      expect(nav.isNavVisible()).toBe(false)
+    })
   })
 })

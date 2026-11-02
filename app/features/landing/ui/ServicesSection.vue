@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ServiceNodeContent } from '@/features/landing/data/servicesContent'
+import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 import ServicesConstellation from './ServicesConstellation.vue'
@@ -64,7 +65,8 @@ const { eyebrow, deliveryLabel, nodes, deliveryCopy } = defineProps<Props>()
 </script>
 
 <template>
-  <section id="servicios" class="relative pt-services-top">
+  <!-- Feature 43: the shared `servicios` anchor the shell links to. -->
+  <section :id="SECTION_ANCHORS.services" class="relative pt-services-top">
     <SectionBackdrop>
       <SectionGlow
         color="wine-300"

@@ -1,25 +1,31 @@
-import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { ref } from 'vue'
 import type {
   ResolvedShellItem,
   ResolvedSocial,
 } from '@/features/shell/data/types'
+import { useShaderCanvas } from '@/shared/logic/useShaderCanvas'
+import Lockup from '@/shared/ui/Lockup.vue'
+import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
+import LanguageToggle from './LanguageToggle.vue'
+import MenuButton from './MenuButton.vue'
 import MobileMenu from './MobileMenu.vue'
+import SocialLinks from './SocialLinks.vue'
 
-/*
- * Three items, not four (feature 24, 2026-09-08): `Proyectos` is
- * deliberately absent from the mobile menu too now, same reasoning
- * `navigation.ts` records for the desktop nav — a menu link to a section
- * that does not exist yet reads as a broken site. This reverts what used to
- * be documented here as an intentional mobile-only exception.
+/**
+ * Feature 43 · FR-015…FR-023, contract § 6. The shader composable is
+ * stubbed (no WebGL under happy-dom); Esc, history and resize closing are
+ * `useMobileMenu`'s and tested there.
  */
-const items: ResolvedShellItem[] = [
-  { label: 'Propósito', href: '/es#proposito', external: false },
-  { label: 'Servicios', href: '/es#servicios', external: false },
-  { label: 'Nosotros', href: '/es/nosotros', external: false },
-]
+vi.mock('@/shared/logic/useShaderCanvas', () => ({ useShaderCanvas: vi.fn() }))
 
-const socials: ResolvedSocial[] = [
+const ITEMS: ResolvedShellItem[] = [
+  { label: 'Inicio', href: '/es', external: false },
+  { label: 'Servicios', href: '/es#servicios', external: false },
+  { label: 'Nosotros', href: '/es/nosotros', external: false, current: 'page' },
+]
+const SOCIALS: ResolvedSocial[] = [
   {
     network: 'linkedin',
     href: 'https://www.linkedin.com/company/muush-dev',
@@ -36,12 +42,12 @@ const socials: ResolvedSocial[] = [
     label: 'TikTok',
   },
 ]
-
-const props = {
+const PROPS = {
   open: true,
-  items,
-  socials,
+  items: ITEMS,
+  socials: SOCIALS,
   home: '/es',
+  homeLabel: 'Inicio de muush',
   locale: 'es' as const,
   localeSwitchHref: '/en',
   localeSwitchLabel: 'Cambiar a inglés',
@@ -49,128 +55,198 @@ const props = {
   closeLabel: 'Cerrar menú',
 }
 
-function mountMenu(overrides: Partial<typeof props> = {}) {
-  return mount(MobileMenu, { props: { ...props, ...overrides } })
+const mounted: Array<{ unmount: () => void }> = []
+
+function render(props: Record<string, unknown> = {}) {
+  const wrapper = mount(MobileMenu, {
+    props: { ...PROPS, ...props },
+    attachTo: document.body,
+  })
+  mounted.push(wrapper)
+  return wrapper
 }
 
-describe('MobileMenu', () => {
-  it('should render nothing when it is closed', () => {
-    expect(mountMenu({ open: false }).find('[role="dialog"]').exists()).toBe(
-      false
+beforeEach(() => {
+  vi.mocked(useShaderCanvas).mockReturnValue({
+    isReady: ref(false),
+    isFallback: ref(false),
+  })
+})
+
+afterEach(() => {
+  for (const wrapper of mounted.splice(0)) wrapper.unmount()
+})
+
+describe('MobileMenu · rendering', () => {
+  it('should render nothing when closed', () => {
+    expect(render({ open: false }).find('[role="dialog"]').exists()).toBe(false)
+  })
+
+  it('should be a named modal dialog covering the viewport when open', () => {
+    const dialog = render().find('[role="dialog"]')
+
+    expect(dialog.attributes('aria-modal')).toBe('true')
+    expect(dialog.attributes('aria-label')).toBe('Menú')
+    expect(dialog.classes()).toEqual(
+      expect.arrayContaining([
+        'fixed',
+        'inset-0',
+        'bg-negro-950',
+        'lg:hidden',
+        'print:hidden',
+      ])
     )
   })
 
-  it('should expose itself as a modal surface when open', () => {
-    const panel = mountMenu().find('[role="dialog"]')
+  it('should layer the menu listón under the Negro 950 70 % glass when open', () => {
+    const wrapper = render()
+    const glass = wrapper.find(
+      '[role="dialog"] > div[aria-hidden="true"]:not(.pointer-events-none)'
+    )
 
-    expect(panel.attributes('aria-modal')).toBe('true')
-    expect(panel.attributes('aria-label')).toBe('Menú')
+    expect(wrapper.findComponent(ShaderBackground).props('preset')).toBe(
+      'mobileMenu'
+    )
+    expect(glass.classes()).toEqual(
+      expect.arrayContaining(['bg-menu-vidrio', 'backdrop-blur-cristal'])
+    )
   })
 
-  it('should render the three destinations when open', () => {
-    const entries = mountMenu().findAll('li')
+  it('should repeat the bar with the isotipo, the menu toggle and Cerrar when open', () => {
+    const wrapper = render()
 
-    expect(entries.map(entry => entry.text())).toEqual([
-      'Propósito',
+    expect(wrapper.findComponent(Lockup).props('form')).toBe('isotipo')
+    expect(wrapper.findComponent(LanguageToggle).props('variant')).toBe('menu')
+    expect(wrapper.findComponent(MenuButton).props()).toMatchObject({
+      kind: 'close',
+      label: 'Cerrar menú',
+    })
+  })
+
+  it('should list the items in Poppins 32 with no arrows when open', () => {
+    const links = render().findAll('ul.mt-menu-lista a')
+
+    /* "Inicio" first (Home link added by Roberto 2026-11-01). */
+    expect(links.map(link => link.text())).toEqual([
+      'Inicio',
       'Servicios',
       'Nosotros',
     ])
+    expect(links[0]?.attributes('href')).toBe('/es')
+    expect(links[0]?.classes()).toEqual(
+      expect.arrayContaining([
+        'font-titulo',
+        'text-menu',
+        'text-blanco',
+        'py-menu-fila',
+      ])
+    )
+    expect(links.some(link => link.text().includes('→'))).toBe(false)
+    expect(links[2]?.attributes('aria-current')).toBe('page')
   })
 
-  it('should render the divider when open', () => {
-    expect(mountMenu().find('hr').classes()).toContain('border-divider-menu')
+  it('should draw the divider and the 48 px social buttons when open', () => {
+    const wrapper = render()
+
+    expect(wrapper.find('.mt-menu-divisor').classes()).toEqual(
+      expect.arrayContaining(['h-px', 'bg-linea'])
+    )
+    expect(wrapper.findComponent(SocialLinks).props()).toMatchObject({
+      size: 'menu',
+      socials: SOCIALS,
+    })
+  })
+})
+
+describe('MobileMenu · closing and focus (FR-018, FR-020)', () => {
+  it('should move focus to Cerrar when it opens', async () => {
+    const wrapper = render()
+    await flushPromises()
+
+    expect(document.activeElement).toBe(
+      wrapper.findComponent(MenuButton).element
+    )
   })
 
-  it('should render the three social buttons when open', () => {
-    const buttons = mountMenu().findAll('a[target="_blank"]')
+  it('should emit close when Cerrar is activated', async () => {
+    const wrapper = render()
 
-    expect(buttons).toHaveLength(3)
-    expect(buttons.map(button => button.attributes('aria-label'))).toEqual([
-      'LinkedIn',
-      'Instagram',
-      'TikTok',
-    ])
+    await wrapper.findComponent(MenuButton).trigger('click')
+
+    expect(wrapper.emitted('close')).toHaveLength(1)
   })
 
-  it('should carry no primary call to action when open', () => {
-    /* A recorded decision, not an omission: on mobile the only call to
-       action is the social row (decisions-open.md, 2026-09-06). */
-    expect(mountMenu().text()).not.toContain('Cuéntanos tu proyecto')
-  })
+  it('should emit itemChosen with the destination when a link is chosen', async () => {
+    const wrapper = render()
 
-  it('should report closing when the close control is activated', async () => {
-    const wrapper = mountMenu()
-
-    await wrapper.find('button[aria-label="Cerrar menú"]').trigger('click')
-
-    expect(wrapper.emitted('closed')).toHaveLength(1)
-  })
-
-  it('should offer a pointer on the close control when open', () => {
-    /* A native `<button>` gets `cursor: default` from the user agent and
-       Tailwind's preflight sets none, so without this it read as unclickable
-       while the anchors beside it read correctly (`findings.md` § R56). */
-    const close = mountMenu().find('button[aria-label="Cerrar menú"]')
-
-    expect(close.classes()).toContain('cursor-pointer')
-  })
-
-  it('should report closing when the lockup is activated', async () => {
-    const wrapper = mountMenu()
-
-    await wrapper.findAll('a')[0]?.trigger('click')
-
-    expect(wrapper.emitted('closed')).toHaveLength(1)
-  })
-
-  it('should report the chosen destination when an item is activated', async () => {
-    const wrapper = mountMenu()
-    const services = wrapper
-      .findAll('li a')
-      .find(link => link.text() === 'Servicios')
-
-    await services?.trigger('click')
+    await wrapper.findAll('ul.mt-menu-lista a')[1]?.trigger('click')
 
     expect(wrapper.emitted('itemChosen')).toEqual([['/es#servicios']])
   })
 
-  it('should not navigate on its own when an item is activated', async () => {
-    /* The parent closes on `itemChosen` and only then does the page scroll,
-       which a component navigating on its own could not honour. */
-    const wrapper = mountMenu()
-
-    await wrapper.findAll('li a')[0]?.trigger('click')
-
-    expect(wrapper.emitted('closed')).toBeUndefined()
-  })
-
-  it('should move focus into the panel when it opens', () => {
-    /* Attached to the document on purpose: focus is only observable for an
-       element that is actually in it. */
-    const wrapper = mount(MobileMenu, { props, attachTo: document.body })
-
-    expect(document.activeElement).toBe(
-      wrapper.find('button[aria-label="Cerrar menú"]').element
-    )
-
-    wrapper.unmount()
-  })
-
-  it('should inline the close glyph rather than reference it as an image', () => {
-    const wrapper = mountMenu()
-
-    expect(wrapper.find('button svg').exists()).toBe(true)
-    expect(wrapper.find('img').exists()).toBe(false)
-  })
-
-  it('should re-emit the chosen locale when its toggle switches in place', async () => {
-    /* feature 39: the not-found page. */
-    const wrapper = mount(MobileMenu, {
-      props: { ...props, localeSwitchInPlace: true },
+  it('should close, then scroll to the top, when Home is chosen on the home page', async () => {
+    window.history.replaceState(null, '', '/es')
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const wrapper = render({
+      items: [{ ...ITEMS[0], scrollsToTop: true }, ...ITEMS.slice(1)],
     })
 
-    await wrapper.find('a[hreflang="en"]').trigger('click', { button: 0 })
+    await wrapper.findAll('ul.mt-menu-lista a')[0]?.trigger('click')
+
+    expect(wrapper.emitted('itemChosen')).toEqual([['/es']])
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0 })
+    scrollTo.mockRestore()
+    window.history.replaceState(null, '', '/')
+  })
+
+  it('should emit itemChosen when the logo or the language is chosen', async () => {
+    const wrapper = render()
+
+    await wrapper.find('a[aria-label="Inicio de muush"]').trigger('click')
+    await wrapper.find('a[hreflang="en"]').trigger('click')
+
+    expect(wrapper.emitted('itemChosen')).toEqual([['/es'], ['/en']])
+  })
+
+  it('should re-emit the in-place switch as switchLocale on the 404', () => {
+    const wrapper = render({ localeSwitchInPlace: true })
+
+    wrapper.findComponent(LanguageToggle).vm.$emit('switchInPlace', 'en')
 
     expect(wrapper.emitted('switchLocale')).toEqual([['en']])
+  })
+
+  it('should keep Tab inside the menu when focus leaves its last control', async () => {
+    const wrapper = render()
+    await flushPromises()
+    const links = wrapper.findAll('a')
+    const last = links.at(-1)?.element as HTMLElement
+    last.focus()
+
+    last.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Tab',
+        bubbles: true,
+        cancelable: true,
+      })
+    )
+
+    expect(
+      wrapper.find('[role="dialog"]').element.contains(document.activeElement)
+    ).toBe(true)
+    expect(document.activeElement).not.toBe(last)
+  })
+})
+
+describe('MobileMenu · motion (FR-023)', () => {
+  it('should stagger the links through the entrance tokens when open', () => {
+    const rows = render().findAll('ul.mt-menu-lista > li')
+
+    expect(rows.map(row => row.attributes('style'))).toEqual([
+      '--orden: 0;',
+      '--orden: 1;',
+      '--orden: 2;',
+    ])
+    expect(rows[0]?.classes()).toContain('menu-enlace')
   })
 })

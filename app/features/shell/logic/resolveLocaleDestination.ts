@@ -16,10 +16,24 @@
  *
  * 2. **The fragment.** A URL fragment is never sent to a server and does not
  *    exist when a static page is generated (`docs/business/rules.md` § R9),
- *    so it cannot be baked into the rendered `href`. It is read at click time
- *    and composed here. With scripting unavailable the plain `href` still
- *    navigates to the equivalent route, landing at its top — a documented
- *    degradation, not a defect (spec FR-021).
+ *    so it cannot be baked into the rendered `href`. Since spec FR-061 the
+ *    toggle does not carry it at all: the fragment is dropped (point 3) and
+ *    the visitor's position is kept by `useLocaleSwitchScroll` instead. With
+ *    scripting unavailable the plain `href` still navigates to the equivalent
+ *    route, landing at its top — a documented degradation, not a defect
+ *    (spec FR-021).
+ *
+ * 3. **The fragment the library adds** (spec FR-061, Roberto 2026-11-01).
+ *    `switchLocalePath` copies the current route's hash into the path it
+ *    returns (`@nuxtjs/i18n` `routing.js`, `hash: route.hash`). On the
+ *    client, after an in-page jump, the toggle's `href` therefore became
+ *    `/en#servicios`, and Nuxt's router scrolled the other locale's page
+ *    back to that section however far the visitor had scrolled since — the
+ *    bug Roberto reported. Any fragment on `switchedPath` is dropped; only
+ *    an explicit `hash` is ever appended. The toggle passes none since
+ *    FR-061: it keeps the visitor's position instead
+ *    (`localeSwitchScroll.ts`). Dropping it also keeps the client `href`
+ *    equal to the prerendered one.
  *
  * @param switchedPath the other locale's path, possibly `''`
  * @param fallbackHome the other locale's home, used when there is no
@@ -31,10 +45,15 @@ export function resolveLocaleDestination(
   fallbackHome: string,
   hash?: string
 ): string {
-  const destination = switchedPath || fallbackHome
+  const destination = withoutFragment(switchedPath) || fallbackHome
   const fragment = (hash ?? '').replace(/^#+/, '')
 
   if (fragment === '') return destination
 
   return `${destination}#${fragment}`
+}
+
+function withoutFragment(path: string): string {
+  const index = path.indexOf('#')
+  return index === -1 ? path : path.slice(0, index)
 }

@@ -229,6 +229,13 @@ the requirement, not a violation of "translate, do not copy" (which is about
 the Astro and JS code). `m1-brasa-acero.glsl` is not in the handoff folder
 (CONFIRMED: only two shaders exist) and is not shipped.
 
+**Amended 2026-11-01 (Roberto, feature 43 reopened 2, spec 043 FR-057).** The
+shipped shaders are no longer byte-for-byte copies: in `finish()` the grain
+hash is `hash(gl_FragCoord.xy)` instead of
+`hash(gl_FragCoord.xy+fract(u_time*7.0)*91.0)`, so the grain is static
+instead of flickering. That one line, plus a comment above it, is the only
+divergence from the handoff.
+
 CONFIRMED: Vite's client types declare `*?raw` (`vite/client.d.ts` line 249),
 and the repo already imports `?raw` (`Lockup.vue`).
 

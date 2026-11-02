@@ -76,7 +76,11 @@ float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract
 float noise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);vec2 u=f*f*(3.0-2.0*f);float a=hash(i);float b=hash(i+vec2(1.0,0.0));float c=hash(i+vec2(0.0,1.0));float d=hash(i+vec2(1.0,1.0));return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}
 float fbm(vec2 p){float v=0.0;float a=0.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<5;i++){v+=a*noise(p);p=m*p;a*=0.5;}return v;}
 vec2 uvTop(){vec2 fc=gl_FragCoord.xy;if(u_flip>0.5){fc.y=u_res.y-fc.y;}return fc/u_res;}
-vec3 finish(vec3 col,vec2 uv){vec2 dm=(uv-vec2(u_tx,u_ty))/vec2(u_trx,u_try);float tm=smoothstep(0.55,1.3,length(dm));col*=mix(1.0-u_tdark*0.78,1.0,tm);float fe=smoothstep(0.0,max(u_fadeT,0.0001),uv.y)*(1.0-smoothstep(1.0-max(u_fadeB,0.0001),1.0,uv.y));if(u_fadeT<=0.0001&&u_fadeB<=0.0001){fe=1.0;}col=mix(cBlack,col,fe);col+=(hash(gl_FragCoord.xy+fract(u_time*7.0)*91.0)-0.5)*u_grain;return clamp(col,0.0,1.0);}
+// Divergence from docs/handoff/muush-1.0/shaders/m1-liston.glsl (Roberto, 2026-11-01):
+// the grain hash is seeded with gl_FragCoord only, not fract(u_time*7.0), so the
+// grain is a fixed texture instead of flickering every frame ("como ISO alto").
+// u_grain still sets its strength. This is the only change from the handoff.
+vec3 finish(vec3 col,vec2 uv){vec2 dm=(uv-vec2(u_tx,u_ty))/vec2(u_trx,u_try);float tm=smoothstep(0.55,1.3,length(dm));col*=mix(1.0-u_tdark*0.78,1.0,tm);float fe=smoothstep(0.0,max(u_fadeT,0.0001),uv.y)*(1.0-smoothstep(1.0-max(u_fadeB,0.0001),1.0,uv.y));if(u_fadeT<=0.0001&&u_fadeB<=0.0001){fe=1.0;}col=mix(cBlack,col,fe);col+=(hash(gl_FragCoord.xy)-0.5)*u_grain;return clamp(col,0.0,1.0);}
 /**
  * @label Inicio izq (alto)
  * @default 0.98

@@ -90,8 +90,9 @@ function mountSection() {
 }
 
 describe('ContactSection · structure and the two dangling CTAs', () => {
-  it('should carry id="contacto" on its section root when mounted', () => {
-    expect(mountSection().find('section').attributes('id')).toBe('contacto')
+  it('should carry the shared diagnostico anchor on its section root when mounted', () => {
+    /* Feature 43 · the shell's "Diagnóstico gratis" target (spec FR-025). */
+    expect(mountSection().find('section').attributes('id')).toBe('diagnostico')
   })
 
   it('should render the Pill, heading, body and one contact form when mounted', () => {

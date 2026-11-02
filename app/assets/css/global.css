@@ -134,32 +134,26 @@
   --duration-spotlight-fade: 0.2s;
 
   /*
-   * Los TRES niveles negativos del fondo (rules.md §§ R28 y R37). El layout es
-   * el único contexto de apilamiento de la página y pinta la base ink-500;
-   * dentro de él:
+   * Las capas del lienzo, desde la feature 43 (Muush 1.0; review-42b,
+   * advisory 3). El layout es el único contexto de apilamiento de la página
+   * y pinta la base Negro 950 (`bg-negro-950`, el mismo token que `html`);
+   * encima solo queda el flujo normal:
    *
-   * | Nivel                    | Qué                          | Dónde se escribe   |
-   * |--------------------------|------------------------------|--------------------|
-   * | fondo del elemento raíz  | base ink-500                 | el layout          |
-   * | --layer-glow    (-3)     | glows de cada sección        | dentro de cada una |
-   * | --layer-dots    (-2)     | papel punteado, página entera| el layout, una vez |
-   * | --layer-spotlight (-1)   | puntos rojos bajo el puntero | el layout, al montar |
-   * | flujo normal             | nav, contenido, footer       | en todas partes    |
+   * | Nivel                    | Qué                              | Dónde se escribe   |
+   * |--------------------------|----------------------------------|--------------------|
+   * | fondo del elemento raíz  | base Negro 950                   | el layout          |
+   * | flujo normal             | header flotante, contenido, footer | en todas partes  |
    *
-   * **La relación es el contrato, no los números.** Glows debajo de puntos
-   * debajo de contenido. Los dos tokens que ya existían conservan su NOMBRE,
-   * así que DotGrid.vue y SectionBackdrop.vue —que nombran el token y nunca el
-   * número— no cambian una sola línea (spec FR-018).
+   * Los fondos animados de Muush 1.0 (listón, acanalado) los pinta cada
+   * sección dentro de sí misma (`ShaderBackground`, features 44–46), y el
+   * header fijo flota encima de ellos.
    *
-   * Se renumeró en vez de agregar un nivel libre porque el spotlight tiene que
-   * pintar ENCIMA de los puntos para poder teñirlos (ui-map.md:271) y **no
-   * existe un entero entre -1 y 0**.
-   *
-   * ⚠️ Tienen que ser DISTINTOS. Si dos compartieran nivel, el desempate sería
-   * el orden del documento y los glows —que se escriben dentro de las
-   * secciones, después de la hoja— quedarían encima de los puntos, invirtiendo
-   * el diseño. Son tokens y no literales justamente porque lo que importa es la
-   * relación entre ellos, y vive en tres archivos distintos.
+   * ⚠️ Los tres niveles negativos de abajo son SOLO de v1 y ya no pintan
+   * nada: la feature 43 retiró el papel punteado y el spotlight del layout
+   * y ocultó los glows en `SectionBackdrop` (Roberto, 2026-11-01). Quedan
+   * porque los componentes v1 en cuarentena todavía los nombran; la feature
+   * 47 los borra con ellos. La regla que los ordenaba (glows debajo de
+   * puntos debajo de spotlight, rules.md §§ R28 y R37) es historia de v1.
    */
   --layer-glow: -3;
   --layer-dots: -2;
@@ -967,6 +961,74 @@
 
   /* ---------- Contenedor ---------- */
   --max: 80rem;
+
+  /*
+   * ---------- Shell (feature 43) ----------
+   * Values from `docs/harness/progress/pen-extract-43.md` (frames `FJIoc`
+   * desktop nav, `DIS32` mobile nav, `chQ4f` open menu, `K3vvqL` / `kJfw5`
+   * footer). Only what hand-written CSS or a gradient needs lives here; the
+   * plain lengths are bare constants in the `@theme inline` block below.
+   *
+   * Blanco at 8 % (link-bar active fill, footer rules; `#F4F4F214`), 15 %
+   * (desktop language button edge; `#F4F4F226`) and 85 % (desktop footer
+   * links; `#F4F4F2D9`), pen extract §§ 2 and 6.
+   */
+  --blanco-8: color-mix(in srgb, var(--blanco) 8%, transparent);
+  --blanco-15: color-mix(in srgb, var(--blanco) 15%, transparent);
+  --blanco-85: color-mix(in srgb, var(--blanco) 85%, transparent);
+  /* The open menu's glass: Negro 950 at 70 % (`#050505B3`, pen extract § 4). */
+  --menu-vidrio: color-mix(in srgb, var(--negro-950) 70%, transparent);
+  /* The link bar's 1 px top-lit edge: Blanco 20 % → 4 % (`#F4F4F233` →
+     `#F4F4F20A`, pen extract § 2), painted by `borde-luz borde-barra`. */
+  --borde-barra: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--blanco) 20%, transparent),
+    color-mix(in srgb, var(--blanco) 4%, transparent)
+  );
+
+  /*
+   * How far below the viewport top the floating header ends: top offset plus
+   * bar height, 16 + 60 = 76 px below `lg` and 24 + 64 = 88 px from `lg`
+   * (pen extract §§ 2–3). `html` reads it as `scroll-padding-top` (below),
+   * so an in-page jump leaves the target's top under the header's lower edge
+   * instead of beneath it (spec FR-014, research R5).
+   */
+  --header-offset: 4.75rem;
+
+  /*
+   * The open menu's entrance (feature 43, spec FR-023; handoff
+   * `componentes.css` `.m1-menu__links`): each link rises 8 px while it
+   * fades in over `--medio`, 40 ms after the one above it. Zeroed under
+   * reduced motion with the durations, so nothing moves or waits there.
+   */
+  --menu-desliz: 0.5rem;
+  --menu-escalon: 40ms;
+}
+
+@media (width >= 64rem) {
+  :root {
+    --header-offset: 5.5rem;
+  }
+}
+
+/*
+ * Feature 43 · in-page jumps under the fixed header (spec FR-014, research
+ * R5). Nuxt's default router `scrollBehavior` scrolls to `to.hash` at the
+ * element's `scroll-margin-top` plus `html`'s `scroll-padding-top`, and with
+ * behaviour `auto`, which follows CSS `scroll-behavior`
+ * (`node_modules/nuxt/dist/pages/runtime/router.options.js`). So no custom
+ * router options: the offset is this rule, and the jump is smooth only when
+ * the visitor allows motion. `useMobileMenu` restores its scroll lock with
+ * `behavior: 'instant'` so this smoothness never animates that restore.
+ */
+html {
+  scroll-padding-top: var(--header-offset);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /*
@@ -982,6 +1044,8 @@
     --rapido: 0ms;
     --medio: 0ms;
     --lento: 0ms;
+    /* Feature 43 · the menu links appear at once, unstaggered. */
+    --menu-escalon: 0ms;
   }
 }
 
@@ -1009,9 +1073,9 @@
  *
  * El valor tiene que coincidir con el `bg-negro-950` de la raíz del
  * layout: son dos superficies contiguas y una diferencia se vería como una
- * costura. El footer v1 conserva su propio ink-500 plano (feature 34 A2
- * rev. 1) y se ve como una banda más clara hasta que la feature 43 lo
- * reemplace. No se agrega fondo a `body`: un solo lugar decide el lienzo.
+ * costura. Desde la feature 43 el footer es transparente sobre el mismo
+ * Negro 950 (ya no hay banda ink-500). No se agrega fondo a `body`: un solo
+ * lugar decide el lienzo.
  */
 html {
   background-color: var(--negro-950);
@@ -2599,6 +2663,135 @@ html {
    */
   --ease-muush: var(--ease);
   --container-contenido: var(--max);
+
+  /*
+   * ---------- Shell (feature 43) ----------
+   * Source: `docs/harness/progress/pen-extract-43.md`, section named on each
+   * group. Where a value differs between 390 and 1440 the layout swaps at
+   * `lg` (mobile bar ↔ desktop nav, mobile ↔ desktop footer), so each
+   * layout has its own constant; the one value shared by both footers (the
+   * tagline) is fluid.
+   */
+  --color-blanco-8: var(--blanco-8);
+  --color-blanco-15: var(--blanco-15);
+  --color-blanco-85: var(--blanco-85);
+  --color-menu-vidrio: var(--menu-vidrio);
+
+  /* Wordmark: Poppins 22 (pen extract § 1). The weights are per run, in
+     `Wordmark.vue`. Line box 31 / 22 so the lockup is 176 × 31. */
+  --text-marca: 1.375rem;
+  --text-marca--line-height: 1.4091;
+  /* Isotipo 40 wide; its 70.5 × 39.5 viewBox makes it 22 tall (§ 1).
+     `-ancho` because v1 owns `--spacing-isotipo`, and a later key with the
+     same name would silently resize the v1 lockup. */
+  --spacing-isotipo-ancho: 2.5rem;
+  /* Lockup gap 10 (§ 1). */
+  --spacing-lockup: 0.625rem;
+
+  /* Header placement: 16 / 24 from the top, 60 / 64 tall (§§ 2–3). */
+  --spacing-header-top: 1rem;
+  --spacing-header-top-desktop: 1.5rem;
+  --spacing-header-alto: 3.75rem;
+  --spacing-header-alto-desktop: 4rem;
+  /* Mobile bar: radius 18, padding 0 10 0 16, right group gap 8 (§ 3). */
+  --radius-header: 1.125rem;
+  --spacing-header-inicio: 1rem;
+  --spacing-header-fin: 0.625rem;
+  --spacing-header-grupo-movil: 0.5rem;
+  /* Desktop right group gap 12; language button 40 (§ 2). */
+  --spacing-header-grupo: 0.75rem;
+  --spacing-idioma: 2.5rem;
+  /* Blur 20 on the mobile bar and the language button, 24 on the link bar
+     and the menu glass (§§ 2–4). */
+  --blur-header: 1.25rem;
+  --blur-cristal: 1.5rem;
+
+  /* Link bar: padding and gap 6; items 10 / 18, gap 8, Instrument Sans
+     15 / 500; the active dot 6 × 6 (§ 2). The bar is 50 tall, so each item
+     is 38 and its line 18 px = 1.2 × 15 (DERIVED; the font's own `normal`
+     line box measured 19 in Chrome, which made the bar 51). */
+  --spacing-barra: 0.375rem;
+  --spacing-enlace-y: 0.625rem;
+  --spacing-enlace-x: 1.125rem;
+  --spacing-enlace-gap: 0.5rem;
+  --spacing-punto-activo: 0.375rem;
+  --text-enlace: 0.9375rem;
+  --text-enlace--line-height: 1.2;
+  --text-enlace--font-weight: 500;
+
+  /* Menu button: three lines 16 × 1.5, radius 1, gap 4; the X 14 × 14 (§§ 3–4). */
+  --spacing-hamburguesa: 1rem;
+  --spacing-hamburguesa-trazo: 0.09375rem;
+  --spacing-hamburguesa-gap: 0.25rem;
+  --radius-hamburguesa: 0.0625rem;
+  --spacing-cerrar: 0.875rem;
+
+  /* Open menu (§ 4): list 150 from the top, i.e. 74 below the 76 px bar;
+     rows padding 16, gap 6, Poppins 32 / 500 on the font's own line box
+     (48), so three rows end at 402. The divider sits at 440 and the social
+     row at 480: 38 and 39 below what precedes them. Social 48 × 48, gap 12. */
+  --spacing-menu-lista: 4.625rem;
+  --spacing-menu-fila: 1rem;
+  --spacing-menu-filas: 0.375rem;
+  --spacing-menu-divisor: 2.375rem;
+  --spacing-menu-redes: 2.4375rem;
+  --spacing-red-menu: 3rem;
+  --spacing-red-menu-gap: 0.75rem;
+  /*
+   * Social glyph size: 20 px, the leader's decision (pen extract-43 § 10).
+   * The `.pen` draws text glyphs in the social buttons; Roberto chose the
+   * real brand SVGs (pen extract-43 § 9, Q2), so there is no value to
+   * extract. The same 20 px applies in the 48 and 44 buttons; Roberto may
+   * change it, and changing it is this one value.
+   */
+  --spacing-red-glifo: 1.25rem;
+  --text-menu: 2rem;
+  --text-menu--line-height: normal;
+  --text-menu--font-weight: 500;
+
+  /* Desktop footer (§ 6, `K3vvqL`): padding 72 80 40 80, gap 56; brand 340
+     wide, gap 18; columns gap 72, each gap 14; bottom row padding-top 24,
+     legal gap 24. The x padding is `gutter-desktop` (80). */
+  --spacing-footer-arriba: 4.5rem;
+  --spacing-footer-abajo: 2.5rem;
+  --spacing-footer-bloques: 3.5rem;
+  --spacing-footer-marca: 1.125rem;
+  --spacing-footer-marca-ancho: 21.25rem;
+  /* 72 at 1440. The desktop footer starts at 1024, where 72 would push the
+     row past its 864 px content box, so the gap narrows to 40 there
+     (responsive latitude, Constitution VII): clamp from 1024 to 1440. */
+  --spacing-footer-columnas: clamp(2.5rem, -2.4231rem + 7.6923vw, 4.5rem);
+  --spacing-footer-columna: 0.875rem;
+  --spacing-footer-legal: 1.5rem;
+  /* Column heading: Instrument Sans 11 / 600, tracking 1 (§ 6). */
+  --text-footer-titulo: 0.6875rem;
+  --text-footer-titulo--line-height: normal;
+  --text-footer-titulo--letter-spacing: 0.0625rem;
+  --text-footer-titulo--font-weight: 600;
+  /* "Technology Solution Studio.": 14 / 1.5 on desktop (§ 6). */
+  --text-categoria: 0.875rem;
+  --text-categoria--line-height: 1.5;
+  /* Tagline, Poppins 500: 17 at 390, 20 with −0.4 tracking at 1440 (§ 6). */
+  --text-lema: clamp(1.0625rem, 0.9929rem + 0.2857vw, 1.25rem);
+  --text-lema--line-height: normal;
+  --text-lema--letter-spacing: clamp(-0.025rem, 0.0093rem - 0.0381vw, 0rem);
+  --text-lema--font-weight: 500;
+
+  /* Mobile footer (§ 6, `kJfw5`): padding 48 24 32 24, gap 24; brand gap 10;
+     contact rows gap 8, radius 14, padding 14 / 16; social 44 × 44, gap 10;
+     legal gap 6, padding-top 16. The x padding is `gutter` (24). */
+  --spacing-footer-movil-arriba: 3rem;
+  --spacing-footer-movil-abajo: 2rem;
+  --spacing-footer-movil-bloques: 1.5rem;
+  --spacing-footer-movil-marca: 0.625rem;
+  --spacing-contacto-gap: 0.5rem;
+  --radius-contacto: 0.875rem;
+  --spacing-contacto-y: 0.875rem;
+  --spacing-contacto-x: 1rem;
+  --spacing-red-footer: 2.75rem;
+  --spacing-red-footer-gap: 0.625rem;
+  --spacing-legal-movil-gap: 0.375rem;
+  --spacing-legal-movil-arriba: 1rem;
 }
 
 /*
@@ -2682,6 +2875,11 @@ html {
 /* Primary button: flat white 20 % (pen extract § 2). */
 @utility borde-btn {
   --borde: var(--btn-borde);
+}
+
+/* Feature 43 · the nav link bar: Blanco 20 % → 4 % (pen extract-43 § 2). */
+@utility borde-barra {
+  --borde: var(--borde-barra);
 }
 
 /*

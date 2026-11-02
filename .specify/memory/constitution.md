@@ -1,6 +1,21 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.1.1 → 2.1.2
+Status: PATCH — Article VII wording: the wordmark keeps the weights drawn in
+the design ("muush." 600, "dev" 400); headings stay Poppins 500.
+
+Ratified: Roberto, "si", 2026-11-01 (leader session, feature 43 spec gate).
+
+Templates and agent guidance reviewed: no font-weight reference; no change.
+
+Deferred TODOs: none
+
+Previous report (2.1.1) follows.
+-->
+<!--
+SYNC IMPACT REPORT
+==================
 Version change: 2.1.0 → 2.1.1
 Status: PATCH — Article VII naming clarified, no principle added or removed.
 The v2 palette loses its `--m1-*` prefix so that nothing in the final code
@@ -262,7 +277,8 @@ two widths the build MUST match the design. At every other width, sizes and
 spacing MAY differ from a literal interpolation so the layout stays sound;
 color, components, copy and behavior MUST NOT.
 
-Poppins (weight 500) is used for the logo, the wordmark and headings.
+Poppins is used for the logo, the wordmark and headings: weight 500 for
+headings, and the wordmark as drawn in the design ("muush." 600, "dev" 400).
 Instrument Sans is everything else.
 
 ### VIII. Clean Code Discipline
@@ -399,4 +415,4 @@ Amendments require:
 - MINOR: New principle added or materially expanded.
 - PATCH: Clarification, wording, typo fix.
 
-**Version**: 2.1.1 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-01
+**Version**: 2.1.2 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-01

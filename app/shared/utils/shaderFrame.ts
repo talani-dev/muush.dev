@@ -15,8 +15,12 @@ export const MOBILE_PIXEL_RATIO = 1
 export const DESKTOP_MAX_PIXEL_RATIO = 1.5
 /** Shader time of the single still frame drawn under reduced motion. */
 export const STILL_TIME_SECONDS = 12
-/** The engine's uniform defaults; a preset's own values win. */
-export const SHADER_DEFAULTS = { u_speed: 1, u_flip: 1, u_grain: 0.07 } as const
+/**
+ * The engine's uniform defaults; a preset's own values win. `u_grain` is
+ * 0.03, softer than the 0.07 `@default` in the `.glsl` files, which this base
+ * overrides (Roberto 2026-11-01, feature 43 spec FR-060).
+ */
+export const SHADER_DEFAULTS = { u_speed: 1, u_flip: 1, u_grain: 0.03 } as const
 
 export interface AnimationState {
   visible: boolean
@@ -57,9 +61,15 @@ export function shouldAnimate(state: AnimationState): boolean {
   return state.visible && !state.documentHidden && !state.reducedMotion
 }
 
-/** A preset's uniforms over the engine defaults. */
+/**
+ * The uniforms one draw sends, in the handoff engine's precedence
+ * (`MuushGradient` constructor, 2026-11-01): the shader's own `@default`
+ * values (`readShaderDefaults`), then the engine base values above, then the
+ * preset's uniforms. Each layer wins over the one before it.
+ */
 export function withShaderDefaults(
-  uniforms: Readonly<Record<string, number>>
+  uniforms: Readonly<Record<string, number>>,
+  shaderDefaults: Readonly<Record<string, number>> = {}
 ): Record<string, number> {
-  return { ...SHADER_DEFAULTS, ...uniforms }
+  return { ...shaderDefaults, ...SHADER_DEFAULTS, ...uniforms }
 }

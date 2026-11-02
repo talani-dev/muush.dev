@@ -14,6 +14,9 @@ import type { RouteLocationRaw } from 'vue-router'
  * Clarifications Q3). Press scale from the handoff's `componentes.css`; the
  * handoff gives the glass button no hover state, so it has none here.
  *
+ * One size only, so no `size` prop (feature 43, review-42b advisory 2): the
+ * 390 / 1440 difference is the `lg:` swap below.
+ *
  * Shares no base component with `PrimaryButton`: fill, edge, icon and
  * sizes all differ, and a base for two callers would be a premature
  * abstraction (plan § 4, Article VIII).
@@ -23,7 +26,6 @@ interface Props {
   to?: RouteLocationRaw
   href?: string
   type?: 'button' | 'submit'
-  size?: 'hero'
   disabled?: boolean
 }
 

@@ -76,3 +76,30 @@ describe('spotlight · red lit dots (amendment A2)', () => {
     }
   })
 })
+
+describe('spotlight · retired from the layout (feature 43)', () => {
+  /*
+   * Supersedes feature 42 acceptance "El cursor personalizado y el spotlight
+   * siguen funcionando" for the spotlight (Roberto, 2026-11-01; spec FR-039).
+   * The tokens above stay with the quarantined v1 components until feature
+   * 47 deletes them; what changes is that nothing mounts them. The "You"
+   * cursor half of that acceptance is `tests/brand-cursor.test.ts`, unchanged.
+   */
+  const layout = readFileSync(
+    join(process.cwd(), 'app', 'layouts', 'default.vue'),
+    'utf8'
+  )
+  const code = layout
+    .replaceAll(/\/\*[\s\S]*?\*\//g, '')
+    .replaceAll(/<!--[\s\S]*?-->/g, '')
+
+  it('should mount neither the spotlight nor the dotted paper when the layout renders', () => {
+    for (const retired of [
+      'CursorSpotlight',
+      'useCursorSpotlight',
+      'DotGrid',
+    ]) {
+      expect(code, retired).not.toContain(retired)
+    }
+  })
+})

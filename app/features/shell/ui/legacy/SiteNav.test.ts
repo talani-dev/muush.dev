@@ -11,7 +11,7 @@ import SiteNav from './SiteNav.vue'
 
 const items: ResolvedShellItem[] = [
   { label: 'Servicios', href: '/es#servicios', external: false },
-  { label: 'Nosotros', href: '/es/nosotros', external: false, current: true },
+  { label: 'Nosotros', href: '/es/nosotros', external: false, current: 'page' },
 ]
 
 const menuItems: ResolvedShellItem[] = [

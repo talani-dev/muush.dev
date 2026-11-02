@@ -17,9 +17,9 @@ import { usePageSeo } from '@/features/shell'
  *
  * `AboutHeroSection` (feature 17) supplies the page's `<h1>`.
  * `WorkWithMuushSection` (feature 20) is the page's second section and the
- * target the footer's `Work with muush` item and the nav's `#work` anchor
- * resolve to — no more placeholder heading. Team and Network still belong to
- * later, `blocked` features (spec Assumptions).
+ * target the footer's `Work with muush` item and the nav's
+ * `#trabaja-con-muush` anchor resolve to — no more placeholder heading. Team
+ * and Network still belong to later, `blocked` features (spec Assumptions).
  *
  * `useApplicationFormContent` is called here, not inside
  * `WorkWithMuushSection.vue` or `forms/`'s own components, so that neither

@@ -108,7 +108,26 @@ const EXPECTED_UNIFORMS: Record<
     u_fadeT: 0.1,
     u_fadeB: 0.02,
   },
+  /* Feature 43 · the open mobile menu, pen extract-43 § 4 (not in the README). */
+  mobileMenu: {
+    u_y0: 1.02,
+    u_y1: 0.8,
+    u_th: 0.06,
+    u_amp: 0.03,
+    u_tdark: 0,
+  },
 }
+
+/** The presets the handoff ships a poster for: all but the mobile menu. */
+const WITH_POSTER = new Set<BackgroundPresetName>([
+  'homeHero',
+  'howWeWork',
+  'assessment',
+  'aboutHero',
+  'workWithUs',
+  'faq',
+  'notFound',
+])
 
 const entries = Object.entries(BACKGROUND_PRESETS) as [
   BackgroundPresetName,
@@ -116,7 +135,7 @@ const entries = Object.entries(BACKGROUND_PRESETS) as [
 ][]
 
 describe('backgroundPresets', () => {
-  it('should define exactly the seven production uses when imported', () => {
+  it('should define the seven section uses and the mobile menu when imported', () => {
     expect(Object.keys(BACKGROUND_PRESETS).sort()).toEqual(
       [
         'aboutHero',
@@ -124,6 +143,7 @@ describe('backgroundPresets', () => {
         'faq',
         'homeHero',
         'howWeWork',
+        'mobileMenu',
         'notFound',
         'workWithUs',
       ].sort()
@@ -151,9 +171,11 @@ describe('backgroundPresets', () => {
       }
     })
 
-    it(`should point at a poster when the preset is ${name}`, () => {
-      expect(preset.poster).toMatch(/\.webp/)
-    })
+    if (WITH_POSTER.has(name)) {
+      it(`should point at a poster when the preset is ${name}`, () => {
+        expect(preset.poster).toMatch(/\.webp/)
+      })
+    }
   }
 
   it('should give Trabaja con muush the assessment uniforms and poster when compared', () => {
@@ -174,10 +196,43 @@ describe('backgroundPresets', () => {
     expect(high).toEqual(['aboutHero', 'faq', 'homeHero', 'notFound'])
   })
 
+  it('should give the mobile menu a lazy listón with no poster when read', () => {
+    /* Feature 43 · FR-015, research R7: the handoff ships no poster for it. */
+    expect(BACKGROUND_PRESETS.mobileMenu.shader).toBe('liston')
+    expect(BACKGROUND_PRESETS.mobileMenu.poster).toBeUndefined()
+    expect(BACKGROUND_PRESETS.mobileMenu.priority).toBe('lazy')
+  })
+
   it('should load each GLSL source when asked for it', async () => {
     for (const shader of ['liston', 'acanalado'] as const) {
       const source = await SHADER_SOURCES[shader]()
       expect(source).toBe(shaderSource(shader))
     }
   })
+})
+
+/**
+ * Feature 43 reopened 2 · 2026-11-01 (spec FR-057, FR-058). The handoff seeds
+ * the grain hash in `finish()` with `fract(u_time*7.0)`, so the grain changes
+ * every frame and flickers "como ISO alto". Roberto chose a static grain: the
+ * hash takes only the pixel coordinate, and `u_grain` still scales it.
+ */
+describe('shader grain', () => {
+  const GRAIN_TERM = /col\+=\(hash\(([^()]*)\)-0\.5\)\*u_grain;/
+
+  function finishBody(source: string): string {
+    const start = source.indexOf('vec3 finish(')
+    expect(start, 'finish() is declared').toBeGreaterThanOrEqual(0)
+    return source.slice(start, source.indexOf('\n', start))
+  }
+
+  for (const shader of ['liston', 'acanalado'] as const) {
+    it(`should seed the ${shader} grain hash without u_time when finish() adds it`, () => {
+      const body = finishBody(shaderSource(shader))
+      const grain = GRAIN_TERM.exec(body)
+      expect(grain, 'finish() adds the grain scaled by u_grain').not.toBeNull()
+      expect(grain?.[1]).toBe('gl_FragCoord.xy')
+      expect(body).not.toContain('u_time')
+    })
+  }
 })

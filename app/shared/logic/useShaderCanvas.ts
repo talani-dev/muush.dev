@@ -24,6 +24,7 @@ import {
   shouldAnimate,
   withShaderDefaults,
 } from '@/shared/utils/shaderFrame'
+import { readShaderDefaults } from '@/shared/utils/shaderUniformDefaults'
 
 /**
  * The lifecycle of one animated background canvas (feature 42, research R7,
@@ -43,7 +44,8 @@ import {
  * handoff never releases its observers, listeners or context, which a
  * client-routed site must (spec FR-024).
  *
- * The shader is chosen once, at mount; uniforms are read on every draw.
+ * The shader is chosen once, at mount, and its `@default` values are read
+ * from its source then; preset uniforms are read on every draw.
  */
 
 /** IntersectionObserver look-ahead, as in the handoff. Not a visual value. */
@@ -65,6 +67,8 @@ interface CanvasState {
 /** The imperative half: one instance per mounted canvas. */
 class ShaderCanvas {
   private renderer: ShaderRenderer | null = null
+  /** The shader's `@default` values, read once from its source at start. */
+  private shaderDefaults: Readonly<Record<string, number>> = {}
   private gl: WebGLRenderingContext | null = null
   private resizeObserver: ResizeObserver | null = null
   private intersectionObserver: IntersectionObserver | null = null
@@ -82,8 +86,20 @@ class ShaderCanvas {
   async start(): Promise<void> {
     this.gl = this.canvas.getContext('webgl', CONTEXT_OPTIONS)
     if (!this.gl) return this.fallBack()
-    const source = await SHADER_SOURCES[toValue(this.preset).shader]()
+    /*
+     * The source is a lazy chunk; one that cannot be downloaded (offline, a
+     * stale deploy) rejects. It falls back to the poster like any other failure, and the
+     * rejection is handled here rather than escaping as unhandled (feature
+     * 43, spec FR-045; review-42b advisory 1).
+     */
+    let source: string
+    try {
+      source = await SHADER_SOURCES[toValue(this.preset).shader]()
+    } catch {
+      return this.fallBack()
+    }
     if (this.disposed) return
+    this.shaderDefaults = readShaderDefaults(source)
     this.renderer = createShaderRenderer(this.gl, source)
     if (!this.renderer) return this.fallBack()
     this.startedAt = performance.now()
@@ -160,7 +176,10 @@ class ShaderCanvas {
     const time = this.state.reducedMotion.value
       ? STILL_TIME_SECONDS
       : (performance.now() - this.startedAt) / 1000
-    this.renderer.draw(time, withShaderDefaults(toValue(this.preset).uniforms))
+    this.renderer.draw(
+      time,
+      withShaderDefaults(toValue(this.preset).uniforms, this.shaderDefaults)
+    )
     this.state.isReady.value = true
   }
 

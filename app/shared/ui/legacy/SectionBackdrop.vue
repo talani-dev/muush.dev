@@ -58,8 +58,15 @@
 <template>
   <div
     aria-hidden="true"
-    class="section-backdrop pointer-events-none absolute inset-0"
+    class="section-backdrop pointer-events-none absolute inset-0 hidden"
   >
+    <!--
+      `hidden` (display: none) since feature 43: the v1 section glows are
+      retired from the Muush 1.0 canvas (Roberto, 2026-11-01). Every v1 glow
+      is inside this one wrapper, so hiding it here removes them all without
+      editing the v1 sections, which features 44–46 replace. Feature 47
+      deletes this component with them.
+    -->
     <slot />
   </div>
 </template>

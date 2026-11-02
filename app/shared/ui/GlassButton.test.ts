@@ -76,4 +76,12 @@ describe('GlassButton', () => {
   it('should carry the Blanco keyboard focus ring when rendered', () => {
     expect(render().classes()).toContain('foco')
   })
+
+  it('should declare no size prop when compiled', () => {
+    /* Feature 43 · FR-046 (review-42b advisory 2): the button has one size. */
+    const props = (GlassButton as { props?: Record<string, unknown> }).props
+
+    expect(Object.keys(props ?? {})).not.toContain('size')
+    expect(Object.keys(props ?? {})).toContain('label')
+  })
 })

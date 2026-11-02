@@ -27,6 +27,58 @@ const COMPONENTS = [
   'PrimaryButton',
   'RotatingPill',
   'ShaderBackground',
+  /* Feature 43 · the Muush 1.0 brand marks (spec FR-036, FR-037, SC-007). */
+  'Isotipo',
+  'Wordmark',
+  'Lockup',
+  'SocialIcon',
+]
+
+/*
+ * Feature 43 · the v2 shell (spec FR-043, SC-007): every file it creates or
+ * rewrites outside `legacy/`. The v1 shell in `ui/legacy/` is quarantined
+ * and not scanned.
+ */
+const SHELL = join(ROOT, 'app', 'features', 'shell')
+
+const SHELL_COMPONENTS = [
+  'SiteHeader',
+  'NavLinkBar',
+  'MenuButton',
+  'MobileMenu',
+  'SiteFooter',
+  'FooterColumns',
+  'MobileFooter',
+  'SocialLinks',
+  'ShellItemLink',
+  'LanguageToggle',
+]
+
+const SHELL_SCANNED = [
+  ...SHELL_COMPONENTS.flatMap(name => [
+    join(SHELL, 'ui', `${name}.vue`),
+    join(SHELL, 'ui', `${name}.stories.ts`),
+  ]),
+  ...[
+    'useShellNavigation.ts',
+    'useShellItemResolver.ts',
+    'useMobileMenu.ts',
+    'useNavScrollReveal.ts',
+    'useFocusTrap.ts',
+    'useActiveSection.ts',
+    /* FR-061 · Language switch keeps position, Roberto 2026-11-01. */
+    'localeSwitchScroll.ts',
+    'useLocaleSwitchScroll.ts',
+  ].map(name => join(SHELL, 'logic', name)),
+  ...[
+    'types.ts',
+    'navigation.ts',
+    'footerColumns.ts',
+    'contactChannels.ts',
+    'notFound.ts',
+  ].map(name => join(SHELL, 'data', name)),
+  join(ROOT, 'app', 'layouts', 'default.vue'),
+  join(SHARED, 'data', 'sectionAnchors.ts'),
 ]
 
 const SCANNED = [
@@ -44,6 +96,7 @@ const SCANNED = [
   join(SHARED, 'utils', 'shaderFrame.ts'),
   join(SHARED, 'data', 'glassPresets.ts'),
   join(SHARED, 'data', 'backgroundPresets.ts'),
+  ...SHELL_SCANNED,
 ]
 
 const FORBIDDEN: [string, RegExp][] = [

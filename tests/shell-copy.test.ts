@@ -3,15 +3,11 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
- * The shell's copy is fixed by `design-extract.md` § 9.bis and
- * `ui-map.md` § 8, and two of its entries are easy to "fix" by mistake:
- * `Work with muush` is a proper noun carrying the same value in both
- * locales, and the support address has to survive the message compiler.
- *
- * `FAQ` and `Blog · próximamente` were pinned here too until feature 23
- * (2026-09-08) removed both from `FOOTER_COLUMNS` entirely, per Roberto's
- * explicit call — the keys came out of the locale files alongside them
- * rather than being left as unreferenced dead copy.
+ * The shell's copy. Since feature 43 it is Muush 1.0's: `muush-1.0.md`
+ * §§ 4.1, 4.7, 4.9 and pen extract-43 § 6. Three entries are easy to "fix"
+ * by mistake: "Technology Solution Studio." is drawn in English in both
+ * locales, the support address has to survive the message compiler, and
+ * the WhatsApp message is the locale's own.
  *
  * Read from disk, not imported: Nuxt's i18n Vite transform compiles a locale
  * JSON into a message AST, which none of these assertions could see through
@@ -19,11 +15,18 @@ import { describe, expect, it } from 'vitest'
  */
 interface ShellCopy {
   shell: {
+    nav: { services: string; about: string; cta: string }
     footer: {
+      tagline: string
       category: string
+      copyright: string
       whatsappMessage: string
-      contact: { email: string }
-      muush: { work: string }
+      contact: {
+        email: string
+        hints: { whatsapp: string; call: string; email: string }
+      }
+      muush: { work: string; blog: string; blogInline: string }
+      legal: { privacy: string; terms: string }
     }
   }
 }
@@ -48,10 +51,53 @@ describe('shell copy', () => {
     )
   })
 
-  it('should leave the proper nouns untranslated in both locales', () => {
+  it('should leave the studio category untranslated in both locales', () => {
     /* Parity is satisfied by presence, not by difference. */
-    expect(en.shell.footer.muush.work).toBe(es.shell.footer.muush.work)
+    expect(es.shell.footer.category).toBe('Technology Solution Studio.')
     expect(en.shell.footer.category).toBe(es.shell.footer.category)
+  })
+
+  it('should carry the approved nav copy when read', () => {
+    /* `muush-1.0.md` § 4.1; Preguntas returns with feature 46. */
+    expect([
+      es.shell.nav.services,
+      es.shell.nav.about,
+      es.shell.nav.cta,
+    ]).toEqual(['Servicios', 'Nosotros', 'Diagnóstico gratis'])
+    expect([
+      en.shell.nav.services,
+      en.shell.nav.about,
+      en.shell.nav.cta,
+    ]).toEqual(['Services', 'About', 'Free assessment'])
+  })
+
+  it('should carry the approved footer copy when read', () => {
+    /* `muush-1.0.md` §§ 4.7, 4.9; pen extract-43 § 6. */
+    expect(es.shell.footer.tagline).toBe('Hablamos negocio y código.')
+    expect(en.shell.footer.tagline).toBe('We speak business and code.')
+    expect(es.shell.footer.muush.work).toBe('Trabaja con muush')
+    expect(en.shell.footer.muush.work).toBe('Work with muush')
+    expect(es.shell.footer.muush.blog).toBe('Blog · próximamente')
+    expect(en.shell.footer.muush.blogInline).toBe('Blog (coming soon)')
+    expect(es.shell.footer.legal).toEqual({
+      privacy: 'Aviso de privacidad',
+      terms: 'Términos y condiciones',
+    })
+    expect(en.shell.footer.copyright).toBe('© 2026 muush · All rights reserved')
+  })
+
+  it('should store the contact hints without the arrow when read', () => {
+    /* The arrow is decorative and drawn by the component (data-model § 5). */
+    expect(es.shell.footer.contact.hints).toEqual({
+      whatsapp: 'Escríbenos',
+      call: '30 minutos',
+      email: 'Correo',
+    })
+    expect(en.shell.footer.contact.hints).toEqual({
+      whatsapp: 'Message us',
+      call: '30 minutes',
+      email: 'Email',
+    })
   })
 
   it('should escape the at sign of the support address for the compiler', () => {

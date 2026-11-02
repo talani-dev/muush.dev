@@ -142,7 +142,9 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
   it('should render the site nav and footer exactly once when generated', () => {
     const markup = markupOf(document.file)
 
-    expect(count(markup, /<nav aria-label="[^"]*" class="site-nav /g)).toBe(1)
+    /* Feature 43: the site nav is the v2 header's one `<nav>`. */
+    expect(count(markup, /<header\b/g)).toBe(1)
+    expect(count(markup, /<header[^>]*>\s*<nav aria-label="[^"]*"/g)).toBe(1)
     expect(count(markup, /<footer\b/g)).toBe(1)
   })
 
@@ -184,14 +186,21 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
     expect(textOf(leds[0]?.[2] ?? '')).toBe(copy.cta)
   })
 
-  it('should render no nav call to action, not even its noscript override, when generated', () => {
+  it('should render the header call to action like every other page when generated', () => {
+    /*
+     * Feature 43 supersedes feature 36's removal: the header's "Diagnóstico
+     * gratis" shows on every page, the 404 included (spec FR-004,
+     * Clarifications Q1, confirmed by Roberto 2026-11-01). It points at the
+     * same-locale home's diagnostic section; no noscript override exists.
+     */
     const body = readOutput(document.file).match(
       /<body[^>]*>(.*)<\/body>/s
     )?.[1]
+    const header = body?.match(/<header[\s\S]*?<\/header>/)?.[0]
 
-    expect(body).toBeDefined()
+    expect(header).toContain(`<a href="${document.home}#diagnostico"`)
     expect(body).not.toContain('site-nav__cta')
-    expect(body).not.toMatch(/<noscript>.*site-nav__cta/s)
+    expect(body).not.toMatch(/<noscript[^>]*><style>/)
   })
 
   it('should render the three shortcuts in order inside a named nav when generated', () => {
@@ -241,6 +250,9 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
     ]
 
     expect(backdrops).toHaveLength(1)
+    /* Feature 43 (spec FR-040): the v1 glow stays in the markup, never
+       displayed, until feature 46 replaces this page. */
+    expect(section).toMatch(/class="section-backdrop [^"]*\bhidden\b/)
     const glow = backdrops[0]?.[1] ?? ''
     for (const utility of [
       'from-glow-red-400-60',
@@ -335,39 +347,48 @@ describe('not-found output · removed shells and sitemap', () => {
   })
 })
 
-describe('not-found output · nav height parity (Roberto, 2026-10-15)', () => {
-  const endGroupClass = (file: string): string =>
-    markupOf(file).match(/<div class="([^"]*\bnav-row__end\b[^"]*)"/)?.[1] ?? ''
+describe('not-found output · the same header as every page (feature 43)', () => {
+  /*
+   * Supersedes the v1 "nav height parity" and "other pages keep their nav
+   * call to action" blocks (Roberto, 2026-10-15; feature 36): the v2 header
+   * is the same on every page, the 404 included, with its CTA (spec FR-004,
+   * confirmed by Roberto 2026-11-01). Only destinations and the current-page
+   * marking may differ; the 404 marks nothing (spec FR-028). Since the Home
+   * link (added by Roberto 2026-11-01) the prerendered home page lights
+   * "Inicio" / "Home" (dot + active fill), so the active style is folded
+   * back to the inactive one before comparing; the 404 side is pinned
+   * unlit by the next block.
+   */
+  const headerOf = (file: string): string =>
+    (markupOf(file).match(/<header[\s\S]*?<\/header>/)?.[0] ?? '')
+      .replaceAll(/ href="[^"]*"/g, '')
+      .replaceAll(/ hreflang="[^"]*"| lang="[^"]*"| aria-label="[^"]*"/g, '')
+      .replaceAll(' aria-current="page"', '')
+      .replaceAll(/<span data-punto[^>]*><\/span>/g, '<!---->')
+      .replaceAll(' bg-blanco-8 text-blanco"', ' text-texto-suave"')
+      .replaceAll(/ ?router-link-(exact-)?active/g, '')
+      .replaceAll(/class="\s+/g, 'class="')
+      .replaceAll(/>(ES|EN)</g, '><')
+      .replaceAll(/<span>[^<]*<\/span><span data-icono/g, '<span data-icono')
+      .replaceAll(/(<a[^>]*>)\s*[^<\s][^<]*?\s*(<\/a>)/g, '$1$2')
 
   it.each(DOCUMENTS.map(document => document.file))(
-    'should hold the nav end group at the CTA height when %s is generated',
+    'should render the home page header when %s is generated',
     file => {
-      expect(endGroupClass(file)).toContain('lg:min-h-nav-cta-h')
+      const home = join(file.startsWith('es') ? 'es' : 'en', 'index.html')
+
+      expect(headerOf(file)).not.toBe('')
+      expect(headerOf(file)).toBe(headerOf(home))
     }
   )
 
-  it.each([
-    join('es', 'index.html'),
-    join('en', 'index.html'),
-    join('es', 'nosotros', 'index.html'),
-    join('en', 'about', 'index.html'),
-  ])('should leave the nav end group unchanged when %s is generated', file => {
-    expect(endGroupClass(file)).toBe(
-      'nav-row__end flex items-center gap-nav-end-gap'
-    )
-  })
-})
-
-describe('not-found output · other pages keep their nav call to action', () => {
-  it('should keep the About call to action visible from the start when generated', () => {
-    expect(markupOf(join('en', 'about', 'index.html'))).toContain(
-      'visible opacity-100 site-nav__cta'
-    )
-  })
-
-  it('should keep the home call to action hidden until the hero is left when generated', () => {
-    expect(markupOf(join('en', 'index.html'))).toContain(
-      'invisible opacity-0 site-nav__cta'
-    )
-  })
+  it.each(DOCUMENTS.map(document => document.file))(
+    'should mark no nav item as current when %s is generated',
+    file => {
+      const header = markupOf(file).match(/<header[\s\S]*?<\/header>/)?.[0]
+      expect(header).not.toContain('aria-current')
+      /* Not even the Home item (Roberto 2026-11-01): no active dot. */
+      expect(header).not.toContain('data-punto')
+    }
+  )
 })
