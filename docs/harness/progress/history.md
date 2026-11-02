@@ -3003,3 +3003,150 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
   42 reopened → in_progress.
 - 2026-11-01 · Implementer PASS: 5 components + useCursorSpotlight moved to legacy (paths only). 42 → reviewing; reviewer launched.
 - 2026-11-01 · Reviewer APPROVED (review-42c.md, 3 advisories). Advisory 1 carried into feature 43 acceptance; 2 and 3 noted (optional / expected until 43). Close-out launched.
+
+## 2026-11-01 — Feature 43: m1_site_shell (done)
+
+- Change (sdd: true): the Muush 1.0 / v2 site shell on branch `feat/v2-site-shell` (from `muush-v2` at c137096, merges back into `muush-v2`, never master). Spec package `specs/043-site-shell/` (52 tasks, all checked); values from the `.pen` via the leader (`pen-extract-43.md`).
+  - Shared brand marks in `app/shared/ui/`: Isotipo (existing logo SVG, stroke 12, Blanco stroke and Red muush 500 dot), Wordmark (600 / 600 / 400, Poppins 400 added), Lockup and SocialIcon (real brand SVGs), plus `app/shared/data/sectionAnchors.ts`. Each with test and story under `Shared/UI/`.
+  - Shell in `app/features/shell/`: SiteHeader (one responsive row that swaps at `lg` 1024 px, hides after 80 px of downward scroll and reveals on scroll up, on focus and while the menu is open), NavLinkBar, MenuButton, MobileMenu (full-screen dialog, focus trap, inert background, scroll lock with exact restore, closes on Cerrar/Esc/history/resize/navigation, focus returns to the menu button on dismiss), SiteFooter (4 columns: NAVEGACIÓN, CONTACTO, MUUSH, REDES), FooterColumns, MobileFooter (contact first, as buttons), SocialLinks, ShellItemLink; `useFocusTrap` and `useActiveSection` (scroll-spy) hand-written, no new dependency; `data/contactChannels.ts`. LanguageToggle restyled only (look-only `variant`), behaviour untouched.
+  - Layout, CSS and assets: `layouts/default.vue` rewritten; shell tokens, header offset, `scroll-padding-top` and reduced-motion-aware smooth scroll in `global.css`; favicon with the Red muush 500 dot and an adaptive Negro 950 / Blanco stroke; i18n copy in both locales.
+  - Retired from the shell: the spotlight (CursorSpotlight + DotGrid) no longer mounts, superseding feature 42's acceptance item 8 (the "You" cursor stays); v1 section glows hidden (`legacy/SectionBackdrop.vue`).
+  - Moved with staged `git mv` to `app/features/shell/ui/legacy/` (stories under `Legacy v1/Shell/`): SiteNav, MobileMenu, SiteFooter, FooterColumn, NotFoundContent, NotFoundRings.
+  - Review-42b follow-ups closed: shader chunk rejection falls back (1), unused GlassButton `size` prop removed (2), stale `global.css` comments rewritten (3), v2 Lockup/Wordmark/social icon built (5), primitives checked at 360–1920 and under forced colours (7).
+  - Browser verification in headless Chrome over CDP (390/1440 anchors, menu sequence, hide/reveal, scroll-spy, forced colours, 360–1920, no-JS, print). Findings R75 and R76 added to `docs/harness/findings.md`.
+- Roberto's resolutions at the spec gate (2026-11-01, with the leader's recommendations): scroll-spy active state; nav CTA always shown, including the 404; wordmark 600/600/400 plus Poppins 400 (constitution 2.1.2); favicon dot in Red muush 500 and adaptive stroke in v2 tokens (Negro 950 / Blanco), no v1 hex; Preguntas hidden until feature 46; v1 ids retargeted to `#diagnostico` and `#trabaja-con-muush`; v1 glows hidden now. Isotipo: not the design's thinner stroke, the exact existing SVG (`app/assets/logo`, stroke 12). Earlier: real brand SVGs in the social buttons, links scroll to their section, the logo is the home link.
+- Social glyph size: 20 px, a leader decision (pen-extract-43 § 10).
+- Reviewer (`review-43.md`) APPROVED; security clean; reviewer's own `./init.sh` exit 0 (131 files / 1883 tests). Should-fix 1–3 (stale "placeholder/UNVERIFIED" wording on the 20 px glyph in `global.css`, `SocialLinks.stories.ts` and `impl_site_shell.md` § 4) and advisories 1–2 (stale `SiteNav` / breakpoint wording in `useMobileMenu.ts`, `#work` in `app/pages/about.vue`) fixed in the close-out, comments and doc text only. Advisories 3 (`SocialNetwork` type import from `data/` into `shared/ui`) and 6 (`useNavCtaReveal`, `useHeroSentinel` and the `--layer-glow/dots/spotlight` tokens left for later deletion) carried into feature 47. Advisories 4 (single-viewport part stories), 5 (`useShellNavigation` length), 7 (this entry) and 8 (active dot and menu divider vanish under forced colours; `aria-current` remains) noted.
+- `./init.sh` exits 0.
+- Reports: `pen-extract-43.md`, `spec_site_shell.md`, `impl_site_shell.md` (feature 43 section), `review-43.md`.
+- Not committed (Roberto's instruction: no commits without explicit request).
+
+### Session log (from current.md)
+
+- 2026-11-01 · 42 merged into muush-v2 (c137096). Branch feat/v2-site-shell created.
+- 2026-11-01 · Roberto: real brand SVGs in the social buttons; links scroll to
+  their section; the logo is the home link (no Home item). Scroll-spy active
+  state is provisional until the spec gate.
+- 2026-11-01 · spec_author: package `specs/043-site-shell/` written, feature 43 →
+  `spec_ready`, `./init.sh` exit 0. Summary and provisional items:
+  `docs/harness/progress/spec_site_shell.md`. ⏸ Awaiting Roberto.
+- 2026-11-01 · spec_author: specs/043-site-shell → spec_ready (52 tasks).
+- 2026-11-01 · ⏸ Roberto APPROVED spec 043 with the leader's recommendations: scroll-spy; nav CTA always shown; wordmark 600/600/400 + Poppins 400 (constitution 2.1.2 applied); favicon dot and adaptive stroke in v2 tokens; Preguntas hidden until 46; v1 ids retargeted; v1 glows hidden now. Isotipo: ignore the design's thinner stroke and use the same existing SVG. 43 → in_progress.
+- 2026-11-01 · implementer: started feature 43 on `feat/v2-site-shell`. Baseline `pnpm test`: 113 files / 1699 tests green.
+- 2026-11-01 · implementer: T001–T002 shell tokens, header offset, scroll-padding and smooth scroll in global.css (renamed two keys that collided with v1: `isotipo-ancho`, `menu-filas`).
+- 2026-11-01 · implementer: T003 v1 shell UI moved to `app/features/shell/ui/legacy/`; T004–T022 shared anchors, brand marks, Poppins 400, shell data/logic (resolver `current`, close reason, `reveal()`, focus trap, scroll-spy), mobileMenu preset, i18n — unit tests green.
+- 2026-11-01 · implementer: T023–T046 v2 header, menu, footer, layout, retirements, favicon (v2 dot + stroke), follow-ups 1–3, 5; build tests updated with supersession notes. Spec/plan/research/tasks wording moved from "provisional" to "confirmed by Roberto 2026-11-01" (Q2 logo SVG as is, Q4 favicon stroke). `pnpm test` 125 files green, typecheck and check green.
+- 2026-11-01 · implementer: browser verification in headless Chrome over CDP (390/1440 anchors, menu focus trap, scroll lock, hide/reveal, scroll-spy, forced colours, 360–1920, no-JS, print; 1250 Storybook renders). `./init.sh` exit 0 (131 files / 1883 tests). Report: `docs/harness/progress/impl_site_shell.md` (feature 3's report kept below it). Open gap for the leader: the social-glyph size inside the 48/44 buttons (placeholder 20 px).
+- 2026-11-01 · Implementer PASS (52/52 tasks, 131 files / 1883 tests). Social glyph 20 px accepted by the leader (pen-extract-43 § 10). 43 → reviewing; reviewer launched.
+- 2026-11-01 · Reviewer APPROVED (review-43.md); security clean. Should-fix 1–3 and advisories 1–2 are stale comments only; they are fixed in the close-out. Advisories 3 and 6 were carried into feature 47.
+
+### Reopened · Home link + shader defaults (2026-11-01)
+
+- Roberto's request (Storybook review, 2026-11-01): (A) a Home link in the header besides the logo (the leader had misread his earlier question as "no Home item"); (B) the hero listón did not draw and the acanalado lacked its ribs, ES and EN, with the poster flashing for an instant. The handoff README/engine were corrected the same day (missing uniforms take the shader `@default`); the updated `README.md` and `muush-gradient.js` were copied into `docs/handoff/muush-1.0/`. 43 reopened → in_progress.
+- Root cause (B, CONFIRMED): `useShaderCanvas` sent only the engine base plus the preset, and WebGL leaves an unset uniform at 0. The presets omit `u_y0`/`u_y1`/`u_amp`/`u_th`/`u_twist`/`u_fadeT` (homeHero, aboutHero), `u_ribs`/`u_refract` (howWeWork, faq, notFound) and the mobileMenu geometry/`u_twist`; `u_th = 0` gave the listón zero thickness and `u_ribs = 0` removed the ribs.
+- Fix (B): `readShaderDefaults(source)` in `app/shared/utils/shaderUniformDefaults.ts`, a port of the handoff's `MuushGradient.defaults()`; `withShaderDefaults` merges shader `@default` → engine base → preset (the handoff constructor's order); `useShaderCanvas.start()` reads the defaults once from the loaded source. Tests pin homeHero `u_th` 0.1 and howWeWork `u_ribs` 46, and that explicit preset values win. Browser-verified in headless Chrome + SwiftShader: hero listón draws (ES/EN, aboutHero), acanalado shows ~46 ribs per width (howWeWork, faq, notFound); a zero-uniform control reproduces the bug. mobileMenu draws; its design match is UNVERIFIED (no poster).
+- Home link choices (A, the leader's, Roberto may change them): label "Inicio" / "Home"; first item in the link bar, the mobile menu, the footer's NAVEGACIÓN column and the mobile links line; points to the top of the home page in the current locale; scroll-spy lights it at the top of home only (`atTop`, needing a second observer), never on other pages or the 404; clicking it on its own page scrolls to the top (`logic/scrollToTopIfCurrent.ts`). The logo stays the home link with its own accessible name.
+- Reviewer (`review-43b.md`) APPROVED; security clean; no blocking findings. Should-fix 1 (duplicate requirement IDs in the amendment) was resolved by the leader, who renumbered the amendment's FR-050…054 to FR-052…056 (docs only). Advisories 1–7 noted (among them: a never-failing test and no explicit mobileMenu assertion; Home's scroll-dependent `aria-current="page"` and its lit range, for Roberto or the leader to confirm; spec 042 still shows the one-argument `withShaderDefaults`).
+- `./init.sh` exits 0 (133 files / 1921 tests).
+- Reports: `impl_site_shell.md` § "Reopened 2026-11-01", `review-43b.md`.
+- Not committed (Roberto's instruction: no commits without explicit request).
+
+#### Session log (from current.md)
+
+- 2026-11-01 · Roberto (Storybook review): wants a Home link in the header (the leader had misread his
+  earlier question as "no Home item"); the hero listón does not draw and the acanalado lacks its ribs,
+  ES and EN, with the poster flashing for an instant. The handoff README/engine were corrected the same
+  day: missing uniforms must take the shader @default (ours leave them at 0). The updated README.md
+  and muush-gradient.js were copied into docs/handoff/muush-1.0/. 43 reopened → in_progress.
+- Leader choices for the Home link (Roberto may change them): label "Inicio" / "Home"; first item in
+  the link bar, the mobile menu and the footer's NAVEGACIÓN column and mobile links line; it points to
+  the top of the home page in the current locale; scroll-spy lights it at the top of home only.
+- 2026-11-01 · implementer: (B) root cause confirmed — presets omit u_y0/u_y1/u_th/u_amp/u_twist (listón)
+  and u_ribs/u_refract (acanalado); WebGL left them at 0. Added `readShaderDefaults`
+  (app/shared/utils/shaderUniformDefaults.ts), merge shader @default → engine base → preset.
+- 2026-11-01 · implementer: (A) Home item (`kind: 'top'`) first in bar, menu, Navegación, mobile line;
+  lit at the top of home only (scroll-spy `atTop`); click on its own page scrolls to the top.
+- 2026-11-01 · implementer: browser (headless Chrome 156 + SwiftShader) — hero listón and acanalado ribs
+  (~46/width) draw in Storybook, ES and EN; a zero-uniform control reproduces the black hero / rib-less
+  band. Home link lit at the top of home only; never on 404; toggle/cookie/404 in-place unchanged.
+  `atTop` needed a second observer (an instant jump to the top never crosses the band).
+- 2026-11-01 · implementer: spec package amended (FR-050…FR-054, T053–T058); `./init.sh` exit 0
+  (133 files / 1921 tests). Report: docs/harness/progress/impl_site_shell.md § "Reopened 2026-11-01".
+  Next: leader → reviewer.
+- 2026-11-01 · Implementer PASS: the shader @default fix is CONFIRMED in a browser (hero listón draws, acanalado shows ~46 ribs), and the Home link was added. 133 files / 1921 tests. 43 → reviewing.
+- 2026-11-01 · Reviewer APPROVED (review-43b.md); security clean. The leader renumbered the duplicate amendment IDs FR-050…054 to FR-052…056 (docs only). Close-out launched.
+
+### Reopened 2 · Static grain + isotipo-only header logo (2026-11-01)
+
+- Roberto's requests (2026-11-01): (1) the shader grain flickered ("como ISO alto"): both shaders seeded the grain hash in `finish()` with `fract(u_time*7.0)`, so the noise changed every frame. His decision: keep the grain (`u_grain` 0.07) but make it static, as a documented divergence from the handoff. (2) Added to the same reopen: the header logo is the isotipo alone, with no "muush.dev" wordmark, on desktop and mobile; the footers keep the full lockup; the logo link keeps an accessible name. 43 reopened → in_progress.
+- Changes: in `app/assets/shaders/liston.glsl` and `acanalado.glsl` the grain hash in `finish()` is `hash(gl_FragCoord.xy)`, with a `//` comment recording the divergence; every other line still matches the handoff shaders. `backgroundPresets.test.ts` pins that the grain hash does not reference `u_time`. The "byte-identical" claims were qualified in `backgroundPresets.ts` and spec 042 (`research.md` R8 amendment, `plan.md`, `tasks.md` T001). `SiteHeader.vue` renders `<Lockup form="isotipo" />` at every width, its accessible name reusing `shell.nav.home`; `SiteHeader.test.ts`, the story doc and `tests/static-output.test.ts` were updated. Spec 043 adds FR-057/FR-058 (static grain) and FR-059 (isotipo-only header logo), tasks T059–T061.
+- Reviewer (`review-43c.md`) APPROVED; security clean; no blocking or should-fix findings. Nits 1–3 (stale doc comments in `SiteHeader.vue:24` and `Lockup.vue:8`, and the missing reopen-2 amendment note in `specs/043-site-shell/plan.md`) were fixed in the close-out, comments and docs only. Nit 4: the accessible name reuses "Inicio de muush" / "muush home" rather than the acceptance example "muush.dev — Inicio"; Roberto may want to confirm the wording. Nit 5 (the logo link also gets `aria-current="page"` on `/es` and `/en`, already present before this reopen) was carried into feature 44.
+- `./init.sh` exits 0.
+- Reports: `impl_site_shell.md` § "Reopened 2", `review-43c.md`.
+- Not committed (Roberto's instruction: no commits without explicit request).
+
+#### Session log (from current.md)
+
+- 2026-11-01 · Roberto: the shader grain flickers ("como ISO alto"). Cause: in finish(), both
+  shaders seed the grain hash with fract(u_time*7.0), so it changes every frame. Roberto chose to
+  keep the grain at 0.07 but make it static. This is a documented divergence from the handoff.
+  43 reopened → in_progress.
+- 2026-11-01 · implementer: grain hash in finish() of liston.glsl / acanalado.glsl is now
+  hash(gl_FragCoord.xy) (+ divergence comment); test in backgroundPresets.test.ts; spec 043
+  FR-057/FR-058; spec 042 R8/plan/T001 and backgroundPresets.ts comment no longer say byte-identical.
+- 2026-11-01 · Roberto: the header logo is the isotipo only, with no 'muush.dev' wordmark (desktop and mobile); the footer keeps the full lockup. Added to this reopen.
+- 2026-11-01 · Roberto added to reopen 2: header logo is the isotipo alone (desktop + mobile), footer
+  keeps the lockup. implementer: SiteHeader.vue renders Lockup form="isotipo" only; SiteHeader test,
+  story doc, static-output test; spec 043 FR-059. Name reuses shell.nav.home.
+- 2026-11-01 · implementer: browser checks done (grain static, texture kept, listón + ribs drawn; header isotipo at 390/1440 ES/EN); ./init.sh exit 0; report in impl_site_shell.md "Reopened 2".
+- 2026-11-01 · Implementer PASS: static grain (one line per shader) and isotipo-only header logo. 43 → reviewing.
+- 2026-11-01 · Reviewer APPROVED (review-43c.md); security clean. Nits 1–3 (stale comments and plan note) are fixed in the close-out. Nit 4: the accessible name reuses 'Inicio de muush' / 'muush home'. Nit 5 (duplicate aria-current on the logo) was carried into 44.
+
+### Reopened 3 · Softer grain (2026-11-01)
+
+- Roberto's request (2026-11-01): the static grain at 7% read as a dirty texture on the black; make it softer. The leader checked the built Storybook: the listón matches the design at 1440×1000 (Roberto's screenshot only showed the top half of the frame). Decision: `u_grain` 0.03, still static. 43 reopened → in_progress.
+- Change: the engine base value `SHADER_DEFAULTS.u_grain` in `app/shared/utils/shaderFrame.ts` went from 0.07 to 0.03; the grain stays static (hash independent of `u_time`). The `.glsl` files are untouched (their `@default` stays 0.07; the engine base value wins). Engine-value tests were updated; spec 043 adds the FR-060 amendment and tasks T062–T063. Measured in WebGL: grain σ ≈ 2.5 (was ≈ 4.6–4.9); the listón and the 46 ribs still draw.
+- Reviewer (`review-43d.md`) APPROVED; security clean; no blocking or should-fix findings. Two cosmetic nits: the FR-060 amendment sits before FR-059 in `specs/043-site-shell/spec.md`, and the inline "(0.03 since …)" notes in `spec.md`/`plan.md` run past the wrap width.
+- `./init.sh` exits 0.
+- Reports: `impl_site_shell.md` § "Reopened 3", `review-43d.md`.
+- Not committed (Roberto's instruction: no commits without explicit request).
+
+#### Session log (from current.md)
+
+- 2026-11-01 · Roberto: the static grain at 7% reads as a dirty texture on the black; make it softer.
+  The leader checked the built Storybook: the listón matches the design at 1440×1000. Roberto's
+  screenshot only showed the top half of the frame. Decision: u_grain 0.03. 43 reopened → in_progress.
+- 2026-11-01 · Implementer: `SHADER_DEFAULTS.u_grain` 0.07 → 0.03 (`.glsl` untouched); engine-value
+  tests updated; spec 043 FR-060 amendment. WebGL: grain σ ≈ 2.5 (was ≈ 4.6–4.9), listón and
+  46 ribs draw. `./init.sh` exit 0. Report: `docs/harness/progress/impl_site_shell.md` "Reopened 3".
+- 2026-11-01 · Implementer PASS: u_grain 0.03. Grain σ 4.6 → ~2.5, and the listón and ribs still render. 43 → reviewing.
+- 2026-11-01 · Reviewer APPROVED (review-43d.md); security clean. Close-out launched.
+
+### Reopened 4 · Language switch keeps position (2026-11-01)
+
+- Roberto's request (2026-11-01): switching language jumped back to the section in the URL hash (e.g. `#servicios`) even after the visitor had scrolled down to the form. Only the language should change: same visible section, same relative offset within it (not absolute pixels, since heights differ between locales), and the resulting URL is the other locale's route without the stale hash. No regression in the cookie, the in-place 404 or the route map (33/37/39). 43 reopened → in_progress.
+- Root cause (CONFIRMED): `@nuxtjs/i18n` `switchLocalePath` copies the current route's hash into the path it returns, so after an in-page jump the toggle's client `href` became `/en#servicios` (the prerendered one is `/en`) and Nuxt's `scrollBehavior` scrolled there. The old click-time fragment code never ran in the real app, because the router link calls `preventDefault` first (INFERRED from `vue-router` / Nuxt 4.5 sources, consistent with the browser runs).
+- Fix: `resolveLocaleDestination` drops any fragment on the switched path. The new `localeSwitchScroll.ts` captures the anchored section at the reading line plus the progress through it (page ratio as fallback), and the new `useLocaleSwitchScroll.ts` holds that position for the navigation to the held destination, sets `scrollToTop = false`, and restores it instantly after `page:loading:end`. `LanguageToggle.vue` holds the position on a plain primary click instead of carrying the hash; the cookie write and the 404 in-place branch are untouched. New tests in `localeSwitchScroll.test.ts` and `useLocaleSwitchScroll.test.ts`; `LanguageToggle.test.ts` fragment tests updated. Spec 043 amendment FR-061, tasks T064–T066. Verified in headless Chrome at 390/1440, with and without reduced motion, from the open mobile menu, EN → ES, and on the 404; the no-JS `href` and `hreflang` alternates are unchanged.
+- Reviewer (`review-43e.md`) APPROVED; the language switch was re-checked in a browser. Advisories:
+  - A1: doc point 2 in `resolveLocaleDestination.ts` still said the fragment was read at click time and composed there. Fixed in this close-out (comment only): it now says the fragment is dropped and `useLocaleSwitchScroll` keeps the position.
+  - A2: US2 scenario 2 and FR-029 in `specs/043-site-shell/spec.md` carried no inline supersession marker. The leader marked both as superseded by FR-061.
+  - A3: `useLocaleSwitchScroll.ts` does not await Nuxt's page-transition promise; harmless while no page transition is configured. Carried to feature 47.
+- `./init.sh` exits 0.
+- Reports: `impl_site_shell.md` § "Reopened 4", `review-43e.md`.
+- Not committed (Roberto's instruction: no commits without explicit request).
+
+#### Session log (from current.md)
+
+- 2026-11-01 · Roberto: switching language jumps back to the URL hash's section (e.g. #servicios) even
+  after scrolling down to the form; he wants only the language to change. The leader proposed
+  keeping the same section and relative offset, with no stale hash (the default unless Roberto asks
+  for pixel position). 43 reopened → in_progress.
+- 2026-11-01 · implementer: root cause CONFIRMED — `@nuxtjs/i18n` `switchLocalePath` copies the
+  route hash into its result, so the toggle's client `href` became `/en#servicios` and Nuxt
+  scrolled there (the old click-time fragment code never ran: the router link prevents default
+  first). Fix: fragment dropped in `resolveLocaleDestination`; position held on click and
+  restored after `page:loading:end` (`localeSwitchScroll.ts`, `useLocaleSwitchScroll.ts`), spec
+  FR-061. Verified in headless Chrome (390/1440, reduced motion, menu, 404). `./init.sh` exit 0.
+  Report: `docs/harness/progress/impl_site_shell.md` § Reopened 4. Ready for the reviewer.
+- 2026-11-01 · Implementer PASS. Root cause: switchLocalePath copies route.hash. Fix: drop the fragment and restore the section plus relative offset after navigation. Browser checks pass. 43 → reviewing.
+- 2026-11-01 · Reviewer APPROVED (review-43e.md), and the language switch was re-checked in a browser. Leader marked US2 scenario 2 and FR-029 as superseded by FR-061 (A2). A3 carried to 47; A1 is fixed in the close-out.
