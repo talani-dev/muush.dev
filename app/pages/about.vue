@@ -20,6 +20,8 @@ import { usePageSeo } from '@/features/shell'
  * target the footer's `Work with muush` item and the nav's
  * `#trabaja-con-muush` anchor resolve to — no more placeholder heading. Team
  * and Network still belong to later, `blocked` features (spec Assumptions).
+ * Since feature 45 its form column holds the Muush 1.0 application form;
+ * the rest of the page stays v1 until feature 46.
  *
  * `useApplicationFormContent` is called here, not inside
  * `WorkWithMuushSection.vue` or `forms/`'s own components, so that neither

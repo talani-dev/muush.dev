@@ -136,12 +136,19 @@
         }
       }
     },
-    "contact": {
-      "eyebrow": "Contact",
-      "heading": "Tell us about your project.",
-      "body": "Leave us the basics and we'll get back to you however you prefer. If you already know what you need, book a call directly with the team.",
-      "ctaSecondary": "Book a call",
-      "altQuestion": "Already know what you need?"
+    "assessment": {
+      "pill": "First step",
+      "headingFirst": "Request your",
+      "headingSecond": "free assessment.",
+      "body": "Tell us what you want to solve and we'll reply within 24 business hours.",
+      "receivesLabel": "What you get",
+      "receives": {
+        "review": "A review of your website and tools",
+        "first": "What to do first, and why",
+        "deeper": "If it needs a deeper look, what's included and what it costs"
+      },
+      "callQuestion": "Prefer to talk?",
+      "callLink": "Book a call"
     }
   },
   "forms": {
@@ -149,19 +156,23 @@
       "fields": {
         "name": {
           "label": "Name",
-          "errorRequired": "Enter your name"
+          "placeholder": "First and last name",
+          "errorRequired": "Enter your name."
         },
         "email": {
           "label": "Email",
-          "errorRequired": "Enter your email",
-          "errorFormat": "Invalid email format"
+          "placeholder": "you{'@'}email.com",
+          "errorRequired": "Enter an email like name{'@'}company.com",
+          "errorFormat": "Enter an email like name{'@'}company.com"
         },
         "company": {
-          "label": "Company or project"
+          "label": "Company or project",
+          "placeholder": "Company name"
         },
         "identity": {
-          "label": "How do you identify?",
-          "errorRequired": "Choose an option",
+          "label": "You are a…",
+          "placeholder": "Select an option",
+          "errorRequired": "Choose an option.",
           "options": {
             "realEstate": "Real estate",
             "creator": "Content creator/personal brand",
@@ -173,11 +184,12 @@
         },
         "need": {
           "label": "What do you need?",
-          "errorRequired": "Tell us what you need",
-          "errorLength": "Tell us a bit more"
+          "placeholder": "Tell us in a couple of lines what you want to solve.",
+          "errorRequired": "Tell us what you need.",
+          "errorLength": "Tell us a bit more."
         },
         "contactPreference": {
-          "label": "How do you prefer we contact you?",
+          "label": "How should we contact you?",
           "options": {
             "email": "Email",
             "whatsapp": "WhatsApp"
@@ -185,43 +197,58 @@
         },
         "whatsappCountry": {
           "label": "Country code",
-          "errorInvalid": "Choose your country code"
+          "errorInvalid": "Choose your country code."
         },
         "whatsapp": {
           "label": "WhatsApp number",
-          "errorRequired": "Enter your number",
-          "errorDigits": "Must be 6 to 14 digits"
+          "errorRequired": "Enter your number.",
+          "errorDigits": "Must be 6 to 14 digits."
         }
       },
-      "submit": "Send",
+      "steps": {
+        "progress": "Step {n} of {total} · {title}",
+        "titles": {
+          "1": "Your details",
+          "2": "Your business"
+        }
+      },
+      "continue": "Continue",
+      "back": "← Back",
+      "privacy": {
+        "label": "I accept the privacy notice and agree to be contacted by muush about my assessment.",
+        "requiredHint": "Accept the privacy notice to send."
+      },
+      "submit": "Get my assessment",
       "sending": "Sending…",
-      "success": {
-        "title": "Got it. We'll get back to you by {channel} within one business day.",
-        "channel": {
-          "email": "email",
-          "whatsapp": "WhatsApp"
-        }
-      },
+      "retry": "Try again",
       "error": {
-        "title": "We couldn't send it. Write to support{'@'}muush.dev or reach us on WhatsApp and we'll sort it out.",
-        "fallback": "support{'@'}muush.dev"
+        "before": "Sending was interrupted. Your details are still here: try again or write to us at",
+        "email": "support{'@'}muush.dev",
+        "after": "."
+      },
+      "success": {
+        "title": "We got your request.",
+        "body": "We'll reply within 24 business hours through the channel you chose. If you'd like to move faster, book a call.",
+        "action": "Book a call"
       }
     },
     "application": {
       "fields": {
         "name": {
           "label": "Name",
-          "errorRequired": "Enter your name"
+          "placeholder": "First and last name",
+          "errorRequired": "Enter your name."
         },
         "email": {
           "label": "Email",
-          "errorRequired": "Enter your email",
-          "errorFormat": "Invalid email format"
+          "placeholder": "you{'@'}email.com",
+          "errorRequired": "Enter an email like name{'@'}company.com",
+          "errorFormat": "Enter an email like name{'@'}company.com"
         },
         "areaRole": {
           "label": "Area and role",
-          "placeholder": "Area and role",
-          "errorRequired": "Choose an area and a role",
+          "placeholder": "Select your area and role",
+          "errorRequired": "Choose your area and role.",
           "areas": {
             "it": "IT",
             "product": "Product",
@@ -271,23 +298,23 @@
         },
         "portfolio": {
           "label": "Portfolio",
-          "placeholder": "https://your-portfolio.com",
-          "errorFormat": "Enter a valid URL"
+          "placeholder": "https://",
+          "errorFormat": "Enter a valid URL."
         },
         "linkedin": {
           "label": "LinkedIn",
-          "placeholder": "https://linkedin.com/in/your-handle",
-          "errorFormat": "Enter a valid URL"
+          "placeholder": "https://linkedin.com/in/…",
+          "errorFormat": "Enter a valid URL."
         },
         "cv": {
           "label": "CV",
-          "placeholder": "Attach CV · PDF",
-          "errorFormat": "Only PDF files are accepted",
-          "errorSize": "The file must be 5MB or smaller",
-          "errorRequired": "Attach your CV"
+          "placeholder": "Attach your CV as a PDF · max 5 MB",
+          "errorFormat": "Attach your CV as a PDF up to 5 MB.",
+          "errorSize": "Attach your CV as a PDF up to 5 MB.",
+          "errorRequired": "Attach your CV."
         },
         "contactPreference": {
-          "label": "How do you prefer we contact you?",
+          "label": "How should we contact you?",
           "options": {
             "email": "Email",
             "whatsapp": "WhatsApp"
@@ -295,28 +322,44 @@
         },
         "whatsappCountry": {
           "label": "Country code",
-          "errorInvalid": "Choose your country code"
+          "errorInvalid": "Choose your country code."
         },
         "whatsapp": {
           "label": "WhatsApp number",
-          "errorRequired": "Enter your number",
-          "errorDigits": "Must be 6 to 14 digits"
+          "errorRequired": "Enter your number.",
+          "errorDigits": "Must be 6 to 14 digits."
         }
       },
-      "submit": "Send",
+      "steps": {
+        "progress": "Step {n} of {total} · {title}",
+        "titles": {
+          "1": "Your details",
+          "2": "Your profile"
+        }
+      },
+      "continue": "Continue",
+      "back": "← Back",
+      "privacy": {
+        "label": "I accept the privacy notice and agree to be contacted by muush about my application.",
+        "requiredHint": "Accept the privacy notice to send."
+      },
+      "submit": "Send application",
       "sending": "Sending…",
       "uploading": "Uploading CV…",
+      "retry": "Try again",
       "cvUploadError": {
         "message": "We couldn't upload your CV. Try again or submit without a CV.",
-        "retry": "Retry upload",
         "submitWithoutCv": "Submit without CV"
       },
-      "success": {
-        "title": "Thanks, we've got your profile. We'll reach out when there's a project that fits."
-      },
       "error": {
-        "title": "We couldn't send it. Write to support{'@'}muush.dev or reach us on WhatsApp and we'll sort it out.",
-        "fallback": "support{'@'}muush.dev"
+        "before": "Sending was interrupted. Your details and CV are still here: try again or write to us at",
+        "email": "support{'@'}muush.dev",
+        "after": "."
+      },
+      "success": {
+        "title": "We got your application.",
+        "body": "We'll review your profile and reach out when there's a project that fits you.",
+        "action": "Back to home"
       }
     }
   },

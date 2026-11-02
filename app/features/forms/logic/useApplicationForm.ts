@@ -52,6 +52,8 @@ export interface UseApplicationFormOptions {
   initial?: Partial<ApplicationFormValues>
   /** Injectable clock for the minimum fill time. */
   now?: () => number
+  /** Passed to `useFormSubmitState` (feature 45, spec FR-007). */
+  revealField?: (fieldId: ApplicationFieldId) => void
 }
 
 export interface UseApplicationFormReturn {
@@ -175,6 +177,7 @@ export function useApplicationForm(
     submitter: options.submitter,
     challengeHost: options.challengeHost ?? ref(null),
     now: options.now,
+    revealField: options.revealField,
     busyStateFor: snapshot => (snapshot.cv ? 'uploading' : 'sending'),
   })
 

@@ -579,3 +579,60 @@ describe('useContactForm · the default country (feature 32 Amendment A1)', () =
     })
   })
 })
+
+describe('useContactForm · revealing a field before focus (feature 45)', () => {
+  function revealingForm(
+    initial: Partial<ContactFormValues>,
+    submitter = stubSubmitter()
+  ) {
+    let clock = 0
+    const order: string[] = []
+    const revealField = vi.fn((fieldId: ContactFieldId) => {
+      order.push(`reveal:${fieldId}`)
+    })
+    const input = document.createElement('input')
+    input.addEventListener('focus', () => order.push(`focus:${input.id}`))
+    document.body.append(input)
+    const form = useContactForm({
+      submitter,
+      initial,
+      now: () => clock,
+      revealField,
+    })
+    form.markInteractive()
+    clock += MIN_FILL_TIME_MS
+    return { form, revealField, order, input }
+  }
+
+  afterEach(() => {
+    document.body.replaceChildren()
+  })
+
+  it('should call revealField with the first invalid field before focusing when a submit is invalid', async () => {
+    const { form, revealField, order, input } = revealingForm({
+      ...VALID,
+      name: '',
+    })
+    input.id = 'name'
+
+    await form.onSubmit(new Event('submit'))
+    await flushPromises()
+
+    expect(revealField).toHaveBeenCalledWith('name')
+    expect(order).toEqual(['reveal:name', 'focus:name'])
+  })
+
+  it('should call revealField with the first marked field before focusing when the server returns field errors', async () => {
+    const { form, revealField, order, input } = revealingForm(
+      VALID,
+      stubSubmitter({ kind: 'field-errors', fields: ['email'] })
+    )
+    input.id = 'email'
+
+    await form.onSubmit(new Event('submit'))
+    await flushPromises()
+
+    expect(revealField).toHaveBeenCalledWith('email')
+    expect(order).toEqual(['reveal:email', 'focus:email'])
+  })
+})

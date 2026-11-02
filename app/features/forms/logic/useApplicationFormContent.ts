@@ -4,6 +4,7 @@ import {
   ROLE_CATALOG,
 } from '@/features/forms/data/applicationFields'
 import { buildCountryOptions } from './countryOptions'
+import { resolveFormChrome } from './formChromeContent'
 
 /**
  * Resolves `forms.application.*` into the shape `ApplicationForm.vue` renders
@@ -11,9 +12,16 @@ import { buildCountryOptions } from './countryOptions'
  * (Constitution Article III): `forms/` keeps no key namespaced under
  * `about.*`, so `about/`'s `WorkWithMuushSection.vue` calls this through the
  * barrel and never reaches into `forms/logic/` directly (plan.md D-1, D-4).
+ *
+ * Feature 45: the v2 shape — placeholders, the shared chrome
+ * (`formChromeContent.ts`), the failed-upload notice without its old
+ * "Reintentar subida" (the submit retries, Clarifications Q2).
  */
 export function useApplicationFormContent(): ComputedRef<ApplicationFormContent> {
   const { t, locale, localeProperties } = useI18n()
+  /* Feature 45: "Volver al inicio" goes to the home of the current locale
+     (spec FR-027), resolved here so `ui/` calls no Nuxt composable. */
+  const localePath = useLocalePath()
   /* Country names come from the browser in the page language (`es-MX` /
      `en`, the locale's `language` in `nuxt.config.ts`), not from locale
      keys: one source for both languages (feature 32 research R2). */
@@ -25,10 +33,12 @@ export function useApplicationFormContent(): ComputedRef<ApplicationFormContent>
     fields: {
       name: {
         label: t('forms.application.fields.name.label'),
+        placeholder: t('forms.application.fields.name.placeholder'),
         errorRequired: t('forms.application.fields.name.errorRequired'),
       },
       email: {
         label: t('forms.application.fields.email.label'),
+        placeholder: t('forms.application.fields.email.placeholder'),
         errorRequired: t('forms.application.fields.email.errorRequired'),
         errorFormat: t('forms.application.fields.email.errorFormat'),
       },
@@ -99,20 +109,14 @@ export function useApplicationFormContent(): ComputedRef<ApplicationFormContent>
         errorDigits: t('forms.application.fields.whatsapp.errorDigits'),
       },
     },
-    submit: t('forms.application.submit'),
-    sending: t('forms.application.sending'),
+    ...resolveFormChrome(t, 'forms.application', {
+      label: t('forms.application.success.action'),
+      to: localePath('/'),
+    }),
     uploading: t('forms.application.uploading'),
-    success: {
-      title: t('forms.application.success.title'),
-    },
     cvUploadError: {
       message: t('forms.application.cvUploadError.message'),
-      retry: t('forms.application.cvUploadError.retry'),
       submitWithoutCv: t('forms.application.cvUploadError.submitWithoutCv'),
-    },
-    error: {
-      title: t('forms.application.error.title'),
-      fallback: t('forms.application.error.fallback'),
     },
   }))
 }

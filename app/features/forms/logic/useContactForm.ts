@@ -42,6 +42,8 @@ export interface UseContactFormOptions {
   initial?: Partial<ContactFormValues>
   /** Injectable clock for the minimum fill time. */
   now?: () => number
+  /** Passed to `useFormSubmitState` (feature 45, spec FR-007). */
+  revealField?: (fieldId: ContactFieldId) => void
 }
 
 export interface UseContactFormReturn {
@@ -127,6 +129,7 @@ export function useContactForm(
     submitter: options.submitter,
     challengeHost: options.challengeHost ?? ref(null),
     now: options.now,
+    revealField: options.revealField,
   })
 
   const defaultCountry = useDefaultCountry({

@@ -141,6 +141,78 @@ const HOME_SCANNED = [
   join(ROOT, 'app', 'pages', 'index.vue'),
 ]
 
+/*
+ * Feature 45 · the v2 forms and the home section (spec FR-029, SC-007):
+ * every file it creates or rewrites outside `legacy/`. The quarantined v1
+ * form UI in `forms/ui/legacy/` is not scanned.
+ */
+const FORMS = join(ROOT, 'app', 'features', 'forms')
+
+const FORM_COMPONENTS = [
+  'FormPanel',
+  'FieldBlock',
+  'TextField',
+  'TextareaField',
+  'SelectField',
+  'SegmentedControl',
+  'DialCodeSelect',
+  'WhatsappField',
+  'ContactChannelField',
+  'NameEmailRow',
+  'CvField',
+  'ConsentCheckbox',
+  'FormProgress',
+  'FormNotice',
+  'SendNotice',
+  'FormSuccess',
+  'SteppedForm',
+  'ContactForm',
+  'ApplicationForm',
+]
+
+const FORMS_SCANNED = [
+  ...FORM_COMPONENTS.flatMap(name => [
+    join(FORMS, 'ui', `${name}.vue`),
+    join(FORMS, 'ui', `${name}.stories.ts`),
+  ]),
+  join(FORMS, 'ui', 'fieldAnatomy.ts'),
+  join(FORMS, 'ui', 'formsFixtures.testing.ts'),
+  join(FORMS, 'index.ts'),
+  ...[
+    'formChrome.ts',
+    'formSteps.ts',
+    'contactFields.ts',
+    'applicationFields.ts',
+  ].map(name => join(FORMS, 'data', name)),
+  ...[
+    'cvFileCheck.ts',
+    'formSteps.ts',
+    'formChromeContent.ts',
+    'useConsentGate.ts',
+    'useFormSteps.ts',
+    'useFormView.ts',
+    'useContactFormContent.ts',
+    'useApplicationFormContent.ts',
+  ].map(name => join(FORMS, 'logic', name)),
+  ...['AssessmentSection', 'ReceivesList'].flatMap(name => [
+    join(LANDING, 'ui', `${name}.vue`),
+    join(LANDING, 'ui', `${name}.stories.ts`),
+  ]),
+  join(LANDING, 'data', 'assessmentContent.ts'),
+  join(LANDING, 'logic', 'useAssessmentContent.ts'),
+  /* Reopen 1 (Roberto 2026-11-02, FR-036…FR-040). */
+  join(LANDING, 'logic', 'useTimelineRun.ts'),
+  join(SHELL, 'logic', 'useHeaderIdleHide.ts'),
+  join(
+    ROOT,
+    'app',
+    'features',
+    'about',
+    'ui',
+    'WorkWithMuushSection.stories.ts'
+  ),
+]
+
 const SCANNED = [
   ...COMPONENTS.flatMap(name => [
     join(SHARED, 'ui', `${name}.vue`),
@@ -158,6 +230,7 @@ const SCANNED = [
   join(SHARED, 'data', 'backgroundPresets.ts'),
   ...SHELL_SCANNED,
   ...HOME_SCANNED,
+  ...FORMS_SCANNED,
 ]
 
 const FORBIDDEN: [string, RegExp][] = [

@@ -248,7 +248,44 @@ const EXPECTED: Record<'es' | 'en', Tree> = {
   },
 }
 
-const SECTIONS = ['hero', 'whoWeAre', 'services', 'howWeWork'] as const
+/* Feature 45 · "Diagnóstico y contacto" (`muush-1.0.md` § 4.6; Roberto
+   2026-11-02: "Lo que recibes" / "What you get" in sentence case). */
+EXPECTED.es.assessment = {
+  pill: 'Primer paso',
+  headingFirst: 'Pide tu diagnóstico',
+  headingSecond: 'sin costo.',
+  body: 'Cuéntanos qué quieres resolver y te respondemos en 24 horas hábiles.',
+  receivesLabel: 'Lo que recibes',
+  receives: {
+    review: 'Una revisión de tu sitio y tus herramientas',
+    first: 'Qué conviene hacer primero y por qué',
+    deeper: 'Si hace falta ir a fondo, qué incluye y cuánto cuesta',
+  },
+  callQuestion: '¿Prefieres hablar?',
+  callLink: 'Agenda una llamada',
+}
+EXPECTED.en.assessment = {
+  pill: 'First step',
+  headingFirst: 'Request your',
+  headingSecond: 'free assessment.',
+  body: "Tell us what you want to solve and we'll reply within 24 business hours.",
+  receivesLabel: 'What you get',
+  receives: {
+    review: 'A review of your website and tools',
+    first: 'What to do first, and why',
+    deeper: "If it needs a deeper look, what's included and what it costs",
+  },
+  callQuestion: 'Prefer to talk?',
+  callLink: 'Book a call',
+}
+
+const SECTIONS = [
+  'hero',
+  'whoWeAre',
+  'services',
+  'howWeWork',
+  'assessment',
+] as const
 
 describe('landing copy · the Muush 1.0 home (FR-030)', () => {
   for (const locale of ['es', 'en'] as const) {
@@ -259,15 +296,16 @@ describe('landing copy · the Muush 1.0 home (FR-030)', () => {
     }
   }
 
-  it('should carry only the v2 sections and the v1 contact when the locales are read', () => {
-    /* FR-025: the v1 Propósito, hero and services keys have no reader. */
+  it('should carry only the v2 sections when the locales are read', () => {
+    /* FR-025: the v1 Propósito, hero and services keys have no reader;
+       feature 45 retired the v1 contact keys with their section. */
     for (const locale of ['es', 'en'] as const) {
       expect(Object.keys(readLanding(locale)), locale).toEqual([
         'hero',
         'whoWeAre',
         'services',
         'howWeWork',
-        'contact',
+        'assessment',
       ])
     }
   })
@@ -280,6 +318,13 @@ describe('landing copy · the Muush 1.0 home (FR-030)', () => {
       ((es.also as Tree).label as string).toUpperCase()
     )
     expect((en.also as Tree).label).toBe('Also, if you need it')
+
+    /* Feature 45 · "Lo que recibes", drawn uppercase by `ReceivesList`. */
+    for (const locale of ['es', 'en'] as const) {
+      const label = (readLanding(locale).assessment as Tree)
+        .receivesLabel as string
+      expect(label, locale).not.toBe(label.toUpperCase())
+    }
   })
 
   it('should keep no dash pause and no arrow in the home copy when the locales are read', () => {

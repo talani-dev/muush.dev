@@ -74,3 +74,18 @@ export const DisabledDesktop1440: Story = {
   render: inColumn,
   globals: desktop,
 }
+
+/* Feature 45 · the submit until the privacy box is ticked: 70 % opacity,
+   not-allowed cursor, still focusable (pen extract-45 § 8). */
+const unavailable = { ...blockEs, unavailable: true } as const
+export const UnavailableEs: Story = { args: unavailable, render: inColumn }
+export const UnavailableEnMobile390: Story = {
+  args: { ...unavailable, label: 'Get my assessment' },
+  render: inColumn,
+  globals: mobile,
+}
+export const UnavailableEsDesktop1440: Story = {
+  args: unavailable,
+  render: inColumn,
+  globals: desktop,
+}

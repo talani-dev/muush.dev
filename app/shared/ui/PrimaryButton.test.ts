@@ -142,3 +142,37 @@ describe('PrimaryButton', () => {
     expect(render().classes()).toContain('foco')
   })
 })
+
+describe('PrimaryButton · unavailable (feature 45)', () => {
+  it('should stay enabled and focusable but announce aria-disabled when unavailable', () => {
+    const wrapper = render({ type: 'submit', unavailable: true })
+
+    expect(wrapper.attributes('aria-disabled')).toBe('true')
+    expect(wrapper.attributes('disabled')).toBeUndefined()
+    expect(wrapper.classes()).toEqual(
+      expect.arrayContaining(['opacity-70', 'cursor-not-allowed'])
+    )
+  })
+
+  it('should point aria-describedby at the hint when given describedBy', () => {
+    const wrapper = render({ unavailable: true, describedBy: 'privacy-hint' })
+
+    expect(wrapper.attributes('aria-describedby')).toBe('privacy-hint')
+  })
+
+  it('should carry neither attribute nor the dimmed look when available', () => {
+    const wrapper = render({ type: 'submit' })
+
+    expect(wrapper.attributes('aria-disabled')).toBeUndefined()
+    expect(wrapper.attributes('aria-describedby')).toBeUndefined()
+    expect(wrapper.classes()).not.toContain('cursor-not-allowed')
+  })
+
+  it('should still emit the click when unavailable so the form guard can decide', async () => {
+    const wrapper = render({ unavailable: true })
+
+    await wrapper.trigger('click')
+
+    expect(wrapper.emitted('click')).toHaveLength(1)
+  })
+})

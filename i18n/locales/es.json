@@ -136,12 +136,19 @@
         }
       }
     },
-    "contact": {
-      "eyebrow": "Contacto",
-      "heading": "Cuéntanos tu proyecto.",
-      "body": "Déjanos lo básico y te respondemos por donde prefieras. Si ya sabes qué necesitas, agenda una llamada directo con el equipo.",
-      "ctaSecondary": "Agenda una llamada",
-      "altQuestion": "¿Ya sabes qué necesitas?"
+    "assessment": {
+      "pill": "Primer paso",
+      "headingFirst": "Pide tu diagnóstico",
+      "headingSecond": "sin costo.",
+      "body": "Cuéntanos qué quieres resolver y te respondemos en 24 horas hábiles.",
+      "receivesLabel": "Lo que recibes",
+      "receives": {
+        "review": "Una revisión de tu sitio y tus herramientas",
+        "first": "Qué conviene hacer primero y por qué",
+        "deeper": "Si hace falta ir a fondo, qué incluye y cuánto cuesta"
+      },
+      "callQuestion": "¿Prefieres hablar?",
+      "callLink": "Agenda una llamada"
     }
   },
   "forms": {
@@ -149,19 +156,23 @@
       "fields": {
         "name": {
           "label": "Nombre",
-          "errorRequired": "Escribe tu nombre"
+          "placeholder": "Nombre y apellido",
+          "errorRequired": "Escribe tu nombre."
         },
         "email": {
           "label": "Correo",
-          "errorRequired": "Escribe tu correo",
-          "errorFormat": "Formato de correo inválido"
+          "placeholder": "tu{'@'}correo.com",
+          "errorRequired": "Escribe un correo como nombre{'@'}empresa.com",
+          "errorFormat": "Escribe un correo como nombre{'@'}empresa.com"
         },
         "company": {
-          "label": "Empresa o proyecto"
+          "label": "Empresa o proyecto",
+          "placeholder": "Nombre de la empresa"
         },
         "identity": {
           "label": "¿Cómo te identificas?",
-          "errorRequired": "Elige una opción",
+          "placeholder": "Selecciona una opción",
+          "errorRequired": "Elige una opción.",
           "options": {
             "realEstate": "Bienes raíces/inmobiliaria",
             "creator": "Creador de contenido/marca personal",
@@ -173,8 +184,9 @@
         },
         "need": {
           "label": "¿Qué necesitas?",
-          "errorRequired": "Cuéntanos qué necesitas",
-          "errorLength": "Cuéntanos un poco más"
+          "placeholder": "Cuéntanos en un par de líneas qué quieres resolver.",
+          "errorRequired": "Cuéntanos qué necesitas.",
+          "errorLength": "Cuéntanos un poco más."
         },
         "contactPreference": {
           "label": "¿Cómo prefieres que te contactemos?",
@@ -185,43 +197,58 @@
         },
         "whatsappCountry": {
           "label": "Lada del país",
-          "errorInvalid": "Elige la lada de tu país"
+          "errorInvalid": "Elige la lada de tu país."
         },
         "whatsapp": {
           "label": "Número de WhatsApp",
-          "errorRequired": "Escribe tu número",
-          "errorDigits": "Deben ser entre 6 y 14 dígitos"
+          "errorRequired": "Escribe tu número.",
+          "errorDigits": "Deben ser entre 6 y 14 dígitos."
         }
       },
-      "submit": "Enviar",
+      "steps": {
+        "progress": "Paso {n} de {total} · {title}",
+        "titles": {
+          "1": "Tus datos",
+          "2": "Tu negocio"
+        }
+      },
+      "continue": "Continuar",
+      "back": "← Atrás",
+      "privacy": {
+        "label": "Acepto el aviso de privacidad y que muush me contacte sobre mi diagnóstico.",
+        "requiredHint": "Acepta el aviso de privacidad para enviar."
+      },
+      "submit": "Quiero mi diagnóstico",
       "sending": "Enviando…",
-      "success": {
-        "title": "Listo, ya lo recibimos. Te respondemos por {channel} en menos de 24 horas hábiles.",
-        "channel": {
-          "email": "correo",
-          "whatsapp": "WhatsApp"
-        }
-      },
+      "retry": "Intentar de nuevo",
       "error": {
-        "title": "No pudimos enviarlo. Escríbenos a support{'@'}muush.dev o por WhatsApp y lo resolvemos.",
-        "fallback": "support{'@'}muush.dev"
+        "before": "El envío se interrumpió. Tus datos siguen aquí: vuelve a intentarlo o escríbenos a",
+        "email": "support{'@'}muush.dev",
+        "after": "."
+      },
+      "success": {
+        "title": "Recibimos tu solicitud.",
+        "body": "Te respondemos en 24 horas hábiles por el medio que elegiste. Si prefieres adelantar, agenda una llamada.",
+        "action": "Agenda una llamada"
       }
     },
     "application": {
       "fields": {
         "name": {
           "label": "Nombre",
-          "errorRequired": "Escribe tu nombre"
+          "placeholder": "Nombre y apellido",
+          "errorRequired": "Escribe tu nombre."
         },
         "email": {
           "label": "Correo",
-          "errorRequired": "Escribe tu correo",
-          "errorFormat": "Formato de correo inválido"
+          "placeholder": "tu{'@'}correo.com",
+          "errorRequired": "Escribe un correo como nombre{'@'}empresa.com",
+          "errorFormat": "Escribe un correo como nombre{'@'}empresa.com"
         },
         "areaRole": {
           "label": "Área y rol",
-          "placeholder": "Área y rol",
-          "errorRequired": "Elige un área y un rol",
+          "placeholder": "Selecciona tu área y rol",
+          "errorRequired": "Elige tu área y rol.",
           "areas": {
             "it": "IT",
             "product": "Product",
@@ -271,20 +298,20 @@
         },
         "portfolio": {
           "label": "Portafolio",
-          "placeholder": "https://tu-portafolio.com",
-          "errorFormat": "Ingresa una URL válida"
+          "placeholder": "https://",
+          "errorFormat": "Ingresa una URL válida."
         },
         "linkedin": {
           "label": "LinkedIn",
-          "placeholder": "https://linkedin.com/in/tu-usuario",
-          "errorFormat": "Ingresa una URL válida"
+          "placeholder": "https://linkedin.com/in/…",
+          "errorFormat": "Ingresa una URL válida."
         },
         "cv": {
           "label": "CV",
-          "placeholder": "Adjuntar CV · PDF",
-          "errorFormat": "Solo se aceptan archivos PDF",
-          "errorSize": "El archivo debe pesar máximo 5MB",
-          "errorRequired": "Adjunta tu CV"
+          "placeholder": "Adjunta tu CV en PDF · máximo 5 MB",
+          "errorFormat": "Adjunta tu CV en PDF de hasta 5 MB.",
+          "errorSize": "Adjunta tu CV en PDF de hasta 5 MB.",
+          "errorRequired": "Adjunta tu CV."
         },
         "contactPreference": {
           "label": "¿Cómo prefieres que te contactemos?",
@@ -295,28 +322,44 @@
         },
         "whatsappCountry": {
           "label": "Lada del país",
-          "errorInvalid": "Elige la lada de tu país"
+          "errorInvalid": "Elige la lada de tu país."
         },
         "whatsapp": {
           "label": "Número de WhatsApp",
-          "errorRequired": "Escribe tu número",
-          "errorDigits": "Deben ser entre 6 y 14 dígitos"
+          "errorRequired": "Escribe tu número.",
+          "errorDigits": "Deben ser entre 6 y 14 dígitos."
         }
       },
-      "submit": "Enviar",
+      "steps": {
+        "progress": "Paso {n} de {total} · {title}",
+        "titles": {
+          "1": "Tus datos",
+          "2": "Tu perfil"
+        }
+      },
+      "continue": "Continuar",
+      "back": "← Atrás",
+      "privacy": {
+        "label": "Acepto el aviso de privacidad y que muush me contacte sobre mi aplicación.",
+        "requiredHint": "Acepta el aviso de privacidad para enviar."
+      },
+      "submit": "Enviar aplicación",
       "sending": "Enviando…",
       "uploading": "Subiendo CV…",
+      "retry": "Intentar de nuevo",
       "cvUploadError": {
         "message": "No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.",
-        "retry": "Reintentar subida",
         "submitWithoutCv": "Enviar sin CV"
       },
-      "success": {
-        "title": "Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes."
-      },
       "error": {
-        "title": "No pudimos enviarlo. Escríbenos a support{'@'}muush.dev o por WhatsApp y lo resolvemos.",
-        "fallback": "support{'@'}muush.dev"
+        "before": "El envío se interrumpió. Tus datos y tu CV siguen aquí: vuelve a intentarlo o escríbenos a",
+        "email": "support{'@'}muush.dev",
+        "after": "."
+      },
+      "success": {
+        "title": "Recibimos tu aplicación.",
+        "body": "Revisamos tu perfil y te escribimos cuando haya un proyecto que encaje contigo.",
+        "action": "Volver al inicio"
       }
     }
   },

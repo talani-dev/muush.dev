@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useContactFormContent, useContactSubmitter } from '@/features/forms'
 import {
-  ContactSection,
+  AssessmentSection,
   HeroSection,
   HowWeWorkSection,
   ServicesSection,
-  useContactContent,
+  useAssessmentContent,
   useHeroContent,
   useHowWeWorkContent,
   useServicesContent,
@@ -19,11 +19,10 @@ import { usePageSeo } from '@/features/shell'
  * sections and holds none of their logic of its own.
  *
  * Muush 1.0 order (feature 44; `muush-1.0.md` § 3): Hero over the listón →
- * Qué es muush → Servicios → Cómo trabajamos over the acanalado → the
- * contact section → footer. Propósito was retired by Roberto on 2026-10-31
- * (`muush-1.0.md` § 1); Proyectos was never built (feature 15 stayed
- * blocked). The contact section is still the v1 one, at `#diagnostico`,
- * until feature 45 replaces it.
+ * Qué es muush → Servicios → Cómo trabajamos over the acanalado →
+ * Diagnóstico y contacto over the listón, at `#diagnostico` (feature 45) →
+ * footer. Propósito was retired by Roberto on 2026-10-31 (`muush-1.0.md`
+ * § 1); Proyectos was never built (feature 15 stayed blocked).
  *
  * The sections sit flush: each carries its own drawn padding, so no margin
  * is added here. The Hero's headline is the page's only `<h1>`; the
@@ -38,7 +37,7 @@ const hero = useHeroContent()
 const whoWeAre = useWhoWeAreContent()
 const services = useServicesContent()
 const howWeWork = useHowWeWorkContent()
-const contact = useContactContent()
+const assessment = useAssessmentContent()
 const contactForm = useContactFormContent()
 /* Feature 029: the form's only door to the network. Creating it loads
    nothing; Turnstile and the API are reached only after the visitor engages
@@ -59,8 +58,8 @@ usePageSeo({
   <WhoWeAreSection v-bind="whoWeAre" />
   <ServicesSection v-bind="services" />
   <HowWeWorkSection v-bind="howWeWork" />
-  <ContactSection
-    v-bind="contact"
+  <AssessmentSection
+    v-bind="assessment"
     :form-content="contactForm"
     :form-submitter="contactSubmitter"
   />

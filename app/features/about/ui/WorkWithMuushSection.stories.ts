@@ -8,8 +8,9 @@ import WorkWithMuushSection from './WorkWithMuushSection.vue'
 /**
  * `Work with muush`, the About page's second section. Switch the viewport
  * control between *Móvil (390)* and *Escritorio (1440)* to see the layout
- * reflow between the stacked mobile flow and the two-column desktop grid —
- * the same mechanism `Landing/ContactSection`'s story demonstrates.
+ * reflow between the stacked mobile flow and the two-column desktop grid.
+ * Since feature 45 the form column holds the v2 application panel (two
+ * steps at 390); the rest of the section stays v1 until feature 46.
  *
  * Every prop is a fixture. The component calls no Nuxt composable, which is
  * why it renders here with no router, no i18n instance and no Nuxt runtime
@@ -73,34 +74,39 @@ const roles = {
 
 const spanishForm: ApplicationFormContent = {
   fields: {
-    name: { label: 'Nombre', errorRequired: 'Escribe tu nombre' },
+    name: {
+      label: 'Nombre',
+      placeholder: 'Nombre y apellido',
+      errorRequired: 'Escribe tu nombre.',
+    },
     email: {
       label: 'Correo',
-      errorRequired: 'Escribe tu correo',
-      errorFormat: 'Formato de correo inválido',
+      placeholder: 'tu@correo.com',
+      errorRequired: 'Escribe un correo como nombre@empresa.com',
+      errorFormat: 'Escribe un correo como nombre@empresa.com',
     },
     areaRole: {
       label: 'Área y rol',
-      placeholder: 'Área y rol',
-      errorRequired: 'Elige un área y un rol',
-      areas,
-      roles,
+      placeholder: 'Selecciona tu área y rol',
+      errorRequired: 'Elige tu área y rol.',
+      areas: areas,
+      roles: roles,
     },
     portfolio: {
       label: 'Portafolio',
-      placeholder: 'https://tu-portafolio.com',
-      errorFormat: 'Ingresa una URL válida',
+      placeholder: 'https://',
+      errorFormat: 'Ingresa una URL válida.',
     },
     linkedin: {
       label: 'LinkedIn',
-      placeholder: 'https://linkedin.com/in/tu-usuario',
-      errorFormat: 'Ingresa una URL válida',
+      placeholder: 'https://linkedin.com/in/…',
+      errorFormat: 'Ingresa una URL válida.',
     },
     cv: {
       label: 'CV',
-      placeholder: 'Adjuntar CV · PDF',
-      errorFormat: 'Solo se aceptan archivos PDF',
-      errorSize: 'El archivo debe pesar máximo 5MB',
+      placeholder: 'Adjunta tu CV en PDF · máximo 5 MB',
+      errorFormat: 'Adjunta tu CV en PDF de hasta 5 MB.',
+      errorSize: 'Adjunta tu CV en PDF de hasta 5 MB.',
     },
     contactPreference: {
       label: '¿Cómo prefieres que te contactemos?',
@@ -108,7 +114,7 @@ const spanishForm: ApplicationFormContent = {
     },
     whatsappCountry: {
       label: 'Lada del país',
-      errorInvalid: 'Elige la lada de tu país',
+      errorInvalid: 'Elige la lada de tu país.',
       options: [
         { code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴' },
         { code: 'MX', name: 'México', dialCode: '+52', flag: '🇲🇽' },
@@ -117,51 +123,126 @@ const spanishForm: ApplicationFormContent = {
     },
     whatsapp: {
       label: 'Número de WhatsApp',
-      errorRequired: 'Escribe tu número',
-      errorDigits: 'Deben ser entre 6 y 14 dígitos',
+      errorRequired: 'Escribe tu número.',
+      errorDigits: 'Deben ser entre 6 y 14 dígitos.',
     },
   },
-  submit: 'Enviar',
+  progress: { 1: 'Paso 1 de 2 · Tus datos', 2: 'Paso 2 de 2 · Tu perfil' },
+  continue: 'Continuar',
+  back: '← Atrás',
+  privacy: {
+    label:
+      'Acepto el aviso de privacidad y que muush me contacte sobre mi aplicación.',
+    requiredHint: 'Acepta el aviso de privacidad para enviar.',
+  },
+  submit: 'Enviar aplicación',
   sending: 'Enviando…',
+  retry: 'Intentar de nuevo',
   uploading: 'Subiendo CV…',
   cvUploadError: {
     message:
       'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
-    retry: 'Reintentar subida',
     submitWithoutCv: 'Enviar sin CV',
   },
-  success: {
-    title:
-      'Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes.',
-  },
   error: {
-    title:
-      'No pudimos enviarlo. Escríbenos a support@muush.dev o por WhatsApp y lo resolvemos.',
-    fallback: 'support@muush.dev',
+    before:
+      'El envío se interrumpió. Tus datos y tu CV siguen aquí: vuelve a intentarlo o escríbenos a',
+    email: 'support@muush.dev',
+    href: 'mailto:support@muush.dev',
+    after: '.',
+  },
+  success: {
+    title: 'Recibimos tu aplicación.',
+    body: 'Revisamos tu perfil y te escribimos cuando haya un proyecto que encaje contigo.',
+    action: { label: 'Volver al inicio', to: '/es' },
   },
 }
 
 const englishForm: ApplicationFormContent = {
-  ...spanishForm,
   fields: {
-    ...spanishForm.fields,
-    name: { label: 'Name', errorRequired: 'Enter your name' },
+    name: {
+      label: 'Name',
+      placeholder: 'First and last name',
+      errorRequired: 'Enter your name.',
+    },
+    email: {
+      label: 'Email',
+      placeholder: 'you@email.com',
+      errorRequired: 'Enter an email like name@company.com',
+      errorFormat: 'Enter an email like name@company.com',
+    },
+    areaRole: {
+      label: 'Area and role',
+      placeholder: 'Select your area and role',
+      errorRequired: 'Choose your area and role.',
+      areas: areas,
+      roles: roles,
+    },
+    portfolio: {
+      label: 'Portfolio',
+      placeholder: 'https://',
+      errorFormat: 'Enter a valid URL.',
+    },
+    linkedin: {
+      label: 'LinkedIn',
+      placeholder: 'https://linkedin.com/in/…',
+      errorFormat: 'Enter a valid URL.',
+    },
+    cv: {
+      label: 'CV',
+      placeholder: 'Attach your CV as a PDF · max 5 MB',
+      errorFormat: 'Attach your CV as a PDF up to 5 MB.',
+      errorSize: 'Attach your CV as a PDF up to 5 MB.',
+    },
     contactPreference: {
-      label: 'How do you prefer we contact you?',
+      label: 'How should we contact you?',
       options: { email: 'Email', whatsapp: 'WhatsApp' },
     },
+    whatsappCountry: {
+      label: 'Country code',
+      errorInvalid: 'Choose your country code.',
+      options: [
+        { code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴' },
+        { code: 'MX', name: 'Mexico', dialCode: '+52', flag: '🇲🇽' },
+        { code: 'US', name: 'United States', dialCode: '+1', flag: '🇺🇸' },
+      ],
+    },
+    whatsapp: {
+      label: 'WhatsApp number',
+      errorRequired: 'Enter your number.',
+      errorDigits: 'Must be 6 to 14 digits.',
+    },
   },
-  submit: 'Send',
+  progress: {
+    1: 'Step 1 of 2 · Your details',
+    2: 'Step 2 of 2 · Your profile',
+  },
+  continue: 'Continue',
+  back: '← Back',
+  privacy: {
+    label:
+      'I accept the privacy notice and agree to be contacted by muush about my application.',
+    requiredHint: 'Accept the privacy notice to send.',
+  },
+  submit: 'Send application',
   sending: 'Sending…',
+  retry: 'Try again',
   uploading: 'Uploading CV…',
   cvUploadError: {
     message: "We couldn't upload your CV. Try again or submit without a CV.",
-    retry: 'Retry upload',
     submitWithoutCv: 'Submit without CV',
   },
+  error: {
+    before:
+      'Sending was interrupted. Your details and CV are still here: try again or write to us at',
+    email: 'support@muush.dev',
+    href: 'mailto:support@muush.dev',
+    after: '.',
+  },
   success: {
-    title:
-      "Thanks, we've got your profile. We'll reach out when there's a project that fits.",
+    title: 'We got your application.',
+    body: "We'll review your profile and reach out when there's a project that fits you.",
+    action: { label: 'Back to home', to: '/en' },
   },
 }
 

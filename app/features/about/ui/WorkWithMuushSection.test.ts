@@ -12,21 +12,27 @@ import WorkWithMuushSection from './WorkWithMuushSection.vue'
  * Fixtures, not copy. The component takes already-translated strings and a
  * ready-made `formContent` object — it calls no Nuxt composable of its own —
  * which is why it mounts here with no router and no i18n instance present
- * (`docs/business/rules.md` § R23), the same discipline `ContactSection.test.ts`
- * follows.
+ * (`docs/business/rules.md` § R23). Since feature 45 the form content is
+ * the v2 `ApplicationFormContent`: the v2 panel sits in this v1 section until
+ * feature 46.
  */
 const formContent: ApplicationFormContent = {
   fields: {
-    name: { label: 'Nombre', errorRequired: 'Escribe tu nombre' },
+    name: {
+      label: 'Nombre',
+      placeholder: 'Nombre y apellido',
+      errorRequired: 'Escribe tu nombre.',
+    },
     email: {
       label: 'Correo',
-      errorRequired: 'Escribe tu correo',
-      errorFormat: 'Correo inválido',
+      placeholder: 'tu@correo.com',
+      errorRequired: 'Escribe un correo como nombre@empresa.com',
+      errorFormat: 'Escribe un correo como nombre@empresa.com',
     },
     areaRole: {
       label: 'Área y rol',
-      placeholder: 'Área y rol',
-      errorRequired: 'Elige un área y un rol',
+      placeholder: 'Selecciona tu área y rol',
+      errorRequired: 'Elige tu área y rol.',
       areas: {
         it: 'IT',
         product: 'Product',
@@ -36,29 +42,29 @@ const formContent: ApplicationFormContent = {
         creative: 'Creative',
       },
       roles: {
-        it: { placeholder: 'Rol por confirmar' },
-        product: { placeholder: 'Rol por confirmar' },
-        projectManagement: { placeholder: 'Rol por confirmar' },
-        sales: { placeholder: 'Rol por confirmar' },
-        marketing: { placeholder: 'Rol por confirmar' },
-        creative: { placeholder: 'Rol por confirmar' },
+        it: { backend: 'Backend' },
+        product: { uxUiDesign: 'UX/UI design' },
+        projectManagement: { projectManager: 'Project manager' },
+        sales: { sales: 'Ventas' },
+        marketing: { growth: 'Growth' },
+        creative: { graphicDesign: 'Diseño gráfico' },
       },
     },
     portfolio: {
       label: 'Portafolio',
-      placeholder: 'https://tu-portafolio.com',
-      errorFormat: 'Ingresa una URL válida',
+      placeholder: 'https://',
+      errorFormat: 'Ingresa una URL válida.',
     },
     linkedin: {
       label: 'LinkedIn',
-      placeholder: 'https://linkedin.com/in/tu-usuario',
-      errorFormat: 'Ingresa una URL válida',
+      placeholder: 'https://linkedin.com/in/…',
+      errorFormat: 'Ingresa una URL válida.',
     },
     cv: {
       label: 'CV',
-      placeholder: 'Adjuntar CV · PDF',
-      errorFormat: 'Solo se aceptan archivos PDF',
-      errorSize: 'El archivo debe pesar máximo 5MB',
+      placeholder: 'Adjunta tu CV en PDF · máximo 5 MB',
+      errorFormat: 'Adjunta tu CV en PDF de hasta 5 MB.',
+      errorSize: 'Adjunta tu CV en PDF de hasta 5 MB.',
     },
     contactPreference: {
       label: '¿Cómo prefieres que te contactemos?',
@@ -66,7 +72,7 @@ const formContent: ApplicationFormContent = {
     },
     whatsappCountry: {
       label: 'Lada del país',
-      errorInvalid: 'Elige la lada de tu país',
+      errorInvalid: 'Elige la lada de tu país.',
       options: [
         { code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴' },
         { code: 'MX', name: 'México', dialCode: '+52', flag: '🇲🇽' },
@@ -75,23 +81,39 @@ const formContent: ApplicationFormContent = {
     },
     whatsapp: {
       label: 'Número de WhatsApp',
-      errorRequired: 'Escribe tu número',
-      errorDigits: 'Deben ser entre 6 y 14 dígitos',
+      errorRequired: 'Escribe tu número.',
+      errorDigits: 'Deben ser entre 6 y 14 dígitos.',
     },
   },
-  submit: 'Enviar',
+  progress: { 1: 'Paso 1 de 2 · Tus datos', 2: 'Paso 2 de 2 · Tu perfil' },
+  continue: 'Continuar',
+  back: '← Atrás',
+  privacy: {
+    label:
+      'Acepto el aviso de privacidad y que muush me contacte sobre mi aplicación.',
+    requiredHint: 'Acepta el aviso de privacidad para enviar.',
+  },
+  submit: 'Enviar aplicación',
   sending: 'Enviando…',
+  retry: 'Intentar de nuevo',
   uploading: 'Subiendo CV…',
   cvUploadError: {
     message:
       'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
-    retry: 'Reintentar subida',
     submitWithoutCv: 'Enviar sin CV',
   },
-  success: {
-    title: 'Gracias, ya tenemos tu perfil.',
+  error: {
+    before:
+      'El envío se interrumpió. Tus datos y tu CV siguen aquí: vuelve a intentarlo o escríbenos a',
+    email: 'support@muush.dev',
+    href: 'mailto:support@muush.dev',
+    after: '.',
   },
-  error: { title: 'No pudimos enviarlo.', fallback: 'support@muush.dev' },
+  success: {
+    title: 'Recibimos tu aplicación.',
+    body: 'Revisamos tu perfil y te escribimos cuando haya un proyecto que encaje contigo.',
+    action: { label: 'Volver al inicio', to: '/es' },
+  },
 }
 
 /** Never reaches the network: the section only passes it through. */

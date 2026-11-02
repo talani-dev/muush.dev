@@ -124,3 +124,28 @@ have no weight in the extract and keep lucide's `2`.
 
 All nine are decorative: the card title and the commitment text are the
 accessible content (`app/features/landing/ui/`).
+
+### Feature 45 glyph (Muush 1.0 forms)
+
+`check.svg`: lucide `check` from `lucide-static@0.469.0`
+(`icons/check.svg`, ISC licence), downloaded by the leader with Roberto's
+approval (2026-11-02, pen extract-45 § 7 Q3) to a scratch folder outside the
+repository and checked there (no script, no link). No package was added to
+the project. Normalized exactly like the feature 44 glyphs:
+
+| | |
+|---|---|
+| Original viewBox | `0 0 24 24` — already square, unchanged |
+| Stripped | the `<!-- @license … -->` comment, `class`, `width="24"`, `height="24"`, whitespace |
+| Added | `<title>lucide · check</title>` |
+| Stroke | lucide's own `2` (the extract gives no weight) |
+
+Used by:
+
+- `ReceivesList.vue` (`app/features/landing/ui/`), the "Lo que recibes" rows
+  of the Diagnóstico y contacto section: 14 × 14 in `--compromiso-icono`
+  inside a 24 × 24 Red 15 % bubble (pen extract-45 § 1);
+- `ConsentCheckbox.vue` (`app/features/forms/ui/`), the ticked privacy box:
+  12 × 12 in Blanco over Red muush.
+
+Decorative in both: the row text and the native checkbox carry the meaning.
