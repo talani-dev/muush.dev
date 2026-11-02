@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import paperclip from '@/assets/icons/paperclip.svg?raw'
-import { CV_MAX_BYTES } from '@/features/forms/data/applicationFields'
+import { classifyCvFile } from '@/features/forms/logic/cvFileCheck'
 
 /**
  * FileField — the CV upload control, the one field primitive `ContactForm`
@@ -79,14 +79,10 @@ function onChange(event: Event): void {
     return
   }
 
-  if (file.type !== accept) {
-    emit('reject', 'format')
-    input.value = ''
-    return
-  }
-
-  if (file.size > CV_MAX_BYTES) {
-    emit('reject', 'size')
+  /* Feature 45: the one CV check both CV fields share (research R7). */
+  const verdict = classifyCvFile(file)
+  if (verdict !== 'accepted') {
+    emit('reject', verdict)
     input.value = ''
     return
   }

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { ref } from 'vue'
-import type { ContactFormContent } from '@/features/forms/data/contactFields'
+import type { LegacyContactFormContent } from '@/features/forms/data/legacy/legacyFormContent'
 import type { ContactSubmitter } from '@/features/forms/data/submissionContract'
 import { buildCountryOptions } from '@/features/forms/logic/countryOptions'
 import ContactForm from './ContactForm.vue'
@@ -35,7 +35,7 @@ const stubSubmitter: ContactSubmitter = {
     ),
 }
 
-const spanish: ContactFormContent = {
+const spanish: LegacyContactFormContent = {
   fields: {
     name: { label: 'Nombre', errorRequired: 'Escribe tu nombre' },
     email: {

@@ -1,10 +1,8 @@
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type {
-  ApplicationFieldId,
-  ApplicationFormContent,
-} from '@/features/forms/data/applicationFields'
+import type { ApplicationFieldId } from '@/features/forms/data/applicationFields'
 import { CV_MAX_BYTES } from '@/features/forms/data/applicationFields'
+import type { LegacyApplicationFormContent } from '@/features/forms/data/legacy/legacyFormContent'
 import {
   type ApplicationSubmitter,
   HONEYPOT_FIELD_NAME,
@@ -17,7 +15,7 @@ import ApplicationForm from './ApplicationForm.vue'
 
 /** Fixture content — already-translated, the shape
  * `useApplicationFormContent`-style logic would resolve for this feature. */
-const content: ApplicationFormContent = {
+const content: LegacyApplicationFormContent = {
   fields: {
     name: { label: 'Nombre', errorRequired: 'Escribe tu nombre' },
     email: {

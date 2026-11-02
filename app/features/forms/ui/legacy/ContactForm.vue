@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, useTemplateRef } from 'vue'
-import type { ContactFormContent } from '@/features/forms/data/contactFields'
+import type { LegacyContactFormContent } from '@/features/forms/data/legacy/legacyFormContent'
 import type { ContactSubmitter } from '@/features/forms/data/submissionContract'
 import { fieldErrorMessage } from '@/features/forms/logic/fieldErrorMessage'
 import { toFieldOptions } from '@/features/forms/logic/selectOptions'
 import { useContactForm } from '@/features/forms/logic/useContactForm'
+import HoneypotField from '@/features/forms/ui/HoneypotField.vue'
 import PrimaryButton from '@/shared/ui/legacy/PrimaryButton.vue'
 import FormOutcome from './FormOutcome.vue'
-import HoneypotField from './HoneypotField.vue'
 import RadioPillGroup from './RadioPillGroup.vue'
 import SelectField from './SelectField.vue'
 import TextareaField from './TextareaField.vue'
@@ -29,7 +29,7 @@ import WhatsappField from './WhatsappField.vue'
  * (`tests/forms-config.test.ts` asserts that).
  */
 interface Props {
-  content: ContactFormContent
+  content: LegacyContactFormContent
   submitter: ContactSubmitter
   previewState?: 'sending' | 'success' | 'server-error'
 }

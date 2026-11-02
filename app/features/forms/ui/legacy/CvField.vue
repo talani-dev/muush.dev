@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ApplicationFormContent } from '@/features/forms/data/applicationFields'
+import type { LegacyApplicationFormContent } from '@/features/forms/data/legacy/legacyFormContent'
 import CvUploadError from './CvUploadError.vue'
 import FileField, { type FileFieldRejection } from './FileField.vue'
 
@@ -17,8 +17,8 @@ import FileField, { type FileFieldRejection } from './FileField.vue'
 interface Props {
   id: string
   modelValue: File | null
-  content: ApplicationFormContent['fields']['cv']
-  uploadErrorContent: ApplicationFormContent['cvUploadError']
+  content: LegacyApplicationFormContent['fields']['cv']
+  uploadErrorContent: LegacyApplicationFormContent['cvUploadError']
   /** The submit-time validation message, if any. */
   error?: string
   rejection: FileFieldRejection | null

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import type { ApplicationFormContent } from '@/features/forms/data/applicationFields'
+import type { LegacyApplicationFormContent } from '@/features/forms/data/legacy/legacyFormContent'
 import type { ApplicationSubmitter } from '@/features/forms/data/submissionContract'
 import { buildCountryOptions } from '@/features/forms/logic/countryOptions'
 import ApplicationForm from './ApplicationForm.vue'
@@ -44,7 +44,7 @@ const areas = {
   creative: 'Creative',
 }
 
-const spanish: ApplicationFormContent = {
+const spanish: LegacyApplicationFormContent = {
   fields: {
     name: { label: 'Nombre', errorRequired: 'Escribe tu nombre' },
     email: {
@@ -186,7 +186,7 @@ export const ServerError: Story = {
 }
 
 /** Only the copy this story set needs in English; field labels stay ES. */
-const english: ApplicationFormContent = {
+const english: LegacyApplicationFormContent = {
   ...spanish,
   submit: 'Submit',
   sending: 'Sending…',

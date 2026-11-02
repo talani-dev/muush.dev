@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, useTemplateRef } from 'vue'
-import {
-  type ApplicationFormContent,
-  CV_REQUIRED,
-} from '@/features/forms/data/applicationFields'
+import { CV_REQUIRED } from '@/features/forms/data/applicationFields'
+import type { LegacyApplicationFormContent } from '@/features/forms/data/legacy/legacyFormContent'
 import type { ApplicationSubmitter } from '@/features/forms/data/submissionContract'
 import { fieldErrorMessage } from '@/features/forms/logic/fieldErrorMessage'
 import {
@@ -12,10 +10,10 @@ import {
 } from '@/features/forms/logic/selectOptions'
 import { useApplicationForm } from '@/features/forms/logic/useApplicationForm'
 import type { SubmitState } from '@/features/forms/logic/useFormSubmitState'
+import HoneypotField from '@/features/forms/ui/HoneypotField.vue'
 import PrimaryButton from '@/shared/ui/legacy/PrimaryButton.vue'
 import CvField from './CvField.vue'
 import FormOutcome from './FormOutcome.vue'
-import HoneypotField from './HoneypotField.vue'
 import RadioPillGroup from './RadioPillGroup.vue'
 import SelectField from './SelectField.vue'
 import TextField from './TextField.vue'
@@ -37,7 +35,7 @@ import WhatsappField from './WhatsappField.vue'
  * sent) with its two actions, and the CV's immediate format/size refusals.
  */
 interface Props {
-  content: ApplicationFormContent
+  content: LegacyApplicationFormContent
   submitter: ApplicationSubmitter
   previewState?: Exclude<SubmitState, 'idle' | 'invalid'>
 }

@@ -25,7 +25,15 @@ function selectFile(wrapper: VueWrapper, file: File | null) {
 
 function fileFieldSource(): string {
   return readFileSync(
-    join(process.cwd(), 'app', 'features', 'forms', 'ui', 'FileField.vue'),
+    join(
+      process.cwd(),
+      'app',
+      'features',
+      'forms',
+      'ui',
+      'legacy',
+      'FileField.vue'
+    ),
     'utf8'
   )
 }

@@ -1,9 +1,7 @@
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type {
-  ContactFieldId,
-  ContactFormContent,
-} from '@/features/forms/data/contactFields'
+import type { ContactFieldId } from '@/features/forms/data/contactFields'
+import type { LegacyContactFormContent } from '@/features/forms/data/legacy/legacyFormContent'
 import {
   type ContactSubmitter,
   HONEYPOT_FIELD_NAME,
@@ -15,7 +13,7 @@ import ContactForm from './ContactForm.vue'
 
 /** Fixture content — already-translated, the shape `useContactContent`-style
  * logic would resolve for this feature. */
-const content: ContactFormContent = {
+const content: LegacyContactFormContent = {
   fields: {
     name: { label: 'Nombre', errorRequired: 'Escribe tu nombre' },
     email: {
