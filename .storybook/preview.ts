@@ -71,6 +71,12 @@ const preview: Preview = {
     },
     viewport: {
       options: {
+        /* Feature 44: the narrowest width the home is checked at, where
+           the hero's two buttons wrap (Clarifications Q1). */
+        mobileSmall: {
+          name: 'Móvil chico (360)',
+          styles: { width: '360px', height: '780px' },
+        },
         mobile: {
           name: 'Móvil (390)',
           styles: { width: '390px', height: '844px' },
