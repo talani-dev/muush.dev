@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   dotProgress,
   isStepLitVertical,
+  litAt,
   litUpTo,
+  RUN_DELAY_MS,
+  RUN_MS_PER_LINE,
+  runPosition,
+  runSchedule,
   verticalProgress,
 } from './timelineProgress'
 
@@ -51,5 +56,53 @@ describe('litUpTo', () => {
     expect(litUpTo(0, 5)).toEqual([true, false, false, false, false])
     expect(litUpTo(2, 5)).toEqual([true, true, true, false, false])
     expect(litUpTo(4, 5)).toEqual([true, true, true, true, true])
+  })
+})
+
+/** Feature 45, reopen 1 · FR-038: the desktop run. */
+describe('the desktop run (FR-038)', () => {
+  const SHARES = [0.01, 0.21, 0.41, 0.61, 0.81]
+
+  it('should light every step whose dot the fill has reached and none at rest', () => {
+    expect(litAt(0, SHARES)).toEqual([false, false, false, false, false])
+    expect(litAt(0.41, SHARES)).toEqual([true, true, true, false, false])
+  })
+
+  it('should wait 150 ms then travel at 700 ms per line and light each dot as it is reached', () => {
+    const plan = runSchedule(0, 0.41, SHARES)
+
+    expect(RUN_DELAY_MS).toBe(150)
+    expect(RUN_MS_PER_LINE).toBe(700)
+    expect(plan.delayMs).toBe(150)
+    expect(plan.durationMs).toBe(287)
+    expect(plan.changes).toEqual([
+      { index: 0, lit: true, atMs: 157 },
+      { index: 1, lit: true, atMs: 297 },
+      { index: 2, lit: true, atMs: 437 },
+    ])
+  })
+
+  it('should put the later columns out in turn when running back', () => {
+    const before = [true, true, true, true, true]
+    const plan = runSchedule(0.81, 0.21, SHARES, before)
+
+    expect(plan.changes.map(change => [change.index, change.lit])).toEqual([
+      [2, false],
+      [3, false],
+      [4, false],
+    ])
+    const at = Object.fromEntries(
+      plan.changes.map(change => [change.index, change.atMs])
+    )
+    expect(at[4]).toBeLessThan(at[3] ?? 0)
+    expect(at[3]).toBeLessThan(at[2] ?? 0)
+  })
+
+  it('should place a run at its start during the delay, in between while travelling and at its end after', () => {
+    const run = { from: 0.2, to: 0.6, delayMs: 150, durationMs: 280 }
+
+    expect(runPosition(run, 100)).toBe(0.2)
+    expect(runPosition(run, 150 + 140)).toBeCloseTo(0.4, 6)
+    expect(runPosition(run, 2_000)).toBe(0.6)
   })
 })

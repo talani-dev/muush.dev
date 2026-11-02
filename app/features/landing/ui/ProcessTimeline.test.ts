@@ -20,7 +20,15 @@ vi.mock('@/features/landing/logic/useTimelineProgress', () => ({
 
 let media: ReturnType<typeof installMatchMedia> | undefined
 
+/** Lets the fill's run finish (feature 45, reopen 1: the columns light as
+ * the fill reaches them, on timers). */
+async function finishRun() {
+  vi.advanceTimersByTime(1_000)
+  await nextTick()
+}
+
 afterEach(() => {
+  vi.useRealTimers()
   media?.restore()
   media = undefined
   document.body.innerHTML = ''
@@ -38,6 +46,9 @@ function render(lit: boolean[], fills: number[], attachTo?: HTMLElement) {
 }
 
 async function renderDesktop() {
+  vi.useFakeTimers({
+    toFake: ['setTimeout', 'clearTimeout', 'performance'],
+  })
   media = installMatchMedia({ [DESKTOP_MEDIA_QUERY]: true })
   const wrapper = render(Array(5).fill(true), Array(5).fill(1), document.body)
   const list = wrapper.find('ol').element as HTMLElement
@@ -120,6 +131,7 @@ describe('ProcessTimeline', () => {
       const { wrapper, steps } = await renderDesktop()
 
       await steps[index]?.trigger('mouseenter')
+      await finishRun()
 
       const line = wrapper.find('[data-linea]')
       expect(line.attributes('data-vista-previa')).toBe('true')
@@ -137,7 +149,9 @@ describe('ProcessTimeline', () => {
     const { wrapper, steps } = await renderDesktop()
 
     await steps[4]?.trigger('mouseenter')
+    await finishRun()
     await steps[4]?.trigger('mouseleave')
+    await finishRun()
 
     expect(wrapper.attributes('style')).toContain('--progreso: 0')
     expect(
@@ -155,6 +169,7 @@ describe('ProcessTimeline', () => {
     expect(steps.every(step => step.attributes('tabindex') === '0')).toBe(true)
     ;(first.element as HTMLElement).focus()
     await first.trigger('focusin')
+    await finishRun()
 
     expect(steps.map(step => step.props('columnLit'))).toEqual([
       true,
@@ -164,6 +179,83 @@ describe('ProcessTimeline', () => {
       false,
     ])
     expect(first.props('raised')).toBe(true)
+  })
+
+  it('should run the fill after 150 ms at a constant speed and light each column as it is reached (FR-038)', async () => {
+    const { wrapper, steps } = await renderDesktop()
+
+    await steps[2]?.trigger('mouseenter')
+
+    const style = wrapper.attributes('style')
+    expect(style).toContain('--relleno-retraso: 150ms')
+    /* 0 → 534 / 1280 of the line at 700 ms per line. */
+    expect(style).toContain(
+      `--relleno-duracion: ${Math.round((534 / 1280) * 700)}ms`
+    )
+    expect(wrapper.find('[data-relleno]').classes()).toEqual(
+      expect.arrayContaining(['ease-linear', 'delay-(--relleno-retraso)'])
+    )
+    expect(steps.map(step => step.props('columnLit'))).toEqual(
+      Array(5).fill(false)
+    )
+    expect(steps[2]?.props('raised')).toBe(true)
+
+    vi.advanceTimersByTime(150 + Math.round((14 / 1280) * 700))
+    await nextTick()
+    expect(steps.map(step => step.props('columnLit'))).toEqual([
+      true,
+      false,
+      false,
+      false,
+      false,
+    ])
+
+    vi.advanceTimersByTime(Math.round((260 / 1280) * 700))
+    await nextTick()
+    expect(steps.map(step => step.props('columnLit'))).toEqual([
+      true,
+      true,
+      false,
+      false,
+      false,
+    ])
+
+    await finishRun()
+    expect(steps.map(step => step.props('columnLit'))).toEqual([
+      true,
+      true,
+      true,
+      false,
+      false,
+    ])
+  })
+
+  it('should run back and put the later columns out in turn when an earlier step is pointed', async () => {
+    const { steps } = await renderDesktop()
+    await steps[4]?.trigger('mouseenter')
+    await finishRun()
+
+    /* Leave, then point at step 1 at once: the fill is still at dot 4. */
+    await steps[4]?.trigger('mouseleave')
+    await steps[1]?.trigger('mouseenter')
+    vi.advanceTimersByTime(150 + 100)
+    await nextTick()
+
+    expect(steps.map(step => step.props('columnLit'))).toEqual([
+      true,
+      true,
+      true,
+      true,
+      false,
+    ])
+    await finishRun()
+    expect(steps.map(step => step.props('columnLit'))).toEqual([
+      true,
+      true,
+      false,
+      false,
+      false,
+    ])
   })
 
   it('should have no hover preview and no tab stops below lg', async () => {

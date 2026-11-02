@@ -81,6 +81,8 @@ export function useTimelineHover(
 
   return {
     active,
+    /* Feature 45, reopen 1: the run (`useTimelineRun`) reads every dot. */
+    dotShare,
     progress,
     lit,
     focusable: isDesktop,
