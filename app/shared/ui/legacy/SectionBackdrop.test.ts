@@ -107,4 +107,9 @@ describe('SectionBackdrop', () => {
     expect(glow.classes()).toContain('top-0')
     expect(wrapper.attributes('style')).toBeUndefined()
   })
+
+  it('should not display any glow when rendered (feature 43, glows retired)', () => {
+    /* Roberto, 2026-11-01: no v1 section glow is visible after feature 43. */
+    expect(mount(SectionBackdrop).classes()).toContain('hidden')
+  })
 })

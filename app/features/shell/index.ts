@@ -1,12 +1,15 @@
 /**
  * The shell module's only public API (Constitution Article III).
  *
- * `MobileMenu`, `FooterColumn` and `LanguageToggle` are deliberately not
- * exported: they are composition detail of the two components below. No file
- * outside this directory may import a shell internal directly.
+ * The header, the mobile menu and the footer are what the layout composes;
+ * their parts (`NavLinkBar`, `MenuButton`, `SocialLinks`, `FooterColumns`,
+ * `MobileFooter`, `LanguageToggle`) are composition detail and are not
+ * exported. `NotFoundContent` is the v1 404 body, still rendered from its
+ * quarantine (`ui/legacy/`) until feature 46 replaces it.
  */
 
 export type {
+  ResolvedContactChannel,
   ResolvedFooterColumn,
   ResolvedShellItem,
   ResolvedSocial,
@@ -25,6 +28,7 @@ export { useNotFoundDocument } from './logic/useNotFoundDocument'
 export { usePageSeo } from './logic/usePageSeo'
 export { useShellNavigation } from './logic/useShellNavigation'
 export { useSiteSeo } from './logic/useSiteSeo'
-export { default as NotFoundContent } from './ui/NotFoundContent.vue'
+export { default as NotFoundContent } from './ui/legacy/NotFoundContent.vue'
+export { default as MobileMenu } from './ui/MobileMenu.vue'
 export { default as SiteFooter } from './ui/SiteFooter.vue'
-export { default as SiteNav } from './ui/SiteNav.vue'
+export { default as SiteHeader } from './ui/SiteHeader.vue'

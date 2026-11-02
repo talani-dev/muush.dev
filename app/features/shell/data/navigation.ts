@@ -1,55 +1,39 @@
+import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import type { ShellItem } from './types'
 
 /**
- * The nav and mobile-menu models.
+ * The header and mobile-menu models of Muush 1.0 (feature 43, data-model
+ * § 3; pen extract-43 §§ 2, 4, 8; `muush-1.0.md` § 4.1).
  *
- * Every anchor destination names a **route** plus a hash, never a bare
- * fragment: the same items render on the About page, where `#proyectos`
- * alone points at nothing (spec FR-041).
+ * Anchors name a route plus a declared section id, never a bare fragment:
+ * the same items render on Nosotros and on the 404, where `#servicios`
+ * alone points at nothing (spec FR-026).
+ *
+ * The Home item comes first (added by Roberto 2026-11-01, superseding
+ * "no Home item", pen extract-43 § 9 Q1): "Inicio" / "Home", the top of the
+ * current locale's home, lit only there while no section is in view. The
+ * logo stays a home link too.
+ *
+ * ⚠️ **Preguntas is deliberately absent** (spec FR-024, confirmed by Roberto
+ * 2026-11-01): its route (`/es/preguntas` ↔ `/en/faq`) arrives with feature
+ * 46, and a link to a page that does not exist reads as a broken site (the
+ * precedent of features 21 and 23). Feature 46 adds `shell.nav.faq` →
+ * route `faq` here as the third entry, after `about`.
  */
+/** The Home item, shared by the link bar and the menu. */
+export const NAV_HOME: ShellItem = {
+  labelKey: 'shell.nav.homeLink',
+  destination: { kind: 'top', name: 'index' },
+}
 
-/** The section ids the landing owns, plus the one on About. */
-export const SHELL_ANCHORS = {
-  purpose: '#proposito',
-  services: '#servicios',
-  projects: '#proyectos',
-  contact: '#contacto',
-  work: '#work',
-} as const
-
-/**
- * The desktop nav's two links, as of the floating-nav redesign (feature 21):
- * `Servicios` then `Nosotros`.
- *
- * ⚠️ **Two deliberate divergences from the redesigned `.pen` frame
- * (`WGhSI`'s `Links` child), in opposite directions — do not "restore"
- * either one by comparing this array against the design file.**
- *
- * - **`Proyectos` is deliberately absent**, even though the frame draws it.
- *   Roberto's explicit instruction (2026-09-08): feature 15
- *   (`projects_section`) is `blocked` indefinitely, and a nav link to a
- *   section that does not exist yet reads as a broken site
- *   (`docs/business/landing/ui-map.md` § 6 — "un espacio reservado que
- *   parece clickeable y no lleva a nada"). A human decision that overrides
- *   the design file, not an inference (spec FR-006). Restoring it the day
- *   feature 15 ships is a one-entry change, back to `SHELL_ANCHORS.projects`.
- * - **`Servicios` is present**, even though
- *   `docs/business/landing/content.md` states "Servicios no está en el nav"
- *   as a settled decision. The redesigned frame postdates that document and
- *   wins per `docs/business/rules.md` § R32 (spec FR-007). This is a
- *   contradiction reported for a human to reconcile in `content.md` — not an
- *   agent's to fix, per the read-only policy on `docs/business/`.
- *
- * Order is render order, matching the frame's `Links` child and spec User
- * Story 2. `Nosotros` was already here and is unchanged.
- */
 export const NAV_ITEMS: ShellItem[] = [
+  NAV_HOME,
   {
     labelKey: 'shell.nav.services',
     destination: {
       kind: 'anchor',
       name: 'index',
-      hash: SHELL_ANCHORS.services,
+      anchor: SECTION_ANCHORS.services,
     },
   },
   {
@@ -58,42 +42,20 @@ export const NAV_ITEMS: ShellItem[] = [
   },
 ]
 
-/** The primary button of the desktop nav. It has no mobile counterpart. */
+/**
+ * The desktop header's primary button, "Diagnóstico gratis" / "Free
+ * assessment" (`muush-1.0.md` § 1). Shown on every page, the home page's top
+ * and the 404 included (spec FR-004, confirmed by Roberto 2026-11-01). The
+ * mobile bar has no CTA (pen extract-43 § 3).
+ */
 export const NAV_CTA: ShellItem = {
   labelKey: 'shell.nav.cta',
-  destination: { kind: 'anchor', name: 'index', hash: SHELL_ANCHORS.contact },
+  destination: {
+    kind: 'anchor',
+    name: 'index',
+    anchor: SECTION_ANCHORS.assessment,
+  },
 }
 
-/**
- * The mobile menu carries three items where the desktop nav carries two:
- * `Propósito` and `Servicios` are included because the mobile scroll is much
- * longer (`ui-map.md` § 2).
- *
- * ⚠️ **`Proyectos` is deliberately absent — Roberto's explicit call
- * (feature 24, 2026-09-08), reverting the mobile-only exception this file
- * used to document.** Same reasoning `NAV_ITEMS` already records for
- * dropping it from the desktop nav: feature 15 (`projects_section`) is
- * `blocked` indefinitely, and a menu link to a section that does not exist
- * yet reads as a broken site (`ui-map.md` § 6). `MobileMenu.test.ts` used to
- * assert Proyectos SHOULD list in mobile "on purpose" — that assertion is
- * updated in the same change. Restoring it the day feature 15 ships is a
- * one-entry change, back to `SHELL_ANCHORS.projects`.
- */
-export const MENU_ITEMS: ShellItem[] = [
-  {
-    labelKey: 'shell.menu.purpose',
-    destination: { kind: 'anchor', name: 'index', hash: SHELL_ANCHORS.purpose },
-  },
-  {
-    labelKey: 'shell.menu.services',
-    destination: {
-      kind: 'anchor',
-      name: 'index',
-      hash: SHELL_ANCHORS.services,
-    },
-  },
-  {
-    labelKey: 'shell.menu.about',
-    destination: { kind: 'route', name: 'about' },
-  },
-]
+/** The open menu lists the same items as the link bar (pen extract-43 § 4). */
+export const MENU_ITEMS: ShellItem[] = NAV_ITEMS

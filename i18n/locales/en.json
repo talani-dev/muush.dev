@@ -263,18 +263,17 @@
     "nav": {
       "label": "Main navigation",
       "services": "Services",
-      "about": "About us",
-      "cta": "Tell us about your project",
+      "about": "About",
+      "cta": "Free assessment",
       "switchToEs": "Switch to Spanish",
-      "switchToEn": "Switch to English"
+      "switchToEn": "Switch to English",
+      "home": "muush home",
+      "homeLink": "Home"
     },
     "menu": {
       "label": "Menu",
       "open": "Open menu",
-      "close": "Close menu",
-      "purpose": "Purpose",
-      "services": "Services",
-      "about": "About us"
+      "close": "Close menu"
     },
     "social": {
       "linkedin": "LinkedIn",
@@ -284,28 +283,40 @@
     "footer": {
       "label": "Footer",
       "tagline": "We speak business and code.",
-      "category": "Technology solution studio",
+      "category": "Technology Solution Studio.",
       "copyright": "© 2026 muush · All rights reserved",
-      "location": "CDMX · MX",
       "whatsappMessage": "Hi muush, I'd like to talk about a project.",
       "nav": {
         "title": "Navigation",
-        "purpose": "Purpose",
+        "home": "Home",
         "services": "Services",
-        "about": "About us"
+        "howWeWork": "How we work",
+        "about": "About"
       },
       "contact": {
         "title": "Contact",
+        "assessment": "Free assessment",
         "call": "Book a call",
         "email": "support{'@'}muush.dev",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "hints": {
+          "whatsapp": "Message us",
+          "call": "30 minutes",
+          "email": "Email"
+        }
       },
       "muush": {
         "title": "muush",
-        "work": "Work with muush"
+        "work": "Work with muush",
+        "blog": "Blog · coming soon",
+        "blogInline": "Blog (coming soon)"
       },
       "social": {
         "title": "Social"
+      },
+      "legal": {
+        "privacy": "Privacy notice",
+        "terms": "Terms and conditions"
       }
     },
     "notFound": {

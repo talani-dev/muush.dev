@@ -1,4 +1,9 @@
-import { computed } from 'vue'
+import { computed, onScopeDispose, ref } from 'vue'
+import {
+  LEGAL_ITEMS,
+  MOBILE_CONTACT_CHANNELS,
+  MOBILE_FOOTER_LINKS,
+} from '@/features/shell/data/contactChannels'
 import { FOOTER_COLUMNS } from '@/features/shell/data/footerColumns'
 import {
   MENU_ITEMS,
@@ -7,30 +12,57 @@ import {
 } from '@/features/shell/data/navigation'
 import { SOCIAL_PROFILES } from '@/features/shell/data/socialProfiles'
 import type {
+  ResolvedContactChannel,
   ResolvedFooterColumn,
   ResolvedShellItem,
   ResolvedSocial,
   ShellLocale,
 } from '@/features/shell/data/types'
-import { useNavCtaReveal } from '@/shared/logic/useNavCtaReveal'
+import type { SectionAnchor } from '@/shared/data/sectionAnchors'
 import { resolveLocaleDestination } from './resolveLocaleDestination'
 import { switchLocaleWithFallback } from './switchLocaleInPlace'
+import { useActiveSection } from './useActiveSection'
+import { useLocaleSwitchScroll } from './useLocaleSwitchScroll'
 import { useShellItemResolver } from './useShellItemResolver'
 
 /**
- * The single seam between the Nuxt runtime and the presentational layer.
+ * The home sections the link bar can mark active: the anchor items of
+ * `NAV_ITEMS` on the home route (today Servicios). Derived, so the item a
+ * future feature adds is spied on without a second list.
+ */
+const SPIED_ANCHORS: readonly SectionAnchor[] = NAV_ITEMS.flatMap(item =>
+  item.destination.kind === 'anchor' && item.destination.name === 'index'
+    ? [item.destination.anchor]
+    : []
+)
+
+/**
+ * Counts rendered pages, so the scroll-spy re-reads the DOM of the page
+ * navigated to (the layout persists across pages; the sections do not).
+ */
+function usePageRenderCount() {
+  const count = ref(0)
+  const stop = useNuxtApp().hook('page:finish', () => {
+    count.value += 1
+  })
+  onScopeDispose(stop)
+  return count
+}
+
+/**
+ * The single seam between the Nuxt runtime and the shell's presentational
+ * layer (feature 003, research § R4; rewritten for Muush 1.0 by feature 43).
  *
  * Only `logic/` reads `useI18n`, `useLocalePath`, `useSwitchLocalePath`,
- * `useRouteBaseName` or `useRoute` — here and in `useShellItemResolver`, which
- * holds the destination resolver this file shares with the not-found page
- * (feature 36). Everything it
- * returns is inert data, which is what lets every `ui/` component render with
- * no router and no i18n instance present — and what makes Storybook able to
- * detect a component that cheats (spec FR-008, research § R4).
+ * `useRouteBaseName`, `useRoute` or `useError`. Everything returned is inert
+ * data, which lets every `ui/` component render with no router and no i18n
+ * instance (Storybook proves it, `rules.md` § R23). Destinations resolve by
+ * **route name** through the i18n route map, never by writing a path.
  *
- * Destinations are resolved by **route name**, never by writing a path. The
- * translated segment lives in `nuxt.config.ts` under `i18n.pages` and nowhere
- * else (spec FR-018).
+ * The v1 CTA reveal (`useNavCtaReveal`, features 9 and 36) is no longer
+ * read: the CTA shows on every page, the 404 included (spec FR-004,
+ * confirmed by Roberto 2026-11-01). Its last caller, the v1 Hero, leaves
+ * with feature 44; feature 44 or 47 deletes the composable.
  */
 export function useShellNavigation() {
   const { t, locale, loadLocaleMessages } = useI18n()
@@ -38,6 +70,7 @@ export function useShellNavigation() {
   const switchLocalePath = useSwitchLocalePath()
   const routeBaseName = useRouteBaseName()
   const route = useRoute()
+  const error = useError()
 
   const activeLocale = computed<ShellLocale>(() =>
     locale.value === 'en' ? 'en' : 'es'
@@ -47,25 +80,28 @@ export function useShellNavigation() {
   )
 
   const home = computed(() => localePath({ name: 'index' }))
-  const currentRouteName = computed(() => routeBaseName(route))
-  const { resolveItem } = useShellItemResolver()
-  const error = useError()
+  const isHome = computed(
+    () => !error.value && routeBaseName(route) === 'index'
+  )
+  const { activeAnchor, atTop } = useActiveSection(
+    isHome,
+    SPIED_ANCHORS,
+    usePageRenderCount()
+  )
+  /*
+   * `atTop` is gated by `isHome` too: the resolver already requires the
+   * home route name, and the 404 (an error over any URL) must never light
+   * the Home item, even under `/es`.
+   */
+  const { resolveItem } = useShellItemResolver(
+    () => activeAnchor.value,
+    () => isHome.value && atTop.value
+  )
 
   const navItems = computed<ResolvedShellItem[]>(() =>
     NAV_ITEMS.map(resolveItem)
   )
-  /**
-   * Absent — not hidden — while an error is shown (feature 36). The not-found
-   * page carries its own LED button, and the reference README allows one LED
-   * per screen ("un solo LED por pantalla"). Hiding it with classes would not
-   * do: `SiteNav`'s `<noscript>` override forces `.site-nav__cta` visible
-   * without scripting (`specs/036-not-found-page/research.md` R4 F24–F25).
-   * `useError()` is reactive, so the button returns as soon as the visitor
-   * leaves the error page (R1 F11).
-   */
-  const navCta = computed<ResolvedShellItem | undefined>(() =>
-    error.value ? undefined : resolveItem(NAV_CTA)
-  )
+  const navCta = computed<ResolvedShellItem>(() => resolveItem(NAV_CTA))
   const menuItems = computed<ResolvedShellItem[]>(() =>
     MENU_ITEMS.map(resolveItem)
   )
@@ -75,6 +111,18 @@ export function useShellNavigation() {
       title: t(column.titleKey),
       items: column.items.map(resolveItem),
     }))
+  )
+  const contactChannels = computed<ResolvedContactChannel[]>(() =>
+    MOBILE_CONTACT_CHANNELS.map(channel => ({
+      ...resolveItem(channel),
+      hint: t(channel.hintKey),
+    }))
+  )
+  const mobileFooterLinks = computed<ResolvedShellItem[]>(() =>
+    MOBILE_FOOTER_LINKS.map(resolveItem)
+  )
+  const legalItems = computed<ResolvedShellItem[]>(() =>
+    LEGAL_ITEMS.map(resolveItem)
   )
 
   const socials = computed<ResolvedSocial[]>(() =>
@@ -86,11 +134,14 @@ export function useShellNavigation() {
   )
 
   /*
-   * Anchorless by design. The fragment cannot exist at generate time
-   * (`docs/business/rules.md` § R9), so it is appended at click time by
-   * `LanguageToggle`; what ships in the HTML is a real, resolvable URL for
-   * crawlers and for a visitor with no scripting.
+   * Anchorless by design. What ships in the HTML is a real, resolvable URL
+   * for crawlers and for a visitor with no scripting. With scripting, the
+   * toggle no longer carries the fragment either (spec FR-061, Roberto
+   * 2026-11-01): it holds the visitor's position, and
+   * `useLocaleSwitchScroll` restores it on the other locale's page.
    */
+  useLocaleSwitchScroll()
+
   const localeSwitchHref = computed(() =>
     resolveLocaleDestination(
       switchLocalePath(otherLocale.value),
@@ -98,22 +149,25 @@ export function useShellNavigation() {
     )
   )
 
+  /** The toggle's accessible name names the destination (feature 21). */
+  const localeSwitchLabel = computed(() =>
+    activeLocale.value === 'en'
+      ? t('shell.nav.switchToEs')
+      : t('shell.nav.switchToEn')
+  )
+
   /**
    * Whether the language toggle switches the page in place instead of
-   * navigating (feature 39). Only while an error is shown — the not-found
-   * page, which sits at a URL with no counterpart in the other locale, so
-   * the only place to "switch to" is the same URL in the other language.
-   * Same signal as `navCta` above, so it holds identically on the server and
-   * on the client and the toggle's markup hydrates without a mismatch. Every
-   * other page keeps the navigating toggle untouched.
+   * navigating (feature 39): only while an error is shown, the not-found
+   * page, whose URL has no counterpart in the other locale. Same signal on
+   * the server and the client, so the toggle hydrates without a mismatch.
    */
   const localeSwitchInPlace = computed(() => Boolean(error.value))
 
   /**
    * The in-place switch the toggle requests on the not-found page. If the
-   * other locale's messages cannot be loaded (offline, a stale deploy), the
-   * visitor still gets a real destination: the toggle's own href, the other
-   * locale's home — what the toggle did before feature 39.
+   * other locale's messages cannot be loaded, the visitor still gets a real
+   * destination: the toggle's own href, the other locale's home.
    */
   function switchLocale(target: ShellLocale): Promise<void> {
     return switchLocaleWithFallback(
@@ -123,42 +177,35 @@ export function useShellNavigation() {
     )
   }
 
-  /**
-   * Whether the nav renders its `Cuéntanos tu proyecto` button
-   * (`ui-map.md` § 2, Roberto, 2026-09-07).
-   *
-   * The **route** comparison stays here, because routes already live here, and
-   * this is the single place a future page declares that it renders its own
-   * call to action above the fold. **When** the button appears is the Hero's
-   * to say, through the shared flag; this module imports nothing from
-   * `landing` and `landing` imports nothing from here (Article III).
-   *
-   * It is evaluated identically on the server and on the client, which is what
-   * keeps the landing's button hidden in the generated HTML rather than hidden
-   * on mount, and what leaves a route that starts visible with nothing to
-   * transition from (spec FR-044, FR-045).
-   */
-  const showNavCta = useNavCtaReveal(
-    computed(() => currentRouteName.value === 'index')
-  )
+  const labels = computed(() => ({
+    home: t('shell.nav.home'),
+    nav: t('shell.nav.label'),
+    menu: t('shell.menu.label'),
+    menuOpen: t('shell.menu.open'),
+    menuClose: t('shell.menu.close'),
+    footer: t('shell.footer.label'),
+  }))
 
   const brand = computed(() => ({
     tagline: t('shell.footer.tagline'),
     category: t('shell.footer.category'),
     copyright: t('shell.footer.copyright'),
-    location: t('shell.footer.location'),
   }))
 
   return {
     navItems,
     navCta,
-    showNavCta,
     menuItems,
     footerColumns,
+    contactChannels,
+    mobileFooterLinks,
+    legalItems,
     socials,
     home,
+    labels,
     locale: activeLocale,
     localeSwitchHref,
+    localeSwitchLabel,
     localeSwitchInPlace,
     switchLocale,
     brand,

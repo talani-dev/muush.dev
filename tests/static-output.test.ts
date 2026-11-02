@@ -116,15 +116,15 @@ describe('static output · routes', () => {
 
   it('should resolve the About page at both localized paths from one page', () => {
     /* The segment is translated, so the two paths are not a prefix apart. One
-       page component serves both; the `#work` target the footer points at is
-       what proves the same component rendered. */
+       page component serves both; the `#trabaja-con-muush` target the footer
+       points at (feature 43) is what proves the same component rendered. */
     const aboutPages = readdirSync(join(process.cwd(), 'app', 'pages')).filter(
       file => file !== 'index.vue'
     )
 
     expect(aboutPages).toEqual(['about.vue'])
-    expect(documentFor('/es/nosotros')).toContain('id="work"')
-    expect(documentFor('/en/about')).toContain('id="work"')
+    expect(documentFor('/es/nosotros')).toContain('id="trabaja-con-muush"')
+    expect(documentFor('/en/about')).toContain('id="trabaja-con-muush"')
   })
 
   it('should leave no anchor without a destination on any page', () => {
@@ -225,143 +225,95 @@ describe('static output · the layout wraps every page', () => {
   }
 
   for (const route of ROUTES) {
-    it(`should paint the background layers when the page is ${route}`, () => {
+    it(`should paint the plain Negro 950 canvas with no dotted paper when the page is ${route}`, () => {
       /*
-       * The background costs zero JavaScript (spec FR-009) and is the
-       * layout's, not a page's (FR-004) — so it must already be in the
-       * prerendered document, on every route, in both locales. A mounted
-       * component cannot show either of those things.
+       * Feature 43 (spec FR-039, User Story 7) retires the v1 dotted paper,
+       * the red-dot spotlight and the section glows. This **supersedes**
+       * feature 42's acceptance "El cursor personalizado y el spotlight
+       * (features 8 y 34) siguen funcionando" for the spotlight half
+       * (Roberto, 2026-11-01); the "You" cursor half still holds
+       * (`tests/brand-cursor.test.ts`).
        *
-       * What is asserted is the host contract plus the sheet: the layout root
-       * is the page's single stacking context (`isolate`), is positioned, and
-       * clips overflow with `clip` rather than `hidden` so the off-canvas
-       * glows never turn the page into a scroll container (feature 006
-       * `research.md` § R3). Paint order itself is not testable here —
-       * `happy-dom` does no painting, and pretending otherwise would ship a
-       * test that always passes (`rules.md` § R27). It is reviewed in the
-       * `DotGrid` / `SectionBackdrop` stories instead.
+       * The layout root is still the page's single, positioned stacking
+       * context and clips horizontally with `clip`, never `hidden`, so it is
+       * not a scroll container.
        */
       const html = documentFor(route)
-
-      /* Feature 42: the layout root paints the v2 canvas, Negro 950. */
       const layoutRoot = html.match(
         /<div class="([^"]*bg-negro-950[^"]*)"/
       )?.[1]
 
       expect(layoutRoot, route).toBeDefined()
-      for (const utility of ['relative', 'isolate', 'overflow-clip']) {
+      for (const utility of ['relative', 'isolate', 'overflow-x-clip']) {
         expect(layoutRoot?.split(' '), `${route} · ${utility}`).toContain(
           utility
         )
       }
-
-      expect(html, route).toMatch(/<div aria-hidden="true" class="dot-grid/)
+      expect(html, route).not.toContain('dot-grid')
     })
   }
 
   for (const route of ROUTES) {
-    it(`should ship no cursor spotlight markup when the page is ${route}`, () => {
-      /*
-       * Feature 008, FR-012 / SC-003. The spotlight is the one background
-       * layer that depends on JavaScript, and `ui-map.md` § 10 specifies its
-       * absence as a complete state — "fondo normal, sin glow — no se pierde
-       * contenido". That absence is mechanical rather than promised:
-       * `useCursorSpotlight` returns `isActive: false` on the server and until
-       * the first mouse event, so the element cannot reach the artefact.
-       *
-       * This is also how the no-JS fallback is verified at all. A browser with
-       * scripting disabled renders exactly this document, so proving the
-       * markup is not here proves the fallback — the same discipline
-       * `rules.md` §§ R25 and R31 apply to everything else about `.output`.
-       *
-       * ⚠️ **The body, not the document.** Nuxt inlines a component's scoped
-       * CSS into every prerendered page in the route's module graph, whether
-       * or not the component ever renders — so `cursor-spotlight` *does*
-       * appear in the `<head>` of all four documents, inside a `<style>` tag,
-       * with `<!---->` where the `v-if` declined to render. A grep over the
-       * whole document cannot tell markup from stylesheet and would fail this
-       * feature for shipping exactly what it is supposed to ship
-       * (`rules.md` § R40).
-       */
-      const body = documentFor(route).match(/<body[\s\S]*<\/body>/)?.[0]
-
-      expect(body, route).toBeDefined()
-      expect(body, route).not.toContain('cursor-spotlight')
+    it(`should ship no cursor spotlight, markup or stylesheet, when the page is ${route}`, () => {
+      /* Feature 43 supersedes feature 42's "spotlight sigue funcionando"
+         (Roberto, 2026-11-01): the layout no longer mounts it, so neither its
+         element nor its inlined scoped style reaches any document. */
+      expect(documentFor(route), route).not.toContain('cursor-spotlight')
     })
   }
 
-  it('should still ship the spotlight stylesheet when the site is generated', () => {
-    /* The complement of the assertion above, and the reason it is not simply
-       "the feature is missing": the styles are in the artefact and only the
-       element waits for a mouse. The tokens live in the emitted stylesheet;
-       the layer's own rules are inlined per document. */
-    const css = emittedCss()
+  for (const route of ROUTES) {
+    it(`should hide every v1 section glow when the page is ${route}`, () => {
+      /* Feature 43 (spec FR-040): the glows stay in the markup until features
+         44–46 replace their sections, inside a wrapper that is never
+         displayed. */
+      const backdrops = [
+        ...documentFor(route).matchAll(
+          /<div[^>]*class="(section-backdrop[^"]*)"/g
+        ),
+      ].map(match => match[1]?.split(' ') ?? [])
 
-    for (const token of [
-      '--layer-spotlight:',
-      '--spotlight-lit-radius:',
-      '--dot-paper-lit-color:',
-    ]) {
-      expect(css, token).toContain(token)
-    }
-    /* Feature 34, amendment A2-1: the glow and its tokens are gone. */
-    expect(css).not.toContain('--spotlight-outer-size:')
-    expect(css).not.toContain('--spotlight-red-400-')
-
-    expect(documentFor('/es')).toContain('.cursor-spotlight')
-  })
+      for (const classes of backdrops) {
+        expect(classes, route).toContain('hidden')
+      }
+    })
+  }
 
   for (const route of ['/es', '/en/about'] as const) {
-    it(`should render the footer on its own ink-500 surface when the page is ${route}`, () => {
-      /* Feature 34, A2 revision 1 (Roberto, 2026-10-15): the footer keeps its
-         flat ink-500, which covers the dotted paper and the red lit dots. */
+    it(`should render the footer transparent over the canvas when the page is ${route}`, () => {
+      /* Feature 43 (spec FR-030): the v1 footer's flat ink-500 band is gone;
+         the footer is transparent with a 1 px Blanco 8 % rule on top. */
       const tag = documentFor(route).match(/<footer[^>]*>/)?.[0]
+      const classes = tag?.match(/class="([^"]*)"/)?.[1]?.split(' ') ?? []
 
       expect(tag, route).toBeDefined()
-      expect(tag?.match(/class="([^"]*)"/)?.[1] ?? '', route).toMatch(
-        /\bbg-ink-500\b/
+      expect(classes, route).toEqual(
+        expect.arrayContaining(['border-t', 'border-blanco-8'])
       )
+      expect(
+        classes.some(name => name.startsWith('bg-')),
+        route
+      ).toBe(false)
     })
   }
 
-  it('should render the same nav markup on the landing and on About', () => {
+  it('should render the same header on the landing and on About except the current page', () => {
     /*
-     * § 9.bis verified the two pages' chrome is byte-identical, which is why
-     * there is one responsive nav and no `variant` prop. Two things are
-     * excluded from the comparison, and both are required to differ:
-     *
-     * - **Destinations.** The toggle resolves to `/en` from the landing and to
-     *   `/en/about` from About; a nav whose hrefs matched across pages would
-     *   mean SC-003 was broken.
-     * - **The active-page marking**, which is announced to assistive
-     *   technology and deliberately not drawn (spec A-04).
-     * - **The call to action's visibility pair** — added by feature 009. The
-     *   landing suppresses the nav CTA because its Hero already offers the
-     *   same control (`ui-map.md` § 2, Roberto, 2026-09-07), so the two
-     *   documents now differ by exactly `invisible opacity-0` against
-     *   `visible opacity-100`. That difference is the feature; the assertion
-     *   below is what proves it is the **only** one, which is spec SC-017.
-     *
-     * What is compared is everything else: the elements, the controls and
-     * every class. That is what would change if a per-page variant crept in.
-     *
-     * The pattern is **anchored on the CTA wrapper's own class** with a
-     * lookahead rather than matching the pair anywhere in the nav. Without the
-     * anchor, any other nav element that happened to gain literally
-     * `invisible opacity-0 ` would be stripped too and the comparison would
-     * stop seeing it — the one hole a mutation test found in this exclusion
-     * (reviewer, 2026-09-07). It costs nothing: there is one match per
-     * document and it is the wrapper.
+     * One responsive header with no per-page variant (feature 3, § 9.bis;
+     * feature 43). Excluded from the comparison, and required to differ:
+     * the destinations (the toggle resolves per page) and the current-page
+     * marking (Nosotros on About: `aria-current`, the active fill and the
+     * decorative dot, spec FR-027). The CTA no longer differs at all: it is
+     * shown on every page (spec FR-004, confirmed by Roberto 2026-11-01).
      */
-    const CTA_STATE = /(in)?visible opacity-(0|100) (?=site-nav__cta)/g
-
     const navMarkup = (route: RoutePath) =>
       documentFor(route)
         .match(/<nav[\s\S]*?<\/nav>/)?.[0]
         .replaceAll(/ href="[^"]*"/g, '')
         .replaceAll(' aria-current="page"', '')
         .replaceAll(/ ?router-link-(exact-)?active/g, '')
-        .replaceAll(CTA_STATE, '')
+        .replaceAll(/<span data-punto[^>]*><\/span>/g, '<!---->')
+        .replaceAll('bg-blanco-8 text-blanco', 'text-texto-suave')
         /* Collapse the whitespace the strips above leave behind. */
         .replaceAll(/class="\s+/g, 'class="')
 
@@ -371,35 +323,71 @@ describe('static output · the layout wraps every page', () => {
     expect(navMarkup('/es/nosotros')).toBe(landingNav)
   })
 
-  it('should differ between the landing and About in the call to action alone', () => {
-    /*
-     * Feature 009, SC-014 and SC-017. The complement of the assertion above,
-     * and the half that would otherwise be untested: the landing ships the
-     * button **hidden in the HTML** — not hidden on mount, which is the flash
-     * spec FR-045 forbids — and every route without a Hero ships it visible,
-     * so there is nothing for a transition to run from on load (FR-044).
-     */
-    const ctaState = (route: RoutePath) =>
-      documentFor(route).match(/class="([^"]*site-nav__cta[^"]*)"/)?.[1]
+  it('should mark Nosotros as the current page on About and only Home on the landing', () => {
+    /* Spec FR-027, FR-028 (confirmed by Roberto 2026-11-01): route items
+       are current on their own page; the scroll-spy runs only after mount,
+       so the prerendered landing marks no section. It is at its top, so
+       the Home item is lit there and nowhere else (Home link added by
+       Roberto 2026-11-01). */
+    /* The link bar only: the router itself also marks the logo "current
+       page" on the home page, which is true. */
+    const current = (route: RoutePath) =>
+      [
+        ...(documentFor(route).match(/<nav[\s\S]*?<\/ul>/)?.[0] ?? '').matchAll(
+          /aria-current="([^"]+)"[^>]*>(?:<span[^>]*><\/span>)?\s*([^<]+?)\s*</g
+        ),
+      ].map(match => [match[1], match[2]])
 
-    expect(ctaState('/es')).toContain('invisible opacity-0')
-    expect(ctaState('/en')).toContain('invisible opacity-0')
-    expect(ctaState('/es/nosotros')).toContain('visible opacity-100')
-    expect(ctaState('/en/about')).toContain('visible opacity-100')
+    expect(current('/es')).toEqual([['page', 'Inicio']])
+    expect(current('/en')).toEqual([['page', 'Home']])
+    expect(current('/es/nosotros')).toEqual([['page', 'Nosotros']])
+    expect(current('/en/about')).toEqual([['page', 'About']])
+  })
 
-    for (const route of ROUTES) {
-      expect(ctaState(route), route).toContain('lg:block')
+  it('should show the header logo as the isotipo alone with its i18n name on every page', () => {
+    /* Roberto 2026-11-01 (spec FR-059): no "muush.dev" wordmark in the
+       header at any width; the footer keeps the full lockup. The wordmark's
+       runs are the only `text-marca` text in the shell. */
+    const logoLink = (route: RoutePath) =>
+      documentFor(route).match(/<nav[^>]*>\s*(<a [\s\S]*?<\/a>)/)?.[1] ?? ''
+    const footer = (route: RoutePath) =>
+      documentFor(route).match(/<footer[\s\S]*<\/footer>/)?.[0] ?? ''
+
+    for (const [route, name] of [
+      ['/es', 'Inicio de muush'],
+      ['/en', 'muush home'],
+      ['/es/nosotros', 'Inicio de muush'],
+      ['/en/about', 'muush home'],
+    ] as const) {
+      const link = logoLink(route)
+
+      expect(link, route).toContain(`aria-label="${name}"`)
+      expect(link, route).toContain('<svg')
+      expect(link, route).not.toContain('text-marca')
+      expect(footer(route), route).toContain('text-marca')
     }
   })
 
-  it('should ship the no-scripting override for the call to action on every page', () => {
-    /* The only mechanism that satisfies FR-045 and FR-046 together. Without
-       it the landing's button would stay hidden forever for a visitor with
-       scripting off, because the observer that reveals it never runs. */
+  it('should show the header CTA on every page from the first render', () => {
+    /*
+     * Feature 43 retires feature 9's hero reveal (spec FR-004, confirmed by
+     * Roberto 2026-11-01): the CTA ships visible in every document, so there
+     * is no hidden state and no `<noscript>` override any more (research R9).
+     */
     for (const route of ROUTES) {
-      expect(documentFor(route), route).toMatch(
-        /<noscript[^>]*><style>\.site-nav__cta\.site-nav__cta\{opacity:1;visibility:visible\}<\/style><\/noscript>/
+      const html = documentFor(route)
+      const home = route.startsWith('/en') ? '/en' : '/es'
+      const nav = html.match(/<nav[\s\S]*?<\/nav>/)?.[0]
+
+      expect(nav, route).toMatch(
+        new RegExp(`<a [^>]*href="${home}#diagnostico"`)
       )
+      /* A link to a section of this page is not the current page. */
+      expect(nav, route).not.toMatch(
+        /aria-current="page" href="[^"]*#diagnostico"/
+      )
+      expect(html, route).not.toContain('site-nav__cta')
+      expect(html, route).not.toMatch(/<noscript[^>]*><style>/)
     }
   })
 
@@ -407,8 +395,7 @@ describe('static output · the layout wraps every page', () => {
     /*
      * `decisions-open.md` § Decisión 2 scopes the URL to the hero, the final
      * CTA and the footer. The footer renders on all four documents, so this is
-     * where a silent return to `kind: 'none'` would be widest — and it would
-     * look like nothing more than a slightly greyer line in a column.
+     * where a silent return to `kind: 'none'` would be widest.
      */
     for (const route of ROUTES) {
       const footer = documentFor(route).match(/<footer[\s\S]*<\/footer>/)?.[0]
@@ -423,107 +410,80 @@ describe('static output · the layout wraps every page', () => {
     }
   })
 
-  it('should offer a pointer on every clickable control it ships', () => {
-    /*
-     * Nothing in the emitted stylesheet declared a cursor before this change,
-     * so a native `<button>` kept the user agent's `default` and only anchors
-     * looked right — by accident (`findings.md` § R56). The nav CTA is the one
-     * control here that renders as a link and would have passed anyway; it is
-     * included so the class is asserted rather than the element type.
-     *
-     * The hamburger and the close control cannot be asserted here: both are
-     * behind `isScriptingAvailable` / the open flag and never reach a
-     * prerendered document. Their component tests cover them.
-     */
+  it('should float the header fixed at the top without taking space in the flow', () => {
+    /* Feature 43 (spec FR-009): `fixed`, so a section's background runs under
+       it; visible in the prerendered state (the hide is client-only, so with
+       no scripting it never hides); never printed. */
     for (const route of ROUTES) {
-      const nav = documentFor(route).match(/<nav[\s\S]*?<\/nav>/)?.[0]
-      const cta = nav?.match(
-        /<a href="[^"]*#contacto"[^>]*class="([^"]*)"/
-      )?.[1]
-
-      expect(cta?.split(' '), route).toContain('cursor-pointer')
-    }
-  })
-
-  it('should pin the nav without changing anything else about it', () => {
-    /* `sticky`, not `fixed`: the nav stays in normal flow, so `<main>` needs no
-       compensating top padding and every section's top padding stays
-       `design y − nav height` (spec A-13, `rules.md` § R49). */
-    for (const route of ROUTES) {
-      const navClasses = documentFor(route)
-        .match(/<nav [^>]*class="([^"]*)"/)?.[1]
+      const classes = documentFor(route)
+        .match(/<header [^>]*class="([^"]*)"/)?.[1]
         ?.split(' ')
 
-      expect(navClasses, route).toContain('sticky')
-      expect(navClasses, route).toContain('top-0')
-      /*
-       * Still true, but for a different reason since feature 21: the `<nav>`
-       * element itself carries no background, height or opacity utility, same
-       * as always (FR-042). D-07 is fixed now — the floating pill's
-       * `bg-glass-dark`/`border-glass-line`/`rounded-full` live one level
-       * down, on the row `<div>` the pill wraps, never on this landmark
-       * itself (spec FR-004). The pill's own surface is asserted in
-       * `SiteNav.test.ts`.
-       */
-      expect(
-        navClasses?.some(name => /^(bg-|h-|opacity-|backdrop-)/.test(name)),
-        route
-      ).toBe(false)
+      expect(classes, route).toEqual(
+        expect.arrayContaining([
+          'fixed',
+          'top-0',
+          'inset-x-0',
+          'print:hidden',
+          'translate-y-0',
+          'opacity-100',
+        ])
+      )
     }
   })
 })
 
-describe('static output · the floating nav pill (feature 21)', () => {
+describe('static output · the header (feature 43)', () => {
   /*
-   * The desktop nav's redesign: a floating dark-glass pill instead of a
-   * full-bleed bar (spec FR-001–FR-004, SC-001), `Servicios`/`Nosotros`
-   * instead of `Proyectos`/`Nosotros` (FR-005–FR-008, SC-002), and a leading,
-   * non-translatable arrow on the CTA (FR-012, SC-003).
+   * The Muush 1.0 header (spec FR-001…FR-008): the mobile glass bar below
+   * `lg`, the floating nav with its glass link bar from `lg`, Servicios and
+   * Nosotros only until feature 46 adds Preguntas (spec FR-024).
    */
   function navMarkup(route: RoutePath): string | undefined {
     return documentFor(route).match(/<nav[\s\S]*?<\/nav>/)?.[0]
   }
 
   for (const route of ROUTES) {
-    it(`should carry the pill's surface classes on the row, only above lg, when the page is ${route}`, () => {
-      const row = navMarkup(route)?.match(/<div class="([^"]*)"/)?.[1]
+    it(`should carry the mobile bar below lg and the link bar from lg when the page is ${route}`, () => {
+      const nav = navMarkup(route)
+      const bar = nav?.match(/^<nav [^>]*class="([^"]*)"/)?.[1]?.split(' ')
+      const linkBar = nav?.match(/<ul class="([^"]*)"/)?.[1]?.split(' ')
 
-      expect(row, route).toBeDefined()
-      for (const utility of [
-        'lg:rounded-full',
-        'lg:border',
-        'lg:border-glass-line',
-        'lg:bg-glass-dark',
-        'lg:max-w-nav-pill-w',
-        'lg:py-nav-pill-py',
-      ]) {
-        expect(row?.split(' '), `${route} · ${utility}`).toContain(utility)
-      }
+      expect(bar, route).toEqual(
+        expect.arrayContaining([
+          'rounded-header',
+          'bg-nav-fondo',
+          'border-linea',
+          'backdrop-blur-header',
+          'lg:bg-transparent',
+          'lg:border-0',
+          'max-w-contenido',
+        ])
+      )
+      expect(linkBar, route).toEqual(
+        expect.arrayContaining([
+          'rounded-pill',
+          'bg-nav-fondo',
+          'backdrop-blur-cristal',
+          'borde-luz',
+          'borde-barra',
+        ])
+      )
     })
 
-    it(`should never render Proyectos or Projects inside the nav when the page is ${route}`, () => {
-      /* Deliberate divergence from the redesigned frame — feature 15 is
-         `blocked`, and a link to a section that does not exist reads as a
-         broken site (spec FR-006, `ui-map.md` § 6). The mobile menu panel
-         and the footer's Navegación column are untouched and keep it. */
+    it(`should never render Proyectos or Preguntas inside the nav when the page is ${route}`, () => {
+      /* Proyectos: feature 15 is `blocked` (features 21, 24). Preguntas: its
+         route arrives with feature 46 (spec FR-024). */
       const nav = navMarkup(route)
 
       expect(nav, route).toBeDefined()
-      expect(nav, route).not.toContain('Proyectos')
-      expect(nav, route).not.toContain('Projects')
+      for (const label of ['Proyectos', 'Projects', 'Preguntas', 'FAQ']) {
+        expect(nav, `${route} · ${label}`).not.toContain(label)
+      }
     })
   }
 
   it('should render no "Proyectos"/"Projects" text anywhere in the static document (feature 23, item 9)', () => {
-    /*
-     * Superseded by feature 23: `FOOTER_COLUMNS` dropped `Proyectos` entirely
-     * (Roberto, 2026-09-08), the same class of decision as dropping it from
-     * this nav in feature 21 — and feature 24 (2026-09-08) applied the same
-     * decision a third time, to `MENU_ITEMS`. The mobile menu panel is not
-     * asserted here — it renders behind `v-if="open"`, so it is absent from
-     * the static document regardless of its content (`MobileMenu.test.ts`
-     * covers what it actually renders once open).
-     */
     for (const route of ROUTES) {
       const html = documentFor(route)
       const locale = route.startsWith('/en') ? 'Projects' : 'Proyectos'
@@ -532,35 +492,46 @@ describe('static output · the floating nav pill (feature 21)', () => {
     }
   })
 
-  it('should render no "FAQ"/"Blog · próximamente" text in the footer (feature 23, item 9)', () => {
+  it('should render the blog and the legal entries as text and no Preguntas link in the footer', () => {
     /*
-     * Same treatment as Proyectos above: removed entirely, not left inert.
-     * Scoped to the `<footer>` — the only place either ever rendered — and
-     * not the whole document: feature 24's `ROLE_CATALOG` legitimately adds
-     * a Creative role literally named "Blog y storytelling", which contains
-     * the substring "Blog" without being the removed footer placeholder.
+     * Feature 43 (spec FR-031…FR-033, SC-006): "Blog · próximamente", the
+     * privacy notice and the terms are text until their pages exist (feature
+     * 48 for the legal two); Preguntas is absent until feature 46.
      */
     for (const route of ROUTES) {
       const footer = documentFor(route).match(/<footer[\s\S]*<\/footer>/)?.[0]
+      const linked = [...(footer ?? '').matchAll(/<a [^>]*>([\s\S]*?)<\/a>/g)]
+        .map(match => match[1] ?? '')
+        .join(' ')
 
       expect(footer, route).toBeDefined()
-      expect(footer, route).not.toContain('FAQ')
-      expect(footer, route).not.toContain('Blog')
+      expect(footer, route).toContain('Blog')
+      expect(linked, route).not.toContain('Blog')
+      for (const label of [
+        'Aviso de privacidad',
+        'Privacy notice',
+        'Términos',
+        'Terms',
+        'Preguntas',
+        'FAQ',
+      ]) {
+        expect(linked, `${route} · ${label}`).not.toContain(label)
+      }
+      expect(footer, `${route} · Preguntas`).not.toMatch(/Preguntas|FAQ/)
     }
   })
 
   it('should carry the arrow on the nav CTA as a separate element, after the label, never inside the copy', () => {
-    /* Feature 23, item 1 — `.pen` frames `Rm6Wu`/`WGhSI` draw `Texto → Flecha`,
-       text first, not the arrow-first order this file used to assert. */
+    /* The v2 primary button draws the lucide arrow after the label, hidden
+       from assistive technology (feature 42); the copy carries no arrow. */
     for (const route of ROUTES) {
       const cta = navMarkup(route)?.match(
-        /<a href="[^"]*#contacto"[^>]*>([\s\S]*?)<\/a>/
+        /<a [^>]*href="[^"]*#diagnostico"[^>]*>([\s\S]*?)<\/a>/
       )?.[1]
 
       expect(cta, route).toBeDefined()
-      expect(cta, route).toContain('<span aria-hidden="true"')
-      expect(cta, route).toContain('→')
-      expect(cta?.indexOf('<span aria-hidden="true"'), route).toBeGreaterThan(0)
+      expect(cta, route).toMatch(/^<span[^>]*>[^<]+<\/span><span data-icono/)
+      expect(cta, route).toContain('aria-hidden="true"')
     }
 
     const locales = ['es', 'en'] as const
@@ -575,11 +546,23 @@ describe('static output · the floating nav pill (feature 21)', () => {
     }
   })
 
-  it('should render exactly one circular language toggle per document', () => {
+  it('should render exactly one language toggle per document', () => {
     for (const route of ROUTES) {
       const [toggle] = localeToggleLinks(documentFor(route))
 
       expect(toggle, route).toBeDefined()
+    }
+  })
+
+  it('should render no menu button and no open menu in the prerendered document', () => {
+    /* Spec FR-008: the menu needs scripting, so its button appears only after
+       mount and the dialog only when open. Without scripting the footer is
+       the full navigation on phones. */
+    for (const route of ROUTES) {
+      const html = documentFor(route)
+
+      expect(html, route).not.toContain('role="dialog"')
+      expect(html, route).not.toContain('aria-expanded')
     }
   })
 })
@@ -641,23 +624,20 @@ describe('static output · the canvas under the document', () => {
   })
 
   for (const route of ROUTES) {
-    it(`should clip both axes on the layout root when the page is ${route}`, () => {
+    it(`should clip the layout root horizontally only when the page is ${route}`, () => {
       /*
-       * The vertical axis is decided, not defaulted (feature 010). `clip` and
-       * not `hidden` on both, so the root never becomes a scroll container and
-       * the pinned nav keeps working (feature 006 `research.md` § R3); and both
-       * axes rather than one, because a glow is decoration and decoration must
-       * not change how far the document scrolls on either.
-       *
-       * `overflow-x-clip` is asserted absent on purpose: it is what this
-       * replaced, and it is exactly what a revert would put back.
+       * `clip`, not `hidden`, so the root never becomes a scroll container
+       * (feature 006 `research.md` § R3). Feature 010 also clipped the
+       * vertical axis, only because the v1 glows could lengthen the document;
+       * feature 43 retired the glows, so only the horizontal clip remains,
+       * for full-bleed sections (contract § 10).
        */
       const layoutRoot = documentFor(route)
         .match(/<div class="([^"]*bg-negro-950[^"]*)"/)?.[1]
         ?.split(' ')
 
-      expect(layoutRoot, route).toContain('overflow-clip')
-      expect(layoutRoot, route).not.toContain('overflow-x-clip')
+      expect(layoutRoot, route).toContain('overflow-x-clip')
+      expect(layoutRoot, route).not.toContain('overflow-clip')
       expect(layoutRoot, route).not.toContain('overflow-hidden')
     })
   }
@@ -731,7 +711,7 @@ describe('static output · the landing hero', () => {
        */
       const hero = heroSection(route)
       const primary = hero?.match(
-        new RegExp(`<a href="${route}#contacto"[^>]*class="([^"]*)"`)
+        new RegExp(`<a href="${route}#diagnostico"[^>]*class="([^"]*)"`)
       )
 
       expect(hero, route).not.toContain('<button type="button"')
@@ -747,7 +727,7 @@ describe('static output · the landing hero', () => {
        * also what a browser with scripting disabled renders.
        *
        * Anchored on `CALL_BOOKING_URL` rather than "the first `<a>`": the
-       * primary CTA is a real anchor too now that `#contacto` exists, and it
+       * primary CTA is a real anchor too now that `#diagnostico` exists, and it
        * renders first in document order.
        */
       const hero = heroSection(route)
@@ -816,12 +796,16 @@ describe('static output · the landing hero', () => {
     expect(Number.parseFloat(pillRadius ?? '0')).toBeGreaterThan(1000)
   })
 
-  it('should carry the identical eyebrow in all four documents', () => {
+  it('should carry the identical eyebrow in both landing documents', () => {
     /* ⚠️ Not a missing translation (spec FR-009). It is English inside the
-       Spanish page by design, and the About page inherits it through the
-       footer's `Categoría` item, which is the same string. */
-    for (const route of ROUTES) {
+       Spanish page by design. Until feature 43 the About pages inherited it
+       through the footer's category; the Muush 1.0 footer reads
+       "Technology Solution Studio." instead, in both locales. */
+    for (const route of ['/es', '/en'] as const) {
       expect(documentFor(route), route).toContain(EYEBROW)
+    }
+    for (const route of ROUTES) {
+      expect(documentFor(route), route).toContain('Technology Solution Studio.')
     }
   })
 })
@@ -974,21 +958,19 @@ describe('static output · the landing purpose section', () => {
     })
   }
 
-  it('should close three of the shell dangling anchors on every landing document', () => {
+  it('should keep the purpose anchor, which the Muush 1.0 shell no longer links', () => {
     /*
-     * The footer's *Navegación* column and the mobile menu already emit three
-     * links at this anchor (`rules.md` § R50), and until this section existed
-     * clicking any of them changed the URL and moved nothing.
-     *
-     * ⚠️ The shell resolves the fragment against the locale's home, so what it
-     * emits is `/es#proposito` and `/en#proposito`, never a bare `#proposito`.
-     * Asserting the bare form would have looked like the shell was broken.
-     * The `id` is Spanish in both locales because Article VI keeps translated
-     * route segments and Spanish anchors.
+     * The v1 shell linked `#proposito` from the footer and the mobile menu
+     * (`rules.md` § R50). The Muush 1.0 home has no Propósito
+     * (`muush-1.0.md` § 1), so feature 43's shell drops those links; only
+     * the v1 404's shortcut still points here until feature 46. The section
+     * keeps its id until feature 44 replaces it.
      */
     for (const route of ['/es', '/en'] as const) {
       expect(documentFor(route), route).toContain('<section id="proposito"')
-      expect(documentFor(route), route).toContain(`href="${route}#proposito"`)
+      expect(documentFor(route), route).not.toContain(
+        `href="${route}#proposito"`
+      )
     }
   })
 
@@ -1186,9 +1168,9 @@ describe('static output · the landing services section', () => {
   }
 
   it('should close the shell dangling anchor on every landing document', () => {
-    /* The footer's *Navegación* column and the mobile menu already emit a
-       link at this anchor (`rules.md` § R50); the shell resolves the
-       fragment against the locale's home. */
+    /* The header's link bar and the footer emit a link at this anchor, the
+       shared `servicios` (feature 43); the shell resolves the fragment
+       against the locale's home. */
     for (const route of ['/es', '/en'] as const) {
       expect(documentFor(route), route).toContain('<section id="servicios"')
       expect(documentFor(route), route).toContain(`href="${route}#servicios"`)
@@ -1290,7 +1272,7 @@ describe('static output · the landing contact section', () => {
    */
   function contactSection(route: RoutePath): string {
     const html = documentFor(route)
-    const start = html.indexOf('<section id="contacto"')
+    const start = html.indexOf('<section id="diagnostico"')
 
     expect(start, route).toBeGreaterThan(-1)
 
@@ -1303,14 +1285,15 @@ describe('static output · the landing contact section', () => {
     throw new Error(`unbalanced contact section in ${route}`)
   }
 
-  it('should carry id="contacto" and hold both dangling CTAs on every landing document', () => {
+  it('should carry id="diagnostico" and hold both CTAs on every landing document', () => {
     /*
-     * The Hero's primary CTA and the nav's CTA both point at `#contacto`
-     * (`rules.md` § R50); this is the section that gives it a real target.
+     * The Hero's primary CTA and the header's "Diagnóstico gratis" both
+     * point at the shared `diagnostico` anchor (feature 43, spec FR-025);
+     * this v1 section is its target until feature 45 replaces it.
      */
     for (const route of ['/es', '/en'] as const) {
-      expect(documentFor(route), route).toContain('<section id="contacto"')
-      expect(documentFor(route), route).toContain(`href="${route}#contacto"`)
+      expect(documentFor(route), route).toContain('<section id="diagnostico"')
+      expect(documentFor(route), route).toContain(`href="${route}#diagnostico"`)
     }
   })
 
@@ -1329,7 +1312,9 @@ describe('static output · the landing contact section', () => {
   it('should contribute the three glows without breaking the paint order', () => {
     for (const route of ['/es', '/en'] as const) {
       const section = contactSection(route)
-      const root = section.match(/<section id="contacto" class="([^"]*)"/)?.[1]
+      const root = section.match(
+        /<section id="diagnostico" class="([^"]*)"/
+      )?.[1]
 
       expect(root?.split(' '), route).toContain('relative')
       expect(root?.split(' '), route).toContain('pt-contact-top')
@@ -1390,7 +1375,7 @@ describe('static output · the landing contact section', () => {
 
 describe('static output · the about work section', () => {
   /*
-   * Feature 020. Claims only the artefact can settle: `#work` resolves to
+   * Feature 020. Claims only the artefact can settle: `#work` (`#trabaja-con-muush` since feature 43) resolves to
    * the real section on both localized About documents (no more placeholder
    * heading), the eight-field form ships `novalidate` and a native submit
    * with no `action`, the three reused glows paint without breaking the
@@ -1403,7 +1388,7 @@ describe('static output · the about work section', () => {
    */
   function workSection(route: RoutePath): string {
     const html = documentFor(route)
-    const start = html.indexOf('<section id="work"')
+    const start = html.indexOf('<section id="trabaja-con-muush"')
 
     expect(start, route).toBeGreaterThan(-1)
 
@@ -1416,9 +1401,13 @@ describe('static output · the about work section', () => {
     throw new Error(`unbalanced work section in ${route}`)
   }
 
-  it('should carry id="work" on both About documents', () => {
+  it('should carry id="trabaja-con-muush" on both About documents', () => {
+    /* The shared anchor the footer's "Trabaja con muush" links to (feature
+       43, spec FR-025) until feature 46 replaces this section. */
     for (const route of ['/es/nosotros', '/en/about'] as const) {
-      expect(documentFor(route), route).toContain('<section id="work"')
+      expect(documentFor(route), route).toContain(
+        '<section id="trabaja-con-muush"'
+      )
     }
   })
 
@@ -1439,7 +1428,9 @@ describe('static output · the about work section', () => {
   it('should contribute the three reused glows without breaking the paint order', () => {
     for (const route of ['/es/nosotros', '/en/about'] as const) {
       const section = workSection(route)
-      const root = section.match(/<section id="work" class="([^"]*)"/)?.[1]
+      const root = section.match(
+        /<section id="trabaja-con-muush" class="([^"]*)"/
+      )?.[1]
 
       expect(root?.split(' '), route).toContain('relative')
       expect(root?.split(' '), route).toContain('pt-work-top')
@@ -1672,8 +1663,9 @@ describe('static output · the brand type is self-hosted', () => {
    * (docs/business/rules.md §§ R25, R31).
    */
   const BRAND_FONT_WEIGHTS = [
-    /* Feature 42: Poppins 500 for the v2 headings, logo and wordmark
-       (Constitution VII); 600 stays for v1 components until feature 47. */
+    /* Feature 42: Poppins 500 for the v2 headings. Feature 43: the wordmark
+       draws "muush." at 600 and "dev" at 400 (Constitution 2.1.2 VII). */
+    { family: 'Poppins', weight: 400 },
     { family: 'Poppins', weight: 500 },
     { family: 'Poppins', weight: 600 },
     { family: 'Instrument Sans', weight: 400 },
@@ -1777,11 +1769,17 @@ describe('static output · the muush mark', () => {
     expect(icon).toContain('stroke-width="12"')
     expect(icon).toContain('stroke-linecap="round"')
 
-    /* Adaptive, with the light scheme as the unconditional default. */
-    expect(icon).toContain('#262626')
+    /* Adaptive, with the light scheme as the unconditional default. Feature
+       43 (Roberto, 2026-11-01): the Muush 1.0 colours, the dot in Red muush
+       500, the stroke Negro 950 on light chrome and Blanco on dark; no v1
+       value remains. */
+    expect(icon).toMatch(/\.stroke \{ stroke: #050505; \}/)
     expect(icon).toMatch(/@media \(prefers-color-scheme: dark\)/)
-    expect(icon).toContain('#FBF8F6')
-    expect(icon).toContain('#CF3147')
+    expect(icon).toMatch(/\.stroke \{ stroke: #F4F4F2; \}/)
+    expect(icon).toContain('fill="#E5352F"')
+    for (const v1 of ['#262626', '#FBF8F6', '#CF3147']) {
+      expect(icon.toUpperCase(), v1).not.toContain(v1)
+    }
 
     /* The `.ico` is deleted, not replaced (spec A-06). */
     expect(existsSync(join(OUTPUT, 'favicon.ico'))).toBe(false)

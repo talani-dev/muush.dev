@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SHELL_ANCHORS } from './navigation'
+import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import {
   NOT_FOUND_HOME,
   NOT_FOUND_ROBOTS,
@@ -15,30 +15,33 @@ describe('not-found content model', () => {
     ])
   })
 
-  it('should use only route or anchor destinations when read', () => {
+  it('should use only route, anchor or the transitional legacy hash when read', () => {
     const kinds = [NOT_FOUND_HOME, ...NOT_FOUND_SHORTCUTS].map(
       item => item.destination.kind
     )
 
-    for (const kind of kinds) expect(['route', 'anchor']).toContain(kind)
+    for (const kind of kinds) {
+      expect(['route', 'anchor', 'legacyHash']).toContain(kind)
+    }
   })
 
   it('should point the home at route index when read', () => {
     expect(NOT_FOUND_HOME.destination).toEqual({ kind: 'route', name: 'index' })
   })
 
-  it('should use the shell anchors for purpose and services when read', () => {
+  it('should keep the v1 purpose hash and the declared services anchor when read', () => {
+    /* Feature 43: the v1 404 still links Propósito until feature 46. */
     const [purpose, services, about] = NOT_FOUND_SHORTCUTS
 
     expect(purpose?.destination).toEqual({
-      kind: 'anchor',
+      kind: 'legacyHash',
       name: 'index',
-      hash: SHELL_ANCHORS.purpose,
+      hash: '#proposito',
     })
     expect(services?.destination).toEqual({
       kind: 'anchor',
       name: 'index',
-      hash: SHELL_ANCHORS.services,
+      anchor: SECTION_ANCHORS.services,
     })
     expect(about?.destination).toEqual({ kind: 'route', name: 'about' })
   })
