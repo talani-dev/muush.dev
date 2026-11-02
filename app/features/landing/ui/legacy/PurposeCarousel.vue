@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
-import type { PurposeNodeContent } from '@/features/landing/data/purposeContent'
-import { usePurposeCarousel } from '@/features/landing/logic/usePurposeCarousel'
+import type { PurposeNodeContent } from '@/features/landing/data/legacy/purposeContent'
+import { usePurposeCarousel } from '@/features/landing/logic/legacy/usePurposeCarousel'
 import PurposeCard from './PurposeCard.vue'
 
 /**

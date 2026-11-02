@@ -20,6 +20,7 @@ function timelineStyle(): string {
       'features',
       'landing',
       'ui',
+      'legacy',
       'ServicesTimeline.vue'
     ),
     'utf8'

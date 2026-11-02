@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ServiceNodeContent } from '@/features/landing/data/servicesContent'
+import type { ServiceNodeContent } from '@/features/landing/data/legacy/servicesContent'
 import Radar from '@/shared/ui/legacy/Radar.vue'
 import ServiceItem from './ServiceItem.vue'
 import ServicesTimeline from './ServicesTimeline.vue'
@@ -51,6 +51,7 @@ function styleDeclarations(): string {
       'features',
       'landing',
       'ui',
+      'legacy',
       'ServicesTimeline.vue'
     ),
     'utf8'

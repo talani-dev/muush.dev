@@ -6,7 +6,7 @@ import {
   connectorEndpoints,
   SERVICE_NODE_CENTRES,
   type ServiceNodeContent,
-} from '@/features/landing/data/servicesContent'
+} from '@/features/landing/data/legacy/servicesContent'
 import Radar from '@/shared/ui/legacy/Radar.vue'
 import ServiceItem from './ServiceItem.vue'
 import ServicesConnectors from './ServicesConnectors.vue'
@@ -58,6 +58,7 @@ function styleDeclarations(): string {
       'features',
       'landing',
       'ui',
+      'legacy',
       'ServicesConstellation.vue'
     ),
     'utf8'

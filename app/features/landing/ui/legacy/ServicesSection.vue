@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ServiceNodeContent } from '@/features/landing/data/servicesContent'
+import type { ServiceNodeContent } from '@/features/landing/data/legacy/servicesContent'
 import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'

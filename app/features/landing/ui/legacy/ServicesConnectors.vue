@@ -2,7 +2,7 @@
 import {
   type ConnectorEndpoints,
   connectorFloatVars,
-} from '@/features/landing/data/servicesContent'
+} from '@/features/landing/data/legacy/servicesContent'
 
 /**
  * The four thin lines between the five desktop Services radars. Extracted

@@ -96,11 +96,12 @@ const {
 </script>
 
 <template>
-  <!--
-    Feature 43: the id is the shared `diagnostico` anchor, so the shell's
-    "Diagnóstico gratis" lands here until feature 45 replaces this section.
-  -->
-  <section :id="SECTION_ANCHORS.assessment" class="relative pt-contact-top">
+  <!-- Feature 43: shared `diagnostico` anchor until 45. Feature 44: the
+       margin and v1 page frame moved here from the full-bleed home. -->
+  <section
+    :id="SECTION_ANCHORS.assessment"
+    class="relative mx-auto mt-section-gap max-w-shell-max px-page pt-contact-top"
+  >
     <SectionBackdrop>
       <SectionGlow
         color="red-400"

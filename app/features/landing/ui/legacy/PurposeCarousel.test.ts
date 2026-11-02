@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
-import type { PurposeNodeContent } from '@/features/landing/data/purposeContent'
+import type { PurposeNodeContent } from '@/features/landing/data/legacy/purposeContent'
 import PurposeCarousel from './PurposeCarousel.vue'
 
 /**
@@ -202,6 +202,7 @@ function styleDeclarations(): string {
       'features',
       'landing',
       'ui',
+      'legacy',
       'PurposeCarousel.vue'
     ),
     'utf8'

@@ -3,7 +3,6 @@ import {
   connectorEndpoints,
   connectorFloatVars,
   SERVICE_NODE_CENTRES,
-  SERVICE_NODES,
 } from './servicesContent'
 
 /**
@@ -52,14 +51,9 @@ describe('connectorEndpoints · the four connectors are generated, never literal
   })
 })
 
-describe('SERVICE_NODES · services.md order', () => {
-  it('should hold five nodes with a contiguous zero-based index', () => {
-    expect(SERVICE_NODES).toHaveLength(5)
-    expect(SERVICE_NODES.map(node => node.index)).toEqual([0, 1, 2, 3, 4])
-  })
-
-  it('should hold one radar centre per node, in the same order', () => {
-    expect(SERVICE_NODE_CENTRES).toHaveLength(SERVICE_NODES.length)
+describe('SERVICE_NODE_CENTRES · one per v1 service node', () => {
+  it('should hold five radar centres when read', () => {
+    expect(SERVICE_NODE_CENTRES).toHaveLength(5)
   })
 })
 

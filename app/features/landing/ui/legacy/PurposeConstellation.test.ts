@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { PurposeNodeContent } from '@/features/landing/data/purposeContent'
+import type { PurposeNodeContent } from '@/features/landing/data/legacy/purposeContent'
 import PurposeCard from './PurposeCard.vue'
 import PurposeConstellation from './PurposeConstellation.vue'
 
@@ -48,7 +48,7 @@ function mountConstellation() {
  */
 function styleDeclarations(file: string): string {
   const source = readFileSync(
-    join(process.cwd(), 'app', 'features', 'landing', 'ui', file),
+    join(process.cwd(), 'app', 'features', 'landing', 'ui', 'legacy', file),
     'utf8'
   )
   return source

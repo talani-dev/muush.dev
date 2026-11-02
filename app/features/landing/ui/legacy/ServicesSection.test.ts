@@ -1,6 +1,6 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { ServiceNodeContent } from '@/features/landing/data/servicesContent'
+import type { ServiceNodeContent } from '@/features/landing/data/legacy/servicesContent'
 import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
 import ServicesConstellation from './ServicesConstellation.vue'

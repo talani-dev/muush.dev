@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
-import type { ServiceNodeContent } from '@/features/landing/data/servicesContent'
-import { useServicesLyrics } from '@/features/landing/logic/useServicesLyrics'
+import type { ServiceNodeContent } from '@/features/landing/data/legacy/servicesContent'
+import { useServicesLyrics } from '@/features/landing/logic/legacy/useServicesLyrics'
 import Pill from '@/shared/ui/legacy/Pill.vue'
 import Radar from '@/shared/ui/legacy/Radar.vue'
 import ServiceItem from './ServiceItem.vue'

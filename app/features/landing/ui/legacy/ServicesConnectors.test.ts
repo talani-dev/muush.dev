@@ -6,7 +6,7 @@ import {
   connectorEndpoints,
   connectorFloatVars,
   SERVICE_NODE_CENTRES,
-} from '@/features/landing/data/servicesContent'
+} from '@/features/landing/data/legacy/servicesContent'
 import ServicesConnectors from './ServicesConnectors.vue'
 
 /**
@@ -42,6 +42,7 @@ function styleDeclarations(): string {
       'features',
       'landing',
       'ui',
+      'legacy',
       'ServicesConnectors.vue'
     ),
     'utf8'

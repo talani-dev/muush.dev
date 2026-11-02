@@ -3,7 +3,7 @@ import {
   connectorEndpoints,
   SERVICE_NODE_CENTRES,
   type ServiceNodeContent,
-} from '@/features/landing/data/servicesContent'
+} from '@/features/landing/data/legacy/servicesContent'
 import Pill from '@/shared/ui/legacy/Pill.vue'
 import Radar from '@/shared/ui/legacy/Radar.vue'
 import ServiceItem from './ServiceItem.vue'

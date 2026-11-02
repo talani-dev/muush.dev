@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
-import type { PurposeNodeContent } from '@/features/landing/data/purposeContent'
-import { usePurposeArcRadii } from '@/features/landing/logic/usePurposeArcRadii'
+import type { PurposeNodeContent } from '@/features/landing/data/legacy/purposeContent'
+import { usePurposeArcRadii } from '@/features/landing/logic/legacy/usePurposeArcRadii'
 import Pill from '@/shared/ui/legacy/Pill.vue'
 import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
 import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
