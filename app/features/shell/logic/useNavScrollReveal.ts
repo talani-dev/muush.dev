@@ -53,7 +53,7 @@ import {
  */
 
 /** Nav stays visible unconditionally inside this many px of the top. */
-const REVEAL_ZONE_PX = 80
+export const REVEAL_ZONE_PX = 80
 
 /** Continuous downward px, past the reveal zone, before the nav hides. */
 const HIDE_ACCUMULATION_PX = 10

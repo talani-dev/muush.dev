@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 import type {
   ResolvedShellItem,
   ShellLocale,
 } from '@/features/shell/data/types'
+import { useHeaderIdleHide } from '@/features/shell/logic/useHeaderIdleHide'
 import { useMobileMenu } from '@/features/shell/logic/useMobileMenu'
 import { useNavScrollReveal } from '@/features/shell/logic/useNavScrollReveal'
 import Lockup from '@/shared/ui/Lockup.vue'
@@ -45,6 +46,11 @@ import NavLinkBar from './NavLinkBar.vue'
  * 0 ms under reduced motion, and `motion-reduce:transition-none` besides.
  * Focus landing on a hidden control reveals it (FR-013).
  *
+ * Feature 45, reopen 1 (Roberto 2026-11-02, spec 045 FR-036, FR-037): from
+ * `lg` the header also hides after 2.5 s with no scrolling
+ * (`useHeaderIdleHide`), stays while the pointer is over it or focus is in
+ * it, and slides by transform only (no fade on desktop). Mobile unchanged.
+ *
  * The menu button exists only once scripting runs (FR-008). When the menu
  * is dismissed (Cerrar, Esc, history, resize), focus returns to it; when it
  * closes because the visitor chose a link, focus follows the navigation.
@@ -82,6 +88,15 @@ const emit = defineEmits<{
 
 const { isOpen, lastCloseReason, open } = useMobileMenu()
 const { isNavVisible, reveal } = useNavScrollReveal(isOpen)
+const idle = useHeaderIdleHide()
+const isShown = computed(
+  () => idle.isHeld.value || (isNavVisible.value && !idle.isIdleHidden.value)
+)
+
+function onFocusIn(): void {
+  reveal()
+  idle.focusIn()
+}
 
 const menuButton = useTemplateRef<{ focus: () => void }>('menuButton')
 
@@ -102,9 +117,14 @@ watch(isOpen, async opened => {
   <header
     :class="[
       'pointer-events-none fixed inset-x-0 top-0 z-40 px-gutter pt-header-top transition duration-(--medio) ease-muush motion-reduce:transition-none print:hidden lg:px-gutter-desktop lg:pt-header-top-desktop',
-      isNavVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0',
+      isShown
+        ? 'translate-y-0 opacity-100'
+        : '-translate-y-full opacity-0 lg:opacity-100',
     ]"
-    @focusin="reveal"
+    @focusin="onFocusIn"
+    @focusout="idle.focusOut"
+    @pointerenter="idle.pointerEnter"
+    @pointerleave="idle.pointerLeave"
   >
     <nav
       :aria-label="navLabel"

@@ -1,9 +1,12 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { type Component, createSSRApp, h, nextTick } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import type { ResolvedShellItem } from '@/features/shell/data/types'
+import { HEADER_IDLE_HIDE_MS } from '@/features/shell/logic/useHeaderIdleHide'
 import { useMobileMenu } from '@/features/shell/logic/useMobileMenu'
+import { DESKTOP_MEDIA_QUERY } from '@/shared/data/layout'
+import { installMatchMedia } from '@/shared/logic/fakeMediaQuery.testing'
 import Lockup from '@/shared/ui/Lockup.vue'
 import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
 import Wordmark from '@/shared/ui/Wordmark.vue'
@@ -340,5 +343,60 @@ describe('SiteHeader · smart hide (US4, FR-010…FR-013)', () => {
         'motion-reduce:transition-none',
       ])
     )
+  })
+})
+
+describe('SiteHeader · desktop idle hide (feature 45, reopen 1)', () => {
+  /* Spec 045 FR-036, FR-037 (Roberto 2026-11-02). */
+  async function renderDesktop() {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    const media = installMatchMedia({ [DESKTOP_MEDIA_QUERY]: true })
+    window.scrollTo(0, 400)
+    const wrapper = render()
+    await nextTick()
+    return { wrapper, media }
+  }
+
+  afterEach(() => {
+    vi.useRealTimers()
+    window.scrollTo(0, 0)
+  })
+
+  it('should slide up without fading after 2.5 s with no scrolling from lg', async () => {
+    const { wrapper, media } = await renderDesktop()
+
+    vi.advanceTimersByTime(HEADER_IDLE_HIDE_MS)
+    await nextTick()
+
+    expect(headerClasses(wrapper)).toEqual(
+      expect.arrayContaining(['-translate-y-full', 'lg:opacity-100'])
+    )
+    media.restore()
+  })
+
+  it('should stay out when a slow downward scroll starts after the idle hide (re-review 2)', async () => {
+    const { wrapper, media } = await renderDesktop()
+    scrollTo(380)
+    vi.advanceTimersByTime(HEADER_IDLE_HIDE_MS)
+    await nextTick()
+
+    for (const step of [382, 384, 386, 388]) {
+      scrollTo(step)
+      await nextTick()
+      expect(headerClasses(wrapper), `${step}`).toContain('-translate-y-full')
+    }
+    media.restore()
+  })
+
+  it('should stay while the pointer is over it, even after a downward scroll', async () => {
+    const { wrapper, media } = await renderDesktop()
+
+    await wrapper.find('header').trigger('pointerenter')
+    scrollTo(600)
+    vi.advanceTimersByTime(10 * HEADER_IDLE_HIDE_MS)
+    await nextTick()
+
+    expect(headerClasses(wrapper)).toContain('translate-y-0')
+    media.restore()
   })
 })
