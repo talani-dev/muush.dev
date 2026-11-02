@@ -22,7 +22,7 @@ Ground rules for every task:
 
 ## Phase 1: Setup (assets and catalogue)
 
-- [x] T001 [P] Copy `docs/handoff/muush-1.0/shaders/m1-liston.glsl` and `m1-acanalado.glsl` byte-for-byte to `app/assets/shaders/` (research R8). Do not copy `MuushGradient.astro`, `muush-gradient.js` or any brasa-acero file. Verify with `cmp` against the originals.
+- [x] T001 [P] Copy `docs/handoff/muush-1.0/shaders/m1-liston.glsl` and `m1-acanalado.glsl` byte-for-byte to `app/assets/shaders/` (research R8). Do not copy `MuushGradient.astro`, `muush-gradient.js` or any brasa-acero file. Verify with `cmp` against the originals. (Since 2026-11-01 `cmp` reports one deliberate difference, the static grain line — research R8 amendment, spec 043 FR-057.)
 - [x] T002 [P] Copy the six posters from `docs/handoff/muush-1.0/posters/*.webp` to `app/assets/backgrounds/` with the same file names (research R8, R9). Leave `docs/handoff/` intact.
 - [x] T003 [P] Add `app/assets/icons/arrow-right.svg` (lucide `arrow-right`, ISC licence) following the folder contract in `app/assets/icons/README.md` (square `0 0 24 24` viewBox, `currentColor` stroke, a `<title>`, no size attributes) and add its "Per file" entry to that README.
 - [x] T004 [P] Add a `negro: { name: 'Negro 950', value: '#050505' }` option to `parameters.backgrounds.options` in `.storybook/preview.ts`, with a comment that it is the v2 canvas swatch. Do not change the default (`ink`) while v1 stories exist.

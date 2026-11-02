@@ -114,8 +114,8 @@ app/
 │   ├── css/global.css                     # EDIT: v2 :root block, @theme inline v2 block,
 │   │                                      #   borde-luz utilities, reduced-motion v2 durations,
 │   │                                      #   html canvas → --negro-950, --dot-paper-lit-color → v2
-│   ├── shaders/liston.glsl                # NEW (copied verbatim from docs/handoff/…/shaders)
-│   ├── shaders/acanalado.glsl             # NEW (copied verbatim)
+│   ├── shaders/liston.glsl                # NEW (copied from docs/handoff/…/shaders; static grain since 2026-11-01, R8)
+│   ├── shaders/acanalado.glsl             # NEW (copied; static grain since 2026-11-01, R8)
 │   ├── backgrounds/*.webp                 # NEW (6 posters copied from docs/handoff/…/posters)
 │   └── icons/arrow-right.svg (+ README)   # NEW lucide glyph; README entry added
 ├── layouts/default.vue                    # EDIT: bg-ink-500 → bg-negro-950 (+ doc comment)
