@@ -26,53 +26,114 @@
   },
   "landing": {
     "hero": {
-      "eyebrow": "Technology solution studio",
-      "headline": "Hablamos negocio y código.",
-      "subhead": "Diseñamos y construimos soluciones digitales alrededor de tu negocio.",
-      "ctaPrimary": "Cuéntanos tu proyecto",
-      "ctaSecondary": "Agenda una llamada"
+      "pill": {
+        "strategy": "Estrategia tecnológica",
+        "software": "Software, web y nube",
+        "automation": "Automatización, datos e IA",
+        "design": "Diseño de producto y UX"
+      },
+      "headline": {
+        "first": "Hablamos negocio",
+        "second": "y código."
+      },
+      "subtitle": "Diseñamos y construimos las soluciones digitales que tu negocio usa todos los días.",
+      "primary": "Diagnóstico gratis",
+      "secondary": "Cómo trabajamos"
     },
-    "purpose": {
-      "eyebrow": "Propósito",
-      "carouselLabel": "Propósito",
-      "why": {
-        "label": "Why",
-        "copy": "El software rara vez falla por cómo se construye. Falla porque nadie tradujo el problema de negocio; saber qué vale la pena construir es lo que cambia el resultado."
+    "whoWeAre": {
+      "pill": "Qué es muush",
+      "heading": {
+        "first": "Un equipo base y aliados de confianza,",
+        "second": "según lo que pida tu proyecto."
       },
-      "how": {
-        "label": "How",
-        "copy": "Primero entendemos tu operación, después decidimos qué se construye. Traducimos antes de construir."
+      "body": "Estrategia, diseño e ingeniería trabajan juntos desde el primer día. Cuando el proyecto lo pide, sumamos aliados con el mismo estándar, estén donde estén.",
+      "legend": {
+        "team": "Equipo",
+        "partner": "Aliados",
+        "soon": "Estonia · pronto",
+        "anywhere": "Trabajamos con clientes en cualquier país."
       },
-      "what": {
-        "label": "What",
-        "copy": "Diseñamos y construimos soluciones digitales que tu negocio usa todos los días."
+      "regions": {
+        "label": "Región del mapa",
+        "america": "América",
+        "europe": "Europa"
+      },
+      "cities": {
+        "cdmx": "CDMX",
+        "puebla": "Puebla",
+        "merida": "Mérida",
+        "dublin": "Dublín",
+        "nyc": "NYC",
+        "sanFrancisco": "San Francisco",
+        "losAngeles": "Los Ángeles",
+        "amsterdam": "Ámsterdam",
+        "estonia": "Estonia"
       }
     },
     "services": {
-      "eyebrow": "Servicios",
-      "consulting": {
-        "name": "Technology Consulting & Strategy",
-        "brief": "Diagnosticamos tu situación real, diseñamos la solución y te decimos qué conviene hacer, incluso cuando la respuesta es hacer menos."
+      "pill": "Servicios",
+      "heading": {
+        "first": "Lo que hacemos",
+        "second": "por tu negocio."
       },
-      "software": {
-        "name": "Software & Digital Solutions",
-        "brief": "Plataformas, sistemas internos, portales e integraciones construidos alrededor de cómo opera tu negocio, no al revés."
+      "cards": {
+        "strategy": {
+          "title": "Estrategia tecnológica",
+          "description": "Un diagnóstico claro y un plan de qué hacer y en qué orden, antes de invertir."
+        },
+        "software": {
+          "title": "Software, web\ny nube",
+          "description": "Sitios, sistemas, portales y apps, con la nube donde viven y tus herramientas conectadas."
+        },
+        "automation": {
+          "title": "Automatización, datos e IA",
+          "description": "Procesos que corren solos, datos que se vuelven decisiones e IA donde sí suma."
+        },
+        "design": {
+          "title": "Diseño de producto\ny UX",
+          "description": "Pantallas tan claras que tu equipo las usa sin manual."
+        }
       },
-      "cloud": {
-        "name": "Cloud, Infrastructure & DevOps",
-        "brief": "Lo que sostiene todo una vez que está en producción: infraestructura, despliegues automatizados, monitoreo y seguridad. La parte que nadie nota hasta que hace falta."
+      "also": {
+        "label": "También, si lo necesitas",
+        "creative": "Creativo",
+        "marketing": "Marketing",
+        "note": "Contenido, foto, video, redes y anuncios con nuestros aliados. Siempre se cotiza aparte."
+      }
+    },
+    "howWeWork": {
+      "pill": "Cómo trabajamos",
+      "heading": {
+        "first": "Primero entendemos tu operación,",
+        "second": "después decidimos qué se construye."
       },
-      "automation": {
-        "name": "Automation, Data & AI",
-        "brief": "Automatizamos lo repetitivo y convertimos tus datos en decisiones. AI donde sume, no solamente donde suene bien."
-      },
-      "product": {
-        "name": "Product, UI/UX & Experience",
-        "brief": "Convertimos tecnología compleja en algo que se usa sin manual. Producto y experiencia, de investigación a prototipo."
-      },
-      "delivery": {
-        "label": "Delivery",
-        "copy": "Y una capacidad que atraviesa las cinco: llevamos el proyecto de principio a fin, con alcance, tiempos, calidad y lanzamiento a nuestro cargo."
+      "steps": {
+        "assessment": {
+          "title": "Diagnóstico",
+          "description": "Una revisión rápida para ver qué conviene resolver. Si hace falta ir a fondo, se cotiza aparte.",
+          "descriptionShort": "Una revisión rápida para ver qué conviene resolver.",
+          "commitment": "Te decimos qué te conviene"
+        },
+        "proposal": {
+          "title": "Propuesta",
+          "description": "Alcance, tiempos y costo por escrito.",
+          "commitment": "Solo lo que necesitas"
+        },
+        "design": {
+          "title": "Diseño",
+          "description": "Ves cómo va a funcionar antes de construir nada.",
+          "commitment": "Tú apruebas cada pantalla"
+        },
+        "build": {
+          "title": "Construcción",
+          "description": "Avanzamos por etapas y te mostramos cada avance.",
+          "commitment": "Un solo punto de contacto"
+        },
+        "launch": {
+          "title": "Lanzamiento y soporte",
+          "description": "Lo ponemos en marcha y preparamos a tu equipo.",
+          "commitment": "Todo documentado y tuyo"
+        }
       }
     },
     "contact": {
@@ -326,7 +387,6 @@
       "cta": "Volver al inicio",
       "shortcutsLabel": "Atajos",
       "shortcuts": {
-        "purpose": "Propósito",
         "services": "Servicios",
         "about": "Nosotros"
       }

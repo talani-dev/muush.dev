@@ -3,8 +3,11 @@ import Pill from '@/shared/ui/Pill.vue'
 
 /**
  * The Muush 1.0 capsule with the red dot (feature 42, FR-011; Kit `XqFl6`).
- * It must measure 36 px tall at both anchors, with three rings visible on
- * the dot. Labels are approved copy (`docs/business/muush-1.0.md` § 4.2).
+ * It must measure 36 px tall at both anchors. The dot is a solid 7 px
+ * circle with the radar ping (feature 44, pen extract-44 § 9, Roberto
+ * 2026-11-01): a ghost grows 1 → 3 and fades every 2.4 s, overflowing the
+ * 20 px footprint; with the OS "reduce motion" setting only the dot shows.
+ * Labels are approved copy (`docs/business/muush-1.0.md` § 4.2).
  */
 const meta = {
   title: 'Shared/UI/Pill',

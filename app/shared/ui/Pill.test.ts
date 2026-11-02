@@ -28,21 +28,33 @@ describe('Pill', () => {
     expect(dot.attributes('aria-hidden')).toBe('true')
   })
 
-  it('should draw the dot as three concentric rings of 20, 14 and 7 when rendered', () => {
-    const rings = mount(Pill, { props: { label: 'x' } })
-      .find('[aria-hidden]')
-      .findAll('span')
+  it('should draw one 7 px dot centred in its 20 px footprint, with no static rings, when rendered', () => {
+    /* Pen extract-44 § 9 (Roberto 2026-11-01): the drawn halos are the radar
+       ping, so at rest only the dot is painted. */
+    const footprint = mount(Pill, { props: { label: 'x' } }).find(
+      '[data-punto]'
+    )
+    const dots = footprint.findAll('span')
 
-    expect(rings).toHaveLength(3)
-    expect(rings[0]?.classes()).toEqual(
-      expect.arrayContaining(['size-pill-punto', 'bg-punto-halo2'])
+    expect(footprint.classes()).toEqual(
+      expect.arrayContaining(['size-pill-punto', 'grid', 'place-items-center'])
     )
-    expect(rings[1]?.classes()).toEqual(
-      expect.arrayContaining(['size-pill-halo', 'bg-punto-halo'])
+    expect(dots).toHaveLength(1)
+    expect(dots[0]?.classes()).toEqual(
+      expect.arrayContaining([
+        'size-pill-nucleo',
+        'bg-red-muush-500',
+        'relative',
+      ])
     )
-    expect(rings[2]?.classes()).toEqual(
-      expect.arrayContaining(['size-pill-nucleo', 'bg-red-muush-500'])
+  })
+
+  it('should ping the dot like a radar when rendered', () => {
+    const dot = mount(Pill, { props: { label: 'x' } }).find(
+      '[data-punto] > span'
     )
+
+    expect(dot.classes()).toContain('pulso')
   })
 
   it('should carry the Kit capsule when rendered', () => {

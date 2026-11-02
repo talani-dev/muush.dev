@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { SERVICE_NODE_CENTRES } from '@/features/landing/data/servicesContent'
+import { SERVICE_NODE_CENTRES } from '@/features/landing/data/legacy/servicesContent'
 
 /**
  * Feature 38 · the tokens and breakpoints that keep the tablet range
@@ -39,7 +39,14 @@ describe('tablet layout · the two forms go side by side from 64rem', () => {
   const sections = [
     {
       name: 'Contacto',
-      file: ['app', 'features', 'landing', 'ui', 'ContactSection.vue'],
+      file: [
+        'app',
+        'features',
+        'landing',
+        'ui',
+        'legacy',
+        'ContactSection.vue',
+      ],
       tracks: '--contact-cols',
       gap: '--contact-col-gap',
     },
@@ -142,7 +149,7 @@ describe('tablet layout · Propósito chooses its composition by pointer and wid
     'PurposeCarousel.vue',
   ]
   const purposeSource = (file: string) =>
-    source('app', 'features', 'landing', 'ui', file)
+    source('app', 'features', 'landing', 'ui', 'legacy', file)
 
   it('should declare the constellation variant once in global.css', () => {
     /* `source()` collapses whitespace, so Biome's line break inside the
