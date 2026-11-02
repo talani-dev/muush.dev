@@ -21,10 +21,11 @@ describe('hero destinations', () => {
   })
 
   it('should point the primary call to action at the contact section', () => {
-    /* Filled 2026-09-08 (feature 016): `06 CTA final` exists now, with
-       `id="contacto"`. Not a substitute destination — the real section this
-       key was always reserved for (spec FR-002). */
-    expect(HERO_DESTINATIONS.contactHash).toBe('#contacto')
+    /* Filled 2026-09-08 (feature 016): `06 CTA final` exists now. Not a
+       substitute destination — the real section this key was always
+       reserved for (spec FR-002). Feature 43 gave it the shared
+       `diagnostico` anchor. */
+    expect(HERO_DESTINATIONS.contactHash).toBe('#diagnostico')
   })
 
   it('should keep the arrow out of the secondary label key', () => {

@@ -1,10 +1,11 @@
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
+import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 
 /**
  * The Hero's content model: the keys it renders, its two destinations, and the
  * shape `logic/` hands `ui/`.
  *
- * Its one import is a shared constant from `app/shared/data/`, which is the
+ * Its imports are shared constants from `app/shared/data/`, which is the
  * direction Article III allows and the only way `landing` and `shell` can name
  * the same URL without either reading the other's internals. It imports nothing
  * from `logic/` or from `ui/`, which is what Article II governs.
@@ -51,13 +52,15 @@ export interface HeroDestinations {
 }
 
 /**
- * `contactHash` fills 2026-09-08 (feature 016): `06 CTA final` exists now,
- * with `id="contacto"`. One key, no markup touched anywhere in `HeroSection.vue`
- * — exactly the property `callUrl` demonstrated when it landed (feature 11).
+ * `contactHash` fills 2026-09-08 (feature 016): `06 CTA final` exists now.
+ * One key, no markup touched anywhere in `HeroSection.vue` — exactly the
+ * property `callUrl` demonstrated when it landed (feature 11). Since feature
+ * 43 that section carries the shared `diagnostico` anchor, the same one the
+ * shell's "Diagnóstico gratis" points at.
  */
 export const HERO_DESTINATIONS: HeroDestinations = {
   callUrl: CALL_BOOKING_URL,
-  contactHash: '#contacto',
+  contactHash: `#${SECTION_ANCHORS.assessment}`,
 }
 
 /**

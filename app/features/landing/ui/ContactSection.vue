@@ -4,6 +4,7 @@ import {
   type ContactFormContent,
   type ContactSubmitter,
 } from '@/features/forms'
+import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import LinkArrow from '@/shared/ui/legacy/LinkArrow.vue'
 import Pill from '@/shared/ui/legacy/Pill.vue'
 import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
@@ -13,8 +14,8 @@ import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
  * `06 CTA final` — the landing's sixth and last section before the footer,
  * and the one that gives a real destination to two controls that were inert
  * since they were built: the Hero's primary CTA (feature 9) and the nav's CTA
- * (feature 3/10). Both already point at `#contacto`; this section is the
- * anchor.
+ * (feature 3/10). This section is the anchor: `#diagnostico` since feature
+ * 43, the shared id in `app/shared/data/sectionAnchors.ts`.
  *
  * Chrome only (Pill, heading, copy, alternate route, glows, the two-column ↔
  * stacked layout). The seven-field form is `forms/ContactForm`'s, consumed
@@ -95,7 +96,11 @@ const {
 </script>
 
 <template>
-  <section id="contacto" class="relative pt-contact-top">
+  <!--
+    Feature 43: the id is the shared `diagnostico` anchor, so the shell's
+    "Diagnóstico gratis" lands here until feature 45 replaces this section.
+  -->
+  <section :id="SECTION_ANCHORS.assessment" class="relative pt-contact-top">
     <SectionBackdrop>
       <SectionGlow
         color="red-400"
