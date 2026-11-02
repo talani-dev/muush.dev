@@ -19,6 +19,10 @@ import ServicesCarousel from './ServicesCarousel.vue'
  *   `Heading` takes as a class (`text-servicios-titulo`, its contract).
  *
  * The content never grows past the 1280 content width (1920 included).
+ *
+ * Feature 45, reopen 2 (Roberto 2026-11-02, spec 045 FR-041): the pill
+ * carries `pill-aire`, 6 px more space above the heading below `lg` and
+ * 8 px from it, a deliberate departure from the `.pen`.
  */
 type Props = ServicesContent
 
@@ -34,7 +38,7 @@ const headingId = `servicios-${useId()}`
   >
     <div class="mx-auto flex max-w-contenido flex-col gap-servicios-gap">
       <div class="flex flex-col items-start gap-cabeza-gap">
-        <Pill :label="pill" />
+        <Pill class="pill-aire" :label="pill" />
         <Heading
           :id="headingId"
           :level="2"
