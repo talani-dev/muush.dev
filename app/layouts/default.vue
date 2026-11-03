@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { watch } from 'vue'
 import {
   MobileMenu,
   type ShellLocale,
@@ -83,14 +83,12 @@ watch(
 )
 
 /*
- * Feature 44 · the page frame. The v1 pages (About, the 404) still sit in
- * the v1 frame: centred at `shell-max` with the `px-page` inset. A Muush
- * 1.0 page whose sections are full bleed (shader backgrounds edge to edge,
- * each section carrying its own drawn padding) opts out with
- * `definePageMeta({ fullBleed: true })`; the home does since feature 44.
- * Features 46–47 retire the v1 frame with the last v1 page.
+ * The page frame is gone (feature 46, spec FR-052): every page is Muush 1.0
+ * and full bleed, each section carrying its own drawn padding and its
+ * shader background edge to edge. The v1 frame (centred at `shell-max`
+ * with the `px-page` inset) and the `fullBleed` page meta that opted out
+ * of it went with the last v1 page.
  */
-const isFullBleed = computed(() => route.meta.fullBleed === true)
 
 /*
  * The `hreflang` alternates and the `lang` attribute, from the same i18n
@@ -140,18 +138,17 @@ useSiteSeo()
     />
 
     <div :inert="isOpen">
-      <main :class="{ 'mx-auto max-w-shell-max px-page': !isFullBleed }">
+      <main>
         <slot />
       </main>
 
       <!--
-        `mt-section-gap` keeps the space the v1 sections had above the footer
-        (feature 23); without it the v1 contact panel and the Work with
-        muush form touch the footer's rule. It belongs to those v1 sections:
-        features 44–46 replace them and decide the v2 rhythm, and drop it.
+        Flush after the last section (feature 46, leader answer of
+        2026-11-02, pen extract-46 § 6): in the `.pen` the footer is the
+        next child of the page stack with no gap. The v1 `mt-section-gap`
+        went with the last v1 section.
       -->
       <SiteFooter
-        class="mt-section-gap"
         :columns="footerColumns"
         :contact-channels="contactChannels"
         :mobile-links="mobileFooterLinks"

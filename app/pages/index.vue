@@ -44,9 +44,6 @@ const contactForm = useContactFormContent()
    the form. */
 const contactSubmitter = useContactSubmitter()
 
-/* Full-bleed sections: the layout drops the v1 page frame (feature 44). */
-definePageMeta({ fullBleed: true })
-
 usePageSeo({
   titleKey: 'pages.home.title',
   descriptionKey: 'pages.home.description',
