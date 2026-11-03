@@ -1,33 +1,19 @@
 /**
- * The About Hero's content model: the three i18n keys it renders.
- *
- * Unlike the landing Hero (`landing/data/heroContent.ts`), this section has no
- * destinations to resolve — `ui-map.md` § 9 documents "Hero About" as
- * "Estático, sin botones", so there is no CTA row and nothing here mirrors
- * `HeroDestinations`.
- *
- * No import at all, which is what Article II calls the trivial case of the
- * dependency direction rule: this file has nothing to depend on.
+ * The Nosotros hero's content model (feature 46, data-model § 2; copy in
+ * `docs/business/muush-1.0.md` § 4.8, pen extract-46 §§ 1.1, 2). Static,
+ * no destinations: the section has no buttons.
  */
-
-/** The three i18n keys the About Hero renders. Keys, never copy (Article VI). */
 export const ABOUT_HERO_KEYS = {
-  /**
-   * "Nosotros" — the Pill instance `design-extract.md` § 3 lists for this
-   * page's Hero, alongside `Equipo`, `Network` and `Work with muush`.
-   */
-  eyebrow: 'about.hero.eyebrow',
-  headline: 'about.hero.headline',
+  pill: 'about.hero.pill',
+  headingFirst: 'about.hero.heading.first',
+  headingSecond: 'about.hero.heading.second',
   intro: 'about.hero.intro',
 } as const
 
-/**
- * What `logic/` hands `ui/`: already translated. No optional destination
- * field — every field here always renders (contrast with `HeroContent` in
- * `landing/data/heroContent.ts`, whose two href fields are each optional).
- */
+/** What `logic/` hands `ui/`: already translated. */
 export interface AboutHeroContent {
-  eyebrow: string
-  headline: string
+  pill: string
+  headingFirst: string
+  headingSecond: string
   intro: string
 }

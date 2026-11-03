@@ -1,8 +1,13 @@
 import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createSSRApp, h, ref } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createSSRApp, h, isRef, ref, toValue } from 'vue'
 import { renderToString } from 'vue/server-renderer'
-import { BACKGROUND_PRESETS } from '@/shared/data/backgroundPresets'
+import {
+  BACKGROUND_PRESETS,
+  type BackgroundPreset,
+} from '@/shared/data/backgroundPresets'
+import { DESKTOP_MEDIA_QUERY } from '@/shared/data/layout'
+import { installMatchMedia } from '@/shared/logic/fakeMediaQuery.testing'
 import { useShaderCanvas } from '@/shared/logic/useShaderCanvas'
 import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
 
@@ -18,12 +23,23 @@ vi.mock('@/shared/logic/useShaderCanvas', () => ({
 
 const isReady = ref(false)
 const isFallback = ref(false)
+let media: ReturnType<typeof installMatchMedia>
 
 beforeEach(() => {
   isReady.value = false
   isFallback.value = false
   vi.mocked(useShaderCanvas).mockReturnValue({ isReady, isFallback })
+  media = installMatchMedia()
 })
+
+afterEach(() => media.restore())
+
+/** The preset the component handed the composable, as it reads now. */
+function drawnPreset(): BackgroundPreset {
+  const handed = vi.mocked(useShaderCanvas).mock.calls.at(-1)?.[1]
+  if (!handed || !isRef(handed)) throw new Error('no preset ref handed')
+  return toValue(handed) as BackgroundPreset
+}
 
 function render(preset: keyof typeof BACKGROUND_PRESETS = 'homeHero') {
   return mount(ShaderBackground, { props: { preset } })
@@ -110,9 +126,47 @@ describe('ShaderBackground', () => {
   it('should hand the canvas and the preset to the composable when mounted', () => {
     render('faq')
 
-    expect(vi.mocked(useShaderCanvas).mock.calls.at(-1)?.[1]).toMatchObject({
-      value: BACKGROUND_PRESETS.faq,
+    expect(drawnPreset()).toMatchObject({
+      shader: BACKGROUND_PRESETS.faq.shader,
+      poster: BACKGROUND_PRESETS.faq.poster,
+      priority: BACKGROUND_PRESETS.faq.priority,
     })
+  })
+
+  /* Feature 46 · FR-046, research R5 (Roberto 2026-11-02). */
+  it('should draw with the compact uniforms when the viewport is below 1024', () => {
+    render('notFound')
+
+    expect(drawnPreset().uniforms).toEqual(
+      BACKGROUND_PRESETS.notFound.compactUniforms
+    )
+  })
+
+  it('should draw with the desktop uniforms when the viewport is 1024 or wider', () => {
+    media.query(DESKTOP_MEDIA_QUERY).matches = true
+    render('notFound')
+
+    expect(drawnPreset().uniforms).toEqual(BACKGROUND_PRESETS.notFound.uniforms)
+  })
+
+  it('should swap the uniform set when the layout crosses 1024 while mounted', async () => {
+    const wrapper = render('aboutHero')
+
+    media.query(DESKTOP_MEDIA_QUERY).set(true)
+    await wrapper.vm.$nextTick()
+
+    expect(drawnPreset().uniforms).toEqual(
+      BACKGROUND_PRESETS.aboutHero.uniforms
+    )
+  })
+
+  it('should keep the desktop uniforms when a preset has no compact set', () => {
+    render('mobileMenu')
+
+    expect(drawnPreset().uniforms).toEqual(
+      BACKGROUND_PRESETS.mobileMenu.uniforms
+    )
+    expect(drawnPreset()).not.toHaveProperty('compactUniforms')
   })
 
   it('should put the poster in the server render when prerendered', async () => {

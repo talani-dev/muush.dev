@@ -7,7 +7,8 @@ import { SHELL_COPY } from './shellFixtures.testing'
  * The desktop header's link bar (feature 43, FR-002, FR-003; pen extract-43
  * § 2). Glass pill, 6 / 6; items 15 / 500 at 10 / 18; active: Blanco 8 %,
  * Blanco text and the 6 × 6 red dot. "Inicio" / "Home" leads (Roberto
- * 2026-11-01). Preguntas joins with feature 46.
+ * 2026-11-01). Preguntas is not in the bar: it is linked from the footers
+ * (Roberto, feature 43; feature 46 gate 2026-11-02).
  */
 const meta = {
   title: 'Shell/NavLinkBar',

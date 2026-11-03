@@ -118,6 +118,92 @@ const EXPECTED_UNIFORMS: Record<
   },
 }
 
+/**
+ * Feature 46 · FR-046 and Roberto's ruling of 2026-11-02 (Clarifications
+ * Q3): the mobile uniforms the `.pen` draws, used below 1024 px. Pen
+ * extract-46 §§ 2–4 (Nosotros, Preguntas, 404) and § 6 (home `V2s7T`).
+ */
+const ASSESSMENT_COMPACT = {
+  u_y0: 1,
+  u_y1: 0.5,
+  u_th: 0.05,
+  u_amp: 0.03,
+  u_twist: 0.5,
+  u_tx: 0.5,
+  u_ty: 0.2,
+  u_trx: 0.6,
+  u_try: 0.2,
+  u_tdark: 0.8,
+  u_fadeT: 0.15,
+  u_fadeB: 0.02,
+}
+
+const EXPECTED_COMPACT: Partial<
+  Record<BackgroundPresetName, Record<string, number>>
+> = {
+  homeHero: {
+    u_y0: 0.95,
+    u_y1: 0.68,
+    u_th: 0.07,
+    u_amp: 0.04,
+    u_tx: 0.5,
+    u_ty: 0.5,
+    u_trx: 0.5,
+    u_try: 0.32,
+    u_tdark: 1,
+    u_fadeB: 0.06,
+  },
+  howWeWork: {
+    u_ribs: 16,
+    u_y0: 0.045,
+    u_y1: 0.035,
+    u_th: 0.035,
+    u_right: 0.5,
+    u_tdark: 0,
+    u_fadeB: 0,
+  },
+  assessment: ASSESSMENT_COMPACT,
+  aboutHero: {
+    u_y0: 0.95,
+    u_y1: 0.68,
+    u_th: 0.07,
+    u_amp: 0.04,
+    u_tx: 0.5,
+    u_ty: 0.5,
+    u_trx: 0.5,
+    u_try: 0.34,
+    u_tdark: 1,
+    u_fadeB: 0.06,
+  },
+  workWithUs: ASSESSMENT_COMPACT,
+  faq: {
+    u_ribs: 18,
+    u_y0: 0.86,
+    u_y1: 0.8,
+    u_th: 0.08,
+    u_right: 0.6,
+    u_tx: 0.5,
+    u_ty: 0.48,
+    u_trx: 0.6,
+    u_try: 0.26,
+    u_tdark: 1,
+    u_fadeB: 0.1,
+  },
+  notFound: {
+    u_ribs: 18,
+    u_y0: 0.9,
+    u_y1: 0.84,
+    u_th: 0.08,
+    u_right: 0.6,
+    u_tx: 0.5,
+    u_ty: 0.48,
+    u_trx: 0.6,
+    u_try: 0.28,
+    u_tdark: 1,
+    u_fadeB: 0.08,
+  },
+}
+
 /** The presets the handoff ships a poster for: all but the mobile menu. */
 const WITH_POSTER = new Set<BackgroundPresetName>([
   'homeHero',
@@ -171,6 +257,23 @@ describe('backgroundPresets', () => {
       }
     })
 
+    const compact = EXPECTED_COMPACT[name]
+    if (compact) {
+      it(`should carry the .pen mobile uniforms below 1024 when the preset is ${name}`, () => {
+        expect(preset.compactUniforms).toEqual({ u_flip: 1, ...compact })
+      })
+
+      it(`should only set compact uniforms its shader declares when the preset is ${name}`, () => {
+        const source = shaderSource(preset.shader)
+
+        for (const uniform of Object.keys(preset.compactUniforms ?? {})) {
+          expect(source, uniform).toMatch(
+            new RegExp(`uniform float ${uniform};`)
+          )
+        }
+      })
+    }
+
     if (WITH_POSTER.has(name)) {
       it(`should point at a poster when the preset is ${name}`, () => {
         expect(preset.poster).toMatch(/\.webp/)
@@ -184,6 +287,34 @@ describe('backgroundPresets', () => {
     )
     expect(BACKGROUND_PRESETS.workWithUs.poster).toBe(
       BACKGROUND_PRESETS.assessment.poster
+    )
+  })
+
+  it('should give every section preset a compact set and the mobile menu none when compared', () => {
+    const compact = entries
+      .filter(([, preset]) => preset.compactUniforms)
+      .map(([name]) => name)
+      .sort()
+
+    expect(compact).toEqual([...WITH_POSTER].sort())
+    expect(BACKGROUND_PRESETS.mobileMenu.compactUniforms).toBeUndefined()
+  })
+
+  it('should carry u_flip 1 in every compact set when compared', () => {
+    for (const [name, preset] of entries) {
+      if (!preset.compactUniforms) continue
+      expect(preset.compactUniforms.u_flip, name).toBe(1)
+    }
+  })
+
+  it('should draw 18 ribs on both mobile acanalados of Preguntas and the 404 when compared', () => {
+    expect(BACKGROUND_PRESETS.faq.compactUniforms?.u_ribs).toBe(18)
+    expect(BACKGROUND_PRESETS.notFound.compactUniforms?.u_ribs).toBe(18)
+  })
+
+  it('should share the mobile Diagnóstico set with Trabaja con muush when compared', () => {
+    expect(BACKGROUND_PRESETS.workWithUs.compactUniforms).toEqual(
+      BACKGROUND_PRESETS.assessment.compactUniforms
     )
   })
 

@@ -24,6 +24,15 @@ import posterFaq from '@/assets/backgrounds/preguntas-acanalado.webp'
  *
  * Posters are imported as modules so the build hashes them under `_nuxt/`;
  * nothing is served from `docs/` (FR-025).
+ *
+ * Feature 46 (Roberto 2026-11-02, spec 046 Clarifications Q3, FR-046): the
+ * `.pen` mobile frames draw their own uniforms for every section
+ * background, so a preset may carry `compactUniforms`, used below 1024 px
+ * (`ShaderBackground`). Values from pen extract-46 §§ 2–4 and § 6 (home
+ * frame `V2s7T`). Like `uniforms`, they are overrides only: a uniform the
+ * compact set omits takes the shader `@default`, never the desktop value.
+ * The mobile menu has no compact set (it is mobile only). The poster stays
+ * one per section.
  */
 export type ShaderName = 'liston' | 'acanalado'
 
@@ -41,6 +50,8 @@ export interface BackgroundPreset {
   shader: ShaderName
   /** Overrides only; `u_flip: 1` always included. */
   uniforms: Readonly<Record<`u_${string}`, number>>
+  /** Overrides used below 1024 px, where the mobile frame draws its own. */
+  compactUniforms?: Readonly<Record<`u_${string}`, number>>
   /**
    * Hashed asset URL of the still frame. Optional since feature 43: the
    * mobile menu's listón has none in the handoff, and without one the
@@ -68,6 +79,26 @@ const ASSESSMENT_UNIFORMS = {
   u_fadeB: 0.05,
 } as const
 
+/**
+ * The mobile Diagnóstico listón (home frame `V2s7T`, pen extract-46 § 6);
+ * the mobile Trabaja con muush draws the same values (§ 2, `JIhrf`).
+ */
+const ASSESSMENT_COMPACT_UNIFORMS = {
+  u_flip: 1,
+  u_y0: 1,
+  u_y1: 0.5,
+  u_th: 0.05,
+  u_amp: 0.03,
+  u_twist: 0.5,
+  u_tx: 0.5,
+  u_ty: 0.2,
+  u_trx: 0.6,
+  u_try: 0.2,
+  u_tdark: 0.8,
+  u_fadeT: 0.15,
+  u_fadeB: 0.02,
+} as const
+
 export const BACKGROUND_PRESETS: Readonly<
   Record<BackgroundPresetName, Readonly<BackgroundPreset>>
 > = {
@@ -80,6 +111,20 @@ export const BACKGROUND_PRESETS: Readonly<
       u_ty: 0.53,
       u_trx: 0.36,
       u_try: 0.28,
+      u_tdark: 1,
+      u_fadeB: 0.06,
+    },
+    /* Home mobile hero listón (pen extract-46 § 6). */
+    compactUniforms: {
+      u_flip: 1,
+      u_y0: 0.95,
+      u_y1: 0.68,
+      u_th: 0.07,
+      u_amp: 0.04,
+      u_tx: 0.5,
+      u_ty: 0.5,
+      u_trx: 0.5,
+      u_try: 0.32,
       u_tdark: 1,
       u_fadeB: 0.06,
     },
@@ -103,6 +148,17 @@ export const BACKGROUND_PRESETS: Readonly<
       u_fadeT: 0.2,
       u_fadeB: 0.15,
     },
+    /* Home mobile Cómo trabajamos acanalado (pen extract-46 § 6). */
+    compactUniforms: {
+      u_flip: 1,
+      u_ribs: 16,
+      u_y0: 0.045,
+      u_y1: 0.035,
+      u_th: 0.035,
+      u_right: 0.5,
+      u_tdark: 0,
+      u_fadeB: 0,
+    },
     poster: posterHowWeWork,
     priority: 'lazy',
   },
@@ -110,6 +166,7 @@ export const BACKGROUND_PRESETS: Readonly<
   assessment: {
     shader: 'liston',
     uniforms: ASSESSMENT_UNIFORMS,
+    compactUniforms: ASSESSMENT_COMPACT_UNIFORMS,
     poster: posterAssessment,
     priority: 'lazy',
   },
@@ -125,17 +182,33 @@ export const BACKGROUND_PRESETS: Readonly<
       u_tdark: 1,
       u_fadeB: 0.08,
     },
+    /* Nosotros mobile hero listón `eU4li` (pen extract-46 § 2). */
+    compactUniforms: {
+      u_flip: 1,
+      u_y0: 0.95,
+      u_y1: 0.68,
+      u_th: 0.07,
+      u_amp: 0.04,
+      u_tx: 0.5,
+      u_ty: 0.5,
+      u_trx: 0.5,
+      u_try: 0.34,
+      u_tdark: 1,
+      u_fadeB: 0.06,
+    },
     poster: posterAboutHero,
     priority: 'high',
   },
   /*
    * Nosotros · Trabaja con muush: the README gives it the assessment's
    * uniforms and the handoff ships no poster of its own, so it reuses the
-   * diagnóstico poster (confirmed by Roberto 2026-10-31).
+   * diagnóstico poster (confirmed by Roberto 2026-10-31). Its mobile frame
+   * (`JIhrf`, pen extract-46 § 2) draws the mobile Diagnóstico values too.
    */
   workWithUs: {
     shader: 'liston',
     uniforms: ASSESSMENT_UNIFORMS,
+    compactUniforms: ASSESSMENT_COMPACT_UNIFORMS,
     poster: posterAssessment,
     priority: 'lazy',
   },
@@ -156,6 +229,21 @@ export const BACKGROUND_PRESETS: Readonly<
       u_fadeT: 0.1,
       u_fadeB: 0.15,
     },
+    /* Preguntas mobile acanalado, 18 ribs (pen extract-46 § 3). */
+    compactUniforms: {
+      u_flip: 1,
+      u_ribs: 18,
+      u_y0: 0.86,
+      u_y1: 0.8,
+      u_th: 0.08,
+      u_right: 0.6,
+      u_tx: 0.5,
+      u_ty: 0.48,
+      u_trx: 0.6,
+      u_try: 0.26,
+      u_tdark: 1,
+      u_fadeB: 0.1,
+    },
     poster: posterFaq,
     priority: 'high',
   },
@@ -175,6 +263,21 @@ export const BACKGROUND_PRESETS: Readonly<
       u_tdark: 1,
       u_fadeT: 0.1,
       u_fadeB: 0.02,
+    },
+    /* 404 mobile acanalado, 18 ribs (pen extract-46 § 4). */
+    compactUniforms: {
+      u_flip: 1,
+      u_ribs: 18,
+      u_y0: 0.9,
+      u_y1: 0.84,
+      u_th: 0.08,
+      u_right: 0.6,
+      u_tx: 0.5,
+      u_ty: 0.48,
+      u_trx: 0.6,
+      u_try: 0.28,
+      u_tdark: 1,
+      u_fadeB: 0.08,
     },
     poster: posterNotFound,
     priority: 'high',

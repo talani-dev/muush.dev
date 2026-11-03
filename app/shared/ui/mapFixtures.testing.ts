@@ -1,23 +1,13 @@
-import type { MapCity, MapPinKind } from '@/shared/data/mapPins'
-import type { MapRegionName } from '@/shared/data/mapRegions'
+import type { MapCopy } from '@/shared/data/mapCopy'
 
 /**
  * Resolved map copy for the catalogue and the component tests (feature 44):
- * what `useWhoWeAreContent` hands `WorldMap` and `MapLegend` on `/es` and
+ * what `resolveMapCopy` hands `WorldMap` and `MapLegend` on `/es` and
  * `/en` (muush-1.0.md § 4.3, pen extract-44 § 2.1; the tab-list name and the
  * city names are Clarifications Q2, confirmed by Roberto 2026-11-01).
  * Fixtures only; the app never imports this file.
  */
 export type MapFixtureLocale = 'es' | 'en'
-
-interface MapCopy {
-  regions: { name: MapRegionName; label: string }[]
-  regionsLabel: string
-  groups: { kind: MapPinKind; label: string }[]
-  cityNames: Record<MapCity, string>
-  legend: { kind: MapPinKind | 'none'; label: string }[]
-  soonLabel: string
-}
 
 export const MAP_COPY: Record<MapFixtureLocale, MapCopy> = {
   es: {

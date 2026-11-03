@@ -24,7 +24,7 @@ export type ShellLocale = (typeof SHELL_LOCALES)[number]
  * under `i18n.pages`. Adding a page adds a member here and an entry there —
  * never a path literal in a component (spec FR-018).
  */
-export type ShellRouteName = 'index' | 'about'
+export type ShellRouteName = 'index' | 'about' | 'faq'
 
 /**
  * Where a shell item points. `none` is a real state rather than a missing
@@ -139,4 +139,26 @@ export interface ResolvedSocial {
   href: string
   /** Accessible name — the glyph carries no text of its own. */
   label: string
+}
+
+/**
+ * The two status pages that share one block (feature 46, spec FR-042):
+ * Preguntas and the 404. Each name is also its shader preset.
+ */
+export type StatusPreset = 'faq' | 'notFound'
+
+/**
+ * What `ui/StatusSection.vue` receives (feature 46, data-model § 3),
+ * returned by `useFaqContent` and `useNotFoundContent`: every string and
+ * href resolved.
+ */
+export interface StatusSectionProps {
+  preset: StatusPreset
+  headingFirst: string
+  /** Line 2 in Gris 400; Preguntas has none. */
+  headingSecond?: string
+  /** The primary button, with the arrow. */
+  primary: ResolvedShellItem
+  /** The glass button, no icon; a new tab when `external`. */
+  secondary: ResolvedShellItem
 }

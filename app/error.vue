@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
 import {
-  NotFoundContent,
+  StatusSection,
   useNotFoundContent,
   useNotFoundDocument,
 } from '@/features/shell'
@@ -13,7 +13,10 @@ import {
  * `NOT_FOUND_ROUTES`).
  *
  * A thin wrapper (Constitution Article I): the shell owns the content, the
- * head and the nav's behaviour while an error is shown.
+ * head and the nav's behaviour while an error is shown. Since feature 46
+ * the body is the Muush 1.0 `StatusSection` (the block Preguntas uses too);
+ * every feature 36/39 behaviour (document per locale, noindex, in-place
+ * language switch) is untouched.
  */
 
 // Declared so Nuxt's `error` prop does not fall through onto the root as an
@@ -27,6 +30,6 @@ useNotFoundDocument()
 
 <template>
   <NuxtLayout>
-    <NotFoundContent v-bind="content" />
+    <StatusSection v-bind="content" />
   </NuxtLayout>
 </template>

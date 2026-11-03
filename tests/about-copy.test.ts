@@ -3,103 +3,155 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
- * The About Hero's three strings, asserted against the files on disk.
+ * Feature 46 · the Muush 1.0 Nosotros copy, asserted verbatim against the
+ * files on disk (spec FR-007, FR-011, FR-018, FR-022, FR-023, FR-048;
+ * `docs/business/muush-1.0.md` § 4.8, pen extract-46 § 1). The approved copy
+ * is the `.pen`'s; a translation sweep that "improves" a string must fail
+ * here first. "Áreas que sumamos" is stored in sentence case and drawn
+ * uppercase by `ReceivesList`, like "Lo que recibes".
  *
- * The copy was marked BORRADOR (draft, pending Clau's approval) in
- * `docs/business/landing/decisions-open.md`. Roberto read it out and approved
- * it on 2026-09-08, so it ships here as final copy rather than a placeholder
- * — this suite is what pins it down instead of letting a later pass drift it.
- *
- * Read from disk, never imported: Nuxt's i18n Vite transform compiles a locale
- * JSON into a message AST, and an assertion against a node of that AST passes
- * on any input at all (`docs/business/rules.md` § R27). The path is built with
- * `node:path` and `process.cwd()`, not `new URL` — the global environment is
- * `happy-dom`, whose `URL` `node:fs` rejects.
+ * Read from disk, never imported: Nuxt's i18n Vite transform compiles a
+ * locale JSON into a message AST, and an assertion against a node of that
+ * AST passes on any input at all (`docs/business/rules.md` § R27).
  */
-interface AboutCopy {
-  about: {
+type Tree = { [key: string]: string | Tree }
+
+function readAbout(locale: 'es' | 'en'): Tree {
+  const file = join(process.cwd(), 'i18n', 'locales', `${locale}.json`)
+  return (JSON.parse(readFileSync(file, 'utf8')) as { about: Tree }).about
+}
+
+const EXPECTED: Record<'es' | 'en', Tree> = {
+  es: {
     hero: {
-      eyebrow: string
-      headline: string
-      intro: string
-    }
+      pill: 'Nosotros',
+      heading: {
+        first: 'El equipo se arma',
+        second: 'alrededor del proyecto.',
+      },
+      intro:
+        'Reunimos al talento indicado para cada proyecto y le damos libertad de elegir en qué proyectos entra y desde dónde trabaja. Esa flexibilidad sostiene nuestro talent pool y nos permite entregar con una estructura ligera.',
+    },
+    composition: {
+      pill: 'Cómo se arma',
+      heading: { first: 'Quién entra', second: 'a tu proyecto.' },
+      cards: {
+        team: {
+          label: 'Equipo base',
+          title: 'Siempre en tu proyecto',
+          text: 'Estrategia, diseño e ingeniería, de principio a fin.',
+        },
+        pool: {
+          label: 'Talent pool',
+          title: 'Cuando el proyecto lo pide',
+          text: 'Especialistas que entran con el mismo estándar de entrega.',
+        },
+        partner: {
+          label: 'Aliados',
+          title: 'Creativo y marketing',
+          text: 'Estudios de confianza, coordinados por nosotros.',
+        },
+      },
+    },
+    where: {
+      pill: 'Dónde estamos',
+      heading: {
+        first: 'Un talent pool que crece',
+        second: 'por sector y por proyecto.',
+      },
+      body: 'Todos trabajamos con las mismas reglas y el mismo estándar de entrega.',
+    },
     work: {
-      eyebrow: string
-      headline: string
-      body: string
+      pill: 'Trabaja con muush',
+      heading: { first: 'Tú eliges en qué', second: 'proyectos entras.' },
+      body: 'Con quién y desde dónde, también. Si trabajas en tecnología, diseño o producción, cuéntanos qué haces y te buscamos cuando haya un proyecto para ti.',
+      areasLabel: 'Áreas que sumamos',
+      areas: {
+        engineering: 'Ingeniería y desarrollo',
+        design: 'Diseño de producto y UX',
+        creative: 'Creativo, contenido y marketing',
+      },
+    },
+  },
+  en: {
+    hero: {
+      pill: 'About',
+      heading: { first: 'The team takes shape', second: 'around the project.' },
+      intro:
+        'We bring together the right talent for each project and give them the freedom to choose which projects they join and where they work from. That flexibility sustains our talent pool and lets us deliver with a lean structure.',
+    },
+    composition: {
+      pill: 'How it comes together',
+      heading: { first: 'Who joins', second: 'your project.' },
+      cards: {
+        team: {
+          label: 'Core team',
+          title: 'Always on your project',
+          text: 'Strategy, design and engineering, from start to finish.',
+        },
+        pool: {
+          label: 'Talent pool',
+          title: 'When the project calls for it',
+          text: 'Specialists who join with the same delivery standard.',
+        },
+        partner: {
+          label: 'Partners',
+          title: 'Creative and marketing',
+          text: 'Trusted studios, coordinated by us.',
+        },
+      },
+    },
+    where: {
+      pill: 'Where we are',
+      heading: {
+        first: 'A talent pool that grows',
+        second: 'by industry and by project.',
+      },
+      body: 'We all work under the same rules and the same delivery standard.',
+    },
+    work: {
+      pill: 'Work with muush',
+      heading: { first: 'You choose which', second: 'projects you join.' },
+      body: "Who you work with and where from, too. If you work in technology, design or production, tell us what you do and we'll reach out when there's a project for you.",
+      areasLabel: 'Areas we bring in',
+      areas: {
+        engineering: 'Engineering and development',
+        design: 'Product design and UX',
+        creative: 'Creative, content and marketing',
+      },
+    },
+  },
+}
+
+const SECTIONS = ['hero', 'composition', 'where', 'work'] as const
+
+describe('about copy · the Muush 1.0 Nosotros (FR-007)', () => {
+  for (const locale of ['es', 'en'] as const) {
+    for (const section of SECTIONS) {
+      it(`should hold the approved ${section} copy verbatim when the ${locale} locale is read`, () => {
+        expect(readAbout(locale)[section]).toEqual(EXPECTED[locale][section])
+      })
     }
   }
-}
 
-function readLocale(name: string): AboutCopy {
-  const file = join(process.cwd(), 'i18n', 'locales', `${name}.json`)
-  return JSON.parse(readFileSync(file, 'utf8')) as AboutCopy
-}
-
-const es = readLocale('es').about.hero
-const en = readLocale('en').about.hero
-
-describe('about copy', () => {
-  it('should translate every hero string between the locales', () => {
-    /* Unlike `landing.hero.eyebrow`, the About Pill's "Nosotros" DOES
-       translate — it is the same word the shell already translates for the
-       nav link and the footer column (`shell.nav.about`). */
-    for (const key of ['eyebrow', 'headline', 'intro'] as const) {
-      expect(en[key], key).not.toBe(es[key])
-      expect(es[key], key).not.toBe('')
-      expect(en[key], key).not.toBe('')
+  it('should carry only the v2 sections when the locales are read', () => {
+    /* FR-027: the v1 eyebrow and headline keys left with their sections. */
+    for (const locale of ['es', 'en'] as const) {
+      expect(Object.keys(readAbout(locale)), locale).toEqual([...SECTIONS])
     }
   })
 
-  it('should reuse the shell’s own translation of "Nosotros" for the eyebrow', () => {
-    expect(es.eyebrow).toBe('Nosotros')
-    expect(en.eyebrow).toBe('About us')
+  it('should store the uppercase-drawn areas caption in sentence case when the locales are read', () => {
+    for (const locale of ['es', 'en'] as const) {
+      const label = (readAbout(locale).work as Tree).areasLabel as string
+      expect(label, locale).not.toBe(label.toUpperCase())
+    }
   })
 
-  it('should carry the approved headline and intro in each locale', () => {
-    /* Verbatim from the leader's 2026-09-08 brief for feature 17, read from
-       the `.pen` and approved by Roberto the same night. */
-    expect(es.headline).toBe('El equipo se arma alrededor del proyecto.')
-    expect(en.headline).toBe('We build the team around the project.')
-    expect(es.intro).toBe(
-      'Reunimos al talento indicado para cada proyecto y le damos libertad de elegir en qué proyectos entra y desde dónde trabaja. Esa flexibilidad es lo que sostiene nuestro talent pool, y lo que nos permite entregar sin cargar una estructura pesada.'
-    )
-    expect(en.intro).toBe(
-      'We bring together the right talent for each project and give them freedom to choose which projects they join and where they work from. That flexibility is what holds our talent pool together, and what lets us deliver without carrying a heavy structure.'
-    )
-  })
-})
-
-/**
- * `about.work.*` — the Work with muush section's own three keys
- * (feature 020). Unlike the Hero block above, only the **headline** arrived
- * verbatim-approved in this session's launch brief; the body is this
- * implementation's best-effort completion of a fragment `data-model.md` § 10
- * preserves ("Si trabajas en tecnología...") — flagged here, not presented as
- * a second confirmed string, and reported in the implementation summary for
- * Clau/Roberto to confirm or replace.
- */
-describe('about copy · about.work', () => {
-  const es = readLocale('es').about.work
-  const en = readLocale('en').about.work
-
-  it('should reuse the untranslated "Work with muush" eyebrow, identical to the footer item', () => {
-    expect(es.eyebrow).toBe('Work with muush')
-    expect(en.eyebrow).toBe('Work with muush')
-  })
-
-  it('should carry the approved headline verbatim in each locale', () => {
-    expect(es.headline).toBe(
-      'Tú eliges en qué proyectos entras, con quién y desde dónde.'
-    )
-    expect(en.headline).toBe(
-      'You choose which projects you join, who you work with, and where from.'
-    )
-  })
-
-  it('should hold a non-empty, translated body in each locale', () => {
-    expect(es.body).not.toBe('')
-    expect(en.body).not.toBe('')
-    expect(en.body).not.toBe(es.body)
+  it('should keep no dash pause and no arrow in the Nosotros copy when the locales are read', () => {
+    /* messaging.md rule 1; the arrow belongs to the button (rules.md § R50). */
+    for (const locale of ['es', 'en'] as const) {
+      expect(JSON.stringify(readAbout(locale)), locale).not.toMatch(/—|→/)
+    }
   })
 })

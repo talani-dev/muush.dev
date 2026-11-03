@@ -8,9 +8,17 @@ import {
   it,
   vi,
 } from 'vitest'
-import { defineComponent, h, type Ref, ref } from 'vue'
+import {
+  defineComponent,
+  h,
+  type MaybeRefOrGetter,
+  type Ref,
+  ref,
+  shallowRef,
+} from 'vue'
 import {
   BACKGROUND_PRESETS,
+  type BackgroundPreset,
   SHADER_SOURCES,
 } from '@/shared/data/backgroundPresets'
 import { createShaderRenderer } from '@/shared/logic/shaderRenderer'
@@ -122,14 +130,16 @@ function setHidden(value: boolean) {
   document.dispatchEvent(new Event('visibilitychange'))
 }
 
-async function mountHost() {
+async function mountHost(
+  preset: MaybeRefOrGetter<BackgroundPreset> = BACKGROUND_PRESETS.homeHero
+) {
   let state: ReturnType<typeof useShaderCanvas> | undefined
   let canvasRef: Ref<HTMLCanvasElement | null> | undefined
   const wrapper = mount(
     defineComponent({
       setup() {
         canvasRef = ref<HTMLCanvasElement | null>(null)
-        state = useShaderCanvas(canvasRef, BACKGROUND_PRESETS.homeHero)
+        state = useShaderCanvas(canvasRef, preset)
         return () => h('canvas', { ref: canvasRef })
       },
     }),
@@ -377,6 +387,56 @@ describe('useShaderCanvas · gating', () => {
     expect(frames.size).toBe(0)
     expect(renderer.draw).toHaveBeenCalledTimes(1)
     expect(renderer.draw.mock.calls[0]?.[0]).toBe(STILL_TIME_SECONDS)
+  })
+})
+
+/* Feature 46 · FR-046, research R5: the compact uniforms below 1024 px. */
+describe('useShaderCanvas · a preset change', () => {
+  const desktop = BACKGROUND_PRESETS.aboutHero
+  const compact: BackgroundPreset = {
+    ...desktop,
+    uniforms: desktop.compactUniforms ?? {},
+  }
+
+  it('should redraw once when the layout crosses 1024 while paused', async () => {
+    media.matches = true
+    const preset = shallowRef<BackgroundPreset>(compact)
+    await mountHost(preset)
+    io()?.emit(true)
+    renderer.draw.mockClear()
+
+    preset.value = desktop
+    await flushPromises()
+
+    expect(frames.size).toBe(0)
+    expect(renderer.draw).toHaveBeenCalledTimes(1)
+    expect(renderer.draw.mock.calls[0]?.[1]).toMatchObject({ u_ty: 0.55 })
+  })
+
+  it('should draw the new uniforms on the next frame when the layout crosses 1024 while animating', async () => {
+    const preset = shallowRef<BackgroundPreset>(compact)
+    await mountHost(preset)
+    io()?.emit(true)
+    flushFrame()
+    expect(renderer.draw.mock.calls.at(-1)?.[1]).toMatchObject({ u_ty: 0.5 })
+
+    preset.value = desktop
+    await flushPromises()
+    flushFrame()
+
+    expect(renderer.draw.mock.calls.at(-1)?.[1]).toMatchObject({ u_ty: 0.55 })
+    expect(frames.size).toBe(1)
+  })
+
+  it('should draw nothing when the preset changes while the canvas is off screen', async () => {
+    media.matches = true
+    const preset = shallowRef<BackgroundPreset>(compact)
+    await mountHost(preset)
+
+    preset.value = desktop
+    await flushPromises()
+
+    expect(renderer.draw).not.toHaveBeenCalled()
   })
 })
 

@@ -3272,3 +3272,11 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
   - assessment call row: white question, underlined link.
   T052–T058 `[x]`; `./init.sh` exit 0. Not committed; it waits for Roberto's request.
 - 2026-11-02 · implementer close-out: feature 45 `m1_forms` Reopen 2 → `done` (approved in review-45 § Re-review 4). Reopen 2 (Roberto 2026-11-02, FR-041): one shared `pill-aire` utility, +6 px below lg and +8 px from lg, on the five v2 section pills. T059–T060 `[x]`; `./init.sh` exit 0. Not committed; it waits for Roberto's request.
+- 2026-11-02 · implementer close-out: feature 46 `m1_secondary_pages` → `done` (approved in review-46 § Re-review 1). Changes:
+  - Nosotros is v2: hero, Cómo se arma with pinging card dots, Dónde estamos on the shared map, and Trabaja con muush with the feature 45 form.
+  - New indexed Preguntas page (`/es/preguntas` ↔ `/en/faq`), a plain WebPage, linked from the footers and the sitemap only.
+  - The 404 uses the v2 `StatusSection`; every feature 36/39 behaviour is unchanged.
+  - Compact (mobile) shader uniforms below 1024 on all seven section presets.
+  - The v1 page frame and the footer gap are retired; the v1 About and 404 code and tokens are deleted.
+  - Fix round 1: card-title end extension capped at a 10 px edge floor; the schema-org script attributes are read from the module config.
+  T001–T042 `[x]`; `./init.sh` exit 0. Not committed; it waits for Roberto's request (commit/merge into `muush-v2`).

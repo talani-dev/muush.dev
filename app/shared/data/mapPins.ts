@@ -7,7 +7,7 @@
  * hand in markup: `WorldMap` places one `MapPin` per entry.
  *
  * Order: as exported. City names are copy and live in the locale files
- * (`landing.whoWeAre.cities.*`); this file holds only the stable ids.
+ * (`map.cities.*`, `@/shared/data/mapCopy`); this file holds only the stable ids.
  */
 export type MapPinKind = 'team' | 'partner' | 'soon'
 

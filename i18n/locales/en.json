@@ -8,20 +8,68 @@
       "title": "About us · muush",
       "description": "Meet the muush team: we bring together the right talent for each project. If you work in technology, design or production, join our talent pool."
     },
+    "faq": {
+      "title": "FAQ · muush",
+      "description": "Answers to frequently asked questions about muush. In the meantime, request a free assessment or book a call."
+    },
     "notFound": {
       "title": "Page not found · muush"
     }
   },
   "about": {
     "hero": {
-      "eyebrow": "About us",
-      "headline": "We build the team around the project.",
-      "intro": "We bring together the right talent for each project and give them freedom to choose which projects they join and where they work from. That flexibility is what holds our talent pool together, and what lets us deliver without carrying a heavy structure."
+      "pill": "About",
+      "heading": {
+        "first": "The team takes shape",
+        "second": "around the project."
+      },
+      "intro": "We bring together the right talent for each project and give them the freedom to choose which projects they join and where they work from. That flexibility sustains our talent pool and lets us deliver with a lean structure."
+    },
+    "composition": {
+      "pill": "How it comes together",
+      "heading": {
+        "first": "Who joins",
+        "second": "your project."
+      },
+      "cards": {
+        "team": {
+          "label": "Core team",
+          "title": "Always on your project",
+          "text": "Strategy, design and engineering, from start to finish."
+        },
+        "pool": {
+          "label": "Talent pool",
+          "title": "When the project calls for it",
+          "text": "Specialists who join with the same delivery standard."
+        },
+        "partner": {
+          "label": "Partners",
+          "title": "Creative and marketing",
+          "text": "Trusted studios, coordinated by us."
+        }
+      }
+    },
+    "where": {
+      "pill": "Where we are",
+      "heading": {
+        "first": "A talent pool that grows",
+        "second": "by industry and by project."
+      },
+      "body": "We all work under the same rules and the same delivery standard."
     },
     "work": {
-      "eyebrow": "Work with muush",
-      "headline": "You choose which projects you join, who you work with, and where from.",
-      "body": "If you work in technology, design or production and want to join our talent pool, tell us what you do. We'll reach out when there's a project that fits."
+      "pill": "Work with muush",
+      "heading": {
+        "first": "You choose which",
+        "second": "projects you join."
+      },
+      "body": "Who you work with and where from, too. If you work in technology, design or production, tell us what you do and we'll reach out when there's a project for you.",
+      "areasLabel": "Areas we bring in",
+      "areas": {
+        "engineering": "Engineering and development",
+        "design": "Product design and UX",
+        "creative": "Creative, content and marketing"
+      }
     }
   },
   "landing": {
@@ -46,29 +94,7 @@
         "first": "A core team and trusted partners,",
         "second": "shaped by what your project needs."
       },
-      "body": "Strategy, design and engineering work together from day one. When the project calls for it, we bring in partners held to the same standard, wherever they are.",
-      "legend": {
-        "team": "Team",
-        "partner": "Partners",
-        "soon": "Estonia · soon",
-        "anywhere": "We work with clients in any country."
-      },
-      "regions": {
-        "label": "Map region",
-        "america": "Americas",
-        "europe": "Europe"
-      },
-      "cities": {
-        "cdmx": "CDMX",
-        "puebla": "Puebla",
-        "merida": "Mérida",
-        "dublin": "Dublin",
-        "nyc": "NYC",
-        "sanFrancisco": "San Francisco",
-        "losAngeles": "Los Angeles",
-        "amsterdam": "Amsterdam",
-        "estonia": "Estonia"
-      }
+      "body": "Strategy, design and engineering work together from day one. When the project calls for it, we bring in partners held to the same standard, wherever they are."
     },
     "services": {
       "pill": "Services",
@@ -149,6 +175,30 @@
       },
       "callQuestion": "Prefer to talk?",
       "callLink": "Book a call"
+    }
+  },
+  "map": {
+    "legend": {
+      "team": "Team",
+      "partner": "Partners",
+      "soon": "Estonia · soon",
+      "anywhere": "We work with clients in any country."
+    },
+    "regions": {
+      "label": "Map region",
+      "america": "Americas",
+      "europe": "Europe"
+    },
+    "cities": {
+      "cdmx": "CDMX",
+      "puebla": "Puebla",
+      "merida": "Mérida",
+      "dublin": "Dublin",
+      "nyc": "NYC",
+      "sanFrancisco": "San Francisco",
+      "losAngeles": "Los Angeles",
+      "amsterdam": "Amsterdam",
+      "estonia": "Estonia"
     }
   },
   "forms": {
@@ -412,6 +462,7 @@
       "muush": {
         "title": "muush",
         "work": "Work with muush",
+        "faq": "FAQ",
         "blog": "Blog · coming soon",
         "blogInline": "Blog (coming soon)"
       },
@@ -423,16 +474,18 @@
         "terms": "Terms and conditions"
       }
     },
+    "faq": {
+      "title": "Under construction 🚧",
+      "assessment": "Free assessment",
+      "call": "Book a call"
+    },
     "notFound": {
-      "eyebrow": "Error 404",
-      "headline": "We couldn't find this page.",
-      "body": "The link may be mistyped, or the page may have moved.",
+      "heading": {
+        "first": "Let's get you back",
+        "second": "somewhere familiar."
+      },
       "cta": "Back to home",
-      "shortcutsLabel": "Shortcuts",
-      "shortcuts": {
-        "services": "Services",
-        "about": "About us"
-      }
+      "assessment": "Free assessment"
     }
   }
 }

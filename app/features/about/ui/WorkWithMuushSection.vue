@@ -1,163 +1,86 @@
 <script setup lang="ts">
+import type { WorkContent } from '@/features/about/data/workContent'
 import {
   ApplicationForm,
   type ApplicationFormContent,
   type ApplicationSubmitter,
 } from '@/features/forms'
 import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
-import Pill from '@/shared/ui/legacy/Pill.vue'
-import SectionBackdrop from '@/shared/ui/legacy/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/legacy/SectionGlow.vue'
+import Heading from '@/shared/ui/Heading.vue'
+import Pill from '@/shared/ui/Pill.vue'
+import ReceivesList from '@/shared/ui/ReceivesList.vue'
+import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
 
 /**
- * `Work with muush` — the About page's second section (after `AboutHeroSection`,
- * feature 17), and a consumer of `forms/` (with the home's
- * `AssessmentSection.vue`). Chrome only: Pill, headline, body, three reused
- * glow tokens, the two-column ↔ stacked layout, and `ApplicationForm`
- * imported from `forms/`'s barrel and nothing else (Constitution Article
- * III) — this file imports no `forms/` internal.
+ * "Trabaja con muush" (feature 46, US2, spec FR-020…FR-026; pen extract-46
+ * §§ 1.4, 2; frames `O1FdO9` desktop, `fhqDx` mobile), over the listón
+ * (`workWithUs` preset, the Diagnóstico values; the mobile set below
+ * 1024), at the shared `trabaja-con-muush` anchor the footer links to.
  *
- * Feature 45 (Roberto 2026-11-02, pen extract-45 § 7 Q1): the barrel's
- * `ApplicationForm` is now the Muush 1.0 form — the glass panel, the privacy
- * consent, two steps below 768 px and the v2 states — mounted in this
- * otherwise v1 section (pill, headline, body, glows and grid unchanged).
- * The panel fills the form column up to its 600 cap, start-aligned. The page
- * looks mixed until feature 46 rebuilds the section.
+ * The home Diagnóstico layout (research R13) with no call row:
  *
- * It calls **no Nuxt composable**: copy arrives already translated from
- * `logic/useWorkContent.ts`, the same discipline `AboutHeroSection.vue`
- * already follows (`rules.md` § R23). The form's own
- * content (`formContent`) is resolved by whoever composes this section
- * (`app/pages/about.vue`) calling `useApplicationFormContent` from the
- * `forms` barrel directly — never by this component, keeping this file
- * mountable with no Nuxt runtime present and keeping `forms/` from depending
- * on an `about.*` key (plan.md D-1, D-4).
+ * - 1440: a row, gap 72, padding 120 / 80 / 140 / 80: the left column (pill,
+ *   the 64 px heading, the body 18 / 1.55 at 500 wide, "Áreas que sumamos";
+ *   gap 26) centred against the 600-wide application form panel.
+ * - 390: a column, padding 72 / 24, gap 24: pill → heading (34 / 1.15) →
+ *   body (16 / 1.5) → the list → the two-step form.
  *
- * ---
- *
- * ## The paint-order contract — `SectionBackdrop.vue`'s rules, applied here
- *
- * No stacking context on this section or any wrapper above it (the three
- * glows' own `-translate-…` are the one permitted exception, same as every
- * prior section). No opaque background — it would hide this section's own
- * glows. No bottom padding: Team (18) and Network (19) both stay `blocked`,
- * so this section renders as `AboutHeroSection`'s immediate next sibling with
- * nothing between them — `AboutHeroSection` declares no bottom padding, so
- * this section's own top padding (`--spacing-work-top`) is the *entire*
- * separation between the two (plan.md D-3, `rules.md` § R49), not a leftover
- * computed from a page-absolute y minus sections that do not exist in the DOM.
- *
- * ## The layout mechanism
- *
- * Mobile: plain flow, DOM order (left block, then form) — no override
- * needed. Desktop (`lg` and above): a two-column CSS grid, left block beside
- * the form. `grid-template-areas` has no Tailwind utility, so this is
- * hand-written CSS in `<style scoped>` reading `:root`-declared tokens
- * (`rules.md` § R18) — `--work-cols` / `--work-col-gap` live in `:root`, not
- * `@theme inline`, because they are read only by this hand-written rule and
- * never by a Tailwind utility class (`rules.md` § R18's own warning: an
- * `@theme inline` token with no scanned utility consumer never reaches
- * `:root` at all).
- *
- * Feature 38 (Roberto 2026-10-19, round 2): the grid still starts at `lg`,
- * but its fixed `clamp()` widths only fitted from ~1440 and overflowed the
- * content box from 1024 to 1439. The tracks are now `fr` columns in the 1440
- * frame's 520:660 ratio, so both columns shrink together and 1440 is
- * unchanged. (Round 1 stacked below 80rem; Roberto rejected that.)
+ * The background fills the section exactly; the `.pen`'s 26 px upward
+ * offset sits inside the shader's 30 % top fade (leader, 2026-11-02). The
+ * list is the shared `ReceivesList`, the same anatomy as "Lo que recibes".
+ * The form is the feature 45 `ApplicationForm` from the forms barrel,
+ * unchanged; its content and submitter come from the page. No Nuxt
+ * composable here (`rules.md` § R23). The pill carries `pill-aire`.
  */
-interface Props {
-  eyebrow: string
-  headline: string
-  body: string
+interface Props extends WorkContent {
   formContent: ApplicationFormContent
   /** Created by the page (`useApplicationSubmitter()`) and passed through
    * untouched: this section never reaches the network (feature 029). */
   formSubmitter: ApplicationSubmitter
 }
 
-defineProps<Props>()
+const {
+  pill,
+  headingFirst,
+  headingSecond,
+  body,
+  areasLabel,
+  areas,
+  formContent,
+  formSubmitter,
+} = defineProps<Props>()
 </script>
 
 <template>
-  <!--
-    Feature 43: the shared `trabaja-con-muush` anchor, so the footer's
-    "Trabaja con muush" lands here until feature 46 replaces this section.
-  -->
-  <section :id="SECTION_ANCHORS.workWithUs" class="relative pt-work-top">
-    <SectionBackdrop>
-      <SectionGlow
-        color="red-400"
-        :opacity="60"
-        size="1500-760"
-        class="absolute top-work-glow-foco-y left-work-glow-foco-x -translate-x-1/2 -translate-y-1/2"
-      />
-      <SectionGlow
-        color="wine-300"
-        :opacity="37"
-        size="1000-560"
-        class="absolute top-work-glow-wine-y left-work-glow-wine-x -translate-x-1/2 -translate-y-1/2"
-      />
-      <SectionGlow
-        color="wine-400"
-        :opacity="28"
-        size="900-520"
-        class="absolute top-work-glow-cierre-y left-work-glow-cierre-x -translate-x-1/2 -translate-y-1/2"
-      />
-    </SectionBackdrop>
-
-    <div class="work-layout">
-      <div class="work-layout__text flex flex-col gap-work-text-gap">
-        <div class="flex">
-          <Pill :label="eyebrow" />
+  <section :id="SECTION_ANCHORS.workWithUs" class="relative isolate">
+    <ShaderBackground preset="workWithUs" />
+    <div
+      class="relative z-10 px-gutter pt-bloque-y pb-diagnostico-abajo lg:px-gutter-desktop"
+    >
+      <div
+        class="mx-auto grid max-w-contenido gap-y-diagnostico-gap lg:grid-cols-diagnostico lg:items-center lg:gap-x-diagnostico-gap lg:gap-y-0"
+      >
+        <div class="flex min-w-0 flex-col items-start gap-diagnostico-izq">
+          <Pill class="pill-aire" :label="pill" />
+          <Heading
+            :level="2"
+            size="diagnostico"
+            :first="headingFirst"
+            :second="headingSecond"
+          />
+          <p
+            class="max-w-cuerpo-diagnostico font-texto text-cuerpo-diagnostico text-texto-suave"
+          >
+            {{ body }}
+          </p>
+          <ReceivesList
+            class="self-stretch"
+            :label="areasLabel"
+            :items="areas"
+          />
         </div>
-        <h2 class="font-instrument text-h2 text-bone-100">{{ headline }}</h2>
-        <p class="font-instrument text-body-sm text-ink-100">{{ body }}</p>
+        <ApplicationForm :content="formContent" :submitter="formSubmitter" />
       </div>
-
-      <ApplicationForm
-        class="work-layout__form"
-        :content="formContent"
-        :submitter="formSubmitter"
-      />
     </div>
   </section>
 </template>
-
-<style scoped>
-/*
- * Mobile: plain flow, DOM order (text, form) — no override needed. Desktop:
- * a two-column grid, left column beside a form column. `grid-template-areas`
- * has no Tailwind utility, so this is hand-written CSS reading the `:root`
- * tokens `<style scoped>` needs (`rules.md` § R18).
- */
-.work-layout {
-  display: flex;
-  flex-direction: column;
-  gap: var(--work-stack-gap);
-}
-
-@media (width >= 64rem) {
-  .work-layout {
-    display: grid;
-    align-items: start;
-    grid-template-columns: var(--work-cols);
-    grid-template-areas: "text form";
-    column-gap: var(--work-col-gap);
-  }
-
-  .work-layout__text {
-    grid-area: text;
-  }
-
-  .work-layout__form {
-    grid-area: form;
-    /* The Left block sits at local y130, the form at local y100 — the form
-       starts 30px higher, not level with it (plan.md D-3; round-2 review
-       measured both at the same y via live CDP and rejected it). This pulls
-       the form column back up by that confirmed delta; `--spacing-work-top`
-       already positions the text column correctly from the Left block's own
-       y130, so only the form needs the correction. */
-    margin-top: calc(-1 * var(--work-form-y-offset));
-  }
-}
-</style>

@@ -118,7 +118,7 @@ export default defineNuxtConfig({
      */
     sitemaps: false,
     /*
-     * Raw XML only, and only the 4 URLs plus their alternates: no
+     * Raw XML only, and only the 6 URLs plus their alternates: no
      * stylesheet file, no `<image:image>`/`<video:video>` entries scraped
      * from the pages (research R2.5).
      */
@@ -131,9 +131,11 @@ export default defineNuxtConfig({
      * `@nuxtjs/i18n:pages` source, tagged `_sitemap: 'es-MX'|'en-US'`, and
      * from `nuxt:prerender`, untagged. The dedupe key includes `_sitemap`, so
      * the pairs never merge and the sitemap listed each About URL twice.
-     * Dropping the i18n-pages source leaves the prerendered pages (all four
-     * are crawled), which still get their es-MX/en-US/x-default alternates
-     * from the i18n config. tests/seo-output.test.ts asserts exactly 4 URLs.
+     * Dropping the i18n-pages source leaves the prerendered pages (all six
+     * are crawled: home, Nosotros and, since feature 46, Preguntas, which
+     * every footer links to), which still get their es-MX/en-US/x-default
+     * alternates from the i18n config. tests/seo-output.test.ts asserts
+     * exactly 6 URLs.
      */
     excludeAppSources: ['@nuxtjs/i18n:pages'],
   },
@@ -297,6 +299,11 @@ export default defineNuxtConfig({
       about: {
         es: '/nosotros',
         en: '/about',
+      },
+      /* Feature 46 · Preguntas, indexed from day one (Roberto 2026-10-31). */
+      faq: {
+        es: '/preguntas',
+        en: '/faq',
       },
     },
   },

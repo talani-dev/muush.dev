@@ -36,6 +36,8 @@ export const FOOTER_DESTINATIONS = {
     name: 'about',
     anchor: SECTION_ANCHORS.workWithUs,
   },
+  /* Feature 46 · Preguntas, `/es/preguntas` ↔ `/en/faq`. */
+  faq: { kind: 'route', name: 'faq' },
   call: { kind: 'external', href: CALL_BOOKING_URL },
   email: { kind: 'external', href: `mailto:${SUPPORT_EMAIL}` },
   whatsapp: {
@@ -54,9 +56,9 @@ export const FOOTER_DESTINATIONS = {
  * - "Cómo trabajamos" points at a section feature 44 builds; until then the
  *   home page opens at its top (spec Edge Cases), never a 404.
  * - "Blog · próximamente" is text, not a link (`kind: 'none'`).
- * - ⚠️ Preguntas is absent until feature 46 creates its route (spec FR-024,
- *   confirmed by Roberto 2026-11-01). Feature 46 adds it to the MUUSH column
- *   after "Trabaja con muush".
+ * - Preguntas follows "Trabaja con muush" in MUUSH (feature 46, spec
+ *   FR-031, Roberto 2026-11-02): the footers and the sitemap are the only
+ *   places it is linked from; the header link bar stays three items.
  * - The REDES column is text links; the URLs come from the one record that
  *   owns them, so the footer and the menu buttons cannot drift.
  */
@@ -109,6 +111,10 @@ export const FOOTER_COLUMNS: FooterColumnModel[] = [
       {
         labelKey: 'shell.footer.muush.work',
         destination: FOOTER_DESTINATIONS.workWithUs,
+      },
+      {
+        labelKey: 'shell.footer.muush.faq',
+        destination: FOOTER_DESTINATIONS.faq,
       },
       {
         labelKey: 'shell.footer.muush.blog',

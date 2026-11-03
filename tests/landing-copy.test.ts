@@ -46,28 +46,6 @@ const EXPECTED: Record<'es' | 'en', Tree> = {
         second: 'según lo que pida tu proyecto.',
       },
       body: 'Estrategia, diseño e ingeniería trabajan juntos desde el primer día. Cuando el proyecto lo pide, sumamos aliados con el mismo estándar, estén donde estén.',
-      legend: {
-        team: 'Equipo',
-        partner: 'Aliados',
-        soon: 'Estonia · pronto',
-        anywhere: 'Trabajamos con clientes en cualquier país.',
-      },
-      regions: {
-        label: 'Región del mapa',
-        america: 'América',
-        europe: 'Europa',
-      },
-      cities: {
-        cdmx: 'CDMX',
-        puebla: 'Puebla',
-        merida: 'Mérida',
-        dublin: 'Dublín',
-        nyc: 'NYC',
-        sanFrancisco: 'San Francisco',
-        losAngeles: 'Los Ángeles',
-        amsterdam: 'Ámsterdam',
-        estonia: 'Estonia',
-      },
     },
     services: {
       pill: 'Servicios',
@@ -159,24 +137,6 @@ const EXPECTED: Record<'es' | 'en', Tree> = {
         second: 'shaped by what your project needs.',
       },
       body: 'Strategy, design and engineering work together from day one. When the project calls for it, we bring in partners held to the same standard, wherever they are.',
-      legend: {
-        team: 'Team',
-        partner: 'Partners',
-        soon: 'Estonia · soon',
-        anywhere: 'We work with clients in any country.',
-      },
-      regions: { label: 'Map region', america: 'Americas', europe: 'Europe' },
-      cities: {
-        cdmx: 'CDMX',
-        puebla: 'Puebla',
-        merida: 'Mérida',
-        dublin: 'Dublin',
-        nyc: 'NYC',
-        sanFrancisco: 'San Francisco',
-        losAngeles: 'Los Angeles',
-        amsterdam: 'Amsterdam',
-        estonia: 'Estonia',
-      },
     },
     services: {
       pill: 'Services',
@@ -279,6 +239,63 @@ EXPECTED.en.assessment = {
   callLink: 'Book a call',
 }
 
+/**
+ * Feature 46 (spec FR-017, research R3): the map's labels moved verbatim
+ * from `landing.whoWeAre.*` to the shared `map.*` namespace, read by the
+ * home and Nosotros alike.
+ */
+const EXPECTED_MAP: Record<'es' | 'en', Tree> = {
+  es: {
+    legend: {
+      team: 'Equipo',
+      partner: 'Aliados',
+      soon: 'Estonia · pronto',
+      anywhere: 'Trabajamos con clientes en cualquier país.',
+    },
+    regions: {
+      label: 'Región del mapa',
+      america: 'América',
+      europe: 'Europa',
+    },
+    cities: {
+      cdmx: 'CDMX',
+      puebla: 'Puebla',
+      merida: 'Mérida',
+      dublin: 'Dublín',
+      nyc: 'NYC',
+      sanFrancisco: 'San Francisco',
+      losAngeles: 'Los Ángeles',
+      amsterdam: 'Ámsterdam',
+      estonia: 'Estonia',
+    },
+  },
+  en: {
+    legend: {
+      team: 'Team',
+      partner: 'Partners',
+      soon: 'Estonia · soon',
+      anywhere: 'We work with clients in any country.',
+    },
+    regions: { label: 'Map region', america: 'Americas', europe: 'Europe' },
+    cities: {
+      cdmx: 'CDMX',
+      puebla: 'Puebla',
+      merida: 'Mérida',
+      dublin: 'Dublin',
+      nyc: 'NYC',
+      sanFrancisco: 'San Francisco',
+      losAngeles: 'Los Angeles',
+      amsterdam: 'Amsterdam',
+      estonia: 'Estonia',
+    },
+  },
+}
+
+function readMap(locale: 'es' | 'en'): Tree {
+  const file = join(process.cwd(), 'i18n', 'locales', `${locale}.json`)
+  return (JSON.parse(readFileSync(file, 'utf8')) as { map: Tree }).map
+}
+
 const SECTIONS = [
   'hero',
   'whoWeAre',
@@ -294,6 +311,12 @@ describe('landing copy · the Muush 1.0 home (FR-030)', () => {
         expect(readLanding(locale)[section]).toEqual(EXPECTED[locale][section])
       })
     }
+  }
+
+  for (const locale of ['es', 'en'] as const) {
+    it(`should hold the shared map labels verbatim when the ${locale} locale is read`, () => {
+      expect(readMap(locale)).toEqual(EXPECTED_MAP[locale])
+    })
   }
 
   it('should carry only the v2 sections when the locales are read', () => {

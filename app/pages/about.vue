@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import {
   AboutHeroSection,
+  TeamCompositionSection,
   useAboutHeroContent,
+  useTeamCompositionContent,
+  useWhereWeAreContent,
   useWorkContent,
+  WhereWeAreSection,
   WorkWithMuushSection,
 } from '@/features/about'
 import {
@@ -12,27 +16,24 @@ import {
 import { usePageSeo } from '@/features/shell'
 
 /**
- * About — `/es/nosotros` and `/en/about` from this one file. The translated
- * segment is declared in `nuxt.config.ts` under `i18n.pages`, never here.
+ * Nosotros — `/es/nosotros` and `/en/about` from this one file. The
+ * translated segment is declared in `nuxt.config.ts` under `i18n.pages`,
+ * never here. A thin wrapper (Constitution Article I).
  *
- * `AboutHeroSection` (feature 17) supplies the page's `<h1>`.
- * `WorkWithMuushSection` (feature 20) is the page's second section and the
- * target the footer's `Work with muush` item and the nav's
- * `#trabaja-con-muush` anchor resolve to — no more placeholder heading. Team
- * and Network still belong to later, `blocked` features (spec Assumptions).
- * Since feature 45 its form column holds the Muush 1.0 application form;
- * the rest of the page stays v1 until feature 46.
+ * Muush 1.0 order (feature 46; `muush-1.0.md` § 3): Hero over the listón →
+ * Cómo se arma → Dónde estamos (the shared map) → Trabaja con muush over
+ * the listón, at `#trabaja-con-muush`, with the application form →
+ * footer. The sections sit flush, each with its own drawn padding; the
+ * hero's heading is the page's only `<h1>`.
  *
  * `useApplicationFormContent` is called here, not inside
- * `WorkWithMuushSection.vue` or `forms/`'s own components, so that neither
- * module reaches into the other beyond its barrel (Constitution Article III,
- * plan.md D-1) — the same pattern `index.vue` already uses for
- * `useContactFormContent`.
- *
- * `mt-section-gap` on `WorkWithMuushSection` (feature 23, items 3/8) —
- * same reasoning as `index.vue`'s own comment on the same class.
+ * `WorkWithMuushSection.vue`, so neither module reaches into the other
+ * beyond its barrel (Constitution Article III) — the pattern `index.vue`
+ * uses for `useContactFormContent`.
  */
 const aboutHero = useAboutHeroContent()
+const composition = useTeamCompositionContent()
+const whereWeAre = useWhereWeAreContent()
 const work = useWorkContent()
 const applicationFormContent = useApplicationFormContent()
 /* Feature 029: same seam as `index.vue`'s `useContactSubmitter()`. */
@@ -49,8 +50,9 @@ usePageSeo({
 
 <template>
   <AboutHeroSection v-bind="aboutHero" />
+  <TeamCompositionSection v-bind="composition" />
+  <WhereWeAreSection v-bind="whereWeAre" />
   <WorkWithMuushSection
-    class="mt-section-gap"
     v-bind="work"
     :form-content="applicationFormContent"
     :form-submitter="applicationSubmitter"

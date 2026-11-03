@@ -142,9 +142,10 @@ the project. Normalized exactly like the feature 44 glyphs:
 
 Used by:
 
-- `ReceivesList.vue` (`app/features/landing/ui/`), the "Lo que recibes" rows
-  of the Diagnóstico y contacto section: 14 × 14 in `--compromiso-icono`
-  inside a 24 × 24 Red 15 % bubble (pen extract-45 § 1);
+- `ReceivesList.vue` (`app/shared/ui/`), the "Lo que recibes" rows
+  of the Diagnóstico y contacto section and the "Áreas que sumamos" rows of
+  Nosotros (feature 46): 14 × 14 in `--compromiso-icono` inside a 24 × 24
+  Red 15 % bubble (pen extract-45 § 1);
 - `ConsentCheckbox.vue` (`app/features/forms/ui/`), the ticked privacy box:
   12 × 12 in Blanco over Red muush.
 

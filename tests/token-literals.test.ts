@@ -32,6 +32,8 @@ const COMPONENTS = [
   'Wordmark',
   'Lockup',
   'SocialIcon',
+  /* Feature 46 · moved from `landing/ui/` (research R2). */
+  'ReceivesList',
 ]
 
 /*
@@ -194,7 +196,7 @@ const FORMS_SCANNED = [
     'useContactFormContent.ts',
     'useApplicationFormContent.ts',
   ].map(name => join(FORMS, 'logic', name)),
-  ...['AssessmentSection', 'ReceivesList'].flatMap(name => [
+  ...['AssessmentSection'].flatMap(name => [
     join(LANDING, 'ui', `${name}.vue`),
     join(LANDING, 'ui', `${name}.stories.ts`),
   ]),
@@ -211,6 +213,49 @@ const FORMS_SCANNED = [
     'ui',
     'WorkWithMuushSection.stories.ts'
   ),
+]
+
+/*
+ * Feature 46 · the secondary pages (spec FR-049): every file it creates or
+ * rewrites outside `legacy/` in about, shell and shared.
+ */
+const ABOUT = join(ROOT, 'app', 'features', 'about')
+
+const PAGES_SCANNED = [
+  ...[
+    'AboutHeroSection',
+    'TeamCompositionSection',
+    'CompositionCard',
+    'WhereWeAreSection',
+    'WorkWithMuushSection',
+  ].flatMap(name => [
+    join(ABOUT, 'ui', `${name}.vue`),
+    join(ABOUT, 'ui', `${name}.stories.ts`),
+  ]),
+  join(ABOUT, 'ui', 'aboutFixtures.testing.ts'),
+  join(ABOUT, 'index.ts'),
+  ...[
+    'aboutHeroContent.ts',
+    'teamCompositionContent.ts',
+    'whereWeAreContent.ts',
+    'workContent.ts',
+  ].map(name => join(ABOUT, 'data', name)),
+  ...[
+    'useAboutHeroContent.ts',
+    'useTeamCompositionContent.ts',
+    'useWhereWeAreContent.ts',
+    'useWorkContent.ts',
+  ].map(name => join(ABOUT, 'logic', name)),
+  join(SHELL, 'ui', 'StatusSection.vue'),
+  join(SHELL, 'ui', 'StatusSection.stories.ts'),
+  join(SHELL, 'data', 'faq.ts'),
+  join(SHELL, 'logic', 'useFaqContent.ts'),
+  join(SHELL, 'logic', 'useNotFoundContent.ts'),
+  join(SHARED, 'data', 'mapCopy.ts'),
+  join(SHARED, 'utils', 'mapCopy.ts'),
+  join(ROOT, 'app', 'pages', 'about.vue'),
+  join(ROOT, 'app', 'pages', 'faq.vue'),
+  join(ROOT, 'app', 'error.vue'),
 ]
 
 const SCANNED = [
@@ -231,6 +276,7 @@ const SCANNED = [
   ...SHELL_SCANNED,
   ...HOME_SCANNED,
   ...FORMS_SCANNED,
+  ...PAGES_SCANNED,
 ]
 
 const FORBIDDEN: [string, RegExp][] = [

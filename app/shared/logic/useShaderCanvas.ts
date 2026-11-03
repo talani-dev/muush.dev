@@ -45,7 +45,11 @@ import { readShaderDefaults } from '@/shared/utils/shaderUniformDefaults'
  * client-routed site must (spec FR-024).
  *
  * The shader is chosen once, at mount, and its `@default` values are read
- * from its source then; preset uniforms are read on every draw.
+ * from its source then; preset uniforms are read on every draw. A preset
+ * change (feature 46: `ShaderBackground` swaps to the compact uniforms
+ * below 1024 px) re-evaluates the run condition, so a paused canvas
+ * (reduced motion, off screen) still redraws its one frame with the new
+ * values; a running loop picks them up on its next frame.
  */
 
 /** IntersectionObserver look-ahead, as in the handoff. Not a visual value. */
@@ -237,6 +241,10 @@ export function useShaderCanvas(
   })
 
   watch(reducedMotion, () => controller?.update())
+  watch(
+    () => toValue(preset),
+    () => controller?.update()
+  )
 
   onBeforeUnmount(() => controller?.dispose())
 

@@ -782,3 +782,11 @@ These requirements follow FR-039 and supersede what they name.
   (Pill, pins, chips, lit dots) keep 0 and are unchanged. This supersedes
   the last sentence of FR-047: the unlit ghost starts at the full 12 px.
 
+
+### 2026-11-02 · Mobile shader uniforms (amended by feature 46)
+
+Roberto, feature 46 spec gate: below 1024 px the home's hero listón and
+Cómo trabajamos acanalado draw with the uniforms the mobile frame `V2s7T`
+draws (pen-extract-46 § 6), as the presets' optional `compactUniforms`; the
+desktop uniforms apply from 1024. This supersedes "the home reuses its
+desktop uniforms at every width". Spec 046 FR-046, Clarifications.
