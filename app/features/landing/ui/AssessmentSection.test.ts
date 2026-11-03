@@ -5,6 +5,7 @@ import { ContactForm } from '@/features/forms'
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import Heading from '@/shared/ui/Heading.vue'
 import Pill from '@/shared/ui/Pill.vue'
+import ReceivesList from '@/shared/ui/ReceivesList.vue'
 import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
 import AssessmentSection from './AssessmentSection.vue'
 import {
@@ -12,7 +13,6 @@ import {
   ASSESSMENT_FORM_COPY,
   STORY_ASSESSMENT_SUBMITTER,
 } from './landingFixtures.testing'
-import ReceivesList from './ReceivesList.vue'
 
 /** Feature 45 · US1, FR-022…FR-025; pen extract-45 §§ 1, 4. */
 vi.mock('@/shared/logic/useShaderCanvas', () => ({

@@ -9,8 +9,8 @@ import type { AssessmentContent } from '@/features/landing/data/assessmentConten
 import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import Heading from '@/shared/ui/Heading.vue'
 import Pill from '@/shared/ui/Pill.vue'
+import ReceivesList from '@/shared/ui/ReceivesList.vue'
 import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
-import ReceivesList from './ReceivesList.vue'
 
 /**
  * Diagnóstico y contacto (feature 45, US1, spec FR-022…FR-025; pen

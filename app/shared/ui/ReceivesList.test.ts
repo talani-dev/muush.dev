@@ -1,14 +1,18 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { ASSESSMENT_COPY } from './landingFixtures.testing'
 import ReceivesList from './ReceivesList.vue'
+import { RECEIVES_LISTS } from './receivesFixtures.testing'
 
-/** Feature 45 · FR-023; pen extract-45 § 1. */
-function render(locale: 'es' | 'en' = 'es') {
-  const copy = ASSESSMENT_COPY[locale]
-  return mount(ReceivesList, {
-    props: { label: copy.receivesLabel, items: copy.receives },
-  })
+/**
+ * Feature 45 · FR-023; pen extract-45 § 1. Shared since feature 46 (spec
+ * FR-023, research R2): the home's "Lo que recibes" and Nosotros' "Áreas
+ * que sumamos" are the same component.
+ */
+function render(
+  locale: 'es' | 'en' = 'es',
+  list: 'receives' | 'areas' = 'receives'
+) {
+  return mount(ReceivesList, { props: RECEIVES_LISTS[list][locale] })
 }
 
 describe('ReceivesList', () => {
@@ -48,5 +52,17 @@ describe('ReceivesList', () => {
         expect.arrayContaining(['size-recibe-icono', 'text-compromiso-icono'])
       )
     }
+  })
+
+  it('should render the Nosotros areas with the same anatomy when given them', () => {
+    const wrapper = render('es', 'areas')
+
+    expect(wrapper.find('p').text()).toBe('Áreas que sumamos')
+    expect(wrapper.findAll('li span.min-w-0').map(row => row.text())).toEqual([
+      'Ingeniería y desarrollo',
+      'Diseño de producto y UX',
+      'Creativo, contenido y marketing',
+    ])
+    expect(wrapper.findAll('.size-recibe-burbuja')).toHaveLength(3)
   })
 })
