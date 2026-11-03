@@ -52,11 +52,17 @@ describe('footer columns', () => {
     ])
   })
 
-  it('should list Trabaja con muush then the blog in MUUSH when Preguntas has no route yet', () => {
+  it('should list Trabaja con muush, Preguntas then the blog in MUUSH when read', () => {
+    /* Feature 46 · FR-031 (Roberto 2026-11-02). */
     expect(keysOf(2)).toEqual([
       'shell.footer.muush.work',
+      'shell.footer.muush.faq',
       'shell.footer.muush.blog',
     ])
+    expect(itemFor('shell.footer.muush.faq').destination).toEqual({
+      kind: 'route',
+      name: 'faq',
+    })
   })
 
   it('should leave only the blog without a destination when read', () => {

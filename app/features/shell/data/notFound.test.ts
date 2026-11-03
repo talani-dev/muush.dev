@@ -1,43 +1,38 @@
 import { describe, expect, it } from 'vitest'
 import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import {
+  NOT_FOUND_ASSESSMENT,
+  NOT_FOUND_COPY_KEYS,
   NOT_FOUND_HOME,
   NOT_FOUND_ROBOTS,
-  NOT_FOUND_SHORTCUTS,
 } from './notFound'
 
 describe('not-found content model', () => {
-  it('should list exactly two shortcuts in the order services, about when read', () => {
-    /* Feature 44: the Propósito shortcut left with its section (FR-026). */
-    expect(NOT_FOUND_SHORTCUTS.map(item => item.labelKey)).toEqual([
-      'shell.notFound.shortcuts.services',
-      'shell.notFound.shortcuts.about',
-    ])
-  })
-
-  it('should use only route or anchor destinations when read', () => {
-    const kinds = [NOT_FOUND_HOME, ...NOT_FOUND_SHORTCUTS].map(
-      item => item.destination.kind
-    )
-
-    for (const kind of kinds) {
-      expect(['route', 'anchor']).toContain(kind)
-    }
-  })
-
   it('should point the home at route index when read', () => {
-    expect(NOT_FOUND_HOME.destination).toEqual({ kind: 'route', name: 'index' })
+    expect(NOT_FOUND_HOME).toEqual({
+      labelKey: 'shell.notFound.cta',
+      destination: { kind: 'route', name: 'index' },
+    })
   })
 
-  it('should point services at the declared anchor and about at its route when read', () => {
-    const [services, about] = NOT_FOUND_SHORTCUTS
-
-    expect(services?.destination).toEqual({
-      kind: 'anchor',
-      name: 'index',
-      anchor: SECTION_ANCHORS.services,
+  it('should point the assessment at the home diagnóstico anchor when read', () => {
+    /* Feature 46 · FR-039. */
+    expect(NOT_FOUND_ASSESSMENT).toEqual({
+      labelKey: 'shell.notFound.assessment',
+      destination: {
+        kind: 'anchor',
+        name: 'index',
+        anchor: SECTION_ANCHORS.assessment,
+      },
     })
-    expect(about?.destination).toEqual({ kind: 'route', name: 'about' })
+  })
+
+  it('should key the two-tone heading and keep the document title when read', () => {
+    expect(NOT_FOUND_COPY_KEYS).toEqual({
+      documentTitle: 'pages.notFound.title',
+      headingFirst: 'shell.notFound.heading.first',
+      headingSecond: 'shell.notFound.heading.second',
+    })
   })
 
   it('should carry the reference robots value when read', () => {

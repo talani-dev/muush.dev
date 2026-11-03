@@ -36,9 +36,23 @@ describe('mobile footer models', () => {
       'shell.footer.nav.services',
       'shell.footer.nav.howWeWork',
       'shell.footer.nav.about',
+      'shell.footer.muush.faq',
       'shell.footer.muush.work',
       'shell.footer.muush.blogInline',
     ])
+  })
+
+  it('should share the Preguntas destination with the desktop MUUSH column when read', () => {
+    /* Feature 46 · FR-031: the route by name, never a path. */
+    const mobile = MOBILE_FOOTER_LINKS.find(
+      item => item.labelKey === 'shell.footer.muush.faq'
+    )
+    const desktop = FOOTER_COLUMNS[2]?.items.find(
+      item => item.labelKey === 'shell.footer.muush.faq'
+    )
+
+    expect(mobile?.destination).toEqual({ kind: 'route', name: 'faq' })
+    expect(desktop?.destination).toEqual(mobile?.destination)
   })
 
   it('should point the Home link at the top of the home page (Roberto 2026-11-01)', () => {

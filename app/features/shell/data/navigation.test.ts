@@ -20,7 +20,9 @@ describe('navigation', () => {
     ])
   })
 
-  it('should carry no Preguntas item when its route does not exist yet', () => {
+  it('should carry no Preguntas item when the link bar or the menu is read', () => {
+    /* Permanent (Roberto, feature 43; feature 46 gate 2026-11-02): Preguntas
+       is linked from the footers only. */
     const keys = [...NAV_ITEMS, ...MENU_ITEMS].map(item => item.labelKey)
 
     expect(keys.some(key => key.includes('faq'))).toBe(false)

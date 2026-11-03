@@ -14,11 +14,11 @@ import type { ShellItem } from './types'
  * current locale's home, lit only there while no section is in view. The
  * logo stays a home link too.
  *
- * ⚠️ **Preguntas is deliberately absent** (spec FR-024, confirmed by Roberto
- * 2026-11-01): its route (`/es/preguntas` ↔ `/en/faq`) arrives with feature
- * 46, and a link to a page that does not exist reads as a broken site (the
- * precedent of features 21 and 23). Feature 46 adds `shell.nav.faq` →
- * route `faq` here as the third entry, after `about`.
+ * Preguntas is not in the link bar or the menu, permanently (Roberto,
+ * feature 43; confirmed at the feature 46 gate, 2026-11-02): the bar stays
+ * Inicio · Servicios · Nosotros, and the `.pen`'s "Preguntas" nav link is
+ * ignored. The page is linked from both footers (`footerColumns.ts`,
+ * `contactChannels.ts`) and listed in the sitemap.
  */
 /** The Home item, shared by the link bar and the menu. */
 export const NAV_HOME: ShellItem = {

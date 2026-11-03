@@ -4,6 +4,7 @@ import type {
   ResolvedFooterColumn,
   ResolvedShellItem,
   ResolvedSocial,
+  StatusSectionProps,
 } from '@/features/shell/data/types'
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 
@@ -103,6 +104,7 @@ export const SHELL_COPY = {
             href: '/es/nosotros#trabaja-con-muush',
             external: false,
           },
+          { label: 'Preguntas', href: '/es/preguntas', external: false },
           { label: 'Blog · próximamente', external: false },
         ],
       },
@@ -132,6 +134,7 @@ export const SHELL_COPY = {
         external: false,
       },
       { label: 'Nosotros', href: '/es/nosotros', external: false },
+      { label: 'Preguntas', href: '/es/preguntas', external: false },
       {
         label: 'Trabaja con muush',
         href: '/es/nosotros#trabaja-con-muush',
@@ -198,6 +201,7 @@ export const SHELL_COPY = {
             href: '/en/about#trabaja-con-muush',
             external: false,
           },
+          { label: 'FAQ', href: '/en/faq', external: false },
           { label: 'Blog · coming soon', external: false },
         ],
       },
@@ -223,6 +227,7 @@ export const SHELL_COPY = {
       { label: 'Services', href: '/en#servicios', external: false },
       { label: 'How we work', href: '/en#como-trabajamos', external: false },
       { label: 'About', href: '/en/about', external: false },
+      { label: 'FAQ', href: '/en/faq', external: false },
       {
         label: 'Work with muush',
         href: '/en/about#trabaja-con-muush',
@@ -254,3 +259,43 @@ export const ExactActiveLinkStub = defineComponent({
       h('a', { href: props.to, 'aria-current': 'page' }, slots.default?.())
   },
 })
+
+/**
+ * Feature 46 · what `useFaqContent` and `useNotFoundContent` hand
+ * `StatusSection` (copy `muush-1.0.md` § 4.9, data-model § 3).
+ */
+export const STATUS_COPY: Record<
+  'faq' | 'notFound',
+  Record<'es' | 'en', StatusSectionProps>
+> = {
+  faq: {
+    es: {
+      preset: 'faq',
+      headingFirst: 'En construcción 🚧',
+      primary: { label: 'Diagnóstico gratis', href: '/es#diagnostico' },
+      secondary: { label: 'Agenda una llamada', href: BOOKING, external: true },
+    },
+    en: {
+      preset: 'faq',
+      headingFirst: 'Under construction 🚧',
+      primary: { label: 'Free assessment', href: '/en#diagnostico' },
+      secondary: { label: 'Book a call', href: BOOKING, external: true },
+    },
+  },
+  notFound: {
+    es: {
+      preset: 'notFound',
+      headingFirst: 'Volvamos a un',
+      headingSecond: 'lugar conocido.',
+      primary: { label: 'Volver al inicio', href: '/es' },
+      secondary: { label: 'Diagnóstico gratis', href: '/es#diagnostico' },
+    },
+    en: {
+      preset: 'notFound',
+      headingFirst: "Let's get you back",
+      headingSecond: 'somewhere familiar.',
+      primary: { label: 'Back to home', href: '/en' },
+      secondary: { label: 'Free assessment', href: '/en#diagnostico' },
+    },
+  },
+}

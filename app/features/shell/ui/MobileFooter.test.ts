@@ -98,9 +98,10 @@ describe('MobileFooter', () => {
     const line = render('en').findAll('ul')[1]
 
     expect(line?.text().replace(/\s+/g, ' ')).toBe(
-      'Home · Services · How we work · About · Work with muush · Blog (coming soon)'
+      'Home · Services · How we work · About · FAQ · Work with muush · Blog (coming soon)'
     )
-    expect(line?.findAll('a')).toHaveLength(5)
+    /* Feature 46 · FR-031: Preguntas follows About. */
+    expect(line?.findAll('a')).toHaveLength(6)
     expect(line?.find('a').attributes('href')).toBe('/en')
   })
 

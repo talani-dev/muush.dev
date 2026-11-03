@@ -92,7 +92,8 @@ describe('SiteFooter', () => {
     const mobile = render().findComponent(MobileFooter)
 
     expect(mobile.props('contactChannels')).toHaveLength(3)
-    expect(mobile.props('links')).toHaveLength(6)
+    /* Feature 46 · Preguntas joined the line (FR-031). */
+    expect(mobile.props('links')).toHaveLength(7)
     expect(mobile.props('socials')).toEqual(SOCIALS)
   })
 })

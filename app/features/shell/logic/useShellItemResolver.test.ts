@@ -14,6 +14,7 @@ import {
 const PATHS: Record<ShellRouteName, string> = {
   index: '/es',
   about: '/es/nosotros',
+  faq: '/es/preguntas',
 }
 
 const COPY: Record<string, string> = {
@@ -78,6 +79,20 @@ describe('createShellItemResolver', () => {
     ).toBe(
       `https://wa.me/525639060739?text=${encodeURIComponent('Hola muush, me interesa platicar')}`
     )
+  })
+
+  it('should resolve Preguntas through the route map when the destination is the faq route', () => {
+    /* Feature 46 · FR-030, FR-031: the footer item, current on its page. */
+    const { resolveItem } = createShellItemResolver(stubDeps('faq'))
+    const item: ShellItem = {
+      labelKey: 'shell.footer.muush.faq',
+      destination: { kind: 'route', name: 'faq' },
+    }
+
+    expect(resolveItem(item)).toMatchObject({
+      href: '/es/preguntas',
+      current: 'page',
+    })
   })
 
   it('should mark the page current when the destination route is the active route', () => {

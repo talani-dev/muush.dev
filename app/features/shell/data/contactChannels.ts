@@ -29,8 +29,8 @@ export const MOBILE_CONTACT_CHANNELS: ContactChannel[] = [
 
 /**
  * The links on one wrapped line, "Inicio" / "Home" first (added by Roberto
- * 2026-11-01). Preguntas joins after Nosotros with feature 46 (spec
- * FR-024); the blog is text until it exists.
+ * 2026-11-01). Preguntas follows Nosotros (feature 46, spec FR-031,
+ * Roberto 2026-11-02); the blog is text until it exists.
  */
 export const MOBILE_FOOTER_LINKS: ShellItem[] = [
   {
@@ -48,6 +48,10 @@ export const MOBILE_FOOTER_LINKS: ShellItem[] = [
   {
     labelKey: 'shell.footer.nav.about',
     destination: FOOTER_DESTINATIONS.about,
+  },
+  {
+    labelKey: 'shell.footer.muush.faq',
+    destination: FOOTER_DESTINATIONS.faq,
   },
   {
     labelKey: 'shell.footer.muush.work',

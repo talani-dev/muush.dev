@@ -1,38 +1,37 @@
 import { type ComputedRef, computed } from 'vue'
 import {
+  NOT_FOUND_ASSESSMENT,
   NOT_FOUND_COPY_KEYS,
   NOT_FOUND_HOME,
-  NOT_FOUND_SHORTCUTS,
 } from '@/features/shell/data/notFound'
-import type { ResolvedShellItem } from '@/features/shell/data/types'
+import type { ShellItem, StatusSectionProps } from '@/features/shell/data/types'
 import { useShellItemResolver } from './useShellItemResolver'
-
-/** What `NotFoundContent.vue` receives — every string and href resolved. */
-export interface NotFoundContentProps {
-  eyebrow: string
-  headline: string
-  body: string
-  cta: ResolvedShellItem
-  shortcutsLabel: string
-  shortcuts: ResolvedShellItem[]
-}
 
 /**
  * Resolves the not-found page's copy and destinations for the active locale
- * (`specs/036-not-found-page/data-model.md` § 3), through the same resolver
- * the nav and footer use, so the About shortcut follows the i18n route map
- * like every other shell link.
+ * (`specs/036-not-found-page/data-model.md` § 3; reshaped for the Muush 1.0
+ * block in feature 46, data-model § 3), through the same resolver the nav
+ * and footer use. A `computed` over `t` and the resolver, so after the
+ * feature 39 in-place switch the heading and both buttons follow the new
+ * locale, as the v1 button and shortcuts did.
  */
-export function useNotFoundContent(): ComputedRef<NotFoundContentProps> {
+export function useNotFoundContent(): ComputedRef<StatusSectionProps> {
   const { t } = useI18n()
   const { resolveItem } = useShellItemResolver()
 
-  return computed(() => ({
-    eyebrow: t(NOT_FOUND_COPY_KEYS.eyebrow),
-    headline: t(NOT_FOUND_COPY_KEYS.headline),
-    body: t(NOT_FOUND_COPY_KEYS.body),
-    cta: resolveItem(NOT_FOUND_HOME),
-    shortcutsLabel: t(NOT_FOUND_COPY_KEYS.shortcutsLabel),
-    shortcuts: NOT_FOUND_SHORTCUTS.map(resolveItem),
-  }))
+  return computed(() => notFoundSectionProps(key => t(key), resolveItem))
+}
+
+/** The block's props, pure: `t` and the resolver are the caller's. */
+export function notFoundSectionProps(
+  t: (key: string) => string,
+  resolveItem: (item: ShellItem) => StatusSectionProps['primary']
+): StatusSectionProps {
+  return {
+    preset: 'notFound',
+    headingFirst: t(NOT_FOUND_COPY_KEYS.headingFirst),
+    headingSecond: t(NOT_FOUND_COPY_KEYS.headingSecond),
+    primary: resolveItem(NOT_FOUND_HOME),
+    secondary: resolveItem(NOT_FOUND_ASSESSMENT),
+  }
 }

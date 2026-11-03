@@ -1,7 +1,13 @@
 export interface PageSeoOptions {
   titleKey: string
   descriptionKey: string
-  pageType?: 'AboutPage'
+  /**
+   * Pins the WebPage type in both locales when the schema-org default would
+   * infer another one from a URL segment: `AboutPage` for Nosotros, a plain
+   * `WebPage` for Preguntas, which `/en/faq` would otherwise make a
+   * `FAQPage` (feature 46, spec FR-038).
+   */
+  pageType?: 'AboutPage' | 'WebPage'
 }
 
 /**
@@ -49,7 +55,10 @@ export function usePageSeo({
    *   plain `WebPage`. `/en/about` is already `AboutPage` by then and got
    *   none, while `/es/nosotros` got one (review F1, measured).
    * The rule is the homes' rule: every WebPage carries one `ReadAction`
-   * targeting its own URL. `defineReadAction()` with no target resolves to
+   * targeting its own URL. Preguntas (feature 46) needs the type pinned for
+   * the same reason (`/en/faq` would default to `FAQPage`), but a merge
+   * cannot remove a type, so it replaces the node (`replaceWebPageNode`
+   * below). `defineReadAction()` with no target resolves to
    * the page's canonical URL. Same-`@id` WebPage nodes merge.
    * `potentialAction: []` does NOT work (measured): the merge keeps the
    * default ReadAction on `/es/nosotros` and renders `[]` on `/en/about`.
@@ -62,4 +71,55 @@ export function usePageSeo({
       }),
     ])
   }
+  if (import.meta.server && pageType === 'WebPage') replaceWebPageNode()
+}
+
+/**
+ * Feature 46 · a plain `WebPage` that no URL segment can retype (spec
+ * FR-038). Measured on nuxt-schema-org 6.4.3: the module's default
+ * `defineWebPage()` infers `FAQPage` from a final `faq` segment, and a
+ * second node with the same `@id` is MERGED, its `@type` arrays unioned, so
+ * an explicit `'@type': 'WebPage'` still ships `["WebPage", "FAQPage"]` on
+ * `/en/faq` while `/es/preguntas` gets `"WebPage"`. The graph resolver
+ * replaces instead of merging a node whose tag carries
+ * `tagDuplicateStrategy: 'replace'` (`resolveGraph`'s dedupe), which
+ * `useSchemaOrg` cannot set, so this one tag is written with `useHead` in
+ * the shape `useSchemaOrg` writes: the same key, and the script attributes
+ * read from the same source the module reads them from (its server runtime
+ * config, `nuxt-schema-org.scriptAttributes`, which `useSchemaOrgConfig`
+ * defaults to `{}`), so a change to `schemaOrg.scriptAttributes` in
+ * `nuxt.config.ts` reaches this tag too. The node is
+ * resolved like any WebPage: name, description, url, `isPartOf` and the
+ * logo still come from the page meta and the root-node resolver.
+ */
+function replaceWebPageNode(): void {
+  useHead({
+    script: [
+      {
+        // @ts-expect-error unhead types `type` without `application/ld+json`
+        // and has no `nodes`; this mirrors nuxt-schema-org's own
+        // `useSchemaOrg`, which carries the same suppression.
+        type: 'application/ld+json',
+        key: 'schema-org-graph',
+        tagPriority: 'high',
+        tagDuplicateStrategy: 'replace',
+        /* After `type`, as `useSchemaOrg` spreads them: same attribute order. */
+        ...schemaOrgScriptAttributes(),
+        nodes: [
+          defineWebPage({
+            '@type': 'WebPage',
+            potentialAction: [defineReadAction({})],
+          }),
+        ],
+      },
+    ],
+  })
+}
+
+/** The module's configured `<script>` attributes (server runtime config). */
+function schemaOrgScriptAttributes(): Record<string, unknown> {
+  const config = useRuntimeConfig()['nuxt-schema-org'] as
+    | { scriptAttributes?: Record<string, unknown> }
+    | undefined
+  return config?.scriptAttributes ?? {}
 }
