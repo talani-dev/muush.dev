@@ -658,3 +658,14 @@ vea tan pegado". A deliberate departure from the `.pen`.
 - Privacy and Terms pages and their links: feature 48.
 - Deleting v1 code: feature 47.
 - A "send another" action after success.
+
+## Amendments
+
+### 2026-11-02 · Mobile shader uniforms (amended by feature 46)
+
+Roberto, feature 46 spec gate: below 1024 px the Diagnóstico y contacto
+listón (`assessment` preset) draws with the uniforms the home mobile frame
+`V2s7T` draws (pen-extract-46 § 6), as the preset's optional
+`compactUniforms`; the desktop uniforms apply from 1024. Trabaja con muush
+(`workWithUs`) shares the same mobile values. Spec 046 FR-046,
+Clarifications. The form, its payloads and its states are unchanged.
