@@ -24,7 +24,14 @@ describe('Heading', () => {
     expect(render().element.tagName).toBe('H2')
   })
 
-  for (const size of ['hero', 'seccion', 'proceso', 'diagnostico'] as const) {
+  for (const size of [
+    'hero',
+    'seccion',
+    'proceso',
+    'diagnostico',
+    'pagina',
+    'estado',
+  ] as const) {
     it(`should use the ${size} type token when the size is ${size}`, () => {
       expect(render({ size }).classes()).toContain(`text-${size}`)
     })

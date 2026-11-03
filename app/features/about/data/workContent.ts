@@ -1,29 +1,35 @@
 /**
- * The Work with muush section's content model: the three i18n keys its left
- * text block renders. Sibling to `aboutHeroContent.ts` — same reasoning:
- * `ui/WorkWithMuushSection.vue` renders the Pill, headline and body from
- * already-translated props, and the eight-field form's own content is
- * resolved separately, by `forms/useApplicationFormContent` (Constitution
- * Article III — `about/` never reaches into `forms/logic/` internals,
- * only its barrel).
+ * "Trabaja con muush" content model (feature 46, data-model § 2; copy in
+ * `docs/business/muush-1.0.md` § 4.8, pen extract-46 § 1.4). Chrome only:
+ * the application form's own copy is `forms/`'s
+ * (`useApplicationFormContent`), resolved by the page (Article III).
  *
- * No import at all — the trivial case of Article II's dependency direction
- * rule: this file has nothing to depend on.
+ * "Áreas que sumamos" is stored in sentence case and drawn uppercase by
+ * the shared `ReceivesList`, like "Lo que recibes".
  */
+export type AreaKey = 'engineering' | 'design' | 'creative'
 
-/** The three i18n keys the section's left block renders. Keys, never copy
- * (Article VI). */
+export const AREAS_ORDER: readonly AreaKey[] = [
+  'engineering',
+  'design',
+  'creative',
+]
+
 export const WORK_KEYS = {
-  /** Pill instance — `design-extract.md` § 3 lists it alongside `Nosotros`,
-   * `Equipo` and `Network` for this page. */
-  eyebrow: 'about.work.eyebrow',
-  headline: 'about.work.headline',
+  pill: 'about.work.pill',
+  headingFirst: 'about.work.heading.first',
+  headingSecond: 'about.work.heading.second',
   body: 'about.work.body',
+  areasLabel: 'about.work.areasLabel',
+  area: (key: AreaKey) => `about.work.areas.${key}`,
 } as const
 
 /** What `logic/` hands `ui/`: already translated. */
 export interface WorkContent {
-  eyebrow: string
-  headline: string
+  pill: string
+  headingFirst: string
+  headingSecond: string
   body: string
+  areasLabel: string
+  areas: readonly string[]
 }

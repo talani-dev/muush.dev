@@ -811,3 +811,103 @@ describe('design tokens · the forms (feature 45)', () => {
     }
   })
 })
+
+/**
+ * Feature 46 · the secondary pages (data-model § 5; pen extract-46 §§ 1–4,
+ * § 6). Headings without a drawn line height follow the v2 scale (Roberto
+ * 2026-11-02): 1.15 at 390, 1.08 at 64, 1.06 at 88, −0.035 em at 1440.
+ */
+describe('design tokens · the secondary pages (feature 46)', () => {
+  const FLUID: [string, number, number][] = [
+    ['--h-pagina', 32, 64],
+    ['--lh-pagina', 36.8, 69.12],
+    ['--h-estado', 34, 88],
+    ['--lh-estado', 39.1, 93.28],
+    ['--tracking-estado', 0, -3.08],
+    ['--spacing-pagina-alto', 700, 820],
+    ['--spacing-pagina-arriba', 110, 120],
+    ['--spacing-pagina-gap', 24, 28],
+    ['--text-pagina-intro', 16, 20],
+    ['--spacing-composicion-arriba', 72, 100],
+    ['--spacing-composicion-abajo', 72, 80],
+    ['--spacing-composicion-gap', 24, 40],
+    ['--spacing-composicion-tarjetas', 14, 24],
+    ['--spacing-tarjeta-equipo', 24, 32],
+    ['--text-donde-cuerpo', 16, 17],
+    ['--text-donde-cuerpo--line-height', 24, 26.35],
+    ['--spacing-estado-gap', 32, 40],
+    ['--spacing-preguntas-alto', 720, 1100],
+    ['--spacing-preguntas-arriba', 100, 120],
+    ['--spacing-preguntas-abajo', 60, 80],
+    ['--spacing-error-alto', 720, 760],
+    ['--spacing-error-botones-arriba', 0, 8],
+    /* Review-46 fix round 1: card padding minus a 10 px edge floor. */
+    ['--spacing-tarjeta-equipo-titulo-fin', 14, 22],
+  ]
+
+  for (const [name, mobile, desktop] of FLUID) {
+    it(`should resolve ${name} to ${mobile} px at 390 and ${desktop} px at 1440 when evaluated`, () => {
+      const value = (declared(name) ?? '').replaceAll(/\s+/g, ' ')
+
+      expect(value, name).toMatch(/^clamp\(/)
+      expect(Math.abs(clampPx(value, MOBILE_ANCHOR) - mobile)).toBeLessThan(
+        TOLERANCE_PX
+      )
+      expect(Math.abs(clampPx(value, DESKTOP_ANCHOR) - desktop)).toBeLessThan(
+        TOLERANCE_PX
+      )
+    })
+  }
+
+  const FIXED: [string, number][] = [
+    ['--container-pagina-intro', 720],
+    ['--container-composicion', 1248],
+    ['--spacing-tarjeta-equipo-gap', 14],
+    ['--spacing-tarjeta-equipo-rotulo', 10],
+    ['--spacing-tarjeta-equipo-punto', 8],
+    ['--text-tarjeta-equipo-rotulo', 14],
+    ['--text-tarjeta-equipo-titulo', 26],
+    ['--text-tarjeta-equipo-texto', 17],
+    ['--spacing-error-arriba', 100],
+  ]
+
+  for (const [name, px] of FIXED) {
+    it(`should declare ${name} as ${px} px at both anchors when the stylesheet loads`, () => {
+      expect(normalise(declared(name) ?? ''), name).toBe(`${px}px`)
+    })
+  }
+
+  it('should give both new heading sizes the v2 tracking and weight when the theme compiles', () => {
+    const exact: [string, string][] = [
+      ['--text-pagina--line-height', 'var(--lh-pagina)'],
+      ['--text-pagina--letter-spacing', 'var(--tracking-diagnostico)'],
+      ['--text-pagina--font-weight', '500'],
+      ['--text-estado--line-height', 'var(--lh-estado)'],
+      ['--text-estado--letter-spacing', 'var(--tracking-estado)'],
+      ['--text-estado--font-weight', '500'],
+      ['--text-tarjeta-equipo-rotulo--font-weight', '600'],
+      ['--text-tarjeta-equipo-titulo--line-height', '1.4'],
+      ['--text-tarjeta-equipo-titulo--font-weight', '500'],
+      ['--text-tarjeta-equipo-texto--line-height', 'var(--interlineado-texto)'],
+      ['--text-pagina-intro--line-height', 'var(--interlineado-texto)'],
+    ]
+    for (const [name, value] of exact) {
+      expect(declared(name), name).toBe(value)
+    }
+  })
+
+  it('should declare no secondary-page token twice when the stylesheet loads', () => {
+    const names = [
+      ...FLUID.map(([name]) => name),
+      ...FIXED.map(([name]) => name),
+      '--text-pagina',
+      '--text-estado',
+    ]
+    for (const name of names) {
+      const declarations = globalCss.match(
+        new RegExp(`(?:^|[\\s;{])${name}:`, 'g')
+      )
+      expect(declarations?.length, name).toBe(1)
+    }
+  })
+})

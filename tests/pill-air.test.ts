@@ -17,11 +17,16 @@ const read = (...path: string[]) =>
 const css = read('app', 'assets', 'css', 'global.css')
 
 const SECTIONS = [
-  ['HeroSection', /<RotatingPill class="pill-aire"/],
-  ['WhoWeAreSection', /<Pill class="pill-aire"/],
-  ['ServicesSection', /<Pill class="pill-aire"/],
-  ['HowWeWorkSection', /<Pill class="pill-aire"/],
-  ['AssessmentSection', /<Pill class="pill-aire"/],
+  ['landing', 'HeroSection', /<RotatingPill class="pill-aire"/],
+  ['landing', 'WhoWeAreSection', /<Pill class="pill-aire"/],
+  ['landing', 'ServicesSection', /<Pill class="pill-aire"/],
+  ['landing', 'HowWeWorkSection', /<Pill class="pill-aire"/],
+  ['landing', 'AssessmentSection', /<Pill class="pill-aire"/],
+  /* Feature 46 · the four Nosotros pills (spec FR-003). */
+  ['about', 'AboutHeroSection', /<Pill class="pill-aire"/],
+  ['about', 'TeamCompositionSection', /<Pill class="pill-aire"/],
+  ['about', 'WhereWeAreSection', /<Pill class="pill-aire"/],
+  ['about', 'WorkWithMuushSection', /<Pill class="pill-aire"/],
 ] as const
 
 describe('pill air (feature 45, reopen 2)', () => {
@@ -36,9 +41,9 @@ describe('pill air (feature 45, reopen 2)', () => {
     )
   })
 
-  for (const [name, pattern] of SECTIONS) {
+  for (const [feature, name, pattern] of SECTIONS) {
     it(`should give the ${name} pill the shared air`, () => {
-      expect(read('app', 'features', 'landing', 'ui', `${name}.vue`)).toMatch(
+      expect(read('app', 'features', feature, 'ui', `${name}.vue`)).toMatch(
         pattern
       )
     })
@@ -46,8 +51,15 @@ describe('pill air (feature 45, reopen 2)', () => {
 
   it('should leave the pill component itself and the v1 quarantine untouched', () => {
     expect(read('app', 'shared', 'ui', 'Pill.vue')).not.toContain('pill-aire')
-    expect(
-      read('app', 'features', 'about', 'ui', 'WorkWithMuushSection.vue')
-    ).not.toContain('pill-aire')
+    expect(read('app', 'shared', 'ui', 'legacy', 'Pill.vue')).not.toContain(
+      'pill-aire'
+    )
+  })
+
+  it('should render no pill on Preguntas or the 404', () => {
+    /* Feature 46 · pen extract-46 §§ 3–4: neither status page draws one. */
+    const status = read('app', 'features', 'shell', 'ui', 'StatusSection.vue')
+
+    expect(status).not.toMatch(/<Pill\b|<RotatingPill\b/)
   })
 })

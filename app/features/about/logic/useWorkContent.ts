@@ -1,26 +1,25 @@
 import { type ComputedRef, computed } from 'vue'
-import { WORK_KEYS, type WorkContent } from '@/features/about/data/workContent'
+import {
+  AREAS_ORDER,
+  WORK_KEYS,
+  type WorkContent,
+} from '@/features/about/data/workContent'
 
 /**
- * The about module's second Nuxt seam (`docs/business/rules.md` § R23), same
- * role `useAboutHeroContent.ts` plays for the Hero: the only file in this
- * section's own tree allowed to call `useI18n`, so `ui/
- * WorkWithMuushSection.vue` renders with no i18n instance present.
- *
- * The eight-field form's own content comes from `forms/useApplicationFormContent`
- * — a sibling call, resolved by whoever composes the page
- * (`app/pages/about.vue`), never by this composable or by
- * `WorkWithMuushSection.vue` itself (Constitution Article III).
- *
- * It performs no fetch, holds no state, registers no listener, and resolves
- * no destination — this section has none.
+ * "Trabaja con muush"'s seam with the Nuxt runtime (`docs/business/
+ * rules.md` § R23): the only place its keys meet `useI18n`. The form's own
+ * content comes from `forms/useApplicationFormContent`, called by the page
+ * (`app/pages/about.vue`), never here (Constitution Article III).
  */
 export function useWorkContent(): ComputedRef<WorkContent> {
   const { t } = useI18n()
 
   return computed<WorkContent>(() => ({
-    eyebrow: t(WORK_KEYS.eyebrow),
-    headline: t(WORK_KEYS.headline),
+    pill: t(WORK_KEYS.pill),
+    headingFirst: t(WORK_KEYS.headingFirst),
+    headingSecond: t(WORK_KEYS.headingSecond),
     body: t(WORK_KEYS.body),
+    areasLabel: t(WORK_KEYS.areasLabel),
+    areas: AREAS_ORDER.map(key => t(WORK_KEYS.area(key))),
   }))
 }

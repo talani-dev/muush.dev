@@ -343,44 +343,6 @@
   --purpose-arc-w: 0.0625rem;
 
   /*
-   * ═══ Not-found page · the empty radar (feature 36) ═══
-   *
-   * Three concentric rings with no dot, from Roberto's reference
-   * (specs/036-not-found-page/reference/README.md): 700/500/300 px at 1440,
-   * 420/300/180 px at 390; inner Red 400 @24 %, middle Bone 100 @12 %, outer
-   * Bone 100 @8 %. Derivations in research.md R6.
-   *
-   * In `:root`, NOT `@theme inline`: only hand-written CSS
-   * (`NotFoundRings.vue`'s `<style scoped>`) reads them (rules.md § R18).
-   * Not in the closed `glow` namespace (§ R36).
-   */
-  /* Outer diameter 420 → 700: slope 280/1050; 420 − 0.266667×390 = 316 px. */
-  --not-found-rings: clamp(26.25rem, 19.75rem + 26.6667vw, 43.75rem);
-  /* (700 − 500)/2/700 = (420 − 300)/2/420 — the same ratio in both frames. */
-  --not-found-ring-mid-inset: 14.2857%;
-  /* (700 − 300)/2/700 = (420 − 180)/2/420. */
-  --not-found-ring-inner-inset: 28.5714%;
-  /* 1 px stroke. Same role as --purpose-arc-w, own name to avoid coupling. */
-  --not-found-ring-w: 0.0625rem;
-  /* Equal by value to --color-divider-menu; a menu divider must not govern a ring. */
-  --not-found-ring-outer-color: color-mix(
-    in srgb,
-    var(--bone-100) 8%,
-    transparent
-  );
-  /* Equal by value to --color-hairline-footer; same reason. */
-  --not-found-ring-mid-color: color-mix(
-    in srgb,
-    var(--bone-100) 12%,
-    transparent
-  );
-  --not-found-ring-inner-color: color-mix(
-    in srgb,
-    var(--red-400) 24%,
-    transparent
-  );
-
-  /*
    * ⚠️ UNVERIFIED — dueño: Roberto / Clau (spec O-01, rules.md § R38).
    *
    * El radar tiene dos intensidades, más tenue en reposo y más brillante al
@@ -656,42 +618,6 @@
    * coherentes (mismo caso que R38).
    */
   --duration-contact-whatsapp-toggle: 0.2s;
-
-  /*
-   * Work with muush · About's second section (feature 020). Frame widths
-   * read from the leader's 2026-09-08 brief: Left 520×318 (D) / 342×258 (M),
-   * form 660×744 (D) / 342×665 (M) — CONFIRMED. Read only by
-   * `WorkWithMuushSection.vue`'s hand-written `<style scoped>` grid, never by
-   * a Tailwind utility class, so these live here and NOT in `@theme inline`
-   * — the same placement the v1 contact section's tracks used (retired with
-   * that section in feature 45), for the identical reason (`rules.md` § R18: an `@theme inline` token with no scanned
-   * utility consumer never reaches `:root` at all).
-   *
-   * Feature 38: a proportional track list
-   * for the ≥64rem grid. 520 + 100 + 660 = 1280, the content box from 1440
-   * up, so the frame widths are exact there and the tracks shrink together
-   * below it (the old `clamp()` widths overflowed by `606.2 − 0.42095·W` px
-   * from 1024 to 1439).
-   */
-  --work-cols: minmax(0, 520fr) minmax(0, 660fr);
-  /* Desktop only: form x700 − (left x80 + left width 520) = 100px. */
-  --work-col-gap: 6.25rem;
-  /* Mobile only: form y290 − (left y0 + left height 258) = 32px — NOT the
-     generic `--spacing-form-gap` (14–16px), a distinct, measured value. */
-  --work-stack-gap: 2rem;
-  /*
-   * Desktop only, fixed round-2 review rejection: the Left block sits at
-   * local y130, the form at local y100 — the form starts 30px HIGHER than
-   * the text column, not level with it. `--spacing-work-top` (below) is
-   * calibrated from the Left block's own y130, so the single-row grid's
-   * `align-items: start` lands both columns at that same y by default; this
-   * offset pulls the form column back up by the confirmed 30px delta via a
-   * negative `margin-top` in `WorkWithMuushSection.vue`'s hand-written CSS.
-   * Desktop only — mobile's stacked flow has no such offset (spec/plan.md
-   * give no local y for the form's mobile position relative to the text
-   * block beyond `--work-stack-gap`).
-   */
-  --work-form-y-offset: 1.875rem;
 }
 
 /*
@@ -1092,6 +1018,26 @@
    * be at least that tall (DERIVED, not drawn).
    */
   --whatsapp-alto: 7.5rem;
+
+  /*
+   * ---------- Secondary pages (feature 46) ----------
+   * Values from `docs/harness/progress/pen-extract-46.md` (Nosotros
+   * `gQ0NG` / `trkk7`, Preguntas `FXvwz` / `pDsNQ`, 404 `X9EQIz` /
+   * `Y2fsOQ`). The `.pen` sets no line height or tracking on the Nosotros
+   * hero, Preguntas and 404 headings; they follow the v2 heading scale
+   * (Roberto 2026-11-02, spec 046 Clarifications): 1.15 at 390, 1.08 at 64,
+   * 1.06 at 88 (the display ratio of the hero, the nearest size the scale
+   * draws; 88 is not on it), and −0.035 em at 1440.
+   *
+   * Nosotros hero ("pagina"), 32 / 36.8 → 64 / 69.12 px. Its tracking is
+   * the diagnóstico one: both are 64 px at 1440 (−2.24 px).
+   */
+  --h-pagina: clamp(2rem, 1.2571rem + 3.0476vw, 4rem);
+  --lh-pagina: clamp(2.3rem, 1.5497rem + 3.0781vw, 4.32rem);
+  /* Preguntas ("estado"), 34 / 39.1 → 88 / 93.28 px, tracking 0 → −3.08. */
+  --h-estado: clamp(2.125rem, 0.8714rem + 5.1429vw, 5.5rem);
+  --lh-estado: clamp(2.4438rem, 1.186rem + 5.16vw, 5.83rem);
+  --tracking-estado: clamp(-0.1925rem, 0.0715rem - 0.2933vw, 0rem);
 }
 
 @media (width >= 64rem) {
@@ -2180,29 +2126,14 @@ html {
    * porque el ancho de la pila y el ancho del párrafo de intro son propios de
    * este frame (960/700 aquí, 900/600 en Landing).
    *
-   * Consumidos como UTILIDAD (`pt-*`, `top-*`, `left-*`, `max-w-*`, `gap-*`),
-   * per `findings.md` § R47. Ninguno se llama `--spacing-glow-*` /
-   * `--color-glow-*` (rules.md § R36) — los tres glows de abajo reutilizan
-   * los pares color+opacidad+tamaño que YA existen en este archivo desde la
-   * feature 009 (`--color-glow-red-400-60`, `--color-glow-wine-300-37`,
-   * `--color-glow-wine-400-28`, `--spacing-glow-1400-700`,
-   * `--spacing-glow-1000-520`, `--spacing-glow-860-520`), así que no se
-   * agrega ningún token de color/tamaño nuevo para ellos.
+   * Consumidos como UTILIDAD (`max-w-*`, `gap-*`), per `findings.md` § R47.
    *
-   * ⚠️ Opacidades: el `.pen` dibuja el frame móvil a 65/40/30, pero Roberto lo
-   * revisó el 2026-09-08 y lo declaró error del archivo — se implementan
-   * 60/37/28 en AMBOS viewports, igual que escritorio. No se "corrige" el
-   * componente para igualar el archivo: la corrección ya ocurrió, en el otro
-   * sentido.
+   * Feature 46: el Hero v1 de Nosotros se retiró; quedan solo los tres
+   * tokens que aún lee `HeroStack.vue` (`variant="about"`, en cuarentena en
+   * `app/shared/ui/legacy/`). Su padding superior y los seis anclajes de sus
+   * glows se borraron con él. La feature 47 borra el resto.
    */
 
-  /* ⚠️ UNVERIFIED — dueño: líder/Clau. El frame da el tamaño de la pila
-     (960×376 / 342×349), no su posición en la página, y ningún centro de
-     glow permite derivarla (rules.md § R48 — no se deriva un extremo del
-     otro). Sembrado con el mismo par que --spacing-hero-top: ambos Heros son
-     la primera sección tras el nav, y es la relación más cercana disponible.
-     Pendiente de confirmar contra el frame real. */
-  --spacing-about-hero-top: clamp(4.625rem, 1.5375rem + 12.6667vw, 12.9375rem);
   /* 22 → 32, el gap de la pila de tres hijos (frame `Pkv8h` / `m3cbXr`). */
   --spacing-about-hero-gap: clamp(1.375rem, 1.1429rem + 0.9524vw, 2rem);
   /* 960 de escritorio (ancho del frame `m3cbXr`); inerte a 390, donde la
@@ -2211,119 +2142,6 @@ html {
   /* 700 de escritorio, el ancho del párrafo de intro que dio el líder;
      inerte a 390 por la misma razón que --spacing-hero-measure. */
   --spacing-about-hero-measure: 43.75rem;
-
-  /*
-   * Anclas de los tres glows — seis tokens (rules.md § R48), del centro de
-   * página que dio el líder: foco 1260,180 (D) · 410,50 (M); wine 80,240 (D)
-   * · 40,140 (M); cierre 1410,770 (D) · 440,500 (M).
-   *
-   * Horizontal: `x − 80` (D) / `x − 24` (M), el margen de página que resta
-   * toda sección anterior. Vertical: `y − 103` (D) / `y − 76` (M), el borde
-   * inferior del nav — CONFIRMADO compartido entre Landing y Nosotros
-   * (design-extract.md § 9.bis: "Nav y Footer son byte-idénticos"), el mismo
-   * origen que ya usa --spacing-hero-glow-*.
-   *
-   * ⚠️ Solo los dos extremos son diseño; la interpolación 390↔1440 es
-   * suavizado, igual que el resto de la escala.
-   */
-  /* Foco — sección 386,−26 (M) → 1180,77 (D). */
-  --spacing-about-hero-glow-foco-x: clamp(
-    24.125rem,
-    5.6929rem +
-    75.619vw,
-    73.75rem
-  );
-  --spacing-about-hero-glow-foco-y: clamp(
-    -1.625rem,
-    -4.0161rem +
-    9.8095vw,
-    4.8125rem
-  );
-  /* Wine — sección 16,64 (M) → 0,137 (D). `x` DECRECE con el ancho. */
-  --spacing-about-hero-glow-wine-x: clamp(0rem, 1.3714rem - 1.5238vw, 1rem);
-  --spacing-about-hero-glow-wine-y: clamp(
-    4rem,
-    2.3054rem +
-    6.9524vw,
-    8.5625rem
-  );
-  /* Cierre — sección 416,424 (M) → 1330,667 (D). */
-  --spacing-about-hero-glow-cierre-x: clamp(
-    26rem,
-    4.7821rem +
-    87.0476vw,
-    83.125rem
-  );
-  --spacing-about-hero-glow-cierre-y: clamp(
-    26.5rem,
-    20.8589rem +
-    23.1429vw,
-    41.6875rem
-  );
-
-  /*
-   * ═══ Work with muush · About's second section (feature 020) ═══
-   *
-   * Consumed as UTILITY (`pt-*`, `top-*`, `left-*`, `gap-*`), per
-   * `findings.md` § R47. The layout widths/gaps
-   * (`--work-cols`/`--work-col-gap`/`--work-stack-gap`/
-   * `--work-form-y-offset`) live in `:root` above, not here — see that
-   * block's own comment.
-   *
-   * ⚠️ None is named `--spacing-glow-*` / `--color-glow-*` (rules.md § R36).
-   * The three glows themselves reuse the exact color+opacity+size pairs
-   * already declared for feature 016's Contacto section
-   * (`--color-glow-red-400-60`, `--color-glow-wine-300-37`,
-   * `--color-glow-wine-400-28`, `--spacing-glow-1500-760`,
-   * `--spacing-glow-1000-560`, `--spacing-glow-900-520`) — zero new
-   * color/size declarations for them.
-   */
-
-  /* This section's own top padding — the frame's own Left-block y-offset
-     (130 D / 0 M), taken directly (plan.md D-3): Team (18) and Network (19)
-     both stay `blocked`, so this section renders as `AboutHeroSection`'s
-     immediate next sibling with nothing between them, and that section
-     declares no bottom padding — this is the whole of the separation. */
-  --spacing-work-top: clamp(0rem, -3.0179rem + 12.381vw, 8.125rem);
-  /* ⚠️ UNVERIFIED — dueño Clau. The left block's own internal stack gap
-     (Pill → heading → body); no measurement beyond the two frame widths
-     reached this implementation. Seeded from the v1 contact section's text
-     gap (retired in feature 45) — the closest analogous left-block stack. */
-  --spacing-work-text-gap: clamp(1.5rem, 1.2679rem + 0.9524vw, 2.125rem);
-
-  /*
-   * Anclas de los tres glows — seis tokens (rules.md § R48). Page-absolute
-   * centres from the leader's 2026-09-08 brief: foco 1170,3030 (D) ·
-   * 410,3130 (M); wine 1580,3240 (D) · 480,3430 (M); cierre 190,3350 (D) ·
-   * 80,3610 (M).
-   *
-   * Horizontal is CONFIRMED: `x − 80` (D) / `x − 24` (M) — the same page
-   * margin every prior section subtracts. These three x values were
-   * IDENTICAL to the v1 contact section's own (retired in feature 45), a
-   * real coincidence in the source data, not a copy-paste.
-   *
-   * ⚠️ Vertical origin is NOT confirmed, the same limitation the v1 contact
-   * glows recorded: this section's own page-absolute top edge in the FULL
-   * stitched design depends on Team's and Network's heights, and both stay
-   * `blocked` — deferred, not merely unbuilt. What IS confirmed is the three
-   * glows' relative vertical spread (arithmetic over the given page-absolute
-   * values, true regardless of the unknown origin). `foco` is anchored at
-   * this section's own top edge (`0`) as a documented placeholder; `wine`/
-   * `cierre` are that baseline plus the confirmed deltas. Flagged for leader
-   * confirmation (rules.md § R32 point 4) rather than silently presented as a
-   * measured position.
-   */
-  --spacing-work-glow-foco-x: clamp(
-    24.125rem,
-    7.7821rem +
-    67.0476vw,
-    68.125rem
-  );
-  --spacing-work-glow-foco-y: 0rem;
-  --spacing-work-glow-wine-x: clamp(28.5rem, 4.2643rem + 99.4286vw, 93.75rem);
-  --spacing-work-glow-wine-y: clamp(13.125rem, 20.8393rem - 8.5714vw, 18.75rem);
-  --spacing-work-glow-cierre-x: clamp(3.5rem, 2.2464rem + 5.1429vw, 6.875rem);
-  --spacing-work-glow-cierre-y: clamp(20rem, 33.7143rem - 15.2381vw, 30rem);
 
   /*
    * FormField (design-extract.md § FormField): label→control gap 8 (D) / 7
@@ -2438,61 +2256,6 @@ html {
    * técnica clamp() que el resto del archivo (390 ↔ 1440).
    */
   --spacing-section-gap: clamp(2rem, 0.8857rem + 4.5714vw, 5rem);
-
-  /*
-   * ═══ Not-found page (feature 36) ═══
-   *
-   * From the `<main>` of Roberto's reference
-   * (specs/036-not-found-page/reference/404.html): desktop rules as the 1440
-   * extreme, its `@media (max-width: 760px)` block as the 390 extreme
-   * (rules.md § R5). Only the extremes are design; widths in between are
-   * interpolation (spec A-05). Derivations in research.md R6 / R6b.
-   * Consumed as utilities (`pt-not-found-top`, `max-w-not-found-measure`, …,
-   * findings.md § R47). None is named `--spacing-glow-*` (rules.md § R36).
-   */
-  /* Section top padding 72 → 96. */
-  --spacing-not-found-top: clamp(4.5rem, 3.9429rem + 2.2857vw, 6rem);
-  /* Reference bottom 96/120 minus the layout's mt-section-gap before the
-     footer (32/80): 64 at 390 → 40 at 1440. */
-  --spacing-not-found-bottom: clamp(2.5rem, 4.5571rem - 2.2857vw, 4rem);
-  /* Reference min-height 600/664 minus the same gap: 568 → 584. */
-  --spacing-not-found-min-h: clamp(35.5rem, 35.1286rem + 1.5238vw, 36.5rem);
-  /* Content column max-width 720. */
-  --spacing-not-found-content: 45rem;
-  /* Subtitle max-width 480 (--spacing-hero-measure is 600). */
-  --spacing-not-found-measure: 30rem;
-  /* Pill → heading 28. */
-  --spacing-not-found-pill-gap: 1.75rem;
-  /* Heading → subtitle 20. */
-  --spacing-not-found-title-gap: 1.25rem;
-  /* Subtitle → button 36. */
-  --spacing-not-found-body-gap: 2.25rem;
-  /* Button → shortcuts 28. */
-  --spacing-not-found-cta-gap: 1.75rem;
-  /* Shortcuts row: column gap 14, row gap 10. */
-  --spacing-not-found-shortcut-gap-x: 0.875rem;
-  --spacing-not-found-shortcut-gap-y: 0.625rem;
-  /* Shortcut link padding 6 × 2 (touch target). */
-  --spacing-not-found-shortcut-x: 0.125rem;
-  --spacing-not-found-shortcut-y: 0.375rem;
-
-  /*
-   * The red background glow's centre (gate G4, research.md R6b), relative to
-   * the not-found section's box and anchored by its centre (rules.md § R48).
-   *
-   * Reference `.bg__blob--red`: 1440 px circle at top −480 / right −560 of
-   * the page → centre at page (viewport − 160, 240).
-   *   x: minus the page margin (80 / 24) → 1200 at 1440, 206 at 390.
-   *   y: minus the site nav's IN-FLOW height, measured on the built page
-   *      in headless Chrome (rules.md § R49): 72 at 1440 (the pill, held at
-   *      its CTA height by --spacing-nav-cta-h even without the CTA) and 78
-   *      at 390 → 168 at 1440, 162 at 390. Replaces research R6b's 144 / 164,
-   *      derived from the reference's 96 / 76 header, which put the centre
-   *      at page-y 212 instead of 240 at 1440
-   *      (specs/036-not-found-page/implementation-report.md § Measurements).
-   */
-  --spacing-not-found-glow-x: clamp(12.875rem, -10.2rem + 94.6667vw, 75rem);
-  --spacing-not-found-glow-y: clamp(10.125rem, 9.9857rem + 0.5714vw, 10.5rem);
 }
 
 /*
@@ -3171,6 +2934,102 @@ html {
   --text-exito-cuerpo: 1rem;
   --text-exito-cuerpo--line-height: var(--interlineado-texto);
   --container-exito: 26.25rem;
+
+  /*
+   * ---------- Secondary pages (feature 46) ----------
+   * Source: `docs/harness/progress/pen-extract-46.md`, section named on each
+   * group. Fluid values interpolate between the 390 and 1440 anchors and
+   * clamp outside them (the feature-42 formula). Reused rather than
+   * redeclared: the map section (`mapa-*`), the diagnóstico grid
+   * (`diagnostico-*`, `bloque-y`) that Trabaja con muush shares, "Lo que
+   * recibes" (`recibes-*`), the Cómo se arma heading (`servicios-titulo`:
+   * the same 30 / 1.15 → 56 / 1.1 scale) and the hero buttons row gap
+   * (`portada-botones-gap`, 8 → 14).
+   */
+
+  /* Two-tone heading sizes (`:root` above). */
+  --text-pagina: var(--h-pagina);
+  --text-pagina--line-height: var(--lh-pagina);
+  --text-pagina--letter-spacing: var(--tracking-diagnostico);
+  --text-pagina--font-weight: 500;
+  --text-estado: var(--h-estado);
+  --text-estado--line-height: var(--lh-estado);
+  --text-estado--letter-spacing: var(--tracking-estado);
+  --text-estado--font-weight: 500;
+
+  /* Nosotros hero (§§ 1.1, 2): 700 → 820 tall, padding 110 / 24 / 60 →
+     120 / 80 / 60 (bottom: `portada-abajo`), gap 24 → 28, content centred;
+     intro 16 / 1.5 → 20 / 1.5, 720 wide. */
+  --spacing-pagina-alto: clamp(43.75rem, 40.9643rem + 11.4286vw, 51.25rem);
+  --spacing-pagina-arriba: clamp(6.875rem, 6.6429rem + 0.9524vw, 7.5rem);
+  --spacing-pagina-gap: clamp(1.5rem, 1.4071rem + 0.381vw, 1.75rem);
+  --text-pagina-intro: clamp(1rem, 0.9071rem + 0.381vw, 1.25rem);
+  --text-pagina-intro--line-height: var(--interlineado-texto);
+  --container-pagina-intro: 45rem;
+
+  /* Cómo se arma (§§ 1.2, 2): padding 72 / 24 → 100 / 80 / 80, gap
+     24 → 40; cards gap 14 (stacked) → 24 (row), the row 3 × 400 + 2 × 24 =
+     1248 wide. */
+  --spacing-composicion-arriba: clamp(4.5rem, 3.85rem + 2.6667vw, 6.25rem);
+  --spacing-composicion-abajo: clamp(4.5rem, 4.3143rem + 0.7619vw, 5rem);
+  --spacing-composicion-gap: clamp(1.5rem, 1.1286rem + 1.5238vw, 2.5rem);
+  --spacing-composicion-tarjetas: clamp(0.875rem, 0.6429rem + 0.9524vw, 1.5rem);
+  --container-composicion: 78rem;
+  /* Card (§ 1.2; leader § 6: no blur, no shadow, flat Blanco 12 %): padding
+     24 → 32, gap 14, label row gap 10, dot 8. Label 14 / 600 and title
+     26 / 500 have no line height in the `.pen` (auto): 1.2 for Instrument
+     Sans and 1.4 for Poppins, the auto boxes features 43–44 measured
+     (`pestana`, `marca`, `paso`); 1.4 makes the drawn 197 px card. Text
+     17 / 1.5. */
+  --spacing-tarjeta-equipo: clamp(1.5rem, 1.3143rem + 0.7619vw, 2rem);
+  --spacing-tarjeta-equipo-gap: 0.875rem;
+  --spacing-tarjeta-equipo-rotulo: 0.625rem;
+  --spacing-tarjeta-equipo-punto: 0.5rem;
+  /* How far the card title may run into the end padding from `lg` (leader
+     2026-11-02; review-46 fix round 1): the padding minus a 10 px floor to
+     the card edge, 14 → 22 px. At 1440 the `.pen` draws `wxw3m` (one
+     355 px line) 13 px from the edge; the English "When the project calls
+     for it" measures 357.1 px, which needs ≥ 357 of room, so a 13 px floor
+     would wrap it. With 10 the ES title keeps its drawn 13.5 and the EN one
+     sits 10.9 from the edge; no title can come closer than 10 at any width
+     (DERIVED, same slope as the padding). */
+  --spacing-tarjeta-equipo-titulo-fin: clamp(
+    0.875rem,
+    0.6893rem +
+    0.7619vw,
+    1.375rem
+  );
+  --text-tarjeta-equipo-rotulo: 0.875rem;
+  --text-tarjeta-equipo-rotulo--line-height: 1.2;
+  --text-tarjeta-equipo-rotulo--font-weight: 600;
+  --text-tarjeta-equipo-titulo: 1.625rem;
+  --text-tarjeta-equipo-titulo--line-height: 1.4;
+  --text-tarjeta-equipo-titulo--font-weight: 500;
+  --text-tarjeta-equipo-texto: 1.0625rem;
+  --text-tarjeta-equipo-texto--line-height: var(--interlineado-texto);
+
+  /* Dónde estamos (§§ 1.3, 2): the body is 16 / 1.5 at 390 and the home's
+     17 / 1.55 at 1440. */
+  --text-donde-cuerpo: clamp(1rem, 0.9768rem + 0.0952vw, 1.0625rem);
+  --text-donde-cuerpo--line-height: clamp(
+    1.5rem,
+    1.4454rem +
+    0.2238vw,
+    1.6469rem
+  );
+
+  /* Preguntas and 404 (§§ 3–4; leader § 6: the frames are minimum heights,
+     content centred). Gap 32 → 40 for both. Preguntas: 720 → 1100 tall,
+     padding 100 / 24 / 60 → 120 / 80 / 80. 404: 720 → 760 tall, padding
+     100 / 24 / 60 → 100 / 80 / 60 (bottom: `portada-abajo`), and 0 → 8
+     above its buttons. */
+  --spacing-estado-gap: clamp(2rem, 1.8143rem + 0.7619vw, 2.5rem);
+  --spacing-preguntas-alto: clamp(45rem, 36.1786rem + 36.1905vw, 68.75rem);
+  --spacing-preguntas-arriba: clamp(6.25rem, 5.7857rem + 1.9048vw, 7.5rem);
+  --spacing-preguntas-abajo: clamp(3.75rem, 3.2857rem + 1.9048vw, 5rem);
+  --spacing-error-alto: clamp(45rem, 44.0714rem + 3.8095vw, 47.5rem);
+  --spacing-error-arriba: 6.25rem;
+  --spacing-error-botones-arriba: clamp(0rem, -0.1857rem + 0.7619vw, 0.5rem);
 }
 
 /*

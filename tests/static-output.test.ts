@@ -32,6 +32,9 @@ const DOCUMENTS = {
   '/en': join('en', 'index.html'),
   '/es/nosotros': join('es', 'nosotros', 'index.html'),
   '/en/about': join('en', 'about', 'index.html'),
+  /* Feature 46 · Preguntas (`i18n.pages.faq`). */
+  '/es/preguntas': join('es', 'preguntas', 'index.html'),
+  '/en/faq': join('en', 'faq', 'index.html'),
 } as const
 
 type RoutePath = keyof typeof DOCUMENTS
@@ -42,6 +45,8 @@ const EQUIVALENT_ROUTE: Record<RoutePath, RoutePath> = {
   '/en': '/es',
   '/es/nosotros': '/en/about',
   '/en/about': '/es/nosotros',
+  '/es/preguntas': '/en/faq',
+  '/en/faq': '/es/preguntas',
 }
 
 const ROUTES = Object.keys(DOCUMENTS) as RoutePath[]
@@ -118,13 +123,20 @@ describe('static output · routes', () => {
     /* The segment is translated, so the two paths are not a prefix apart. One
        page component serves both; the `#trabaja-con-muush` target the footer
        points at (feature 43) is what proves the same component rendered. */
-    const aboutPages = readdirSync(join(process.cwd(), 'app', 'pages')).filter(
+    const pages = readdirSync(join(process.cwd(), 'app', 'pages')).filter(
       file => file !== 'index.vue'
     )
 
-    expect(aboutPages).toEqual(['about.vue'])
+    /* Feature 46 added `faq.vue`; still one file per page, both locales. */
+    expect(pages).toEqual(['about.vue', 'faq.vue'])
     expect(documentFor('/es/nosotros')).toContain('id="trabaja-con-muush"')
     expect(documentFor('/en/about')).toContain('id="trabaja-con-muush"')
+  })
+
+  it('should resolve Preguntas at both localized paths from one page', () => {
+    /* Feature 46 · FR-030, FR-033: `/es/preguntas` ↔ `/en/faq`. */
+    expect(documentFor('/es/preguntas')).toContain('En construcción 🚧')
+    expect(documentFor('/en/faq')).toContain('Under construction 🚧')
   })
 
   it('should leave no anchor without a destination on any page', () => {
@@ -436,8 +448,9 @@ describe('static output · the layout wraps every page', () => {
 describe('static output · the header (feature 43)', () => {
   /*
    * The Muush 1.0 header (spec FR-001…FR-008): the mobile glass bar below
-   * `lg`, the floating nav with its glass link bar from `lg`, Servicios and
-   * Nosotros only until feature 46 adds Preguntas (spec FR-024).
+   * `lg`, the floating nav with its glass link bar from `lg`: Inicio ·
+   * Servicios · Nosotros, never Preguntas (Roberto, feature 43; feature 46
+   * gate 2026-11-02: it is linked from the footers only).
    */
   function navMarkup(route: RoutePath): string | undefined {
     return documentFor(route).match(/<nav[\s\S]*?<\/nav>/)?.[0]
@@ -472,8 +485,8 @@ describe('static output · the header (feature 43)', () => {
     })
 
     it(`should never render Proyectos or Preguntas inside the nav when the page is ${route}`, () => {
-      /* Proyectos: feature 15 is `blocked` (features 21, 24). Preguntas: its
-         route arrives with feature 46 (spec FR-024). */
+      /* Proyectos: feature 15 is `blocked` (features 21, 24). Preguntas:
+         footer only (spec 046 FR-029). */
       const nav = navMarkup(route)
 
       expect(nav, route).toBeDefined()
@@ -492,11 +505,11 @@ describe('static output · the header (feature 43)', () => {
     }
   })
 
-  it('should render the blog and the legal entries as text and no Preguntas link in the footer', () => {
+  it('should render the blog and the legal entries as text in the footer', () => {
     /*
      * Feature 43 (spec FR-031…FR-033, SC-006): "Blog · próximamente", the
      * privacy notice and the terms are text until their pages exist (feature
-     * 48 for the legal two); Preguntas is absent until feature 46.
+     * 48 for the legal two).
      */
     for (const route of ROUTES) {
       const footer = documentFor(route).match(/<footer[\s\S]*<\/footer>/)?.[0]
@@ -512,12 +525,30 @@ describe('static output · the header (feature 43)', () => {
         'Privacy notice',
         'Términos',
         'Terms',
-        'Preguntas',
-        'FAQ',
       ]) {
         expect(linked, `${route} · ${label}`).not.toContain(label)
       }
-      expect(footer, `${route} · Preguntas`).not.toMatch(/Preguntas|FAQ/)
+    }
+  })
+
+  it('should link Preguntas from the footer to the same-locale route', () => {
+    /* Feature 46 · FR-031 (Roberto 2026-11-02): the desktop MUUSH column and
+       the mobile link line, by route name, so `/es/preguntas` ↔ `/en/faq`. */
+    for (const route of ROUTES) {
+      const footer = documentFor(route).match(/<footer[\s\S]*<\/footer>/)?.[0]
+      const spanish = !route.startsWith('/en')
+      const label = spanish ? 'Preguntas' : 'FAQ'
+      const href = spanish ? '/es/preguntas' : '/en/faq'
+      const links = [
+        ...(footer ?? '').matchAll(
+          /<a [^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g
+        ),
+      ].filter(
+        match => (match[2] ?? '').replace(/<[^>]*>/g, '').trim() === label
+      )
+
+      expect(links.length, route).toBe(2)
+      for (const link of links) expect(link[1], route).toBe(href)
     }
   })
 
@@ -1009,7 +1040,7 @@ describe('static output · the about work section', () => {
 
   it('should carry id="trabaja-con-muush" on both About documents', () => {
     /* The shared anchor the footer's "Trabaja con muush" links to (feature
-       43, spec FR-025) until feature 46 replaces this section. */
+       43, spec FR-025), on the v2 section since feature 46 (FR-020). */
     for (const route of ['/es/nosotros', '/en/about'] as const) {
       expect(documentFor(route), route).toContain(
         '<section id="trabaja-con-muush"'
@@ -1031,33 +1062,22 @@ describe('static output · the about work section', () => {
     }
   })
 
-  it('should contribute the three reused glows without breaking the paint order', () => {
+  it('should paint the section over the listón with no v1 glow when generated', () => {
+    /* Feature 46 · FR-020, FR-027: the v1 glows and padding left with the v1
+       section; the v2 one hosts the `workWithUs` shader over its poster. */
     for (const route of ['/es/nosotros', '/en/about'] as const) {
       const section = workSection(route)
       const root = section.match(
         /<section id="trabaja-con-muush" class="([^"]*)"/
       )?.[1]
 
-      expect(root?.split(' '), route).toContain('relative')
-      expect(root?.split(' '), route).toContain('pt-work-top')
-      expect(
-        root?.split(' ').some(name => name.startsWith('bg-')),
-        route
-      ).toBe(false)
-      expect(
-        root
-          ?.split(' ')
-          .some(name =>
-            /^(transform|translate|scale|rotate|filter|backdrop-|opacity-|isolate|will-change|contain-|fixed|sticky|overflow-)/.test(
-              name
-            )
-          ),
-        route
-      ).toBe(false)
-
-      expect(section, route).toContain('size-glow-1500-760')
-      expect(section, route).toContain('size-glow-1000-560')
-      expect(section, route).toContain('size-glow-900-520')
+      expect(root?.split(' '), route).toEqual(
+        expect.arrayContaining(['relative', 'isolate'])
+      )
+      expect(root?.split(' '), route).not.toContain('pt-work-top')
+      expect(section, route).toContain('<canvas')
+      expect(section, route).toMatch(/<img[^>]*diagnostico-liston[^>]*>/)
+      expect(section, route).not.toMatch(/size-glow-|data-section-glow/)
     }
   })
 

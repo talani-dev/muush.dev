@@ -4,8 +4,10 @@ import Heading from '@/shared/ui/Heading.vue'
 /**
  * The Muush 1.0 two-tone heading (feature 42, FR-014). At "Móvil (390)" /
  * "Escritorio (1440)": hero 34 / 96 px, sección 28 / 56, proceso 28 / 52,
- * diagnóstico 34 / 64, with no tracking at 390 and ≈ −0.035 em at 1440
- * (pen extract §§ 4, 8). Copy from `docs/business/muush-1.0.md` § 4.
+ * diagnóstico 34 / 64, página 32 / 64 (Nosotros hero) and estado 34 / 88
+ * (Preguntas, feature 46), with no tracking at 390 and ≈ −0.035 em at 1440
+ * (pen extract §§ 4, 8; pen extract-46 § 6). Copy from
+ * `docs/business/muush-1.0.md` § 4.
  */
 const meta = {
   title: 'Shared/UI/Heading',
@@ -106,6 +108,35 @@ export const DiagnosticoEnDesktop1440: Story = {
   args: diagnostico.en,
   globals: desktop,
 }
+
+const pagina = {
+  es: {
+    first: 'El equipo se arma',
+    second: 'alrededor del proyecto.',
+    size: 'pagina',
+    level: 1,
+  },
+  en: {
+    first: 'The team takes shape',
+    second: 'around the project.',
+    size: 'pagina',
+    level: 1,
+  },
+} as const
+const estado = {
+  es: { first: 'En construcción 🚧', size: 'estado', level: 1 },
+  en: { first: 'Under construction 🚧', size: 'estado', level: 1 },
+} as const
+
+export const PaginaEsMobile390: Story = { args: pagina.es, globals: mobile }
+export const PaginaEsDesktop1440: Story = { args: pagina.es, globals: desktop }
+export const PaginaEnMobile390: Story = { args: pagina.en, globals: mobile }
+export const PaginaEnDesktop1440: Story = { args: pagina.en, globals: desktop }
+
+export const EstadoEsMobile390: Story = { args: estado.es, globals: mobile }
+export const EstadoEsDesktop1440: Story = { args: estado.es, globals: desktop }
+export const EstadoEnMobile390: Story = { args: estado.en, globals: mobile }
+export const EstadoEnDesktop1440: Story = { args: estado.en, globals: desktop }
 
 /** A one-line heading: line 1 only. */
 export const OneLine: Story = { args: { first: 'Qué es muush' } }
