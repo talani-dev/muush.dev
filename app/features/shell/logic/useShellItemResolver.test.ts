@@ -15,6 +15,8 @@ const PATHS: Record<ShellRouteName, string> = {
   index: '/es',
   about: '/es/nosotros',
   faq: '/es/preguntas',
+  privacy: '/es/privacidad',
+  terms: '/es/terminos',
 }
 
 const COPY: Record<string, string> = {

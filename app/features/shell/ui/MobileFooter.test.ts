@@ -116,12 +116,15 @@ describe('MobileFooter', () => {
     expect(render().findComponent(SocialLinks).props('size')).toBe('footer')
   })
 
-  it('should end with privacy and terms as text, then the copyright', () => {
+  it('should end with the privacy and terms links, then the copyright', () => {
     const legal = render().find('.border-carbon-700')
     const [links, copyright] = legal.findAll('p')
 
     expect(links?.text()).toBe('Aviso de privacidad · Términos y condiciones')
-    expect(links?.find('a').exists()).toBe(false)
+    expect(links?.findAll('a').map(item => item.attributes('href'))).toEqual([
+      '/es/privacidad',
+      '/es/terminos',
+    ])
     expect(copyright?.text()).toBe(
       '© 2026 muush · Todos los derechos reservados'
     )

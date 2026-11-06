@@ -62,13 +62,21 @@ describe('mobile footer models', () => {
     })
   })
 
-  it('should give the blog, privacy and terms no destination when their pages do not exist', () => {
-    const blog = MOBILE_FOOTER_LINKS.at(-1)
+  it('should give the blog no destination when its page does not exist', () => {
+    expect(MOBILE_FOOTER_LINKS.at(-1)?.destination).toEqual({ kind: 'none' })
+  })
 
-    expect(blog?.destination).toEqual({ kind: 'none' })
+  it('should route privacy and terms to their pages when listed', () => {
+    /* Feature 48 · pen-extract-48 § 4. */
     expect(LEGAL_ITEMS).toEqual([
-      { labelKey: 'shell.footer.legal.privacy', destination: { kind: 'none' } },
-      { labelKey: 'shell.footer.legal.terms', destination: { kind: 'none' } },
+      {
+        labelKey: 'shell.footer.legal.privacy',
+        destination: { kind: 'route', name: 'privacy' },
+      },
+      {
+        labelKey: 'shell.footer.legal.terms',
+        destination: { kind: 'route', name: 'terms' },
+      },
     ])
   })
 })

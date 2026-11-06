@@ -24,12 +24,12 @@ export type ShellLocale = (typeof SHELL_LOCALES)[number]
  * under `i18n.pages`. Adding a page adds a member here and an entry there —
  * never a path literal in a component (spec FR-018).
  */
-export type ShellRouteName = 'index' | 'about' | 'faq'
+export type ShellRouteName = 'index' | 'about' | 'faq' | 'privacy' | 'terms'
 
 /**
  * Where a shell item points. `none` is a real state rather than a missing
- * value: "Blog · próximamente" and, until feature 48, the two legal entries
- * have no destination and render as text, never as a dead link.
+ * value: "Blog · próximamente" has no destination and renders as text, never
+ * as a dead link.
  *
  * An `anchor` names a route plus a declared section id (feature 43, spec
  * FR-025, FR-026): typing it by `SectionAnchor` means a link to a section

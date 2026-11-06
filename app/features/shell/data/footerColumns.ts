@@ -38,6 +38,10 @@ export const FOOTER_DESTINATIONS = {
   },
   /* Feature 46 · Preguntas, `/es/preguntas` ↔ `/en/faq`. */
   faq: { kind: 'route', name: 'faq' },
+  /* Feature 48 · the legal pages (`/es/privacidad` ↔ `/en/privacy`,
+     `/es/terminos` ↔ `/en/terms`); the footer links navigate normally. */
+  privacy: { kind: 'route', name: 'privacy' },
+  terms: { kind: 'route', name: 'terms' },
   call: { kind: 'external', href: CALL_BOOKING_URL },
   email: { kind: 'external', href: `mailto:${SUPPORT_EMAIL}` },
   whatsapp: {

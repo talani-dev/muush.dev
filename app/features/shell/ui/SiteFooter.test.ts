@@ -74,18 +74,24 @@ describe('SiteFooter', () => {
     )
   })
 
-  it('should end the desktop layout with the copyright and the legal text', () => {
+  it('should end the desktop layout with the copyright and the legal links', () => {
     const bottom = render().find('[data-escritorio] .border-t')
     const [copyright, legal] = bottom.findAll('p')
 
     expect(copyright?.text()).toBe(
       '© 2026 muush · Todos los derechos reservados'
     )
-    expect(legal?.findAll('span').map(item => item.text())).toEqual([
+    /* Feature 48 · the legal pages exist; same tab, like every internal link. */
+    const links = legal?.findAll('a') ?? []
+    expect(links.map(item => item.text())).toEqual([
       'Aviso de privacidad',
       'Términos y condiciones',
     ])
-    expect(legal?.find('a').exists()).toBe(false)
+    expect(links.map(item => item.attributes('href'))).toEqual([
+      '/es/privacidad',
+      '/es/terminos',
+    ])
+    expect(links[0]?.attributes('target')).toBeUndefined()
   })
 
   it('should hand the mobile layout its own models when rendered', () => {
