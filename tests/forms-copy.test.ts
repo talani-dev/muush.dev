@@ -83,6 +83,9 @@ const APPROVED: Record<string, [string, string]> = {
     ' y que muush me contacte sobre mi diagnóstico.',
     ' and agree to be contacted by muush about my assessment.',
   ],
+  /* Roberto 2026-11-05 · screen-reader-only after the link, which opens
+     in a new tab. */
+  'privacy.newTab': ['(se abre en una pestaña nueva)', '(opens in a new tab)'],
   'privacy.requiredHint': [
     'Acepta el aviso de privacidad para enviar.',
     'Accept the privacy notice to send.',

@@ -40,6 +40,7 @@ export function resolveFormChrome(
         before: t(key('privacy.before')),
         link: t(key('privacy.link')),
         after: t(key('privacy.after')),
+        newTab: t(key('privacy.newTab')),
         href: privacyHref,
       },
       requiredHint: t(key('privacy.requiredHint')),

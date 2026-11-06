@@ -391,9 +391,10 @@ describe('ContactForm · assistive technology (US5)', () => {
     for (const id of ['name', 'email', 'company', 'identity', 'need']) {
       expect(wrapper.find(`label[for="${id}"]`).exists(), id).toBe(true)
     }
-    const { before, link, after } = content.privacy.label
+    /* The link's sr-only new-tab notice is part of the label's text. */
+    const { before, link, newTab, after } = content.privacy.label
     expect(wrapper.find('label[for="privacy"]').text()).toBe(
-      `${before}${link}${after}`
+      `${before}${link} ${newTab}${after}`
     )
   })
 

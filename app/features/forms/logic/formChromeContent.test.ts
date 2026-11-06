@@ -22,6 +22,7 @@ describe('resolveFormChrome', () => {
         before: 'forms.application.privacy.before',
         link: 'forms.application.privacy.link',
         after: 'forms.application.privacy.after',
+        newTab: 'forms.application.privacy.newTab',
         href: '/es/privacidad',
       },
       requiredHint: 'forms.application.privacy.requiredHint',

@@ -81,6 +81,9 @@ const APPROVED: Record<string, [string, string]> = {
     ' y que muush me contacte sobre mi aplicación.',
     ' and agree to be contacted by muush about my application.',
   ],
+  /* Roberto 2026-11-05 · screen-reader-only after the link, which opens
+     in a new tab. */
+  'privacy.newTab': ['(se abre en una pestaña nueva)', '(opens in a new tab)'],
   submit: ['Enviar aplicación', 'Send application'],
   uploading: ['Subiendo CV…', 'Uploading CV…'],
   'error.before': [

@@ -276,6 +276,7 @@
         "before": "I accept the ",
         "link": "privacy notice",
         "after": " and agree to be contacted by muush about my assessment.",
+        "newTab": "(opens in a new tab)",
         "requiredHint": "Accept the privacy notice to send."
       },
       "submit": "Get my assessment",
@@ -403,6 +404,7 @@
         "before": "I accept the ",
         "link": "privacy notice",
         "after": " and agree to be contacted by muush about my application.",
+        "newTab": "(opens in a new tab)",
         "requiredHint": "Accept the privacy notice to send."
       },
       "submit": "Send application",
