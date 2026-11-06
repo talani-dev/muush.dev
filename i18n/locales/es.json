@@ -276,6 +276,7 @@
         "before": "Acepto el ",
         "link": "aviso de privacidad",
         "after": " y que muush me contacte sobre mi diagnóstico.",
+        "newTab": "(se abre en una pestaña nueva)",
         "requiredHint": "Acepta el aviso de privacidad para enviar."
       },
       "submit": "Quiero mi diagnóstico",
@@ -403,6 +404,7 @@
         "before": "Acepto el ",
         "link": "aviso de privacidad",
         "after": " y que muush me contacte sobre mi aplicación.",
+        "newTab": "(se abre en una pestaña nueva)",
         "requiredHint": "Acepta el aviso de privacidad para enviar."
       },
       "submit": "Enviar aplicación",

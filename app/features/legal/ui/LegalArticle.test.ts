@@ -1,11 +1,11 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import { LEGAL_PAGES } from '@/features/legal/data/legalFixtures.testing'
 import Heading from '@/shared/ui/Heading.vue'
 import LegalArticle from './LegalArticle.vue'
 import LegalIndex from './LegalIndex.vue'
 import LegalIndexDisclosure from './LegalIndexDisclosure.vue'
 import LegalSection from './LegalSection.vue'
-import { LEGAL_PAGES } from './legalFixtures.testing'
 
 /** Feature 48 · pen-extract-48 § 3. */
 function render(

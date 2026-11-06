@@ -21,7 +21,10 @@ import type { ConsentLabel } from '@/features/forms/data/formChrome'
  * half-filled form is not lost. In the sentence's Gris 400, underlined:
  * DERIVED, the `.pen` draws it as plain text (rules.md § R38). A click on the link
  * follows it without ticking the box: interactive content inside a
- * `<label>` does not activate the control. Presentational.
+ * `<label>` does not activate the control. A visually hidden
+ * "(se abre en una pestaña nueva)" inside the link warns assistive tech
+ * of the new tab (Roberto 2026-11-05, WCAG G201); the leading space keeps
+ * it a separate word in the link's accessible name. Presentational.
  */
 interface Props {
   id: string
@@ -65,9 +68,8 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
         target="_blank"
         rel="noopener noreferrer"
         class="underline transition-colors duration-(--rapido) ease-muush hover:text-blanco foco"
-        >{{
-          label.link
-        }}</a
+        >{{ label.link
+        }}<span class="sr-only">{{ ` ${label.newTab}` }}</span></a
       >{{ label.after }}
     </label>
   </div>

@@ -23,4 +23,14 @@ describe('LegalList', () => {
       expect.arrayContaining(['text-red-muush-500', 'font-titulo'])
     )
   })
+
+  it('should keep list semantics under preflight when rendered as either kind', () => {
+    /* Safari/VoiceOver drops list semantics on `list-style: none`; the
+       step numbers are aria-hidden, so the order rides on the role. */
+    for (const kind of ['bullets', 'steps'] as const) {
+      const wrapper = mount(LegalList, { props: { kind, items } })
+
+      expect(wrapper.attributes('role')).toBe('list')
+    }
+  })
 })

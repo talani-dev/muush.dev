@@ -5,9 +5,11 @@ import type { LegalPageContent } from '@/features/legal/data/types'
  * Test and Storybook fixtures for the legal module (feature 48): every
  * string resolved as `resolveLegalPage` / `useCookieConsentContent` resolve
  * it, from the locale files. Generated, never edited by hand:
- * `legalFixtures.test.ts` fails if a locale string changes and this file
- * does not. Not collected by Vitest (`*.test.ts` only) and imported by no
- * application code.
+ * `logic/resolveLegalPage.test.ts` (the pages) and `tests/legal-copy.test.ts`
+ * (the consent copy) fail if a locale string changes and this file does
+ * not. Not collected by Vitest (`*.test.ts` only) and imported by no
+ * application code. It lives in `data/`, not `ui/`, so a `logic/` test may
+ * import it without running against Article II's direction.
  */
 export type LegalFixtureLocale = 'es' | 'en'
 

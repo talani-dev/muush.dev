@@ -3280,3 +3280,9 @@ reusar las cifras del implementer, y confirmó los seis primitivos congelados
   - The v1 page frame and the footer gap are retired; the v1 About and 404 code and tokens are deleted.
   - Fix round 1: card-title end extension capped at a 10 px edge floor; the schema-org script attributes are read from the module config.
   T001–T042 `[x]`; `./init.sh` exit 0. Not committed; it waits for Roberto's request (commit/merge into `muush-v2`).
+- 2026-11-05 · implementer close-out: feature 48 `m1_legal_pages` → `done` (approved in review-48 § Re-review, fix round). Changes:
+  - Aviso de privacidad (`/es/privacidad` ↔ `/en/privacy`) and Términos y condiciones (`/es/terminos` ↔ `/en/terms`), indexed, with the `.pen` text as the final legal text; sticky index on desktop, collapsible on mobile; data table as cards on mobile.
+  - Global cookie banner and preferences dialog (client-only); the choice is stored in localStorage and "Cambiar mis preferencias" reopens it. No tracking script loads (feature 49).
+  - Footer legal links and the forms' consent link (new tab, with a screen-reader notice) point to the pages; `useFocusTrap` lifted to `shared/`; `PrimaryButton` gains a `compact` size.
+  - Fix round: `role="list"` on the ARCO list, `CookieConsent` component test, safety-net `close` listener, redundant ARIA removed, legal fixtures moved to `data/`.
+  `./init.sh` exit 0 (3023 tests). Feature commits merged into `muush-v2` by Roberto (b2a6ba4); the fix round is uncommitted on `muush-v2`, waiting for Roberto's request.

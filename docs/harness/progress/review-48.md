@@ -147,3 +147,75 @@ None.
 ## Not verified by this reviewer
 
 - Pixel match at 390 and 1440, and the absence of horizontal overflow at 360 / 768 / 1024 / 1280 / 1920. I relied on the implementer's measured table in `impl_legal_pages.md` § 2 and did not re-measure in a browser.
+
+## Re-review (fix round, 2026-11-05)
+
+- **Reviewer run:** the uncommitted working tree on `muush-v2`, which already contains `feat/v2-legal` at b2a6ba4, plus the untracked `legal/data/legalFixtures.testing.ts` and `legal/ui/CookieConsent.test.ts`. I did not review the feature-49 leader edits (`tracking-plan-49.md`, entry 49 in `feature_list.json`, `current.md`).
+- **Precondition:** entry 48 had status `reviewing` before this run (CONFIRMED).
+
+### Verdict: APPROVED
+
+All four should-fixes and the three nits the implementer took on are resolved. I found no regressions.
+
+### Should-fixes
+
+- **S1 · resolved (CONFIRMED).**
+  - `app/features/legal/ui/LegalList.vue:29` and `:35` bind `role="list"` with `v-bind="LIST_SEMANTICS"`. The comment explaining why it is bound is accurate.
+  - Tested in `LegalList.test.ts`, the "should keep list semantics…" case, for both kinds.
+  - Built HTML: `<ol role="list" …>`, with 5 `role="list"` lists on `/es/privacidad`.
+- **S2 · resolved (CONFIRMED).**
+  - New `app/features/legal/ui/CookieConsent.test.ts` with 9 tests.
+  - The test uses the real module-scoped `useCookieConsent`, reset per test with the pre-existing `resetCookieConsentState`. It stubs only the i18n copy composable.
+  - It covers the three gaps I named: the banner is hidden with `v-show` but stays mounted while the dialog is open; the banner is removed once a choice exists; `currentChoice` falls back to all-off. It also covers the shared `openPreferences()` path.
+- **S3 · resolved, with copy as approved by Roberto (CONFIRMED).**
+  - `app/features/forms/ui/ConsentCheckbox.vue:72` adds `<span class="sr-only">` with a leading space inside the link.
+  - The locales add exactly one key per forms namespace: `forms.contact.privacy.newTab` and `forms.application.privacy.newTab` in `i18n/locales/{es,en}.json`. The values are "(se abre en una pestaña nueva)" and "(opens in a new tab)", verbatim.
+  - The values are pinned in `tests/forms-copy.test.ts:88` and `tests/forms-application-copy.test.ts:86`.
+  - The visible sentence is unchanged. The test strips `.sr-only` and still matches it.
+  - The key travels data → logic → ui (`formChrome.ts`, then `formChromeContent.ts`), with no i18n call in the component.
+  - Built `/es/` HTML: 1 occurrence.
+- **S4 · resolved (CONFIRMED).**
+  - `app/features/legal/ui/CookiePreferences.vue:106` adds `@close="open && emit('close')"`.
+  - Both directions are tested: a native close while open emits `close`; a close after `open` turns false does not.
+  - Escape still goes through `@cancel.prevent`, so it emits once. A close the caller requested arrives with `open` already false, so the logic is sound.
+
+### Nits
+
+- **`aria-modal` removed (CONFIRMED).** It is gone from `CookiePreferences.vue:101-106`, and the test asserts it is absent.
+- **`LegalSection` no longer labelled (CONFIRMED).**
+  - `LegalSection.vue:30` has `<section :id>` without `aria-labelledby`, and `:34` is a plain `h2`.
+  - Built HTML: 0 `aria-labelledby` on `/es/privacidad`. The `id` anchors on the sections remain.
+- **Fixture moved to `data/` (CONFIRMED).**
+  - `diff` of `HEAD:…/ui/legalFixtures.testing.ts` against `…/data/legalFixtures.testing.ts` shows only the doc-comment change. The data is byte-identical.
+  - No import still points to `legal/ui/legalFixtures`.
+- **Constitution Article I note:** not done, and that is correct. Editing the constitution is the leader's call, and the item remains open for the leader.
+
+### Regression checks
+
+- **Legal text unchanged (CONFIRMED).**
+  - The only locale changes are the two `newTab` keys per file. No `legal.*` or `consent.*` value changed.
+  - The fixtures that pin them are byte-identical, as above.
+- **i18n parity (CONFIRMED).** Same keys in both locales, and `tests/i18n-parity.test.ts` is green in the run below.
+- **No tracking (CONFIRMED).**
+  - No `src/` code changes touch `useCookieConsent`, `cookieCategories`, the layout or the pages. The only change under `legal/logic` is the import in `resolveLegalPage.test.ts`.
+  - The only `.output/public` hit for facebook/google patterns is Nuxt's bot user-agent regex (`facebookexternalhit|google\b`) in `_nuxt/B55re4Sl.js`. That is not a tracker.
+  - No new `fetch` or `useScript`.
+- **Banner and dialog behaviour:** covered at component level by the new `CookieConsent.test.ts` and the existing banner and preferences suites (CONFIRMED by tests).
+  - The implementer's in-browser CDP run is UNVERIFIED by me. That covers Escape, reload persistence, the `dialog.close()` resync, the AX tree and the 390 sr-only check, which is INFERRED in their own report.
+- **Constitution:**
+  - no hardcoded colours or arbitrary values in the diff;
+  - no relative imports across directories (the new imports use `@/`);
+  - no server route;
+  - `CookiePreferences.vue` is 180 lines, under 200.
+
+### `./init.sh`: exit 0 (CONFIRMED, my own run, 2026-11-06)
+
+- No concurrent `nuxt generate` was running.
+- typecheck OK, `biome check --error-on-warnings` OK.
+- Tests: **222 files / 3023 tests passed**.
+- generate OK, storybook:build OK.
+
+### Open (not blocking)
+
+- **Commit placement:** the fix round is uncommitted on `muush-v2`, not on a feature branch. The leader decides where it lands.
+- **Constitution Article I:** the leader still needs to decide on adding `legal` to the module list.

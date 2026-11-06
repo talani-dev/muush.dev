@@ -388,12 +388,14 @@ function assessmentForm(locale: FixtureLocale): ContactFormContent {
             before: 'Acepto el ',
             link: 'aviso de privacidad',
             after: ' y que muush me contacte sobre mi diagnóstico.',
+            newTab: '(se abre en una pestaña nueva)',
             href: '/es/privacidad',
           }
         : {
             before: 'I accept the ',
             link: 'privacy notice',
             after: ' and agree to be contacted by muush about my assessment.',
+            newTab: '(opens in a new tab)',
             href: '/en/privacy',
           },
       requiredHint: es

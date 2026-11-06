@@ -25,6 +25,9 @@ export interface ConsentLabel {
   before: string
   link: string
   after: string
+  /** Screen-reader-only "(se abre en una pestaña nueva)" after the link
+   * text (Roberto 2026-11-05, WCAG G201). */
+  newTab: string
   /** The privacy page in the current locale. */
   href: string
 }

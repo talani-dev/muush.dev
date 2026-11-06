@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { LEGAL_PAGES } from '@/features/legal/data/legalFixtures.testing'
 import { translatorFor } from '@/features/legal/data/localeKeys.testing'
 import { PRIVACY_NOTICE } from '@/features/legal/data/privacyNotice'
 import { TERMS_AND_CONDITIONS } from '@/features/legal/data/termsAndConditions'
-import { LEGAL_PAGES } from '@/features/legal/ui/legalFixtures.testing'
 import { resolveLegalPage } from './resolveLegalPage'
 
 const echo = (key: string) => key

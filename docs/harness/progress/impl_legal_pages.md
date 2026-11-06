@@ -147,3 +147,84 @@ The browser is real Chrome, driven over CDP with `Emulation.setDeviceMetricsOver
   - `tests/{seo-output,static-output,design-tokens,token-literals,forms-copy,forms-application-copy}.test.ts`.
   - `feature_list.json` (48 → reviewing), `docs/harness/progress/current.md`, `docs/harness/findings.md` (R77–R79).
 - **Not touched:** `docs/business/`, the leader's `pen-48/`, `pen-extract-48.md` and `legal-copy-48.md`, and feature 49.
+
+## 7 · Fix round (2026-11-05)
+
+- **Trigger:** `review-48.md` (APPROVED with should-fixes S1–S4 and nits) plus Roberto's decisions of 2026-11-05 on the routed questions.
+- **Not changed, per Roberto:** SEO descriptions (approved as written), the mobile "Guardar mi elección" stays centred, the legal heading line height stays as built. Consent expiry is feature 49 and was not touched. No legal text changed. The constitution was not edited (Article I module-list note left to the leader).
+- **Status:** 48 `reviewing` → `in_progress` while working → `reviewing`. The leader's uncommitted feature-49 edits in `feature_list.json`, `current.md` and `tracking-plan-49.md` are intact.
+- **Branch note (CONFIRMED):** the working tree is on **`muush-v2`**, not `feat/v2-legal` as the task said; `feat/v2-legal` was already merged into `muush-v2` (b2a6ba4). As instructed I did not switch branches and did not commit, so every change below is uncommitted on `muush-v2`. The leader decides where it lands (for example `git switch -c <branch>` carries the working tree over).
+
+### S1 · ARCO list semantics: `LegalList.vue`
+- The `<ol>` / `<ul>` now carries `role="list"`, so Safari/VoiceOver keeps the list semantics that preflight's `list-style: none` strips. The aria-hidden step numbers made this matter.
+- **Lint trap:** a literal `role="list"` fails `pnpm check`. On `<component :is>`, Biome reads an unknown element and fires `noInteractiveElementToNoninteractiveRole` and `useSemanticElements`. On an explicit `<ul>`, it fires `noRedundantRoles`. A `<!-- biome-ignore -->` above the root becomes a second root node in dev builds: the component turned into a fragment and 3 tests broke. The role is therefore bound through `v-bind="LIST_SEMANTICS"`, and a comment next to it explains why.
+- **Test:** `LegalList.test.ts`, "should keep list semantics under preflight…", covers both kinds.
+- **Browser (Chrome AX tree, 390 and 1440, ES and EN):** the article `ol` and `ul` expose role `list`, and the built HTML has `role="list"` on all of them.
+
+### S2 · `CookieConsent.test.ts` (new, 9 tests)
+- The copy composable is stubbed with `vi.mock`, because it needs the Nuxt i18n runtime. The consent state is the real module-scoped `useCookieConsent`, reset per test.
+- **Covered:**
+  - banner shown and dialog closed with no choice;
+  - **banner hidden but still mounted while the dialog is open** (`v-show`);
+  - banner shown again when the dialog is dismissed without a choice;
+  - **banner removed once a choice exists**;
+  - no banner when a choice is already stored;
+  - **`currentChoice` falls back to all-off**, or passes the stored choice;
+  - **another caller's `openPreferences()` (the "Cambiar mis preferencias" path) opens the dialog through the shared state**;
+  - saving stores the choice and closes the dialog.
+
+### S3 · New-tab notice on the consent link
+- `ConsentCheckbox.vue` renders `<span class="sr-only">` inside the link, with the text `label.newTab` and a leading space added in the template.
+  - The locale values are the exact approved copy: ES "(se abre en una pestaña nueva)", EN "(opens in a new tab)".
+  - Accessible name: "aviso de privacidad (se abre en una pestaña nueva)".
+- **Chain (no i18n in the component):**
+  - new keys `forms.contact.privacy.newTab` and `forms.application.privacy.newTab` in `i18n/locales/{es,en}.json`;
+  - `ConsentLabel.newTab` in `forms/data/formChrome.ts`;
+  - `resolveFormChrome` in `forms/logic/formChromeContent.ts`.
+- **Updated:**
+  - `ConsentCheckbox.{test,stories}.ts`, with a new test for the hidden notice and the link's accessible text;
+  - `formChromeContent.test.ts`;
+  - `ContactForm.test.ts`: the label text now includes the notice;
+  - the fixtures `forms/ui/formsFixtures.testing.ts`, `landing/ui/landingFixtures.testing.ts` and `about/ui/aboutFixtures.testing.ts`;
+  - `tests/forms-copy.test.ts` and `tests/forms-application-copy.test.ts`, which pin the new key verbatim.
+- i18n parity is green.
+- **Browser, 1440 ES (`/es/`) and EN (`/en/about/`):** the AX name is "aviso de privacidad (se abre en una pestaña nueva)" / "privacy notice (opens in a new tab)". The span is 1×1 px, with `clip-path: inset(50%)`, `overflow: hidden` and `position: absolute`, so it is not visible. In the built HTML the span text is " (se abre en una pestaña nueva)".
+- **Not verified in the browser at 390:** the consent sits on step 2 of the stepped mobile form, which is hidden until step 1 is filled. The DOM there carries the same notice. That it works the same is INFERRED, because the component is the same.
+
+### S4 · Safety-net close: `CookiePreferences.vue`
+- Added `@close="open && emit('close')"`.
+- A native close that the caller did not ask for (a future `closedby`, a `method="dialog"` form) now reports `close`. A close caused by `open` turning false arrives with `open` already false and is ignored.
+- **Tests:**
+  - "should emit close when the dialog closes natively while open";
+  - "should not emit close when the dialog closes because open turned false".
+- **Browser:** calling `dialog.close()` directly from the page closed the dialog, and "Cambiar mis preferencias" reopened it afterwards (state in sync), at 390 and 1440, ES and EN.
+
+### Nits
+- **`aria-modal`:** removed from the `showModal()` dialog. The test now asserts that it is absent.
+- **`LegalSection.vue`:** removed `aria-labelledby` from the `<section>` and the now-unused `id` from its `h2`. The section `id` anchors stay, and a comment explains why the section is not labelled. The test was updated. In the Chrome AX tree the sections are now `generic`, not 10–14 regions.
+- **`legalFixtures.testing.ts`:** moved from `legal/ui/` to `legal/data/`.
+  - Updated 15 imports: 13 in `legal/ui`, plus `logic/resolveLegalPage.test.ts` and `tests/legal-copy.test.ts`.
+  - Biome re-sorted those imports.
+  - Its doc comment named a non-existent `legalFixtures.test.ts`. It now names the two tests that actually pin it.
+
+### Verification
+- **Browser:** real Chrome over CDP against `.output/public`, at 1440 and 390, ES and EN (`/es/privacidad/`, `/en/privacy/`).
+  - The banner shows with no choice.
+  - "Personalizar" opens the dialog, and the banner goes to `display: none` after the 320 ms leave transition.
+  - Escape closes the dialog without saving, and the banner is back.
+  - "Rechazar todo" stores `false` and removes the banner. After a reload there is still no banner.
+  - "Cambiar mis preferencias" reopens the dialog.
+  - Zero non-origin requests. `scrollWidth` equals the viewport.
+- **`./init.sh`: exit 0.** typecheck, Biome, **222 test files / 3023 tests** (was 221 / 3008), `generate` and `storybook:build` all OK.
+
+### Files touched
+- **legal:**
+  - `ui/LegalList.{vue,test.ts}`, `ui/LegalSection.{vue,test.ts}` and `ui/CookiePreferences.{vue,test.ts}`;
+  - new `ui/CookieConsent.test.ts`;
+  - `ui/legalFixtures.testing.ts` moved to `data/legalFixtures.testing.ts`;
+  - import-only changes in 12 stories and tests and in `logic/resolveLegalPage.test.ts`.
+- **forms:** `data/formChrome.ts`, `logic/formChromeContent{,.test}.ts`, `ui/ConsentCheckbox.{vue,test.ts,stories.ts}`, `ui/ContactForm.test.ts` and `ui/formsFixtures.testing.ts`.
+- **Fixtures:** `landing/ui/landingFixtures.testing.ts` and `about/ui/aboutFixtures.testing.ts`.
+- **Locales:** `i18n/locales/{es,en}.json`, one key each in the two forms namespaces.
+- **Tests:** `tests/{forms-copy,forms-application-copy,legal-copy}.test.ts`.
+- **Status and log:** `feature_list.json` (status only) and `docs/harness/progress/current.md` (one log line).

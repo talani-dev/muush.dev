@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { CONSENT_COPY } from '@/features/legal/data/legalFixtures.testing'
 import CookieBanner from './CookieBanner.vue'
-import { CONSENT_COPY } from './legalFixtures.testing'
 
 /**
  * "Usamos cookies" (feature 48; `Dq04d` / `SYQea`, EN `TEElj` / `qnVrY`).

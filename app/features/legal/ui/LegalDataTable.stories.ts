@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { LEGAL_PAGES } from '@/features/legal/data/legalFixtures.testing'
 import type { ResolvedLegalBlock } from '@/features/legal/data/types'
 import LegalDataTable from './LegalDataTable.vue'
-import { LEGAL_PAGES } from './legalFixtures.testing'
 
 /**
  * "Qué datos recabamos" (feature 48): stacked cards at "Móvil (390)"

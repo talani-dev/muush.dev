@@ -1,8 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import { CONSENT_COPY } from '@/features/legal/data/legalFixtures.testing'
 import ChoiceButton from './ChoiceButton.vue'
 import CookieBanner from './CookieBanner.vue'
-import { CONSENT_COPY } from './legalFixtures.testing'
 
 function render(locale: 'es' | 'en' = 'es') {
   return mount(CookieBanner, { props: { copy: CONSENT_COPY[locale] } })
