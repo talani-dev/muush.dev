@@ -17,7 +17,8 @@
       "!storybook-static",
       "!dist",
       "!specs/**/reference",
-      "!docs/handoff"
+      "!docs/handoff",
+      "!docs/harness/progress/pen-*"
     ]
   },
   "formatter": {
