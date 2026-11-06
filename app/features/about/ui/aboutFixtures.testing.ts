@@ -242,8 +242,12 @@ const SPANISH_FORM: ApplicationFormContent = {
   continue: 'Continuar',
   back: '← Atrás',
   privacy: {
-    label:
-      'Acepto el aviso de privacidad y que muush me contacte sobre mi aplicación.',
+    label: {
+      before: 'Acepto el ',
+      link: 'aviso de privacidad',
+      after: ' y que muush me contacte sobre mi aplicación.',
+      href: '/es/privacidad',
+    },
     requiredHint: 'Acepta el aviso de privacidad para enviar.',
   },
   submit: 'Enviar aplicación',
@@ -331,8 +335,12 @@ const ENGLISH_FORM: ApplicationFormContent = {
   continue: 'Continue',
   back: '← Back',
   privacy: {
-    label:
-      'I accept the privacy notice and agree to be contacted by muush about my application.',
+    label: {
+      before: 'I accept the ',
+      link: 'privacy notice',
+      after: ' and agree to be contacted by muush about my application.',
+      href: '/en/privacy',
+    },
     requiredHint: 'Accept the privacy notice to send.',
   },
   submit: 'Send application',

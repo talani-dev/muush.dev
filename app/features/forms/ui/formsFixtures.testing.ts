@@ -105,8 +105,18 @@ function chrome(locale: FixtureLocale, secondStep: string, about: string) {
     back: es ? '← Atrás' : '← Back',
     privacy: {
       label: es
-        ? `Acepto el aviso de privacidad y que muush me contacte sobre ${about}.`
-        : `I accept the privacy notice and agree to be contacted by muush about ${about}.`,
+        ? {
+            before: 'Acepto el ',
+            link: 'aviso de privacidad',
+            after: ` y que muush me contacte sobre ${about}.`,
+            href: '/es/privacidad',
+          }
+        : {
+            before: 'I accept the ',
+            link: 'privacy notice',
+            after: ` and agree to be contacted by muush about ${about}.`,
+            href: '/en/privacy',
+          },
       requiredHint: es
         ? 'Acepta el aviso de privacidad para enviar.'
         : 'Accept the privacy notice to send.',

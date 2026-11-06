@@ -109,10 +109,15 @@ export function useApplicationFormContent(): ComputedRef<ApplicationFormContent>
         errorDigits: t('forms.application.fields.whatsapp.errorDigits'),
       },
     },
-    ...resolveFormChrome(t, 'forms.application', {
-      label: t('forms.application.success.action'),
-      to: localePath('/'),
-    }),
+    ...resolveFormChrome(
+      t,
+      'forms.application',
+      {
+        label: t('forms.application.success.action'),
+        to: localePath('/'),
+      },
+      localePath({ name: 'privacy' })
+    ),
     uploading: t('forms.application.uploading'),
     cvUploadError: {
       message: t('forms.application.cvUploadError.message'),

@@ -64,7 +64,13 @@ describe('WorkWithMuushSection', () => {
     const wrapper = render()
 
     expect(wrapper.text()).not.toContain('Agenda una llamada')
-    expect(wrapper.find('a[target="_blank"]').exists()).toBe(false)
+    /* The consent's "aviso de privacidad" opens in a new tab (feature 48);
+       no other link does. */
+    expect(
+      wrapper
+        .findAll('a[target="_blank"]')
+        .filter(link => !link.element.closest('label'))
+    ).toHaveLength(0)
   })
 
   it('should title the left column with the diagnostico-size h2 and its pill', () => {

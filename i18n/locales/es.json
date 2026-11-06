@@ -273,7 +273,9 @@
       "continue": "Continuar",
       "back": "← Atrás",
       "privacy": {
-        "label": "Acepto el aviso de privacidad y que muush me contacte sobre mi diagnóstico.",
+        "before": "Acepto el ",
+        "link": "aviso de privacidad",
+        "after": " y que muush me contacte sobre mi diagnóstico.",
         "requiredHint": "Acepta el aviso de privacidad para enviar."
       },
       "submit": "Quiero mi diagnóstico",
@@ -398,7 +400,9 @@
       "continue": "Continuar",
       "back": "← Atrás",
       "privacy": {
-        "label": "Acepto el aviso de privacidad y que muush me contacte sobre mi aplicación.",
+        "before": "Acepto el ",
+        "link": "aviso de privacidad",
+        "after": " y que muush me contacte sobre mi aplicación.",
         "requiredHint": "Acepta el aviso de privacidad para enviar."
       },
       "submit": "Enviar aplicación",

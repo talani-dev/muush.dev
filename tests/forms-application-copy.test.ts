@@ -73,9 +73,13 @@ const APPROVED: Record<string, [string, string]> = {
   'fields.cv.errorRequired': ['Adjunta tu CV.', 'Attach your CV.'],
   'steps.titles.1': ['Tus datos', 'Your details'],
   'steps.titles.2': ['Tu perfil', 'Your profile'],
-  'privacy.label': [
-    'Acepto el aviso de privacidad y que muush me contacte sobre mi aplicación.',
-    'I accept the privacy notice and agree to be contacted by muush about my application.',
+  /* Feature 48 · split around the link to the privacy page; the sentence
+     is unchanged. */
+  'privacy.before': ['Acepto el ', 'I accept the '],
+  'privacy.link': ['aviso de privacidad', 'privacy notice'],
+  'privacy.after': [
+    ' y que muush me contacte sobre mi aplicación.',
+    ' and agree to be contacted by muush about my application.',
   ],
   submit: ['Enviar aplicación', 'Send application'],
   uploading: ['Subiendo CV…', 'Uploading CV…'],

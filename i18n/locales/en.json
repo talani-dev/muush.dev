@@ -273,7 +273,9 @@
       "continue": "Continue",
       "back": "← Back",
       "privacy": {
-        "label": "I accept the privacy notice and agree to be contacted by muush about my assessment.",
+        "before": "I accept the ",
+        "link": "privacy notice",
+        "after": " and agree to be contacted by muush about my assessment.",
         "requiredHint": "Accept the privacy notice to send."
       },
       "submit": "Get my assessment",
@@ -398,7 +400,9 @@
       "continue": "Continue",
       "back": "← Back",
       "privacy": {
-        "label": "I accept the privacy notice and agree to be contacted by muush about my application.",
+        "before": "I accept the ",
+        "link": "privacy notice",
+        "after": " and agree to be contacted by muush about my application.",
         "requiredHint": "Accept the privacy notice to send."
       },
       "submit": "Send application",

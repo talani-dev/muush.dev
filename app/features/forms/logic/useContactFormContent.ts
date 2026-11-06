@@ -20,6 +20,7 @@ import { resolveFormChrome } from './formChromeContent'
  */
 export function useContactFormContent(): ComputedRef<ContactFormContent> {
   const { t, locale, localeProperties } = useI18n()
+  const localePath = useLocalePath()
   /* Country names come from the browser in the page language (`es-MX` /
      `en`, the locale's `language` in `nuxt.config.ts`), not from locale
      keys: one source for both languages (feature 32 research R2). */
@@ -89,9 +90,14 @@ export function useContactFormContent(): ComputedRef<ContactFormContent> {
         errorDigits: t('forms.contact.fields.whatsapp.errorDigits'),
       },
     },
-    ...resolveFormChrome(t, 'forms.contact', {
-      label: t('forms.contact.success.action'),
-      href: CALL_BOOKING_URL,
-    }),
+    ...resolveFormChrome(
+      t,
+      'forms.contact',
+      {
+        label: t('forms.contact.success.action'),
+        href: CALL_BOOKING_URL,
+      },
+      localePath({ name: 'privacy' })
+    ),
   }))
 }
