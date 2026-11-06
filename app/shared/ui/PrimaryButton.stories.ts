@@ -4,7 +4,8 @@ import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
 /**
  * The Muush 1.0 primary button (feature 42, FR-012; Kit `FcCCF`). Measure in
  * the viewport toolbar: hero 253 × 55 at "Escritorio (1440)" and 178 × 44
- * with the arrow at "Móvil (390)"; nav 195 × 40; block full width × 55.
+ * with the arrow at "Móvil (390)"; nav 195 × 40; block full width × 55;
+ * compact (feature 48, "Guardar mi elección") 11 / 20, 14 px, no arrow.
  * Tab to it: a Blanco ring 3 px away. Copy from `muush-1.0.md` §§ 4.1, 4.6.
  */
 const meta = {
@@ -87,5 +88,16 @@ export const UnavailableEnMobile390: Story = {
 export const UnavailableEsDesktop1440: Story = {
   args: unavailable,
   render: inColumn,
+  globals: desktop,
+}
+
+const compactEs = {
+  label: 'Guardar mi elección',
+  size: 'compact',
+  icon: false,
+} as const
+export const CompactEsMobile390: Story = { args: compactEs, globals: mobile }
+export const CompactEnDesktop1440: Story = {
+  args: { ...compactEs, label: 'Save my choice' },
   globals: desktop,
 }
