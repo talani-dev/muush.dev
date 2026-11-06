@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import check from '@/assets/icons/check.svg?raw'
+import type { ConsentLabel } from '@/features/forms/data/formChrome'
 
 /**
  * ConsentCheckbox — the required privacy consent (feature 45, spec FR-008;
@@ -13,12 +14,18 @@ import check from '@/assets/icons/check.svg?raw'
  * `.pen` draws only the unticked box, so the ticked look is the handoff's
  * `accent-color: red-muush-500` rebuilt with the site's own glyph. The text
  * is 12 / 1.4 with gap 10 on mobile, 13 / 1.45 with gap 12 on desktop,
- * Gris 400; "aviso de privacidad" stays plain text until feature 48 builds
- * the page. Presentational.
+ * Gris 400.
+ *
+ * "aviso de privacidad" links to the privacy page (feature 48,
+ * pen-extract-48 § 4) in a new tab with the opener severed, so a
+ * half-filled form is not lost. In the sentence's Gris 400, underlined:
+ * DERIVED, the `.pen` draws it as plain text (rules.md § R38). A click on the link
+ * follows it without ticking the box: interactive content inside a
+ * `<label>` does not activate the control. Presentational.
  */
 interface Props {
   id: string
-  label: string
+  label: ConsentLabel
   modelValue: boolean
   disabled?: boolean
 }
@@ -52,7 +59,16 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
       :for="id"
       class="cursor-pointer font-texto text-privacidad text-gris-400 md:text-privacidad-escritorio"
     >
-      {{ label }}
+      {{ label.before
+      }}<a
+        :href="label.href"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="underline transition-colors duration-(--rapido) ease-muush hover:text-blanco foco"
+        >{{
+          label.link
+        }}</a
+      >{{ label.after }}
     </label>
   </div>
 </template>

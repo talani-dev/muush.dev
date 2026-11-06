@@ -143,8 +143,12 @@ export const SHELL_COPY = {
       { label: 'Blog (próximamente)', external: false },
     ] satisfies ResolvedShellItem[],
     legal: [
-      { label: 'Aviso de privacidad', external: false },
-      { label: 'Términos y condiciones', external: false },
+      { label: 'Aviso de privacidad', href: '/es/privacidad', external: false },
+      {
+        label: 'Términos y condiciones',
+        href: '/es/terminos',
+        external: false,
+      },
     ] satisfies ResolvedShellItem[],
   },
   en: {
@@ -236,8 +240,8 @@ export const SHELL_COPY = {
       { label: 'Blog (coming soon)', external: false },
     ] satisfies ResolvedShellItem[],
     legal: [
-      { label: 'Privacy notice', external: false },
-      { label: 'Terms and conditions', external: false },
+      { label: 'Privacy notice', href: '/en/privacy', external: false },
+      { label: 'Terms and conditions', href: '/en/terms', external: false },
     ] satisfies ResolvedShellItem[],
   },
 }

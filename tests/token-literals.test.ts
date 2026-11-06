@@ -66,7 +66,6 @@ const SHELL_SCANNED = [
     'useShellItemResolver.ts',
     'useMobileMenu.ts',
     'useNavScrollReveal.ts',
-    'useFocusTrap.ts',
     'useActiveSection.ts',
     /* FR-061 · Language switch keeps position, Roberto 2026-11-01. */
     'localeSwitchScroll.ts',
@@ -258,6 +257,51 @@ const PAGES_SCANNED = [
   join(ROOT, 'app', 'error.vue'),
 ]
 
+/*
+ * Feature 48 · the legal pages and cookie consent: every file it creates,
+ * plus the shared trap it lifted out of the shell.
+ */
+const LEGAL = join(ROOT, 'app', 'features', 'legal')
+
+const LEGAL_SCANNED = [
+  ...[
+    'LegalArticle',
+    'LegalSection',
+    'LegalList',
+    'LegalDataTable',
+    'LegalIndex',
+    'LegalIndexDisclosure',
+    'CookieBanner',
+    'CookiePreferences',
+    'CookieCategoryRow',
+    'ConsentSwitch',
+    'ChoiceButton',
+  ].flatMap(name => [
+    join(LEGAL, 'ui', `${name}.vue`),
+    join(LEGAL, 'ui', `${name}.stories.ts`),
+  ]),
+  join(LEGAL, 'ui', 'CookieConsent.vue'),
+  join(LEGAL, 'index.ts'),
+  ...[
+    'types.ts',
+    'cookieCategories.ts',
+    'privacyNotice.ts',
+    'termsAndConditions.ts',
+  ].map(name => join(LEGAL, 'data', name)),
+  ...[
+    'consentRecord.ts',
+    'useCookieConsent.ts',
+    'useCookieConsentContent.ts',
+    'resolveLegalPage.ts',
+    'useLegalPageContent.ts',
+    'activeSection.ts',
+    'useLegalScrollSpy.ts',
+  ].map(name => join(LEGAL, 'logic', name)),
+  join(SHARED, 'logic', 'useFocusTrap.ts'),
+  join(ROOT, 'app', 'pages', 'privacy.vue'),
+  join(ROOT, 'app', 'pages', 'terms.vue'),
+]
+
 const SCANNED = [
   ...COMPONENTS.flatMap(name => [
     join(SHARED, 'ui', `${name}.vue`),
@@ -277,6 +321,7 @@ const SCANNED = [
   ...HOME_SCANNED,
   ...FORMS_SCANNED,
   ...PAGES_SCANNED,
+  ...LEGAL_SCANNED,
 ]
 
 const FORBIDDEN: [string, RegExp][] = [

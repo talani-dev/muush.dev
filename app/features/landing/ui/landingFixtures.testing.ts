@@ -384,8 +384,18 @@ function assessmentForm(locale: FixtureLocale): ContactFormContent {
     back: es ? '← Atrás' : '← Back',
     privacy: {
       label: es
-        ? 'Acepto el aviso de privacidad y que muush me contacte sobre mi diagnóstico.'
-        : 'I accept the privacy notice and agree to be contacted by muush about my assessment.',
+        ? {
+            before: 'Acepto el ',
+            link: 'aviso de privacidad',
+            after: ' y que muush me contacte sobre mi diagnóstico.',
+            href: '/es/privacidad',
+          }
+        : {
+            before: 'I accept the ',
+            link: 'privacy notice',
+            after: ' and agree to be contacted by muush about my assessment.',
+            href: '/en/privacy',
+          },
       requiredHint: es
         ? 'Acepta el aviso de privacidad para enviar.'
         : 'Accept the privacy notice to send.',

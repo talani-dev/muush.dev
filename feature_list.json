@@ -1013,7 +1013,7 @@
       "id": 48,
       "name": "m1_legal_pages",
       "title": "v2 — Páginas de Aviso de privacidad y Términos y condiciones",
-      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. Decisión de Roberto 2026-10-31: Aviso de privacidad y Términos y condiciones tendrán páginas propias y entran en v2. Al registrarse NO existe diseño en el .pen ni texto legal: Clau hace el diseño y el texto lo entregan después. Cuando esta feature llegue a su turno sin diseño o sin texto, pasa a human_confirm. Los links del footer (feature 43) y del checkbox de privacidad de los formularios (feature 45) apuntan a estas rutas.",
+      "description": "MUUSH 1.0 / v2 (Roberto, 2026-10-31). Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`, nunca a master. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32) + paquete docs/handoff/muush-1.0/ (tokens.css, componentes.css/js, shaders, posters), escrito para Astro/JS vanilla: se traduce a Vue SFC + composables + Tailwind, nunca se copia tal cual. RESPONSIVE: 390 px y 1440 px son anclas que deben coincidir con el .pen; en cualquier otro ancho se permite ajustar tamaños y espacios (tipografía, gaps, paddings, anchos) para que sea responsive; color, componentes, copy y comportamiento no entran en esa libertad. Decisión de Roberto 2026-10-31: Aviso de privacidad y Términos y condiciones tendrán páginas propias y entran en v2. Al registrarse NO existe diseño en el .pen ni texto legal: Clau hace el diseño y el texto lo entregan después. Cuando esta feature llegue a su turno sin diseño o sin texto, pasa a human_confirm. Los links del footer (feature 43) y del checkbox de privacidad de los formularios (feature 45) apuntan a estas rutas. DECISIONES DE ROBERTO AL ARRANCAR (2026-11-05): (1) el diseño ya está en el .pen (privacidad y términos, ES/EN, 1440/390); (2) el texto de esos frames ES el texto legal final; (3) rutas /privacidad · /privacy y /terminos · /terms; (4) la 48 incluye el banner y las preferencias de cookies del .pen, guarda la elección del visitante y el botón 'Cambiar mis preferencias' del aviso las reabre; cargar Meta Pixel/Google Analytics es la feature 49; (5) marcadores del .pen: [fecha de publicación] → '5 de noviembre de 2026' / 'November 5, 2026'; [servicio de envío de correo] → 'Amazon SES (envío de correos)' / 'Amazon SES (email delivery)'; [y otras herramientas que se confirmen] → el aviso dice 'Meta Pixel y Google Analytics' (Clau quitó el marcador del .pen durante la lectura; Roberto decidió nombrar GA igualmente); [plazo de cada herramienta] → 'hasta 14 meses' / 'up to 14 months'.",
       "acceptance": [
         "Existen ambas páginas en ES y EN con segmentos traducidos y el toggle de idioma las resuelve",
         "Ambas páginas se indexan: sin noindex y con entrada en el sitemap (Roberto, 2026-10-31)",
@@ -1026,7 +1026,7 @@
         "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
       ],
       "sdd": false,
-      "status": "pending",
+      "status": "reviewing",
       "depends_on": [43]
     },
     {
@@ -1043,6 +1043,27 @@
       "sdd": false,
       "status": "pending",
       "depends_on": [46, 48]
+    },
+    {
+      "id": 49,
+      "name": "consented_tracking",
+      "title": "Cookies, Meta Pixel y Google Analytics con consentimiento",
+      "description": "Roberto, 2026-11-05: feature propia para Meta Pixel, Google Analytics y lo pendiente de cookies. Rama: sale de `muush-v2` y se mergea de vuelta a `muush-v2`. La 48 ya construyó el banner, el modal de preferencias y `useCookieConsent` (guarda la elección en localStorage, sin cargar nada); esta feature lo completa. ALCANCE: (1) cargar Meta Pixel y Google Analytics (GA4) SOLO después de que el visitante acepte su categoría, y dejar de cargarlos si revoca; (2) categoría 'Analítica' (GA) en el modal de preferencias, separada de 'Publicidad' (Meta Pixel), con el diseño y copy que entregue Clau en el .pen; (3) actualizar la copy del banner y del modal para que nombren Google Analytics, con texto del .pen; (4) vencimiento del consentimiento: volver a preguntar tras un plazo (recomendación del leader y del reviewer de la 48: 12 meses; lo confirma Roberto); (5) PLAZO de datos (Roberto, 2026-11-05): el aviso dice 'hasta 14 meses', así que GA4 se configura con retención de datos de 14 meses y cookie_expires de _ga a 14 meses (por defecto son 2 años); la cookie _fbp de Meta (90 días) ya cabe. ABIERTO, LO DECIDE ROBERTO ANTES DEL SPEC: la lista 'Con quién los compartimos' del aviso de privacidad solo nombra a Meta Platforms; si Google debe aparecer, Roberto entrega ese texto legal (ningún agente lo redacta). INSUMOS DE ROBERTO: Pixel ID de Meta y Measurement ID de GA4. Fuente visual: muush.pen (solo el leader lo lee, rules.md § R32).",
+      "acceptance": [
+        "Ningún script ni request a Meta o Google sale antes de que el visitante acepte la categoría correspondiente (verificado en la pestaña de red)",
+        "Aceptar solo Analítica carga GA y no Meta; aceptar solo Publicidad carga Meta y no GA",
+        "Revocar el consentimiento detiene la carga en la siguiente navegación",
+        "El modal de preferencias tiene la categoría Analítica según el .pen, en ES y EN",
+        "El consentimiento vence tras el plazo que confirme Roberto y el banner vuelve a aparecer",
+        "GA4 configurado con retención de 14 meses y cookie _ga de 14 meses",
+        "Los IDs viven en configuración pública del build, no hardcodeados en componentes",
+        "El texto legal del aviso coincide exactamente con el que entregue Roberto; ningún agente redacta texto legal",
+        "Toda la copy vive en i18n/locales/{es,en}.json; tests/i18n-parity.test.ts sigue verde (Artículo VI)",
+        "pnpm check, pnpm typecheck, pnpm test, pnpm generate y pnpm storybook:build pasan"
+      ],
+      "sdd": true,
+      "status": "pending",
+      "depends_on": [48]
     }
   ]
 }

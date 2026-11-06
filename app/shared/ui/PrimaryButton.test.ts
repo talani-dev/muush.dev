@@ -115,6 +115,19 @@ describe('PrimaryButton', () => {
     expect(icon(wrapper).classes()).toContain('size-boton-icono')
   })
 
+  it('should use the nav padding with the 14 px label when the size is compact', () => {
+    const wrapper = render({ size: 'compact', icon: false })
+
+    for (const expected of [
+      'py-boton-nav-y',
+      'px-boton-nav-x',
+      'text-boton-movil',
+    ]) {
+      expect(wrapper.classes()).toContain(expected)
+    }
+    expect(icon(wrapper).exists()).toBe(false)
+  })
+
   it('should render no arrow when icon is false', () => {
     expect(icon(render({ icon: false })).exists()).toBe(false)
   })

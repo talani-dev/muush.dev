@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { watch } from 'vue'
+import { CookieConsent } from '@/features/legal'
 import {
   MobileMenu,
   type ShellLocale,
@@ -91,6 +92,14 @@ watch(
  */
 
 /*
+ * The cookie banner and preferences (feature 48) are global: every page,
+ * the 404 included. Client-only, so the prerendered HTML carries no banner
+ * and a visitor who already chose never sees one flash before hydration.
+ * They sit inside the `inert` wrapper: the open mobile menu covers them.
+ * The preferences dialog is a modal `<dialog>` in the top layer.
+ */
+
+/*
  * The `hreflang` alternates and the `lang` attribute, from the same i18n
  * route table the toggle resolves against (Constitution Article VI).
  *
@@ -161,6 +170,10 @@ useSiteSeo()
         :copyright="brand.copyright"
         :label="labels.footer"
       />
+
+      <ClientOnly>
+        <CookieConsent />
+      </ClientOnly>
     </div>
   </div>
 </template>

@@ -64,16 +64,16 @@ export const MOBILE_FOOTER_LINKS: ShellItem[] = [
 ]
 
 /**
- * Privacy notice and Terms. Plain text until feature 48 creates their pages
- * (`muush-1.0.md` § 1, spec FR-032).
+ * Privacy notice and Terms, in both footers' bottom rows: their own pages
+ * since feature 48 (`muush-1.0.md` § 1, pen-extract-48 § 4).
  */
 export const LEGAL_ITEMS: ShellItem[] = [
   {
     labelKey: 'shell.footer.legal.privacy',
-    destination: FOOTER_DESTINATIONS.none,
+    destination: FOOTER_DESTINATIONS.privacy,
   },
   {
     labelKey: 'shell.footer.legal.terms',
-    destination: FOOTER_DESTINATIONS.none,
+    destination: FOOTER_DESTINATIONS.terms,
   },
 ]

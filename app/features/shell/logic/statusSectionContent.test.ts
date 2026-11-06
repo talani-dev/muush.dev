@@ -12,8 +12,20 @@ import { createShellItemResolver } from './useShellItemResolver'
  * changes on the 404 without navigating.
  */
 const PATHS: Record<'es' | 'en', Record<ShellRouteName, string>> = {
-  es: { index: '/es', about: '/es/nosotros', faq: '/es/preguntas' },
-  en: { index: '/en', about: '/en/about', faq: '/en/faq' },
+  es: {
+    index: '/es',
+    about: '/es/nosotros',
+    faq: '/es/preguntas',
+    privacy: '/es/privacidad',
+    terms: '/es/terminos',
+  },
+  en: {
+    index: '/en',
+    about: '/en/about',
+    faq: '/en/faq',
+    privacy: '/en/privacy',
+    terms: '/en/terms',
+  },
 }
 
 const COPY: Record<'es' | 'en', Record<string, string>> = {

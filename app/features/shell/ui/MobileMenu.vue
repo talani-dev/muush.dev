@@ -6,7 +6,7 @@ import type {
   ShellLocale,
 } from '@/features/shell/data/types'
 import { scrollToTopIfCurrent } from '@/features/shell/logic/scrollToTopIfCurrent'
-import { useFocusTrap } from '@/features/shell/logic/useFocusTrap'
+import { useFocusTrap } from '@/shared/logic/useFocusTrap'
 import Lockup from '@/shared/ui/Lockup.vue'
 import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
 import LanguageToggle from './LanguageToggle.vue'

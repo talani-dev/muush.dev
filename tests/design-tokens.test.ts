@@ -911,3 +911,116 @@ describe('design tokens · the secondary pages (feature 46)', () => {
     }
   })
 })
+
+/*
+ * Feature 48 · the legal pages and cookie consent (pen-extract-48 § 3,
+ * `pen-48/`). Fluid values hit the 390 / 1440 frames; fixed ones are the
+ * same in both.
+ */
+describe('design tokens · the legal pages and cookie consent (feature 48)', () => {
+  const FLUID: [string, number, number][] = [
+    ['--h-legal', 34, 56],
+    ['--lh-legal', 39.1, 61.6],
+    ['--spacing-legal-arriba', 112, 168],
+    ['--spacing-legal-abajo', 72, 120],
+    ['--spacing-legal-gap', 40, 64],
+    ['--spacing-legal-encabezado-gap', 16, 20],
+    ['--text-legal-fecha', 13, 15],
+    ['--text-legal-fecha--line-height', 20, 23],
+    ['--spacing-legal-seccion-arriba', 28, 40],
+    ['--spacing-legal-seccion-gap', 14, 18],
+    ['--text-legal-titulo', 22, 28],
+    ['--text-legal-titulo--line-height', 29, 35],
+    ['--text-legal-cuerpo', 16, 17],
+    ['--text-legal-cuerpo--line-height', 26, 29],
+    ['--spacing-legal-item-gap', 12, 14],
+    ['--spacing-legal-punto-arriba', 11, 12],
+    ['--spacing-legal-numero', 16, 18],
+    ['--text-legal-numero', 15, 16],
+    ['--text-legal-numero--line-height', 25, 27],
+    ['--text-legal-donde', 14, 15],
+    ['--text-legal-donde--line-height', 21, 24],
+    ['--text-legal-datos', 15, 16],
+    ['--text-legal-datos--line-height', 24, 26],
+    ['--text-legal-boton', 14, 15],
+    ['--spacing-cookies', 18, 24],
+    ['--spacing-cookies-abajo', 16, 24],
+    ['--text-cookies-titulo', 17, 18],
+    ['--text-cookies-titulo--line-height', 22, 23],
+    ['--spacing-preferencias', 20, 28],
+    ['--text-preferencias-titulo', 18, 22],
+  ]
+
+  for (const [name, mobile, desktop] of FLUID) {
+    it(`should resolve ${name} to ${mobile} px at 390 and ${desktop} px at 1440 when evaluated`, () => {
+      const value = (declared(name) ?? '').replaceAll(/\s+/g, ' ')
+
+      expect(value, name).toMatch(/^clamp\(/)
+      expect(Math.abs(clampPx(value, MOBILE_ANCHOR) - mobile)).toBeLessThan(
+        TOLERANCE_PX
+      )
+      expect(Math.abs(clampPx(value, DESKTOP_ANCHOR) - desktop)).toBeLessThan(
+        TOLERANCE_PX
+      )
+    })
+  }
+
+  const FIXED: [string, number][] = [
+    ['--container-legal', 680],
+    ['--spacing-legal-indice', 220],
+    ['--spacing-legal-indice-gap', 14],
+    ['--spacing-legal-indice-arriba', 80],
+    ['--spacing-legal-indice-fijo', 168],
+    ['--spacing-legal-plegado', 48],
+    ['--spacing-legal-lista-gap', 10],
+    ['--spacing-legal-punto', 6],
+    ['--spacing-legal-fila-y', 14],
+    ['--spacing-legal-fila-gap', 24],
+    ['--spacing-legal-donde', 190],
+    ['--spacing-legal-tarjeta', 18],
+    ['--spacing-legal-tarjeta-gap', 6],
+    ['--spacing-legal-boton-y', 12],
+    ['--spacing-legal-boton-x', 20],
+    ['--spacing-cookies-gap', 32],
+    ['--spacing-cookies-movil-gap', 12],
+    ['--spacing-cookies-boton-y', 10],
+    ['--spacing-cookies-boton-x', 18],
+    ['--text-cookies', 14],
+    ['--container-panel-preferencias', 720],
+    ['--spacing-preferencias-borde', 8],
+    ['--spacing-interruptor-ancho', 44],
+    ['--spacing-interruptor-alto', 26],
+    ['--spacing-interruptor-aire', 3],
+    ['--spacing-perilla', 20],
+    ['--spacing-perilla-recorrido', 18],
+    ['--text-cookie-categoria', 15],
+    ['--text-cookie-categoria-detalle', 13],
+  ]
+
+  for (const [name, px] of FIXED) {
+    it(`should declare ${name} as ${px} px at both anchors when the stylesheet loads`, () => {
+      expect(normalise(declared(name) ?? ''), name).toBe(`${px}px`)
+    })
+  }
+
+  it('should derive the new surfaces from the palette when the stylesheet loads', () => {
+    expect(declared('--cookies-fondo')).toBe(
+      'color-mix(in srgb, var(--negro-900) 95%, transparent)'
+    )
+    expect(declared('--velo')).toBe('rgb(0 0 0 / 0.7)')
+    expect(declared('--texto-cookies')).toBe('#b4b4b0')
+  })
+
+  it('should declare no feature 48 token twice when the stylesheet loads', () => {
+    for (const name of [
+      ...FLUID.map(([name]) => name),
+      ...FIXED.map(([name]) => name),
+      '--text-legal',
+    ]) {
+      const declarations = globalCss.match(
+        new RegExp(`(?:^|[\\s;{])${name}:`, 'g')
+      )
+      expect(declarations?.length, name).toBe(1)
+    }
+  })
+})

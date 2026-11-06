@@ -1062,3 +1062,31 @@ servir con `python3 -m http.server`, pero una ruta inexistente devuelve el 404
 del propio servidor, no `es/404/index.html` (en S3 + CloudFront eso lo hace la
 configuración de errores). Para probar la página 404 hay que abrir
 `/es/404/` directamente.
+
+## Feature 048 · Páginas legales y consentimiento de cookies — hallazgos (2026-11-05)
+
+### R77 · `max-w-<nombre>` lee `--spacing-<nombre>` antes que `--container-<nombre>`
+
+Con `--spacing-preferencias` (un padding) y `--container-preferencias` (720)
+declarados a la vez en `@theme inline`, `max-w-preferencias` compiló a
+`max-width: clamp(1.25rem, …)` — el padding — y el diálogo quedó de 56 px de
+ancho. No hay error ni aviso. Si un ancho máximo comparte nombre con un token
+de espaciado, el contenedor necesita un nombre propio (aquí
+`--container-panel-preferencias`).
+
+### R78 · Un token nuevo con el nombre de uno existente lo pisa en silencio
+
+`--spacing-aviso-gap` y `--text-aviso` ya eran del aviso de los formularios
+(feature 45) y `--text-categoria` del footer (feature 43). Declararlos otra vez
+para el banner de cookies no falla en ningún paso: gana la última declaración y
+el formulario cambia de tamaño. Antes de nombrar un token, buscar el nombre
+exacto en `global.css` (`grep -n -- '--text-aviso:'`); la prueba "declare no
+… token twice" de `tests/design-tokens.test.ts` solo cubre los nombres que su
+feature lista.
+
+### R79 · Un `<dialog>` modal no atrapa el Tab en Chrome
+
+`showModal()` vuelve inerte la página y convierte Escape en `cancel`, pero el
+Tab desde el último control sale a la interfaz del navegador (medido por CDP:
+1 de 16 tabulaciones quedó fuera a 390). Por eso `useFocusTrap` vive ahora en
+`app/shared/logic/` y lo usan el menú móvil y las preferencias de cookies.

@@ -20,7 +20,7 @@ import SocialLinks from './SocialLinks.vue'
  * 3. the links on one wrapped line, 15 / 400 Blanco 70 %, " · " between;
  * 4. the social buttons (44 × 44);
  * 5. legal (gap 6, 1 px Carbón 700 above, padding-top 16, 12 / 400 Gris 400):
- *    privacy and terms as text until feature 48, then the copyright.
+ *    privacy and terms (links since feature 48), then the copyright.
  */
 interface Props {
   contactChannels: ResolvedContactChannel[]

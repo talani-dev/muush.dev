@@ -16,13 +16,26 @@ export interface FormSuccessAction {
   to?: string
 }
 
+/**
+ * The consent sentence around its "aviso de privacidad" link (feature 48):
+ * the link opens the privacy page in a new tab, so a half-filled form is
+ * not lost (pen-extract-48 § 4).
+ */
+export interface ConsentLabel {
+  before: string
+  link: string
+  after: string
+  /** The privacy page in the current locale. */
+  href: string
+}
+
 export interface FormChromeContent {
   /** "Paso 1 de 2 · Tus datos", one per step, already interpolated. */
   progress: Record<FormStep, string>
   continue: string
   back: string
   privacy: {
-    label: string
+    label: ConsentLabel
     /** Screen-reader-only reason the submit is unavailable (Roberto
      * 2026-11-02). */
     requiredHint: string

@@ -75,9 +75,13 @@ const APPROVED: Record<string, [string, string]> = {
   'steps.titles.2': ['Tu negocio', 'Your business'],
   continue: ['Continuar', 'Continue'],
   back: ['← Atrás', '← Back'],
-  'privacy.label': [
-    'Acepto el aviso de privacidad y que muush me contacte sobre mi diagnóstico.',
-    'I accept the privacy notice and agree to be contacted by muush about my assessment.',
+  /* Feature 48 · split around the link to the privacy page; the sentence
+     is unchanged. */
+  'privacy.before': ['Acepto el ', 'I accept the '],
+  'privacy.link': ['aviso de privacidad', 'privacy notice'],
+  'privacy.after': [
+    ' y que muush me contacte sobre mi diagnóstico.',
+    ' and agree to be contacted by muush about my assessment.',
   ],
   'privacy.requiredHint': [
     'Acepta el aviso de privacidad para enviar.',

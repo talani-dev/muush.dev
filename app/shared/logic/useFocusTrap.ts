@@ -2,7 +2,10 @@ import { onMounted, onScopeDispose, type Ref } from 'vue'
 
 /**
  * Keeps Tab and Shift+Tab inside `container` while `active()` (feature 43,
- * spec FR-020, contract § 8).
+ * spec FR-020, contract § 8). Lifted from the shell into `shared/` by
+ * feature 48, whose cookie preferences dialog needs the same trap: a modal
+ * `<dialog>` makes the page inert, but Tab from its last control still
+ * leaves for the browser chrome (measured in Chrome, 2026-11-05).
  *
  * The layout already makes everything outside the open menu `inert`, which
  * removes it from the tab order and the accessibility tree. That alone is

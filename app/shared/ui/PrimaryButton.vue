@@ -17,6 +17,7 @@ import arrowRight from '@/assets/icons/arrow-right.svg?raw'
  * | hero  | from `lg` (desktop hero)  | 16 / 30 | 19    | 20    | 253 × 55 |
  * | nav   | desktop nav CTA           | 11 / 20 | 15    | 16    | 195 × 40 |
  * | block | form submit, full width   | 16 / 30 | 19    | 20    | 302 × 55 at 390 |
+ * | compact | cookie preferences save (feature 48) | 11 / 20 | 14 | — | 167 × 39 |
  *
  * The arrow is visible at every width and every size: the mobile hero and
  * the mobile form submit draw the same 20 px lucide arrow as the desktop
@@ -41,7 +42,7 @@ import arrowRight from '@/assets/icons/arrow-right.svg?raw'
  * Clarifications Q3, confirmed by Roberto 2026-10-31). The brand cursor
  * comes from the global rules in `global.css`, as on every control.
  */
-export type PrimaryButtonSize = 'hero' | 'nav' | 'block'
+export type PrimaryButtonSize = 'hero' | 'nav' | 'block' | 'compact'
 
 interface Props {
   label: string
@@ -74,12 +75,16 @@ const SIZE_CLASSES = {
   hero: 'py-boton-movil-y px-boton-movil-x text-boton-movil lg:py-boton-y lg:px-boton-x lg:text-boton-hero',
   nav: 'py-boton-nav-y px-boton-nav-x text-boton-nav',
   block: 'w-full py-boton-y px-boton-x text-boton-hero',
+  /* "Guardar mi elección" (pen-extract-48, `P5UI3` / `kDst7`): the nav
+     padding with the 14 px label, drawn without the arrow. */
+  compact: 'py-boton-nav-y px-boton-nav-x text-boton-movil',
 } satisfies Record<PrimaryButtonSize, string>
 
 const ICON_CLASSES = {
   hero: 'size-boton-icono',
   nav: 'size-boton-icono-nav',
   block: 'size-boton-icono',
+  compact: 'size-boton-icono-nav',
 } satisfies Record<PrimaryButtonSize, string>
 
 /* The brand cursor rules in `global.css` set the not-allowed cursor from

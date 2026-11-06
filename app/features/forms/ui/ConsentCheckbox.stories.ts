@@ -4,7 +4,8 @@ import ConsentCheckbox from './ConsentCheckbox.vue'
 /**
  * The privacy consent (feature 45, spec FR-008; pen extract-45 §§ 2, 8):
  * 18 px box, Blanco 40 % stroke on mobile, 25 % on desktop; ticked it fills
- * Red muush. It enables sending and is never sent.
+ * Red muush. It enables sending and is never sent. "aviso de privacidad"
+ * links to the privacy page in a new tab (feature 48).
  */
 const meta = {
   title: 'Forms/ConsentCheckbox',
@@ -24,14 +25,22 @@ const desktop = { viewport: { value: 'desktop' } }
 
 const es = {
   id: 'privacy',
-  label:
-    'Acepto el aviso de privacidad y que muush me contacte sobre mi diagnóstico.',
+  label: {
+    before: 'Acepto el ',
+    link: 'aviso de privacidad',
+    after: ' y que muush me contacte sobre mi diagnóstico.',
+    href: '/es/privacidad',
+  },
   modelValue: false,
 }
 const en = {
   ...es,
-  label:
-    'I accept the privacy notice and agree to be contacted by muush about my assessment.',
+  label: {
+    before: 'I accept the ',
+    link: 'privacy notice',
+    after: ' and agree to be contacted by muush about my assessment.',
+    href: '/en/privacy',
+  },
 }
 
 export const EsMobile390: Story = { args: es, globals: mobile }

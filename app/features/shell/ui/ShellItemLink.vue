@@ -10,8 +10,8 @@ import { scrollToTopIfCurrent } from '@/features/shell/logic/scrollToTopIfCurren
  * - external: an `<a>` opening a new tab with the opener severed;
  * - internal or `mailto:`: a `NuxtLink` (it renders a plain anchor for a
  *   protocol, and a mail link stays in the same tab);
- * - no destination ("Blog · próximamente", the legal entries until feature
- *   48): a `<span>`, never an anchor without `href`.
+ * - no destination ("Blog · próximamente"): a `<span>`, never an anchor
+ *   without `href`.
  *
  * Classes passed by the caller land on whichever element renders. The Home
  * item (`scrollsToTop`) scrolls to the top when clicked on its own page.

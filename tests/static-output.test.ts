@@ -35,6 +35,11 @@ const DOCUMENTS = {
   /* Feature 46 · Preguntas (`i18n.pages.faq`). */
   '/es/preguntas': join('es', 'preguntas', 'index.html'),
   '/en/faq': join('en', 'faq', 'index.html'),
+  /* Feature 48 · the legal pages (`i18n.pages.privacy`, `.terms`). */
+  '/es/privacidad': join('es', 'privacidad', 'index.html'),
+  '/en/privacy': join('en', 'privacy', 'index.html'),
+  '/es/terminos': join('es', 'terminos', 'index.html'),
+  '/en/terms': join('en', 'terms', 'index.html'),
 } as const
 
 type RoutePath = keyof typeof DOCUMENTS
@@ -47,6 +52,10 @@ const EQUIVALENT_ROUTE: Record<RoutePath, RoutePath> = {
   '/en/about': '/es/nosotros',
   '/es/preguntas': '/en/faq',
   '/en/faq': '/es/preguntas',
+  '/es/privacidad': '/en/privacy',
+  '/en/privacy': '/es/privacidad',
+  '/es/terminos': '/en/terms',
+  '/en/terms': '/es/terminos',
 }
 
 const ROUTES = Object.keys(DOCUMENTS) as RoutePath[]
@@ -127,8 +136,9 @@ describe('static output · routes', () => {
       file => file !== 'index.vue'
     )
 
-    /* Feature 46 added `faq.vue`; still one file per page, both locales. */
-    expect(pages).toEqual(['about.vue', 'faq.vue'])
+    /* Feature 46 added `faq.vue`, feature 48 the two legal pages; still one
+       file per page, both locales. */
+    expect(pages).toEqual(['about.vue', 'faq.vue', 'privacy.vue', 'terms.vue'])
     expect(documentFor('/es/nosotros')).toContain('id="trabaja-con-muush"')
     expect(documentFor('/en/about')).toContain('id="trabaja-con-muush"')
   })
@@ -137,6 +147,33 @@ describe('static output · routes', () => {
     /* Feature 46 · FR-030, FR-033: `/es/preguntas` ↔ `/en/faq`. */
     expect(documentFor('/es/preguntas')).toContain('En construcción 🚧')
     expect(documentFor('/en/faq')).toContain('Under construction 🚧')
+  })
+
+  it('should resolve the legal pages at both localized paths with their final text', () => {
+    /* Feature 48 · pen-extract-48 § 4. The prerendered HTML carries the
+       legal text and no cookie banner: the banner is client-only. */
+    expect(documentFor('/es/privacidad')).toContain(
+      'Última actualización: 5 de noviembre de 2026'
+    )
+    expect(documentFor('/en/privacy')).toContain('Courtesy translation.')
+    expect(documentFor('/es/terminos')).toContain('Ley aplicable')
+    expect(documentFor('/en/terms')).toContain('Governing law')
+    for (const route of ROUTES) {
+      expect(documentFor(route), route).not.toContain('aviso-cookies-titulo')
+    }
+  })
+
+  it('should link both legal pages from the footer of every page', () => {
+    for (const route of ROUTES) {
+      const locale = route.startsWith('/es') ? 'es' : 'en'
+      const [privacy, terms] =
+        locale === 'es'
+          ? ['/es/privacidad', '/es/terminos']
+          : ['/en/privacy', '/en/terms']
+
+      expect(documentFor(route), route).toContain(`href="${privacy}"`)
+      expect(documentFor(route), route).toContain(`href="${terms}"`)
+    }
   })
 
   it('should leave no anchor without a destination on any page', () => {
@@ -497,19 +534,27 @@ describe('static output · the header (feature 43)', () => {
   }
 
   it('should render no "Proyectos"/"Projects" text anywhere in the static document (feature 23, item 9)', () => {
+    /* Feature 48: the Términos' own legal text has a "Proyectos y
+       propuestas" / "Projects and proposals" section, Roberto's wording,
+       not the retired Projects section this guards against. Only that
+       page's article is set aside. */
+    const LEGAL_TERMS: RoutePath[] = ['/es/terminos', '/en/terms']
     for (const route of ROUTES) {
-      const html = documentFor(route)
+      const document = documentFor(route)
+      const html = LEGAL_TERMS.includes(route)
+        ? document.replace(/<article[\s\S]*<\/article>/, '')
+        : document
       const locale = route.startsWith('/en') ? 'Projects' : 'Proyectos'
 
       expect(html, route).not.toContain(locale)
     }
   })
 
-  it('should render the blog and the legal entries as text in the footer', () => {
+  it('should render the blog as text and the legal entries as links in the footer', () => {
     /*
-     * Feature 43 (spec FR-031…FR-033, SC-006): "Blog · próximamente", the
-     * privacy notice and the terms are text until their pages exist (feature
-     * 48 for the legal two).
+     * Feature 43 (spec FR-031…FR-033, SC-006): "Blog · próximamente" is text
+     * until its page exists. The privacy notice and the terms link to their
+     * pages since feature 48.
      */
     for (const route of ROUTES) {
       const footer = documentFor(route).match(/<footer[\s\S]*<\/footer>/)?.[0]
@@ -520,13 +565,11 @@ describe('static output · the header (feature 43)', () => {
       expect(footer, route).toBeDefined()
       expect(footer, route).toContain('Blog')
       expect(linked, route).not.toContain('Blog')
-      for (const label of [
-        'Aviso de privacidad',
-        'Privacy notice',
-        'Términos',
-        'Terms',
-      ]) {
-        expect(linked, `${route} · ${label}`).not.toContain(label)
+      const labels = route.startsWith('/es')
+        ? ['Aviso de privacidad', 'Términos y condiciones']
+        : ['Privacy notice', 'Terms and conditions']
+      for (const label of labels) {
+        expect(linked, `${route} · ${label}`).toContain(label)
       }
     }
   })

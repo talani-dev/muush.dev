@@ -391,8 +391,9 @@ describe('ContactForm · assistive technology (US5)', () => {
     for (const id of ['name', 'email', 'company', 'identity', 'need']) {
       expect(wrapper.find(`label[for="${id}"]`).exists(), id).toBe(true)
     }
+    const { before, link, after } = content.privacy.label
     expect(wrapper.find('label[for="privacy"]').text()).toBe(
-      content.privacy.label
+      `${before}${link}${after}`
     )
   })
 
