@@ -1,37 +1,29 @@
 <script setup lang="ts">
 /**
- * Wordmark — `muush.dev` (full) or `muush` (short), the two lockups
- * `branding.md` documents as official. Geometry and type from
- * docs/business/landing/design-extract.md § 5.
+ * Wordmark — "muush.dev" in Muush 1.0 (feature 43, spec FR-036, contract
+ * § 1; pen extract-43 § 1): Poppins 22 on one baseline, three runs.
  *
- * The three runs `muush` / `.` / `dev` are the one deliberately hardcoded
- * string set in this layer: they are brand identity, not copy, and they are
- * locale-invariant (docs/business/messaging.md rule 6, "muush siempre en
- * minúsculas"). Everything else in these primitives comes from the caller.
+ * | Run   | Weight | Colour        |
+ * |-------|--------|---------------|
+ * | muush | 600    | Blanco        |
+ * | .     | 600    | Red muush 500 |
+ * | dev   | 400    | Gris 400      |
  *
- * The runs sit in a flex row with no gap so they read as one word; flex also
- * makes the markup immune to whitespace a formatter may insert between them.
+ * The weights are the design's (Roberto, 2026-11-01; Constitution 2.1.2,
+ * Article VII). Poppins 400 is self-hosted for the "dev" run only.
  *
- * This is the only component in the layer permitted to use Poppins
- * (branding.md: logo and wordmark exclusive).
+ * Decorative text: the link that holds the lockup carries the accessible
+ * name, so the three runs are not read out as "muush dot dev".
  */
-export type WordmarkForm = 'full' | 'short'
-
-interface Props {
-  form?: WordmarkForm
-}
-
-const { form = 'full' } = defineProps<Props>()
 </script>
 
 <template>
   <span
-    class="inline-flex items-baseline font-poppins text-wordmark text-bone-100"
+    aria-hidden="true"
+    class="inline-flex items-baseline whitespace-nowrap font-titulo text-marca"
   >
-    <span>muush</span>
-    <template v-if="form === 'full'">
-      <span class="text-red-400">.</span>
-      <span>dev</span>
-    </template>
+    <span class="font-semibold text-blanco">muush</span>
+    <span class="font-semibold text-red-muush-500">.</span>
+    <span class="font-normal text-gris-400">dev</span>
   </span>
 </template>

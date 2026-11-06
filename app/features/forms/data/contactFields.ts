@@ -3,6 +3,7 @@ import {
   type CountryOption,
   DEFAULT_COUNTRY,
 } from '@/features/forms/data/countries'
+import type { FormChromeContent } from '@/features/forms/data/formChrome'
 
 /**
  * The contact form's field model. Source of truth:
@@ -10,7 +11,8 @@ import {
  *
  * Plain types and named constants only — no Vue, no Nuxt, no validation
  * logic. `logic/useContactForm.ts` imports this; this file imports only
- * `countries.ts`, a sibling `data/` file (Constitution Article II).
+ * `countries.ts` and the type of `formChrome.ts`, sibling `data/` files
+ * (Constitution Article II).
  */
 
 export type ContactFieldId =
@@ -114,9 +116,9 @@ export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /**
  * What `logic/`/`ui/` receive: already-translated field content, resolved by
- * whichever module composes `ContactForm` (`landing` for this feature,
- * `about` for feature 20's application form — same field vocabulary, a
- * sibling i18n namespace, per plan.md D-1/D-4).
+ * `useContactFormContent` from `forms.contact.*`. Since feature 45 the v2
+ * shape: the shared form chrome (`formChrome.ts`) plus the fields; the v1
+ * shape lives on as `LegacyContactFormContent` in `data/legacy/`.
  */
 export interface ContactFormFieldContent {
   label: string
@@ -128,12 +130,14 @@ export interface ContactFormFieldContent {
   errorInvalid?: string
 }
 
-export interface ContactFormContent {
+export interface ContactFormContent extends FormChromeContent {
   fields: {
     name: ContactFormFieldContent
     email: ContactFormFieldContent
     company: ContactFormFieldContent
+    /** `placeholder` is required: the select's empty option shows it. */
     identity: ContactFormFieldContent & {
+      placeholder: string
       options: Record<IdentityOption, string>
     }
     need: ContactFormFieldContent
@@ -149,13 +153,6 @@ export interface ContactFormContent {
     }
     whatsapp: ContactFormFieldContent
   }
-  submit: string
-  /** The submit label while a request is in flight (feature 029, FR-019). */
-  sending: string
-  /** The confirmation with the visitor's chosen channel already filled in
-   * (`ui-map.md` § 7, spec OA-4) — one variant per preference. */
-  success: { titleByChannel: Record<ContactPreference, string> }
-  error: { title: string; fallback: string }
 }
 
 export function initialContactFormValues(): ContactFormValues {

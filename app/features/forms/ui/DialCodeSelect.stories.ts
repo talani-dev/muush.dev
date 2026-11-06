@@ -2,62 +2,41 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { buildCountryOptions } from '@/features/forms/logic/countryOptions'
 import DialCodeSelect from './DialCodeSelect.vue'
 
-/* Visual classes UNVERIFIED against the `.pen` (feature 32 spec OA-10). */
+/**
+ * The WhatsApp dial code in the v2 anatomy (feature 45, spec FR-019): a
+ * transparent native select over a `{flag} {dial code}` face.
+ */
 const meta = {
   title: 'Forms/DialCodeSelect',
   component: DialCodeSelect,
+  globals: { backgrounds: { value: 'negro' } },
   parameters: { layout: 'padded' },
+  decorators: [
+    () => ({ template: '<div class="max-w-panel-form"><story /></div>' }),
+  ],
 } satisfies Meta<typeof DialCodeSelect>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-const spanish = buildCountryOptions('es-MX')
+const mobile = { viewport: { value: 'mobile' } }
+const desktop = { viewport: { value: 'desktop' } }
 
-export const Default: Story = {
+export const EsMobile390: Story = {
   args: {
     id: 'whatsappCountry',
     modelValue: 'MX',
-    options: spanish,
+    options: buildCountryOptions('es-MX'),
     label: 'Lada del país',
   },
+  globals: mobile,
 }
-
-export const English: Story = {
+export const EnDesktop1440: Story = {
   args: {
     id: 'whatsappCountry',
     modelValue: 'US',
     options: buildCountryOptions('en'),
     label: 'Country code',
   },
-}
-
-export const Colombia: Story = {
-  args: {
-    id: 'whatsappCountry',
-    modelValue: 'CO',
-    options: spanish,
-    label: 'Lada del país',
-  },
-}
-
-export const WithError: Story = {
-  args: {
-    id: 'whatsappCountry',
-    modelValue: 'MX',
-    options: spanish,
-    label: 'Lada del país',
-    error: 'Elige la lada de tu país',
-    errorId: 'whatsappCountry-error',
-  },
-}
-
-export const Readonly: Story = {
-  args: {
-    id: 'whatsappCountry',
-    modelValue: 'MX',
-    options: spanish,
-    label: 'Lada del país',
-    readonly: true,
-  },
+  globals: desktop,
 }

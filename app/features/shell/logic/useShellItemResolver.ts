@@ -3,6 +3,7 @@ import type {
   ShellItem,
   ShellRouteName,
 } from '@/features/shell/data/types'
+import type { SectionAnchor } from '@/shared/data/sectionAnchors'
 
 /** What the resolver needs from the Nuxt runtime, and nothing else. */
 export interface ShellItemResolverDeps {
@@ -13,6 +14,17 @@ export interface ShellItemResolverDeps {
    * `undefined` on an unmatched one, such as the not-found page.
    */
   currentRouteName: () => string | symbol | undefined
+  /**
+   * The section in view on the current page, from the scroll-spy (feature
+   * 43, spec FR-028). Omitted, or `null`, marks no anchor item.
+   */
+  activeAnchor?: () => SectionAnchor | null
+  /**
+   * Whether the visitor is above the first spied section (the scroll-spy's
+   * `atTop`). Lights a `top` item on its own page. Omitted means `false`:
+   * the not-found page, which has no spy, lights nothing.
+   */
+  atTop?: () => boolean
 }
 
 export interface ShellItemResolver {
@@ -21,20 +33,21 @@ export interface ShellItemResolver {
 }
 
 /**
- * The destination resolver, as a pure function of its three dependencies so
- * it can be unit-tested without a Nuxt app. Lifted verbatim from
- * `useShellNavigation` when the not-found page became its second consumer
- * (feature 36, `specs/036-not-found-page/research.md` R5 — DRY).
+ * The destination resolver, as a pure function of its dependencies so it
+ * can be unit-tested without a Nuxt app. Shared by the shell and the
+ * not-found page (feature 36, research R5).
  */
 export function createShellItemResolver({
   t,
   localePath,
   currentRouteName,
+  activeAnchor = () => null,
+  atTop = () => false,
 }: ShellItemResolverDeps): ShellItemResolver {
   /**
-   * An anchor always resolves to the locale's home **plus** the hash, never
-   * to a bare fragment: the footer renders on the About page too, where
-   * `#proyectos` on its own points at nothing (spec FR-041).
+   * An anchor always resolves to its route's localized path **plus** the
+   * hash, never to a bare fragment: the shell renders on Nosotros and the
+   * 404 too, where `#servicios` alone points at nothing (spec FR-026).
    */
   function resolveHref(item: ShellItem): string | undefined {
     const { destination } = item
@@ -43,9 +56,10 @@ export function createShellItemResolver({
       case 'none':
         return undefined
       case 'route':
+      case 'top':
         return localePath({ name: destination.name })
       case 'anchor':
-        return `${localePath({ name: destination.name })}${destination.hash}`
+        return `${localePath({ name: destination.name })}#${destination.anchor}`
       case 'external': {
         const { href, messageKey } = destination
         if (!messageKey) return href
@@ -54,15 +68,38 @@ export function createShellItemResolver({
     }
   }
 
+  /**
+   * `page` for a route item on its own page, and for a `top` item on its
+   * own page while the visitor is at its top (the Home item, Roberto
+   * 2026-11-01); `section` for an anchor item on its route while its
+   * section is in view (spec FR-027, FR-028). The not-found page has no
+   * route name, so nothing is current there.
+   */
+  function resolveCurrent(item: ShellItem): ResolvedShellItem['current'] {
+    const { destination } = item
+    if (
+      destination.kind !== 'route' &&
+      destination.kind !== 'top' &&
+      destination.kind !== 'anchor'
+    ) {
+      return
+    }
+    if (destination.name !== currentRouteName()) return
+    if (destination.kind === 'route') return 'page'
+    if (destination.kind === 'top') return atTop() ? 'page' : undefined
+    return destination.anchor === activeAnchor() ? 'section' : undefined
+  }
+
   function resolveItem(item: ShellItem): ResolvedShellItem {
     const { destination } = item
     const href = resolveHref(item)
+    const current = resolveCurrent(item)
 
     return {
       label: t(item.labelKey),
       /*
-       * The key is omitted rather than set to `undefined`, so an item with no
-       * destination is structurally a label and nothing else (spec FR-039).
+       * The keys are omitted rather than set to `undefined`, so an item with
+       * no destination is structurally a label and nothing else.
        */
       ...(href === undefined ? {} : { href }),
       /*
@@ -72,8 +109,8 @@ export function createShellItemResolver({
       external:
         destination.kind === 'external' &&
         !destination.href.startsWith('mailto:'),
-      current:
-        destination.kind === 'route' && destination.name === currentRouteName(),
+      ...(current === undefined ? {} : { current }),
+      ...(destination.kind === 'top' ? { scrollsToTop: true as const } : {}),
     }
   }
 
@@ -82,9 +119,12 @@ export function createShellItemResolver({
 
 /**
  * Wires the resolver to the Nuxt runtime. Destinations are resolved by
- * **route name**, never by writing a path (spec FR-018 of feature 003).
+ * **route name**, never by writing a path (feature 003, spec FR-018).
  */
-export function useShellItemResolver(): ShellItemResolver {
+export function useShellItemResolver(
+  activeAnchor?: () => SectionAnchor | null,
+  atTop?: () => boolean
+): ShellItemResolver {
   const { t } = useI18n()
   const localePath = useLocalePath()
   const routeBaseName = useRouteBaseName()
@@ -94,5 +134,7 @@ export function useShellItemResolver(): ShellItemResolver {
     t: key => t(key),
     localePath: target => localePath(target),
     currentRouteName: () => routeBaseName(route),
+    activeAnchor,
+    atTop,
   })
 }

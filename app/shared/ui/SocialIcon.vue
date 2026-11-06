@@ -4,41 +4,27 @@ import linkedin from '@/assets/social/linkedin.svg?raw'
 import tiktok from '@/assets/social/tiktok.svg?raw'
 
 /**
- * SocialIcon — the 48×48 dark-glass square of the mobile menu, from
- * docs/business/landing/design-extract.md § 8.
+ * SocialIcon — a network's brand glyph in Muush 1.0 (feature 43, spec
+ * FR-037, contract § 1).
  *
- * The glyph is inlined with `?raw` + `v-html` rather than referenced as an
- * image, so its `currentColor` fills resolve against `text-bone-100`. Served
- * as `<img>` it would stay the vendor's pure white and defeat the whole
- * normalization (docs/business/rules.md §§ R8, R14). The three assets are
- * consumed exactly as feature 1 delivered them.
+ * The three SVGs of `app/assets/social/` (already normalised to a 24 × 24
+ * box with `fill="currentColor"`), inlined with `?raw` so the glyph takes the
+ * current text colour (rules.md § R14). Roberto, 2026-11-01: the real brand
+ * glyphs go inside the designed buttons, not the "in" / "ig" / "tt" text the
+ * `.pen` draws (pen extract-43 § 9, Q2).
  *
- * The `v-html` string is a build-time constant read from a reviewed file in
- * this repository. No caller, no route and no fetch can reach it.
- *
- * The accessible name comes from the caller, because the glyph carries no
- * text of its own.
- *
- * The pointer is declared rather than inherited. It reads as a 48×48 button and
- * `href` is required, so it is always clickable — but nothing in the stylesheet
- * said so, and it looked correct only because the user-agent sheet gives an
- * `<a href>` a pointer (`docs/harness/findings.md` § R56). Stating it keeps the
- * three glass controls of the mobile menu — the two real `<button>`s and these
- * three — behaving identically under the pointer.
+ * Only the glyph: the caller owns the box, the size (a `size-*` class on
+ * this element) and the accessible name. Decorative.
  */
 export type SocialNetwork = 'linkedin' | 'instagram' | 'tiktok'
 
 interface Props {
   network: SocialNetwork
-  /** The profile URL. Always opened in a new context. */
-  href: string
-  /** Accessible name — required, the glyph has no text. */
-  label: string
 }
 
-const { network, href, label } = defineProps<Props>()
+const { network } = defineProps<Props>()
 
-const glyphByNetwork = {
+const GLYPHS = {
   linkedin,
   instagram,
   tiktok,
@@ -46,42 +32,18 @@ const glyphByNetwork = {
 </script>
 
 <template>
-  <!--
-    biome-ignore lint/a11y/useAnchorContent: the accessible name is the
-    required `label` prop, rendered as aria-label. The only child is the
-    decorative glyph, deliberately hidden from assistive technology so it
-    does not compete with that name.
-  -->
-  <a
-    :href="href"
-    :aria-label="label"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="inline-grid size-social cursor-pointer place-items-center rounded-icon border border-glass-line bg-glass-dark text-bone-100 focus-visible:outline-red-400"
-  >
-    <!--
-      Only the outline colour is set: ui-map.md § 10 requires a visible
-      red-400 indicator and forbids removing it, but documents no thickness
-      or offset, so the platform default geometry stands (spec A-07 —
-      UNVERIFIED against the design file, flagged for Clau).
-    -->
-    <span
-      aria-hidden="true"
-      class="inline-flex size-social-glyph"
-      v-html="glyphByNetwork[network]"
-    />
-  </a>
+  <span
+    aria-hidden="true"
+    class="glifo inline-flex shrink-0"
+    v-html="GLYPHS[network]"
+  />
 </template>
 
 <style scoped>
-/*
- * `:deep()` is required, not stylistic: content injected by `v-html` is not
- * rewritten by Vue's scoped-style transform, so a plain `svg {}` rule would
- * never match it (docs/business/rules.md § R14). `100%`/`auto` are layout
- * keywords, not design values — there is no token for "fill your parent".
- */
-:deep(svg) {
+/* `:deep()`: Vue's scoped transform does not reach `v-html` content. */
+.glifo :deep(svg) {
+  display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
 }
 </style>

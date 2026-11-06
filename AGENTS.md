@@ -29,6 +29,7 @@
 | `specs/<num>-<name>/` | `spec.md` + `plan.md` + `tasks.md` (+ optional `data-model.md`, `research.md`, `contracts/`) | Before implementing |
 | `docs/business/` | Company (overview, services, messaging, branding) — read ALL files recursively. **Derived from the `.pen`; the design file wins on any visual value (`rules.md` § R32)** | Before spec/architecture decisions |
 | `docs/business/landing/` | Landing-specific: approved copy (`content.md`), behavior spec (`ui-map.md`), open decisions and discrepancies (`decisions-open.md`) | Before any spec/feature that touches the landing or Nosotros pages |
+| `docs/handoff/muush-1.0/` | Muush 1.0 code handoff: `tokens.css`, `componentes.css/js`, WebGL shaders, posters, and a README with the per-section shader uniforms. Written for Astro + vanilla JS — **reference only**: translate it to Vue SFCs + composables + Tailwind, never copy it in | Before any v2 feature (41–48) |
 | `.specify/memory/constitution.md` | Static-site purity, component/island discipline, i18n parity, NON-NEGOTIABLE rules | Before spec/implementation |
 | `docs/harness/specs.md` | SDD process: spec-kit flow, approval gate | Before writing a spec |
 | `docs/harness/verification.md` | How to verify work is real | Before declaring done |
@@ -56,6 +57,21 @@
   not business rules: they go in a comment next to the code they govern, in
   your progress report, or in `docs/harness/findings.md`. Established
   2026-09-07 after agents wrote 23 unreviewed entries into `rules.md`.
+
+## 3.1 Muush 1.0 redesign (v2) — features 41–48
+
+- **Branches.** `muush-v2` is the integration branch, cut from `master`.
+  Every v2 feature branches from `muush-v2` and merges back into it — never
+  into `master`. Only feature 47 merges `muush-v2` into `master`, as a single
+  production deploy, with Roberto's explicit approval. There is no staging:
+  `master` is production.
+- **Responsive anchors.** The `.pen` only draws 390 px and 1440 px. At those
+  two widths the build must match the design; at every other width, sizes
+  and spacing (type, gaps, paddings, widths) may be adjusted so the site is
+  fully responsive. Color, components, copy and behavior are not part of
+  that latitude.
+- **No per-feature version bumps.** The only bump is to 2.0.0, at the end of
+  feature 47.
 
 ## 4. SDD flow
 

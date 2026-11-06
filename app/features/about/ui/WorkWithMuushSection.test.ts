@@ -1,241 +1,126 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
-import type {
-  ApplicationFormContent,
-  ApplicationSubmitter,
-} from '@/features/forms'
-import SectionBackdrop from '@/shared/ui/SectionBackdrop.vue'
-import SectionGlow from '@/shared/ui/SectionGlow.vue'
+import { describe, expect, it, vi } from 'vitest'
+import { ref } from 'vue'
+import { ApplicationForm } from '@/features/forms'
+import Heading from '@/shared/ui/Heading.vue'
+import Pill from '@/shared/ui/Pill.vue'
+import ReceivesList from '@/shared/ui/ReceivesList.vue'
+import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
+import {
+  APPLICATION_FORM_COPY,
+  STORY_APPLICATION_SUBMITTER,
+  WORK_COPY,
+} from './aboutFixtures.testing'
 import WorkWithMuushSection from './WorkWithMuushSection.vue'
 
-/**
- * Fixtures, not copy. The component takes already-translated strings and a
- * ready-made `formContent` object — it calls no Nuxt composable of its own —
- * which is why it mounts here with no router and no i18n instance present
- * (`docs/business/rules.md` § R23), the same discipline `ContactSection.test.ts`
- * follows.
- */
-const formContent: ApplicationFormContent = {
-  fields: {
-    name: { label: 'Nombre', errorRequired: 'Escribe tu nombre' },
-    email: {
-      label: 'Correo',
-      errorRequired: 'Escribe tu correo',
-      errorFormat: 'Correo inválido',
+/** Feature 46 · US2, FR-020…FR-026; pen extract-46 §§ 1.4, 2. */
+vi.mock('@/shared/logic/useShaderCanvas', () => ({
+  useShaderCanvas: () => ({ isReady: ref(false), isFallback: ref(false) }),
+}))
+
+function render(locale: 'es' | 'en' = 'es') {
+  return mount(WorkWithMuushSection, {
+    props: {
+      ...WORK_COPY[locale],
+      formContent: APPLICATION_FORM_COPY[locale],
+      formSubmitter: STORY_APPLICATION_SUBMITTER,
     },
-    areaRole: {
-      label: 'Área y rol',
-      placeholder: 'Área y rol',
-      errorRequired: 'Elige un área y un rol',
-      areas: {
-        it: 'IT',
-        product: 'Product',
-        projectManagement: 'Project management',
-        sales: 'Sales',
-        marketing: 'Marketing',
-        creative: 'Creative',
-      },
-      roles: {
-        it: { placeholder: 'Rol por confirmar' },
-        product: { placeholder: 'Rol por confirmar' },
-        projectManagement: { placeholder: 'Rol por confirmar' },
-        sales: { placeholder: 'Rol por confirmar' },
-        marketing: { placeholder: 'Rol por confirmar' },
-        creative: { placeholder: 'Rol por confirmar' },
-      },
-    },
-    portfolio: {
-      label: 'Portafolio',
-      placeholder: 'https://tu-portafolio.com',
-      errorFormat: 'Ingresa una URL válida',
-    },
-    linkedin: {
-      label: 'LinkedIn',
-      placeholder: 'https://linkedin.com/in/tu-usuario',
-      errorFormat: 'Ingresa una URL válida',
-    },
-    cv: {
-      label: 'CV',
-      placeholder: 'Adjuntar CV · PDF',
-      errorFormat: 'Solo se aceptan archivos PDF',
-      errorSize: 'El archivo debe pesar máximo 5MB',
-    },
-    contactPreference: {
-      label: '¿Cómo prefieres que te contactemos?',
-      options: { email: 'Correo', whatsapp: 'WhatsApp' },
-    },
-    whatsappCountry: {
-      label: 'Lada del país',
-      errorInvalid: 'Elige la lada de tu país',
-      options: [
-        { code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴' },
-        { code: 'MX', name: 'México', dialCode: '+52', flag: '🇲🇽' },
-        { code: 'US', name: 'Estados Unidos', dialCode: '+1', flag: '🇺🇸' },
-      ],
-    },
-    whatsapp: {
-      label: 'Número de WhatsApp',
-      errorRequired: 'Escribe tu número',
-      errorDigits: 'Deben ser entre 6 y 14 dígitos',
-    },
-  },
-  submit: 'Enviar',
-  sending: 'Enviando…',
-  uploading: 'Subiendo CV…',
-  cvUploadError: {
-    message:
-      'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
-    retry: 'Reintentar subida',
-    submitWithoutCv: 'Enviar sin CV',
-  },
-  success: {
-    title: 'Gracias, ya tenemos tu perfil.',
-  },
-  error: { title: 'No pudimos enviarlo.', fallback: 'support@muush.dev' },
+  })
 }
 
-/** Never reaches the network: the section only passes it through. */
-const formSubmitter: ApplicationSubmitter = {
-  engage: () => undefined,
-  submit: async () => ({ kind: 'success' }),
-}
+describe('WorkWithMuushSection', () => {
+  it('should carry the trabaja-con-muush anchor', () => {
+    const wrapper = render()
 
-const props = {
-  eyebrow: 'Work with muush',
-  headline: 'Tú eliges en qué proyectos entras, con quién y desde dónde.',
-  body: 'Si trabajas en tecnología, diseño o producción, cuéntanos qué haces.',
-  formContent,
-  formSubmitter,
-}
-
-function mountSection() {
-  return mount(WorkWithMuushSection, { props })
-}
-
-describe('WorkWithMuushSection · structure', () => {
-  it('should carry id="work" on its section root when mounted', () => {
-    expect(mountSection().find('section').attributes('id')).toBe('work')
+    expect(wrapper.attributes('id')).toBe('trabaja-con-muush')
+    expect(wrapper.classes()).toEqual(
+      expect.arrayContaining(['relative', 'isolate'])
+    )
+    expect(wrapper.findComponent(ShaderBackground).props('preset')).toBe(
+      'workWithUs'
+    )
   })
 
-  it('should render the Pill, headline, body and one application form when mounted', () => {
-    const wrapper = mountSection()
+  it('should render the areas list with three rows', () => {
+    const list = render('en').findComponent(ReceivesList)
 
-    expect(wrapper.text()).toContain(props.eyebrow)
-    expect(wrapper.find('h2').text()).toBe(props.headline)
-    expect(wrapper.find('p').text()).toBe(props.body)
-    expect(wrapper.find('form').exists()).toBe(true)
-    expect(wrapper.findAll('input, select, textarea').length).toBeGreaterThan(0)
-  })
-
-  it('should render no href without a destination anywhere in the tree', () => {
-    const anchors = mountSection().findAll('a')
-
-    for (const anchor of anchors) {
-      expect(anchor.attributes('href')).toBeTruthy()
-    }
-  })
-})
-
-describe('WorkWithMuushSection · the paint-order contract', () => {
-  const STACKING_CONTEXT_UTILITIES = [
-    'transform',
-    'translate',
-    'scale',
-    'rotate',
-    'filter',
-    'backdrop-filter',
-    'opacity-',
-    'isolate',
-    'will-change',
-    'contain-paint',
-    'fixed',
-    'sticky',
-  ]
-
-  it('should create no stacking context on the section root when mounted', () => {
-    const root = mountSection().find('section').classes()
-
-    expect(root).toContain('relative')
-    for (const utility of STACKING_CONTEXT_UTILITIES) {
-      expect(
-        root.some(name => name.includes(utility)),
-        utility
-      ).toBe(false)
-    }
-  })
-
-  it('should paint no background of its own on the section root when mounted', () => {
-    const root = mountSection().find('section').classes()
-
-    expect(root.some(name => name.startsWith('bg-'))).toBe(false)
-  })
-
-  it('should declare no bottom padding when mounted', () => {
-    const root = mountSection().find('section').classes()
-
-    expect(root.some(name => /^pb-/.test(name))).toBe(false)
-  })
-
-  it('should contribute exactly the three reused Contacto glows when mounted', () => {
-    const glows = mountSection().findAllComponents(SectionGlow)
-
-    expect(
-      glows.map(glow => ({
-        color: glow.props('color'),
-        opacity: glow.props('opacity'),
-        size: glow.props('size'),
-      }))
-    ).toEqual([
-      { color: 'red-400', opacity: 60, size: '1500-760' },
-      { color: 'wine-300', opacity: 37, size: '1000-560' },
-      { color: 'wine-400', opacity: 28, size: '900-520' },
+    expect(list.props('label')).toBe('Areas we bring in')
+    expect(list.props('items')).toEqual([
+      'Engineering and development',
+      'Product design and UX',
+      'Creative, content and marketing',
     ])
+    expect(list.findAll('li')).toHaveLength(3)
   })
 
-  it('should render every glow inside the section backdrop when mounted', () => {
-    const wrapper = mountSection()
-    const backdrop = wrapper.getComponent(SectionBackdrop).element
+  it('should pass formContent and formSubmitter to ApplicationForm untouched', () => {
+    const form = render().findComponent(ApplicationForm)
 
-    for (const glow of wrapper.findAllComponents(SectionGlow)) {
-      expect(backdrop.contains(glow.element)).toBe(true)
-    }
+    expect(form.props('content')).toEqual(APPLICATION_FORM_COPY.es)
+    expect(form.props('submitter')).toEqual(STORY_APPLICATION_SUBMITTER)
   })
 
-  it('should anchor each glow by its own centre on its own pair of tokens when mounted', () => {
-    const anchors = mountSection()
-      .findAllComponents(SectionGlow)
-      .map(glow => glow.classes())
+  it('should render no call row', () => {
+    const wrapper = render()
 
-    const expected = [
-      ['top-work-glow-foco-y', 'left-work-glow-foco-x'],
-      ['top-work-glow-wine-y', 'left-work-glow-wine-x'],
-      ['top-work-glow-cierre-y', 'left-work-glow-cierre-x'],
-    ]
+    expect(wrapper.text()).not.toContain('Agenda una llamada')
+    /* The consent's "aviso de privacidad" opens in a new tab (feature 48);
+       no other link does. */
+    expect(
+      wrapper
+        .findAll('a[target="_blank"]')
+        .filter(link => !link.element.closest('label'))
+    ).toHaveLength(0)
+  })
 
-    anchors.forEach((classes, index) => {
-      expect(classes).toContain('absolute')
-      expect(classes).toContain('-translate-x-1/2')
-      expect(classes).toContain('-translate-y-1/2')
-      for (const token of expected[index] ?? []) {
-        expect(classes, token).toContain(token)
-      }
+  it('should title the left column with the diagnostico-size h2 and its pill', () => {
+    const wrapper = render('en')
+    const pill = wrapper.findComponent(Pill)
+
+    expect(pill.props('label')).toBe('Work with muush')
+    expect(pill.classes()).toContain('pill-aire')
+    expect(wrapper.findComponent(Heading).props()).toMatchObject({
+      level: 2,
+      size: 'diagnostico',
+      first: 'You choose which',
+      second: 'projects you join.',
     })
-  })
-})
-
-describe('WorkWithMuushSection · layout', () => {
-  it('should place the left block before the form in document order (mobile stack)', () => {
-    const html = mountSection().html()
-
-    expect(html.indexOf(props.headline)).toBeLessThan(html.indexOf('<form'))
+    expect(wrapper.find('h1').exists()).toBe(false)
   })
 
-  it('should give the left block and the form their own desktop grid area classes', () => {
-    const wrapper = mountSection()
+  it('should stack pill, heading, body, list and form in that DOM order', () => {
+    const html = render().html()
+    const positions = [
+      'Trabaja con muush',
+      'Tú eliges en qué',
+      'Con quién y desde dónde',
+      'Áreas que sumamos',
+      'Enviar aplicación',
+    ].map(text => html.indexOf(text))
 
-    expect(wrapper.find('.work-layout__form').exists()).toBe(true)
-    expect(wrapper.findAll('.work-layout__text').length).toBeGreaterThanOrEqual(
-      1
+    expect(positions.every(position => position >= 0)).toBe(true)
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions)
+  })
+
+  it('should share the diagnóstico grid and padding when rendered', () => {
+    const wrapper = render()
+
+    expect(wrapper.find('section > .z-10').classes()).toEqual(
+      expect.arrayContaining([
+        'pt-bloque-y',
+        'pb-diagnostico-abajo',
+        'px-gutter',
+        'lg:px-gutter-desktop',
+      ])
+    )
+    expect(wrapper.find('section > .z-10 > div').classes()).toEqual(
+      expect.arrayContaining([
+        'grid',
+        'lg:grid-cols-diagnostico',
+        'gap-y-diagnostico-gap',
+        'lg:gap-x-diagnostico-gap',
+        'lg:items-center',
+      ])
     )
   })
 })

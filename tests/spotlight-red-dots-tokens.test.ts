@@ -22,8 +22,12 @@ function declared(name: string): string | undefined {
 }
 
 describe('spotlight · red lit dots (amendment A2)', () => {
-  it('should paint lit dots in the existing red-400 when the stylesheet loads', () => {
-    expect(declared('--dot-paper-lit-color')).toBe('var(--red-400)')
+  it('should paint lit dots in the Muush 1.0 accent when the stylesheet loads', () => {
+    /* Feature 42 (spec FR-027): the lit dots move from the v1 red-400 to
+       Red muush 500 on the dark canvas. Radius, mask fall-off, mounting
+       conditions and fade timing do not change (asserted below and in
+       CursorSpotlight.test.ts / useCursorSpotlight.test.ts). */
+    expect(declared('--dot-paper-lit-color')).toBe('var(--red-muush-500)')
   })
 
   it('should declare exactly the five brand reds when the stylesheet loads', () => {
@@ -69,6 +73,33 @@ describe('spotlight · red lit dots (amendment A2)', () => {
       /--spotlight-outer-size\s*:/,
     ]) {
       expect(globalCss, String(pattern)).not.toMatch(pattern)
+    }
+  })
+})
+
+describe('spotlight · retired from the layout (feature 43)', () => {
+  /*
+   * Supersedes feature 42 acceptance "El cursor personalizado y el spotlight
+   * siguen funcionando" for the spotlight (Roberto, 2026-11-01; spec FR-039).
+   * The tokens above stay with the quarantined v1 components until feature
+   * 47 deletes them; what changes is that nothing mounts them. The "You"
+   * cursor half of that acceptance is `tests/brand-cursor.test.ts`, unchanged.
+   */
+  const layout = readFileSync(
+    join(process.cwd(), 'app', 'layouts', 'default.vue'),
+    'utf8'
+  )
+  const code = layout
+    .replaceAll(/\/\*[\s\S]*?\*\//g, '')
+    .replaceAll(/<!--[\s\S]*?-->/g, '')
+
+  it('should mount neither the spotlight nor the dotted paper when the layout renders', () => {
+    for (const retired of [
+      'CursorSpotlight',
+      'useCursorSpotlight',
+      'DotGrid',
+    ]) {
+      expect(code, retired).not.toContain(retired)
     }
   })
 })

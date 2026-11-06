@@ -24,8 +24,11 @@
 
     A standalone document in public/ is outside the app's CSS and cannot read a
     custom property, which is why the three brand SVGs in app/assets/logo/
-    carry literals too. The values are quoted from branding.md:
-    ink-500 #262626, bone-100 #FBF8F6, red-400 #CF3147.
+    carry literals too. Since feature 43 the values are the Muush 1.0
+    palette's (`docs/business/muush-1.0.md` § 2, `global.css`): Negro 950
+    #050505, Blanco #F4F4F2 and Red muush 500 #E5352F. Roberto, 2026-11-01:
+    the dot is Red muush 500 and the adaptive stroke moves to the v2
+    neutrals; the geometry and framing do not change. No v1 value remains.
 
     ## Why the light scheme is the default rather than a media query branch
 
@@ -33,17 +36,17 @@
     does not use SVG favicons at all. Making the light-chrome colours the
     unconditional declaration means a browser that ignores the query still
     renders a correct, legible mark rather than nothing or the wrong one
-    (spec A-08). The dot stays red-400 in both schemes — branding.md
-    § Sobre qué fondo va qué trazo.
+    (spec A-08): Negro 950 on light browser chrome, Blanco on dark. The dot
+    is Red muush 500 in both schemes.
   -->
   <style>
-    .stroke { stroke: #262626; }
+    .stroke { stroke: #050505; }
     @media (prefers-color-scheme: dark) {
-      .stroke { stroke: #FBF8F6; }
+      .stroke { stroke: #F4F4F2; }
     }
   </style>
   <g transform="translate(3, -8)">
-    <circle cx="21" cy="45" r="6.5" fill="#CF3147" />
+    <circle cx="21" cy="45" r="6.5" fill="#E5352F" />
     <path
       class="stroke"
       stroke-linecap="round"

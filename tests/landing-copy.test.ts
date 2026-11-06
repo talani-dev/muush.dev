@@ -3,323 +3,360 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
- * The Hero's five strings, asserted against the files on disk.
+ * Feature 44 · the Muush 1.0 home copy, asserted verbatim against the files
+ * on disk (spec FR-025, FR-030; `docs/business/muush-1.0.md` § 4.2–4.5,
+ * pen extract-44 §§ 2.1, 4, 8). The approved copy is the `.pen`'s; a
+ * translation sweep that "improves" a string must fail here first.
  *
- * One of them is a trap for a later i18n pass: `landing.hero.eyebrow` reads
- * `Technology solution studio` in **both** locales, on purpose. It is English
- * inside the Spanish page, verified in all four design frames, and it is the
- * kind of thing a well-meaning translation sweep "fixes". This suite is what
- * stops that (spec FR-009, FR-037).
+ * Labels drawn uppercase are stored in sentence case and uppercased by CSS,
+ * so a screen reader does not spell them (feature 43's convention). The
+ * mobile-only strings (tab labels, "Estonia · pronto", the short step-01
+ * sentence) and the accessibility copy of Clarifications Q2 (the tab-list
+ * name and the city names, confirmed by Roberto 2026-11-01) live here too.
  *
- * Read from disk, never imported: Nuxt's i18n Vite transform compiles a locale
- * JSON into a message AST, and an assertion against a node of that AST passes
- * on any input at all (`docs/business/rules.md` § R27). The path is built with
- * `node:path` and `process.cwd()`, not `new URL` — the global environment is
- * `happy-dom`, whose `URL` `node:fs` rejects.
+ * Read from disk, never imported: Nuxt's i18n transform compiles a locale
+ * JSON into a message AST (`docs/business/rules.md` § R27).
  */
-interface PurposeBlock {
-  label: string
-  copy: string
+type Tree = { [key: string]: string | Tree }
+
+function readLanding(locale: 'es' | 'en'): Tree {
+  const file = join(process.cwd(), 'i18n', 'locales', `${locale}.json`)
+  return (JSON.parse(readFileSync(file, 'utf8')) as { landing: Tree }).landing
 }
 
-interface ServiceBlock {
-  name: string
-  brief: string
-}
-
-interface LandingCopy {
-  landing: {
+const EXPECTED: Record<'es' | 'en', Tree> = {
+  es: {
     hero: {
-      eyebrow: string
-      headline: string
-      subhead: string
-      ctaPrimary: string
-      ctaSecondary: string
-    }
-    purpose: {
-      eyebrow: string
-      carouselLabel: string
-      why: PurposeBlock
-      how: PurposeBlock
-      what: PurposeBlock
-    }
+      pill: {
+        strategy: 'Estrategia tecnológica',
+        software: 'Software, web y nube',
+        automation: 'Automatización, datos e IA',
+        design: 'Diseño de producto y UX',
+      },
+      headline: { first: 'Hablamos negocio', second: 'y código.' },
+      subtitle:
+        'Diseñamos y construimos las soluciones digitales que tu negocio usa todos los días.',
+      primary: 'Diagnóstico gratis',
+      secondary: 'Cómo trabajamos',
+    },
+    whoWeAre: {
+      pill: 'Qué es muush',
+      heading: {
+        first: 'Un equipo base y aliados de confianza,',
+        second: 'según lo que pida tu proyecto.',
+      },
+      body: 'Estrategia, diseño e ingeniería trabajan juntos desde el primer día. Cuando el proyecto lo pide, sumamos aliados con el mismo estándar, estén donde estén.',
+    },
     services: {
-      eyebrow: string
-      consulting: ServiceBlock
-      software: ServiceBlock
-      cloud: ServiceBlock
-      automation: ServiceBlock
-      product: ServiceBlock
-      delivery: { label: string; copy: string }
+      pill: 'Servicios',
+      heading: { first: 'Lo que hacemos', second: 'por tu negocio.' },
+      cards: {
+        strategy: {
+          title: 'Estrategia tecnológica',
+          description:
+            'Un diagnóstico claro y un plan de qué hacer y en qué orden, antes de invertir.',
+        },
+        software: {
+          title: 'Software, web\ny nube',
+          description:
+            'Sitios, sistemas, portales y apps, con la nube donde viven y tus herramientas conectadas.',
+        },
+        automation: {
+          title: 'Automatización, datos e IA',
+          description:
+            'Procesos que corren solos, datos que se vuelven decisiones e IA donde sí suma.',
+        },
+        design: {
+          title: 'Diseño de producto\ny UX',
+          description: 'Pantallas tan claras que tu equipo las usa sin manual.',
+        },
+      },
+      also: {
+        label: 'También, si lo necesitas',
+        creative: 'Creativo',
+        marketing: 'Marketing',
+        note: 'Contenido, foto, video, redes y anuncios con nuestros aliados. Siempre se cotiza aparte.',
+      },
+    },
+    howWeWork: {
+      pill: 'Cómo trabajamos',
+      heading: {
+        first: 'Primero entendemos tu operación,',
+        second: 'después decidimos qué se construye.',
+      },
+      steps: {
+        assessment: {
+          title: 'Diagnóstico',
+          description:
+            'Una revisión rápida para ver qué conviene resolver. Si hace falta ir a fondo, se cotiza aparte.',
+          descriptionShort:
+            'Una revisión rápida para ver qué conviene resolver.',
+          commitment: 'Te decimos qué te conviene',
+        },
+        proposal: {
+          title: 'Propuesta',
+          description: 'Alcance, tiempos y costo por escrito.',
+          commitment: 'Solo lo que necesitas',
+        },
+        design: {
+          title: 'Diseño',
+          description: 'Ves cómo va a funcionar antes de construir nada.',
+          commitment: 'Tú apruebas cada pantalla',
+        },
+        build: {
+          title: 'Construcción',
+          description: 'Avanzamos por etapas y te mostramos cada avance.',
+          commitment: 'Un solo punto de contacto',
+        },
+        launch: {
+          title: 'Lanzamiento y soporte',
+          description: 'Lo ponemos en marcha y preparamos a tu equipo.',
+          commitment: 'Todo documentado y tuyo',
+        },
+      },
+    },
+  },
+  en: {
+    hero: {
+      pill: {
+        strategy: 'Technology strategy',
+        software: 'Software, web and cloud',
+        automation: 'Automation, data and AI',
+        design: 'Product design and UX',
+      },
+      headline: { first: 'We speak business', second: 'and code.' },
+      subtitle:
+        'We design and build the digital solutions your business uses every day.',
+      primary: 'Free assessment',
+      secondary: 'How we work',
+    },
+    whoWeAre: {
+      pill: 'Who we are',
+      heading: {
+        first: 'A core team and trusted partners,',
+        second: 'shaped by what your project needs.',
+      },
+      body: 'Strategy, design and engineering work together from day one. When the project calls for it, we bring in partners held to the same standard, wherever they are.',
+    },
+    services: {
+      pill: 'Services',
+      heading: { first: 'What we do', second: 'for your business.' },
+      cards: {
+        strategy: {
+          title: 'Technology\nstrategy',
+          description:
+            'A clear diagnosis and a plan for what to do, and in what order, before you invest.',
+        },
+        software: {
+          title: 'Software, web\nand cloud',
+          description:
+            'Websites, systems, portals and apps, with the cloud they run on and your tools connected.',
+        },
+        automation: {
+          title: 'Automation,\ndata and AI',
+          description:
+            'Processes that run themselves, data that turns into decisions, and AI where it truly helps.',
+        },
+        design: {
+          title: 'Product design\nand UX',
+          description: 'Screens so clear your team uses them without a manual.',
+        },
+      },
+      also: {
+        label: 'Also, if you need it',
+        creative: 'Creative',
+        marketing: 'Marketing',
+        note: 'Content, photo, video, social media and ads with our partners. Always quoted separately.',
+      },
+    },
+    howWeWork: {
+      pill: 'How we work',
+      heading: {
+        first: 'First we understand how you operate,',
+        second: 'then we decide what gets built.',
+      },
+      steps: {
+        assessment: {
+          title: 'Assessment',
+          description:
+            "A quick review to see what's worth solving. If it needs a deeper look, that's quoted separately.",
+          descriptionShort: "A quick review to see what's worth solving.",
+          commitment: 'We tell you what fits best',
+        },
+        proposal: {
+          title: 'Proposal',
+          description: 'Scope, timeline and cost in writing.',
+          commitment: 'Only what you need',
+        },
+        design: {
+          title: 'Design',
+          description: 'You see how it works before anything is built.',
+          commitment: 'You approve every screen',
+        },
+        build: {
+          title: 'Build',
+          description: 'We work in stages and show you every step.',
+          commitment: 'One point of contact',
+        },
+        launch: {
+          title: 'Launch and support',
+          description: 'We launch it and get your team ready.',
+          commitment: 'Documented and all yours',
+        },
+      },
+    },
+  },
+}
+
+/* Feature 45 · "Diagnóstico y contacto" (`muush-1.0.md` § 4.6; Roberto
+   2026-11-02: "Lo que recibes" / "What you get" in sentence case). */
+EXPECTED.es.assessment = {
+  pill: 'Primer paso',
+  headingFirst: 'Pide tu diagnóstico',
+  headingSecond: 'sin costo.',
+  body: 'Cuéntanos qué quieres resolver y te respondemos en 24 horas hábiles.',
+  receivesLabel: 'Lo que recibes',
+  receives: {
+    review: 'Una revisión de tu sitio y tus herramientas',
+    first: 'Qué conviene hacer primero y por qué',
+    deeper: 'Si hace falta ir a fondo, qué incluye y cuánto cuesta',
+  },
+  callQuestion: '¿Prefieres hablar?',
+  callLink: 'Agenda una llamada',
+}
+EXPECTED.en.assessment = {
+  pill: 'First step',
+  headingFirst: 'Request your',
+  headingSecond: 'free assessment.',
+  body: "Tell us what you want to solve and we'll reply within 24 business hours.",
+  receivesLabel: 'What you get',
+  receives: {
+    review: 'A review of your website and tools',
+    first: 'What to do first, and why',
+    deeper: "If it needs a deeper look, what's included and what it costs",
+  },
+  callQuestion: 'Prefer to talk?',
+  callLink: 'Book a call',
+}
+
+/**
+ * Feature 46 (spec FR-017, research R3): the map's labels moved verbatim
+ * from `landing.whoWeAre.*` to the shared `map.*` namespace, read by the
+ * home and Nosotros alike.
+ */
+const EXPECTED_MAP: Record<'es' | 'en', Tree> = {
+  es: {
+    legend: {
+      team: 'Equipo',
+      partner: 'Aliados',
+      soon: 'Estonia · pronto',
+      anywhere: 'Trabajamos con clientes en cualquier país.',
+    },
+    regions: {
+      label: 'Región del mapa',
+      america: 'América',
+      europe: 'Europa',
+    },
+    cities: {
+      cdmx: 'CDMX',
+      puebla: 'Puebla',
+      merida: 'Mérida',
+      dublin: 'Dublín',
+      nyc: 'NYC',
+      sanFrancisco: 'San Francisco',
+      losAngeles: 'Los Ángeles',
+      amsterdam: 'Ámsterdam',
+      estonia: 'Estonia',
+    },
+  },
+  en: {
+    legend: {
+      team: 'Team',
+      partner: 'Partners',
+      soon: 'Estonia · soon',
+      anywhere: 'We work with clients in any country.',
+    },
+    regions: { label: 'Map region', america: 'Americas', europe: 'Europe' },
+    cities: {
+      cdmx: 'CDMX',
+      puebla: 'Puebla',
+      merida: 'Mérida',
+      dublin: 'Dublin',
+      nyc: 'NYC',
+      sanFrancisco: 'San Francisco',
+      losAngeles: 'Los Angeles',
+      amsterdam: 'Amsterdam',
+      estonia: 'Estonia',
+    },
+  },
+}
+
+function readMap(locale: 'es' | 'en'): Tree {
+  const file = join(process.cwd(), 'i18n', 'locales', `${locale}.json`)
+  return (JSON.parse(readFileSync(file, 'utf8')) as { map: Tree }).map
+}
+
+const SECTIONS = [
+  'hero',
+  'whoWeAre',
+  'services',
+  'howWeWork',
+  'assessment',
+] as const
+
+describe('landing copy · the Muush 1.0 home (FR-030)', () => {
+  for (const locale of ['es', 'en'] as const) {
+    for (const section of SECTIONS) {
+      it(`should hold the approved ${section} copy verbatim when the ${locale} locale is read`, () => {
+        expect(readLanding(locale)[section]).toEqual(EXPECTED[locale][section])
+      })
     }
   }
-}
 
-function readLocale(name: string): LandingCopy {
-  const file = join(process.cwd(), 'i18n', 'locales', `${name}.json`)
-  return JSON.parse(readFileSync(file, 'utf8')) as LandingCopy
-}
+  for (const locale of ['es', 'en'] as const) {
+    it(`should hold the shared map labels verbatim when the ${locale} locale is read`, () => {
+      expect(readMap(locale)).toEqual(EXPECTED_MAP[locale])
+    })
+  }
 
-const spanish = readLocale('es').landing
-const english = readLocale('en').landing
-
-const es = spanish.hero
-const en = english.hero
-
-describe('landing copy', () => {
-  it('should hold the identical eyebrow in both locales', () => {
-    /* ⚠️ Not a missing translation. The design draws `Technology solution
-       studio` in all four frames, Spanish ones included — the same treatment
-       `shell.footer.category` already gets. Do not translate it. */
-    expect(en.eyebrow).toBe(es.eyebrow)
-    expect(es.eyebrow).toBe('Technology solution studio')
-  })
-
-  it('should translate every other hero string between the locales', () => {
-    /* The complement of the assertion above: if the eyebrow check were passing
-       because both files were simply copies of each other, this would fail. */
-    for (const key of [
-      'headline',
-      'subhead',
-      'ctaPrimary',
-      'ctaSecondary',
-    ] as const) {
-      expect(en[key], key).not.toBe(es[key])
-      expect(es[key], key).not.toBe('')
-      expect(en[key], key).not.toBe('')
+  it('should carry only the v2 sections when the locales are read', () => {
+    /* FR-025: the v1 Propósito, hero and services keys have no reader;
+       feature 45 retired the v1 contact keys with their section. */
+    for (const locale of ['es', 'en'] as const) {
+      expect(Object.keys(readLanding(locale)), locale).toEqual([
+        'hero',
+        'whoWeAre',
+        'services',
+        'howWeWork',
+        'assessment',
+      ])
     }
   })
 
-  it('should carry the approved headline and subhead in each locale', () => {
-    /* Verbatim from `content.md` § Tagline and its *WHAT* block, which is what
-       `messaging.md` approves. */
-    expect(es.headline).toBe('Hablamos negocio y código.')
-    expect(en.headline).toBe('We speak business and code.')
-    expect(es.subhead).toBe(
-      'Diseñamos y construimos soluciones digitales alrededor de tu negocio.'
+  it('should store the uppercase-drawn label in sentence case when the locales are read', () => {
+    const es = readLanding('es').services as Tree
+    const en = readLanding('en').services as Tree
+
+    expect((es.also as Tree).label).not.toBe(
+      ((es.also as Tree).label as string).toUpperCase()
     )
-    expect(en.subhead).toBe(
-      'We design and build digital solutions around your business.'
-    )
-  })
+    expect((en.also as Tree).label).toBe('Also, if you need it')
 
-  it('should keep the arrow out of the secondary call to action in both locales', () => {
-    /* The `.pen` bakes `→` into the label because a static mockup cannot draw
-       a hover. `LinkArrow` owns the glyph precisely so the hover has something
-       to move, and a glyph in the string would render twice the day the
-       control goes live (spec FR-010, `rules.md` § R50). */
-    expect(es.ctaSecondary).toBe('Agenda una llamada')
-    expect(en.ctaSecondary).toBe('Book a call')
-    expect(es.ctaSecondary).not.toContain('→')
-    expect(en.ctaSecondary).not.toContain('→')
-  })
-})
-
-describe('landing copy · Propósito', () => {
-  const BLOCKS = ['why', 'how', 'what'] as const
-
-  it('should hold all nine keys in both locales', () => {
-    for (const locale of [spanish, english]) {
-      expect(locale.purpose.eyebrow).not.toBe('')
-      expect(locale.purpose.carouselLabel).not.toBe('')
-      for (const block of BLOCKS) {
-        expect(locale.purpose[block].label, block).not.toBe('')
-        expect(locale.purpose[block].copy, block).not.toBe('')
-      }
+    /* Feature 45 · "Lo que recibes", drawn uppercase by `ReceivesList`. */
+    for (const locale of ['es', 'en'] as const) {
+      const label = (readLanding(locale).assessment as Tree)
+        .receivesLabel as string
+      expect(label, locale).not.toBe(label.toUpperCase())
     }
   })
 
-  it('should hold the identical three labels in both locales', () => {
-    /*
-     * ⚠️ **Not a missing translation.** Read from the design file on
-     * 2026-09-08: the ES and EN frames both draw `Why` / `How` / `What`. It is
-     * the same case as `landing.hero.eyebrow` and `shell.footer.category`,
-     * and it is exactly the kind of thing a well-meaning translation sweep
-     * "fixes". `content.md`'s block headings (`WHY · por qué existe muush`)
-     * are titles in a document, not the label the design draws.
-     */
-    for (const block of BLOCKS) {
-      expect(english.purpose[block].label, block).toBe(
-        spanish.purpose[block].label
+  it('should keep no dash pause and no arrow in the home copy when the locales are read', () => {
+    /* messaging.md rule 1; the arrow belongs to the button (rules.md § R50). */
+    for (const locale of ['es', 'en'] as const) {
+      const text = JSON.stringify(
+        SECTIONS.map(section => readLanding(locale)[section])
       )
-    }
-
-    expect(BLOCKS.map(block => spanish.purpose[block].label)).toEqual([
-      'Why',
-      'How',
-      'What',
-    ])
-  })
-
-  it('should translate every copy block between the locales', () => {
-    /* The complement of the assertion above: if the label check were passing
-       because the two files were copies of each other, this would fail. */
-    for (const block of BLOCKS) {
-      expect(english.purpose[block].copy, block).not.toBe(
-        spanish.purpose[block].copy
-      )
-    }
-
-    expect(english.purpose.eyebrow).not.toBe(spanish.purpose.eyebrow)
-  })
-
-  it('should carry the approved Golden Circle copy in each locale', () => {
-    /*
-     * Feature 25: `content.md`'s Golden Circle blockquotes were never the
-     * real copy — they were a placeholder that survived the whole feature 13
-     * cycle unreplaced. The strings below are verbatim from the real `.pen`
-     * nodes (`ZddCZ`/`OD567`/`qwVGc` ES, `l0DUl`/`w9zj30`/`F1Lku` EN), read by
-     * the leader per `rules.md` § R32.
-     */
-    expect(spanish.purpose.why.copy).toBe(
-      'El software rara vez falla por cómo se construye. Falla porque nadie tradujo el problema de negocio; saber qué vale la pena construir es lo que cambia el resultado.'
-    )
-    expect(english.purpose.why.copy).toBe(
-      "Software rarely fails because of how it's built. It fails because nobody translated the business problem; knowing what's worth building is what changes the outcome."
-    )
-    expect(spanish.purpose.how.copy).toBe(
-      'Primero entendemos tu operación, después decidimos qué se construye. Traducimos antes de construir.'
-    )
-    expect(english.purpose.how.copy).toBe(
-      'First, we understand how you operate; then we decide what gets built. We translate before we build.'
-    )
-    expect(spanish.purpose.what.copy).toBe(
-      'Diseñamos y construimos soluciones digitales que tu negocio usa todos los días.'
-    )
-    expect(english.purpose.what.copy).toBe(
-      'We design and build digital solutions your business uses every day.'
-    )
-  })
-
-  it('should no longer duplicate the hero subhead in the What block', () => {
-    /*
-     * ⚠️ Corrected 2026-09-08 (feature 25). Before this feature the What
-     * block's placeholder copy happened to be the exact same sentence as
-     * `hero.subhead`, and a previous version of this test asserted that
-     * coincidence as if it were a rule. It never was one — nothing in
-     * `content.md`, `ui-map.md` or the `.pen` ties the two together — and the
-     * real Golden Circle copy for What is its own sentence. This test is the
-     * new guard: it stops a future edit from silently re-coupling the two
-     * sections by copy-pasting one string into the other.
-     */
-    expect(spanish.purpose.what.copy).not.toBe(spanish.hero.subhead)
-    expect(english.purpose.what.copy).not.toBe(english.hero.subhead)
-  })
-
-  it('should reuse the eyebrow word for the carousel in both locales', () => {
-    /* Two keys, one value, two roles: the Pill's label and the mobile track's
-       accessible name. Kept apart so naming the track never edits the
-       eyebrow. */
-    for (const locale of [spanish, english]) {
-      expect(locale.purpose.carouselLabel).toBe(locale.purpose.eyebrow)
-    }
-  })
-})
-
-describe('landing copy · Servicios', () => {
-  const AREAS = [
-    'consulting',
-    'software',
-    'cloud',
-    'automation',
-    'product',
-  ] as const
-
-  it('should hold the twelve keys in both locales', () => {
-    for (const locale of [spanish, english]) {
-      expect(locale.services.eyebrow).not.toBe('')
-      expect(locale.services.delivery.label).not.toBe('')
-      expect(locale.services.delivery.copy).not.toBe('')
-      for (const area of AREAS) {
-        expect(locale.services[area].name, area).not.toBe('')
-        expect(locale.services[area].brief, area).not.toBe('')
-      }
-    }
-  })
-
-  it('should hold the identical five names in both locales — ⚠️ O-01, not a missing translation', () => {
-    /*
-     * Roberto's 2026-09-08 instruction is that the five area names DO
-     * translate for this feature (unlike `services.md`'s "kept English on
-     * purpose" rule for the rest of the site) — but without the Spanish
-     * names supplied yet. English ships as the placeholder in both locales
-     * so the gap is visible rather than silently wrong. The day a Spanish
-     * name lands, this assertion is what forces the update instead of
-     * letting the two files drift apart unnoticed.
-     */
-    for (const area of AREAS) {
-      expect(english.services[area].name, area).toBe(
-        spanish.services[area].name
-      )
-    }
-
-    expect(AREAS.map(area => spanish.services[area].name)).toEqual([
-      'Technology Consulting & Strategy',
-      'Software & Digital Solutions',
-      'Cloud, Infrastructure & DevOps',
-      'Automation, Data & AI',
-      'Product, UI/UX & Experience',
-    ])
-  })
-
-  it('should translate every brief and the delivery copy between the locales', () => {
-    for (const area of AREAS) {
-      expect(english.services[area].brief, area).not.toBe(
-        spanish.services[area].brief
-      )
-    }
-
-    expect(english.services.delivery.copy).not.toBe(
-      spanish.services.delivery.copy
-    )
-    expect(english.services.eyebrow).not.toBe(spanish.services.eyebrow)
-  })
-
-  it('should carry the approved services.md briefs verbatim in each locale', () => {
-    expect(spanish.services.consulting.brief).toBe(
-      'Diagnosticamos tu situación real, diseñamos la solución y te decimos qué conviene hacer, incluso cuando la respuesta es hacer menos.'
-    )
-    expect(english.services.consulting.brief).toBe(
-      "We diagnose your actual situation, design the solution, and tell you what's worth doing, even when the answer is to do less."
-    )
-    expect(spanish.services.software.brief).toBe(
-      'Plataformas, sistemas internos, portales e integraciones construidos alrededor de cómo opera tu negocio, no al revés.'
-    )
-    expect(english.services.software.brief).toBe(
-      'Platforms, internal systems, portals, and integrations built around how your business actually works, not the other way around.'
-    )
-    expect(spanish.services.cloud.brief).toBe(
-      'Lo que sostiene todo una vez que está en producción: infraestructura, despliegues automatizados, monitoreo y seguridad. La parte que nadie nota hasta que hace falta.'
-    )
-    expect(english.services.cloud.brief).toBe(
-      "What holds everything up once it's live: infrastructure, automated deploys, monitoring and security. The part nobody notices until it's needed."
-    )
-    expect(spanish.services.automation.brief).toBe(
-      'Automatizamos lo repetitivo y convertimos tus datos en decisiones. AI donde sume, no solamente donde suene bien.'
-    )
-    expect(english.services.automation.brief).toBe(
-      'We automate the repetitive and turn your data into decisions. AI where it adds value, not where it sounds good.'
-    )
-    expect(spanish.services.product.brief).toBe(
-      'Convertimos tecnología compleja en algo que se usa sin manual. Producto y experiencia, de investigación a prototipo.'
-    )
-    expect(english.services.product.brief).toBe(
-      'We turn complex technology into something people use without a manual. Product and experience, from research to prototype.'
-    )
-    expect(spanish.services.delivery.copy).toBe(
-      'Y una capacidad que atraviesa las cinco: llevamos el proyecto de principio a fin, con alcance, tiempos, calidad y lanzamiento a nuestro cargo.'
-    )
-    expect(english.services.delivery.copy).toBe(
-      'And one capability runs through all five: we carry the project from start to finish, including scope, timelines, quality and launch.'
-    )
-  })
-
-  it('should give the delivery closer its own Pill label, distinct from the eyebrow', () => {
-    /* `design-extract.md` § 3 lists `Delivery` among the landing's Pill
-       instances — separate from `Servicios`/`Services`. */
-    for (const locale of [spanish, english]) {
-      expect(locale.services.delivery.label).toBe('Delivery')
-      expect(locale.services.delivery.label).not.toBe(locale.services.eyebrow)
+      expect(text, locale).not.toMatch(/—|→/)
     }
   })
 })

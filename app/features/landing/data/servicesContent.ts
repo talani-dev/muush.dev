@@ -1,161 +1,63 @@
 /**
- * Servicios' content model: the keys it renders, the five service nodes, and
- * the geometry both compositions generate from.
- *
- * This file imports **nothing** (Article II). It holds keys, the five-node
- * list, the five confirmed radar centres and one pure geometry helper — no
- * copy, no destination and no Nuxt call.
+ * Servicios content model (feature 44, data-model §§ 4–5; copy in
+ * `docs/business/muush-1.0.md` § 4.4, icons and edge lights in pen
+ * extract-44 § 3.1). Card titles keep the design's forced line break as
+ * `\n` in the locale files (pen extract-44 § 8).
  */
+export type ServiceIcon =
+  | 'compass'
+  | 'layout-dashboard'
+  | 'workflow'
+  | 'pen-tool'
 
-/** The two standalone keys, plus the closer's own Pill label. */
+/** The card's edge light: colour and the corner it comes from. */
+export type ServiceLight =
+  | 'crimsonBottomLeft'
+  | 'aceroBottomRight'
+  | 'arenaTopRight'
+
+export type ServiceKey = 'strategy' | 'software' | 'automation' | 'design'
+
+export interface ServiceCardModel {
+  key: ServiceKey
+  icon: ServiceIcon
+  light: ServiceLight
+}
+
+/** In the order the `.pen` draws them. */
+export const SERVICE_CARDS: readonly ServiceCardModel[] = [
+  { key: 'strategy', icon: 'compass', light: 'crimsonBottomLeft' },
+  { key: 'software', icon: 'layout-dashboard', light: 'aceroBottomRight' },
+  { key: 'automation', icon: 'workflow', light: 'crimsonBottomLeft' },
+  { key: 'design', icon: 'pen-tool', light: 'arenaTopRight' },
+]
+
 export const SERVICES_KEYS = {
-  eyebrow: 'landing.services.eyebrow',
-  /**
-   * ⚠️ Not in `data-model.md` § 1.1 — added while implementing. The delivery
-   * closer is "Pill + copy" (`data-model.md` § 2.3), and `design-extract.md`
-   * § 3 lists `Delivery` among the landing's eleven Pill instances, so the
-   * closer needs its own label distinct from the section's `eyebrow`. Kept
-   * English in both locales, the same treatment `services.md` gives the five
-   * area names and `landing.hero.eyebrow` already gets.
-   */
-  deliveryLabel: 'landing.services.delivery.label',
-  deliveryCopy: 'landing.services.delivery.copy',
+  pill: 'landing.services.pill',
+  headingFirst: 'landing.services.heading.first',
+  headingSecond: 'landing.services.heading.second',
+  cardTitle: (key: ServiceKey) => `landing.services.cards.${key}.title`,
+  cardDescription: (key: ServiceKey) =>
+    `landing.services.cards.${key}.description`,
+  alsoLabel: 'landing.services.also.label',
+  alsoChips: [
+    'landing.services.also.creative',
+    'landing.services.also.marketing',
+  ],
+  alsoNote: 'landing.services.also.note',
 } as const
 
-export type ServiceNodeId =
-  | 'consulting'
-  | 'software'
-  | 'cloud'
-  | 'automation'
-  | 'product'
-
-export interface ServiceNodeKeys {
-  id: ServiceNodeId
-  /**
-   * `index` generates every desktop node-token lookup (`--services-node-{n}-x`
-   * with `n = index + 1`) and the mobile `72 + index × 185` step
-   * (`data-model.md` §§ 2, 3). Nothing else distinguishes the five.
-   */
-  index: 0 | 1 | 2 | 3 | 4
-  nameKey: string
-  briefKey: string
+export interface ServiceCardContent {
+  title: string
+  description: string
+  icon: ServiceIcon
+  light: ServiceLight
 }
 
-/** The five areas, in `services.md`'s own order. */
-export const SERVICE_NODES: readonly ServiceNodeKeys[] = [
-  {
-    id: 'consulting',
-    index: 0,
-    nameKey: 'landing.services.consulting.name',
-    briefKey: 'landing.services.consulting.brief',
-  },
-  {
-    id: 'software',
-    index: 1,
-    nameKey: 'landing.services.software.name',
-    briefKey: 'landing.services.software.brief',
-  },
-  {
-    id: 'cloud',
-    index: 2,
-    nameKey: 'landing.services.cloud.name',
-    briefKey: 'landing.services.cloud.brief',
-  },
-  {
-    id: 'automation',
-    index: 3,
-    nameKey: 'landing.services.automation.name',
-    briefKey: 'landing.services.automation.brief',
-  },
-  {
-    id: 'product',
-    index: 4,
-    nameKey: 'landing.services.product.name',
-    briefKey: 'landing.services.product.brief',
-  },
-]
-
-/** One node, already translated. */
-export interface ServiceNodeContent {
-  id: ServiceNodeId
-  index: 0 | 1 | 2 | 3 | 4
-  name: string
-  brief: string
-}
-
-/** What `logic/` hands `ui/`: already translated, nothing left to resolve. */
 export interface ServicesContent {
-  eyebrow: string
-  deliveryLabel: string
-  deliveryCopy: string
-  nodes: ServiceNodeContent[]
-}
-
-/**
- * The five confirmed radar centres (`data-model.md` § 2.1), in
- * `SERVICE_NODES`' own order. The single source of truth `connectorEndpoints`
- * reads — never four/five literals (spec FR-006, FR-007, FR-008).
- */
-export const SERVICE_NODE_CENTRES: readonly (readonly [number, number])[] = [
-  [150, 330],
-  [430, 200],
-  [690, 440],
-  [950, 250],
-  [1150, 480],
-]
-
-export interface ConnectorEndpoints {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-}
-
-/**
- * The four connectors, generated from consecutive radar-centre pairs
- * (`data-model.md` § 2.2) — never four independent shapes. Connector *i* is
- * the straight line from centre *i* to centre *i + 1*.
- */
-export function connectorEndpoints(
-  centres: readonly (readonly [number, number])[]
-): ConnectorEndpoints[] {
-  const endpoints: ConnectorEndpoints[] = []
-
-  for (let i = 0; i < centres.length - 1; i += 1) {
-    const start = centres[i]
-    const end = centres[i + 1]
-    if (!start || !end) continue
-
-    const [x1, y1] = start
-    const [x2, y2] = end
-    endpoints.push({ x1, y1, x2, y2 })
-  }
-
-  return endpoints
-}
-
-/** The inline custom properties one floating connector line reads. */
-export type ConnectorFloatVars = Record<
-  '--x1' | '--x2' | '--i-a' | '--i-b',
-  string
->
-
-/**
- * Feature 34 · the inputs connector `index` needs to follow the float of the
- * two radars it joins (spec FR-008): its resting x ends and the indices of
- * node `index` and node `index + 1`. The CSS in `ServicesConnectors.vue` turns
- * them into the exact vertical shear of the line, from the same clock the
- * nodes read. Built only from `connectorEndpoints` output, never from
- * literals.
- */
-export function connectorFloatVars(
-  connector: ConnectorEndpoints,
-  index: number
-): ConnectorFloatVars {
-  return {
-    '--x1': String(connector.x1),
-    '--x2': String(connector.x2),
-    '--i-a': String(index),
-    '--i-b': String(index + 1),
-  }
+  pill: string
+  headingFirst: string
+  headingSecond: string
+  cards: ServiceCardContent[]
+  also: { label: string; chips: string[]; note: string }
 }

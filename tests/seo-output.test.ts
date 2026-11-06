@@ -23,7 +23,7 @@ const OUTPUT = join(ROOT, '.output', 'public')
 const ORIGIN = 'https://muush.dev'
 
 type Locale = 'es' | 'en'
-type PageKey = 'home' | 'about'
+type PageKey = 'home' | 'about' | 'faq' | 'privacy' | 'terms'
 
 interface Page {
   path: string
@@ -62,6 +62,50 @@ const PAGES: Page[] = [
     locale: 'en',
     key: 'about',
     counterpart: '/es/nosotros',
+  },
+  /* Feature 46 · Preguntas, indexed from day one (Roberto 2026-10-31). */
+  {
+    path: '/es/preguntas',
+    file: 'es/preguntas/index.html',
+    locale: 'es',
+    key: 'faq',
+    counterpart: '/en/faq',
+  },
+  {
+    path: '/en/faq',
+    file: 'en/faq/index.html',
+    locale: 'en',
+    key: 'faq',
+    counterpart: '/es/preguntas',
+  },
+  /* Feature 48 · the legal pages, indexed (Roberto 2026-10-31, 2026-11-05). */
+  {
+    path: '/es/privacidad',
+    file: 'es/privacidad/index.html',
+    locale: 'es',
+    key: 'privacy',
+    counterpart: '/en/privacy',
+  },
+  {
+    path: '/en/privacy',
+    file: 'en/privacy/index.html',
+    locale: 'en',
+    key: 'privacy',
+    counterpart: '/es/privacidad',
+  },
+  {
+    path: '/es/terminos',
+    file: 'es/terminos/index.html',
+    locale: 'es',
+    key: 'terms',
+    counterpart: '/en/terms',
+  },
+  {
+    path: '/en/terms',
+    file: 'en/terms/index.html',
+    locale: 'en',
+    key: 'terms',
+    counterpart: '/es/terminos',
   },
 ]
 
@@ -158,7 +202,7 @@ describe('seo output · titles and descriptions', () => {
     })
   }
 
-  it('should give the four pages pairwise distinct titles and descriptions when generated', () => {
+  it('should give every page pairwise distinct titles and descriptions when generated', () => {
     const copies = PAGES.map(pageCopy)
 
     expect(new Set(copies.map(copy => copy.title)).size).toBe(PAGES.length)
@@ -281,6 +325,36 @@ describe('seo output · structured data', () => {
       ).toBeDefined()
     }
   })
+
+  it('should open the JSON-LD script with the module attributes on every page when generated', () => {
+    /* Review-46 fix round 1: the Preguntas tag is written with `useHead`
+       (see `usePageSeo.ts`) but reads the module's configured
+       `scriptAttributes`, so its opening tag matches every other page. */
+    const openingTag = (file: string): string =>
+      readOutput(file).match(
+        /<script type="application\/ld\+json"[^>]*>/
+      )?.[0] ?? ''
+    const home = openingTag(PAGES[0]?.file ?? '')
+
+    expect(home).toContain('data-nuxt-schema-org="true"')
+    for (const page of PAGES)
+      expect(openingTag(page.file), page.path).toBe(home)
+  })
+
+  it('should declare both Preguntas pages as a plain WebPage, never FAQPage, when generated', () => {
+    /* Feature 46 · FR-038: no questions yet, so no question-and-answer
+       type; the schema-org default would infer FAQPage on /en/faq only. */
+    for (const page of PAGES.filter(candidate => candidate.key === 'faq')) {
+      const graph = graphOf(readOutput(page.file))
+      const webPage = graph.find(node =>
+        String(node['@id'] ?? '').endsWith('#webpage')
+      )
+
+      expect(webPage?.['@type'], page.path).toBe('WebPage')
+      expect(nodeOfType(graph, 'FAQPage'), page.path).toBeUndefined()
+      expect(nodeOfType(graph, 'AboutPage'), page.path).toBeUndefined()
+    }
+  })
 })
 
 /**
@@ -316,6 +390,9 @@ describe('seo output · structured-data parity across locales', () => {
   const PAIRS: [string, string][] = [
     ['/es', '/en'],
     ['/es/nosotros', '/en/about'],
+    ['/es/preguntas', '/en/faq'],
+    ['/es/privacidad', '/en/privacy'],
+    ['/es/terminos', '/en/terms'],
   ]
 
   for (const [spanish, english] of PAIRS) {
@@ -335,7 +412,7 @@ describe('seo output · sitemap.xml', () => {
   const urlBlocks = (): string[] =>
     [...sitemap().matchAll(/<url>(.*?)<\/url>/gs)].map(m => m[1] ?? '')
 
-  it('should list exactly the four pages when generated', () => {
+  it('should list exactly the ten pages when generated', () => {
     const locs = urlBlocks().map(
       block => block.match(/<loc>([^<]*)<\/loc>/)?.[1]
     )

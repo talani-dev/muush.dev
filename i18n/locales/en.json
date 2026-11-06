@@ -8,79 +8,205 @@
       "title": "About us · muush",
       "description": "Meet the muush team: we bring together the right talent for each project. If you work in technology, design or production, join our talent pool."
     },
+    "faq": {
+      "title": "FAQ · muush",
+      "description": "Answers to frequently asked questions about muush. In the meantime, request a free assessment or book a call."
+    },
+    "privacy": {
+      "title": "Privacy notice · muush",
+      "description": "How muush handles your personal data: what data we collect, what we use it for, who we share it with and how to exercise your rights."
+    },
+    "terms": {
+      "title": "Terms and conditions · muush",
+      "description": "The terms and conditions for using muush.dev: who we are, what you'll find here, intellectual property, liability and governing law."
+    },
     "notFound": {
       "title": "Page not found · muush"
     }
   },
   "about": {
     "hero": {
-      "eyebrow": "About us",
-      "headline": "We build the team around the project.",
-      "intro": "We bring together the right talent for each project and give them freedom to choose which projects they join and where they work from. That flexibility is what holds our talent pool together, and what lets us deliver without carrying a heavy structure."
+      "pill": "About",
+      "heading": {
+        "first": "The team takes shape",
+        "second": "around the project."
+      },
+      "intro": "We bring together the right talent for each project and give them the freedom to choose which projects they join and where they work from. That flexibility sustains our talent pool and lets us deliver with a lean structure."
+    },
+    "composition": {
+      "pill": "How it comes together",
+      "heading": {
+        "first": "Who joins",
+        "second": "your project."
+      },
+      "cards": {
+        "team": {
+          "label": "Core team",
+          "title": "Always on your project",
+          "text": "Strategy, design and engineering, from start to finish."
+        },
+        "pool": {
+          "label": "Talent pool",
+          "title": "When the project calls for it",
+          "text": "Specialists who join with the same delivery standard."
+        },
+        "partner": {
+          "label": "Partners",
+          "title": "Creative and marketing",
+          "text": "Trusted studios, coordinated by us."
+        }
+      }
+    },
+    "where": {
+      "pill": "Where we are",
+      "heading": {
+        "first": "A talent pool that grows",
+        "second": "by industry and by project."
+      },
+      "body": "We all work under the same rules and the same delivery standard."
     },
     "work": {
-      "eyebrow": "Work with muush",
-      "headline": "You choose which projects you join, who you work with, and where from.",
-      "body": "If you work in technology, design or production and want to join our talent pool, tell us what you do. We'll reach out when there's a project that fits."
+      "pill": "Work with muush",
+      "heading": {
+        "first": "You choose which",
+        "second": "projects you join."
+      },
+      "body": "Who you work with and where from, too. If you work in technology, design or production, tell us what you do and we'll reach out when there's a project for you.",
+      "areasLabel": "Areas we bring in",
+      "areas": {
+        "engineering": "Engineering and development",
+        "design": "Product design and UX",
+        "creative": "Creative, content and marketing"
+      }
     }
   },
   "landing": {
     "hero": {
-      "eyebrow": "Technology solution studio",
-      "headline": "We speak business and code.",
-      "subhead": "We design and build digital solutions around your business.",
-      "ctaPrimary": "Tell us about your project",
-      "ctaSecondary": "Book a call"
+      "pill": {
+        "strategy": "Technology strategy",
+        "software": "Software, web and cloud",
+        "automation": "Automation, data and AI",
+        "design": "Product design and UX"
+      },
+      "headline": {
+        "first": "We speak business",
+        "second": "and code."
+      },
+      "subtitle": "We design and build the digital solutions your business uses every day.",
+      "primary": "Free assessment",
+      "secondary": "How we work"
     },
-    "purpose": {
-      "eyebrow": "Purpose",
-      "carouselLabel": "Purpose",
-      "why": {
-        "label": "Why",
-        "copy": "Software rarely fails because of how it's built. It fails because nobody translated the business problem; knowing what's worth building is what changes the outcome."
+    "whoWeAre": {
+      "pill": "Who we are",
+      "heading": {
+        "first": "A core team and trusted partners,",
+        "second": "shaped by what your project needs."
       },
-      "how": {
-        "label": "How",
-        "copy": "First, we understand how you operate; then we decide what gets built. We translate before we build."
-      },
-      "what": {
-        "label": "What",
-        "copy": "We design and build digital solutions your business uses every day."
-      }
+      "body": "Strategy, design and engineering work together from day one. When the project calls for it, we bring in partners held to the same standard, wherever they are."
     },
     "services": {
-      "eyebrow": "Services",
-      "consulting": {
-        "name": "Technology Consulting & Strategy",
-        "brief": "We diagnose your actual situation, design the solution, and tell you what's worth doing, even when the answer is to do less."
+      "pill": "Services",
+      "heading": {
+        "first": "What we do",
+        "second": "for your business."
       },
-      "software": {
-        "name": "Software & Digital Solutions",
-        "brief": "Platforms, internal systems, portals, and integrations built around how your business actually works, not the other way around."
+      "cards": {
+        "strategy": {
+          "title": "Technology\nstrategy",
+          "description": "A clear diagnosis and a plan for what to do, and in what order, before you invest."
+        },
+        "software": {
+          "title": "Software, web\nand cloud",
+          "description": "Websites, systems, portals and apps, with the cloud they run on and your tools connected."
+        },
+        "automation": {
+          "title": "Automation,\ndata and AI",
+          "description": "Processes that run themselves, data that turns into decisions, and AI where it truly helps."
+        },
+        "design": {
+          "title": "Product design\nand UX",
+          "description": "Screens so clear your team uses them without a manual."
+        }
       },
-      "cloud": {
-        "name": "Cloud, Infrastructure & DevOps",
-        "brief": "What holds everything up once it's live: infrastructure, automated deploys, monitoring and security. The part nobody notices until it's needed."
-      },
-      "automation": {
-        "name": "Automation, Data & AI",
-        "brief": "We automate the repetitive and turn your data into decisions. AI where it adds value, not where it sounds good."
-      },
-      "product": {
-        "name": "Product, UI/UX & Experience",
-        "brief": "We turn complex technology into something people use without a manual. Product and experience, from research to prototype."
-      },
-      "delivery": {
-        "label": "Delivery",
-        "copy": "And one capability runs through all five: we carry the project from start to finish, including scope, timelines, quality and launch."
+      "also": {
+        "label": "Also, if you need it",
+        "creative": "Creative",
+        "marketing": "Marketing",
+        "note": "Content, photo, video, social media and ads with our partners. Always quoted separately."
       }
     },
-    "contact": {
-      "eyebrow": "Contact",
-      "heading": "Tell us about your project.",
-      "body": "Leave us the basics and we'll get back to you however you prefer. If you already know what you need, book a call directly with the team.",
-      "ctaSecondary": "Book a call",
-      "altQuestion": "Already know what you need?"
+    "howWeWork": {
+      "pill": "How we work",
+      "heading": {
+        "first": "First we understand how you operate,",
+        "second": "then we decide what gets built."
+      },
+      "steps": {
+        "assessment": {
+          "title": "Assessment",
+          "description": "A quick review to see what's worth solving. If it needs a deeper look, that's quoted separately.",
+          "descriptionShort": "A quick review to see what's worth solving.",
+          "commitment": "We tell you what fits best"
+        },
+        "proposal": {
+          "title": "Proposal",
+          "description": "Scope, timeline and cost in writing.",
+          "commitment": "Only what you need"
+        },
+        "design": {
+          "title": "Design",
+          "description": "You see how it works before anything is built.",
+          "commitment": "You approve every screen"
+        },
+        "build": {
+          "title": "Build",
+          "description": "We work in stages and show you every step.",
+          "commitment": "One point of contact"
+        },
+        "launch": {
+          "title": "Launch and support",
+          "description": "We launch it and get your team ready.",
+          "commitment": "Documented and all yours"
+        }
+      }
+    },
+    "assessment": {
+      "pill": "First step",
+      "headingFirst": "Request your",
+      "headingSecond": "free assessment.",
+      "body": "Tell us what you want to solve and we'll reply within 24 business hours.",
+      "receivesLabel": "What you get",
+      "receives": {
+        "review": "A review of your website and tools",
+        "first": "What to do first, and why",
+        "deeper": "If it needs a deeper look, what's included and what it costs"
+      },
+      "callQuestion": "Prefer to talk?",
+      "callLink": "Book a call"
+    }
+  },
+  "map": {
+    "legend": {
+      "team": "Team",
+      "partner": "Partners",
+      "soon": "Estonia · soon",
+      "anywhere": "We work with clients in any country."
+    },
+    "regions": {
+      "label": "Map region",
+      "america": "Americas",
+      "europe": "Europe"
+    },
+    "cities": {
+      "cdmx": "CDMX",
+      "puebla": "Puebla",
+      "merida": "Mérida",
+      "dublin": "Dublin",
+      "nyc": "NYC",
+      "sanFrancisco": "San Francisco",
+      "losAngeles": "Los Angeles",
+      "amsterdam": "Amsterdam",
+      "estonia": "Estonia"
     }
   },
   "forms": {
@@ -88,19 +214,23 @@
       "fields": {
         "name": {
           "label": "Name",
-          "errorRequired": "Enter your name"
+          "placeholder": "First and last name",
+          "errorRequired": "Enter your name."
         },
         "email": {
           "label": "Email",
-          "errorRequired": "Enter your email",
-          "errorFormat": "Invalid email format"
+          "placeholder": "you{'@'}email.com",
+          "errorRequired": "Enter an email like name{'@'}company.com",
+          "errorFormat": "Enter an email like name{'@'}company.com"
         },
         "company": {
-          "label": "Company or project"
+          "label": "Company or project",
+          "placeholder": "Company name"
         },
         "identity": {
-          "label": "How do you identify?",
-          "errorRequired": "Choose an option",
+          "label": "You are a…",
+          "placeholder": "Select an option",
+          "errorRequired": "Choose an option.",
           "options": {
             "realEstate": "Real estate",
             "creator": "Content creator/personal brand",
@@ -112,11 +242,12 @@
         },
         "need": {
           "label": "What do you need?",
-          "errorRequired": "Tell us what you need",
-          "errorLength": "Tell us a bit more"
+          "placeholder": "Tell us in a couple of lines what you want to solve.",
+          "errorRequired": "Tell us what you need.",
+          "errorLength": "Tell us a bit more."
         },
         "contactPreference": {
-          "label": "How do you prefer we contact you?",
+          "label": "How should we contact you?",
           "options": {
             "email": "Email",
             "whatsapp": "WhatsApp"
@@ -124,43 +255,61 @@
         },
         "whatsappCountry": {
           "label": "Country code",
-          "errorInvalid": "Choose your country code"
+          "errorInvalid": "Choose your country code."
         },
         "whatsapp": {
           "label": "WhatsApp number",
-          "errorRequired": "Enter your number",
-          "errorDigits": "Must be 6 to 14 digits"
+          "errorRequired": "Enter your number.",
+          "errorDigits": "Must be 6 to 14 digits."
         }
       },
-      "submit": "Send",
+      "steps": {
+        "progress": "Step {n} of {total} · {title}",
+        "titles": {
+          "1": "Your details",
+          "2": "Your business"
+        }
+      },
+      "continue": "Continue",
+      "back": "← Back",
+      "privacy": {
+        "before": "I accept the ",
+        "link": "privacy notice",
+        "after": " and agree to be contacted by muush about my assessment.",
+        "newTab": "(opens in a new tab)",
+        "requiredHint": "Accept the privacy notice to send."
+      },
+      "submit": "Get my assessment",
       "sending": "Sending…",
-      "success": {
-        "title": "Got it. We'll get back to you by {channel} within one business day.",
-        "channel": {
-          "email": "email",
-          "whatsapp": "WhatsApp"
-        }
-      },
+      "retry": "Try again",
       "error": {
-        "title": "We couldn't send it. Write to support{'@'}muush.dev or reach us on WhatsApp and we'll sort it out.",
-        "fallback": "support{'@'}muush.dev"
+        "before": "Sending was interrupted. Your details are still here: try again or write to us at",
+        "email": "support{'@'}muush.dev",
+        "after": "."
+      },
+      "success": {
+        "title": "We got your request.",
+        "body": "We'll reply within 24 business hours through the channel you chose. If you'd like to move faster, book a call.",
+        "action": "Book a call"
       }
     },
     "application": {
       "fields": {
         "name": {
           "label": "Name",
-          "errorRequired": "Enter your name"
+          "placeholder": "First and last name",
+          "errorRequired": "Enter your name."
         },
         "email": {
           "label": "Email",
-          "errorRequired": "Enter your email",
-          "errorFormat": "Invalid email format"
+          "placeholder": "you{'@'}email.com",
+          "errorRequired": "Enter an email like name{'@'}company.com",
+          "errorFormat": "Enter an email like name{'@'}company.com"
         },
         "areaRole": {
           "label": "Area and role",
-          "placeholder": "Area and role",
-          "errorRequired": "Choose an area and a role",
+          "placeholder": "Select your area and role",
+          "errorRequired": "Choose your area and role.",
           "areas": {
             "it": "IT",
             "product": "Product",
@@ -210,23 +359,23 @@
         },
         "portfolio": {
           "label": "Portfolio",
-          "placeholder": "https://your-portfolio.com",
-          "errorFormat": "Enter a valid URL"
+          "placeholder": "https://",
+          "errorFormat": "Enter a valid URL."
         },
         "linkedin": {
           "label": "LinkedIn",
-          "placeholder": "https://linkedin.com/in/your-handle",
-          "errorFormat": "Enter a valid URL"
+          "placeholder": "https://linkedin.com/in/…",
+          "errorFormat": "Enter a valid URL."
         },
         "cv": {
           "label": "CV",
-          "placeholder": "Attach CV · PDF",
-          "errorFormat": "Only PDF files are accepted",
-          "errorSize": "The file must be 5MB or smaller",
-          "errorRequired": "Attach your CV"
+          "placeholder": "Attach your CV as a PDF · max 5 MB",
+          "errorFormat": "Attach your CV as a PDF up to 5 MB.",
+          "errorSize": "Attach your CV as a PDF up to 5 MB.",
+          "errorRequired": "Attach your CV."
         },
         "contactPreference": {
-          "label": "How do you prefer we contact you?",
+          "label": "How should we contact you?",
           "options": {
             "email": "Email",
             "whatsapp": "WhatsApp"
@@ -234,28 +383,47 @@
         },
         "whatsappCountry": {
           "label": "Country code",
-          "errorInvalid": "Choose your country code"
+          "errorInvalid": "Choose your country code."
         },
         "whatsapp": {
           "label": "WhatsApp number",
-          "errorRequired": "Enter your number",
-          "errorDigits": "Must be 6 to 14 digits"
+          "errorRequired": "Enter your number.",
+          "errorDigits": "Must be 6 to 14 digits."
         }
       },
-      "submit": "Send",
+      "steps": {
+        "progress": "Step {n} of {total} · {title}",
+        "titles": {
+          "1": "Your details",
+          "2": "Your profile"
+        }
+      },
+      "continue": "Continue",
+      "back": "← Back",
+      "privacy": {
+        "before": "I accept the ",
+        "link": "privacy notice",
+        "after": " and agree to be contacted by muush about my application.",
+        "newTab": "(opens in a new tab)",
+        "requiredHint": "Accept the privacy notice to send."
+      },
+      "submit": "Send application",
       "sending": "Sending…",
       "uploading": "Uploading CV…",
+      "retry": "Try again",
       "cvUploadError": {
         "message": "We couldn't upload your CV. Try again or submit without a CV.",
-        "retry": "Retry upload",
         "submitWithoutCv": "Submit without CV"
       },
-      "success": {
-        "title": "Thanks, we've got your profile. We'll reach out when there's a project that fits."
-      },
       "error": {
-        "title": "We couldn't send it. Write to support{'@'}muush.dev or reach us on WhatsApp and we'll sort it out.",
-        "fallback": "support{'@'}muush.dev"
+        "before": "Sending was interrupted. Your details and CV are still here: try again or write to us at",
+        "email": "support{'@'}muush.dev",
+        "after": "."
+      },
+      "success": {
+        "title": "We got your application.",
+        "body": "We'll review your profile and reach out when there's a project that fits you.",
+        "action": "Back to home"
       }
     }
   },
@@ -263,18 +431,17 @@
     "nav": {
       "label": "Main navigation",
       "services": "Services",
-      "about": "About us",
-      "cta": "Tell us about your project",
+      "about": "About",
+      "cta": "Free assessment",
       "switchToEs": "Switch to Spanish",
-      "switchToEn": "Switch to English"
+      "switchToEn": "Switch to English",
+      "home": "muush home",
+      "homeLink": "Home"
     },
     "menu": {
       "label": "Menu",
       "open": "Open menu",
-      "close": "Close menu",
-      "purpose": "Purpose",
-      "services": "Services",
-      "about": "About us"
+      "close": "Close menu"
     },
     "social": {
       "linkedin": "LinkedIn",
@@ -284,40 +451,287 @@
     "footer": {
       "label": "Footer",
       "tagline": "We speak business and code.",
-      "category": "Technology solution studio",
+      "category": "Technology Solution Studio.",
       "copyright": "© 2026 muush · All rights reserved",
-      "location": "CDMX · MX",
       "whatsappMessage": "Hi muush, I'd like to talk about a project.",
       "nav": {
         "title": "Navigation",
-        "purpose": "Purpose",
+        "home": "Home",
         "services": "Services",
-        "about": "About us"
+        "howWeWork": "How we work",
+        "about": "About"
       },
       "contact": {
         "title": "Contact",
+        "assessment": "Free assessment",
         "call": "Book a call",
         "email": "support{'@'}muush.dev",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "hints": {
+          "whatsapp": "Message us",
+          "call": "30 minutes",
+          "email": "Email"
+        }
       },
       "muush": {
         "title": "muush",
-        "work": "Work with muush"
+        "work": "Work with muush",
+        "faq": "FAQ",
+        "blog": "Blog · coming soon",
+        "blogInline": "Blog (coming soon)"
       },
       "social": {
         "title": "Social"
+      },
+      "legal": {
+        "privacy": "Privacy notice",
+        "terms": "Terms and conditions"
       }
     },
+    "faq": {
+      "title": "Under construction 🚧",
+      "assessment": "Free assessment",
+      "call": "Book a call"
+    },
     "notFound": {
-      "eyebrow": "Error 404",
-      "headline": "We couldn't find this page.",
-      "body": "The link may be mistyped, or the page may have moved.",
+      "heading": {
+        "first": "Let's get you back",
+        "second": "somewhere familiar."
+      },
       "cta": "Back to home",
-      "shortcutsLabel": "Shortcuts",
-      "shortcuts": {
-        "purpose": "Purpose",
-        "services": "Services",
-        "about": "About us"
+      "assessment": "Free assessment"
+    }
+  },
+  "legal": {
+    "privacy": {
+      "heading": {
+        "first": "Privacy",
+        "second": "notice."
+      },
+      "updated": "Last updated: November 5, 2026",
+      "sections": {
+        "controller": {
+          "nav": "Who is responsible for your data",
+          "title": "Who is responsible for your data",
+          "body": "Roberto Mirón Nájera, an individual operating under the trade name muush (\"muush\" or \"we\"), located at Del Puente #11, San Bartolo Ameyalco, Álvaro Obregón, 01800, Mexico City, Mexico, is responsible for processing your personal data. For any privacy matter, write to support{'@'}muush.dev."
+        },
+        "data": {
+          "nav": "What data we collect",
+          "title": "What data we collect",
+          "table": {
+            "assessment": {
+              "where": "Assessment form",
+              "data": "Name, email, company or project, how you identify, your website or social media, what you need, preferred contact method and, if you choose WhatsApp, your number."
+            },
+            "application": {
+              "where": "Work with muush form",
+              "data": "Name, email, area and role, portfolio link, LinkedIn link, CV in PDF, preferred contact method and, if you choose WhatsApp, your number."
+            },
+            "call": {
+              "where": "When you book a call",
+              "data": "Name, email and the time you choose, through Cal.com."
+            },
+            "browsing": {
+              "where": "While browsing the site",
+              "data": "IP address, browser, pages visited, cookie identifiers and actions on the site."
+            }
+          },
+          "sensitive": "We don't ask for sensitive personal data. A CV may include it without us asking, such as health status, religious beliefs or union membership. Please leave it out. If your CV includes it, we use it only to evaluate your profile and with your express consent, which you give by ticking the box on the form."
+        },
+        "purposes": {
+          "nav": "What we use it for",
+          "title": "What we use it for",
+          "intro": "We use your data for these purposes, which we need to handle what you asked for:",
+          "items": {
+            "assessment": "If you requested an assessment: to answer your request, contact you the way you chose, prepare your assessment and a proposal and, if we work together, manage the business relationship and invoicing.",
+            "application": "If you applied through Work with muush: to evaluate your profile with your express consent, contact you for an interview and invite you to projects that fit for as long as we keep your CV.",
+            "both": "In both cases: to send you the automatic email confirming we received your information."
+          },
+          "additionalIntro": "We also use browsing data for one additional purpose, which we don't need to handle your request:",
+          "additionalItems": {
+            "advertising": "Measuring and showing advertising: we use pixels, such as Meta Pixel, to see how our ads perform and to show muush ads to people who visited the site."
+          },
+          "objection": "You can object to this purpose at any time, as explained in Cookies and pixels. We don't use what you write in the forms or your CV for advertising."
+        },
+        "sharing": {
+          "nav": "Who we share it with",
+          "title": "Who we share it with",
+          "intro": "We don't sell your data. We only share it with:",
+          "items": {
+            "providers": "The providers that help us operate: Amazon Web Services (site hosting), Amazon SES (email delivery), Google Drive (CV storage), Notion (records of requests and applications) and Cal.com (call scheduling). They process your data on our behalf, under our instructions and under confidentiality. Some have servers outside Mexico.",
+            "meta": "Meta Platforms, which receives browsing data through its pixel to measure and show ads.",
+            "collaborators": "muush collaborators working on your project, only the data they need and under a confidentiality agreement. Some may be outside Mexico.",
+            "authorities": "Authorities, when a law requires it."
+          },
+          "talentPool": "Your talent pool profile and CV stay at muush: we don't share them with partners or other companies.",
+          "transfers": "Except for what is stated about Meta, we don't make any data transfers that require your consent."
+        },
+        "retention": {
+          "nav": "How long we keep it",
+          "title": "How long we keep it",
+          "items": {
+            "cv": "Your CV and talent pool profile: 1 year from when we receive them. When that period ends, we delete them.",
+            "requests": "Assessment requests that don't move forward: 12 months from the last contact.",
+            "clients": "Clients: for the length of the relationship and, after that, the period required by tax law.",
+            "browsing": "Browsing and pixel data: up to 14 months."
+          },
+          "earlyDeletion": "You can ask us to delete it sooner at any time."
+        },
+        "rights": {
+          "nav": "Your rights",
+          "title": "Your rights",
+          "intro": "You have the right to access, rectify or update, cancel or object to the use of your data (known in Mexico as ARCO rights). You can also object to decisions made solely by automated means; we don't make any today.",
+          "howTo": "To exercise them, email support{'@'}muush.dev with the subject \"ARCO rights\" and include:",
+          "steps": {
+            "contact": "Your name and the email where you want our reply.",
+            "identification": "A copy of your official ID. If someone represents you, their ID and the document that proves it.",
+            "request": "Which data and which right you want to exercise. For a correction, the correct data.",
+            "documents": "Any document that helps us find your data."
+          },
+          "response": "We reply within 20 business days at most. If your request is valid, we carry it out within the following 15 business days. It's free."
+        },
+        "withdrawal": {
+          "nav": "Withdraw your consent",
+          "title": "How to withdraw consent or limit the use of your data",
+          "body": "Email support{'@'}muush.dev with the subject \"Withdraw consent\" or \"Limit use of my data\", with the same details as for ARCO rights. Without your data, we may not be able to keep handling your request or your application."
+        },
+        "cookies": {
+          "nav": "Cookies and pixels",
+          "title": "Cookies and pixels",
+          "body": "muush.dev uses the technical cookies it needs to work, for example to remember your language. If you accept them, it also uses Meta Pixel and Google Analytics to measure visits and ads. These technologies collect your IP address, browser, pages visited and cookie identifiers.",
+          "choices": "You can accept or decline them in the site's cookie notice and change your choice here at any time. You can also turn them off in your browser settings or in your Meta account's ad preferences.",
+          "preferences": "Change my preferences"
+        },
+        "changes": {
+          "nav": "Changes to this notice",
+          "title": "Changes to this notice",
+          "body": "We publish any change on this page, with its update date at the top. If a change requires your consent, we'll ask for it by email."
+        },
+        "authority": {
+          "nav": "Authority",
+          "title": "Authority",
+          "body": "If you believe your data protection rights were violated, you can go to Mexico's Secretaría Anticorrupción y Buen Gobierno, the data protection authority since March 2025."
+        }
+      }
+    },
+    "terms": {
+      "heading": {
+        "first": "Terms and",
+        "second": "conditions."
+      },
+      "updated": "Last updated: November 5, 2026",
+      "sections": {
+        "whoWeAre": {
+          "nav": "Who we are",
+          "title": "Who we are",
+          "body": "muush.dev is the website of Roberto Mirón Nájera, an individual operating under the trade name muush (\"muush\" or \"we\"), located at Del Puente #11, San Bartolo Ameyalco, Álvaro Obregón, 01800, Mexico City, Mexico. You can reach us at support{'@'}muush.dev or on WhatsApp at +52 56 3906 0739."
+        },
+        "usingTheSite": {
+          "nav": "Using this site",
+          "title": "Using this site",
+          "body": "These terms apply to your use of muush.dev. By browsing the site or sending a form, you accept them. If you don't agree with them, please don't use the site."
+        },
+        "whatYouFind": {
+          "nav": "What you'll find here",
+          "title": "What you'll find here",
+          "body": "Information about our services, forms to request an assessment or apply to our talent pool, and links to write to us or book a call. This site doesn't sell products or take payments."
+        },
+        "assessment": {
+          "nav": "Free assessment",
+          "title": "Free assessment",
+          "items": {
+            "review": "It includes a review of your website and tools, what to do first and why. If you need to go deeper, we tell you what it includes and what it costs, and that is quoted separately.",
+            "free": "It's free and doesn't commit you to hiring us.",
+            "response": "We reply within 24 business hours through the channel you chose.",
+            "guidance": "It's general guidance based on what you share with us. Decisions about your business are yours, and the assessment doesn't replace legal, tax or financial advice."
+          }
+        },
+        "projects": {
+          "nav": "Projects and proposals",
+          "title": "Projects and proposals",
+          "body": "The content of this site is informational and isn't a binding offer. Each project is governed by its accepted proposal and signed contract, which prevail over anything on this site."
+        },
+        "workWithUs": {
+          "nav": "Work with muush",
+          "title": "Work with muush",
+          "body": "Applying to our talent pool doesn't create an employment relationship or guarantee that you'll join a project. Every collaboration is agreed in writing before it starts, with clear scope, timing and pay. By applying, you confirm that the information you send is true and that you're allowed to share it."
+        },
+        "properUse": {
+          "nav": "Proper use of the site",
+          "title": "Proper use of the site",
+          "body": "Use the site lawfully and with truthful information. Please don't impersonate anyone, try to access non-public areas, disrupt the site, introduce malicious code or extract its content automatically."
+        },
+        "intellectualProperty": {
+          "nav": "Intellectual property",
+          "title": "Intellectual property",
+          "body": "The text, design, logos, animations and code on this site belong to muush or their respective owners and are protected by law. You can view them and share links to the site. For any other use, ask us for written permission.",
+          "submissions": "What you send us remains yours. You allow us to use it only to handle your request or application."
+        },
+        "thirdParties": {
+          "nav": "Third-party sites",
+          "title": "Third-party sites",
+          "body": "The site links to third-party services such as Cal.com, WhatsApp, LinkedIn and Instagram. Each has its own terms and notices, and muush doesn't control them."
+        },
+        "availability": {
+          "nav": "Availability and liability",
+          "title": "Availability and liability",
+          "body": "We work to keep the site available and its information up to date. It may change or be interrupted, for example for maintenance.",
+          "liability": "To the extent the law allows, muush isn't liable for indirect damages arising from use of the site or from decisions based only on its content. None of this limits the rights the law gives you as a consumer."
+        },
+        "privacy": {
+          "nav": "Privacy and cookies",
+          "title": "Privacy and cookies",
+          "body": "We handle your data as explained in our privacy notice, where you can also change your cookie preferences."
+        },
+        "changes": {
+          "nav": "Changes to these terms",
+          "title": "Changes to these terms",
+          "body": "We publish any change on this page, with its update date at the top. Changes apply from the moment they are published."
+        },
+        "governingLaw": {
+          "nav": "Governing law",
+          "title": "Governing law",
+          "body": "These terms are governed by the laws of Mexico. Any dispute is resolved before the courts of Mexico City. If you're a consumer, you can also go to Mexico's Federal Consumer Protection Agency (Profeco)."
+        },
+        "contact": {
+          "nav": "Contact",
+          "title": "Contact",
+          "body": "For any question about these terms, write to support{'@'}muush.dev."
+        }
+      }
+    },
+    "onThisPage": "On this page",
+    "translationNote": "Courtesy translation. If it differs from the Spanish version, the Spanish version prevails."
+  },
+  "consent": {
+    "banner": {
+      "title": "We use cookies",
+      "body": "Technical cookies keep the site working. With your permission, we also use a pixel to measure and show our ads. You can choose what you accept.",
+      "customize": "Customize"
+    },
+    "actions": {
+      "rejectAll": "Decline all",
+      "acceptAll": "Accept all",
+      "save": "Save my choice"
+    },
+    "preferences": {
+      "title": "Your cookie preferences",
+      "intro": {
+        "before": "Choose which cookies you accept. You can change your choice at any time. Read more in our ",
+        "link": "privacy notice",
+        "after": "."
+      },
+      "close": "Close"
+    },
+    "categories": {
+      "necessary": {
+        "name": "Necessary",
+        "detail": "They keep the site working, for example by remembering your language."
+      },
+      "alwaysOn": "Always on",
+      "advertising": {
+        "name": "Advertising",
+        "detail": "Meta Pixel lets us measure our ads and show them to people who visited the site."
       }
     }
   }

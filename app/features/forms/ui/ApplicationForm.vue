@@ -1,199 +1,188 @@
 <script setup lang="ts">
 import { computed, onMounted, useTemplateRef } from 'vue'
 import {
+  type ApplicationFieldId,
   type ApplicationFormContent,
+  type ApplicationFormValues,
   CV_REQUIRED,
 } from '@/features/forms/data/applicationFields'
-import type { ApplicationSubmitter } from '@/features/forms/data/submissionContract'
-import { fieldErrorMessage } from '@/features/forms/logic/fieldErrorMessage'
 import {
-  toAreaRoleGroups,
-  toFieldOptions,
-} from '@/features/forms/logic/selectOptions'
+  APPLICATION_STEP_FIELDS,
+  type FormStep,
+} from '@/features/forms/data/formSteps'
+import type { ApplicationSubmitter } from '@/features/forms/data/submissionContract'
+import { toAreaRoleGroups } from '@/features/forms/logic/selectOptions'
 import { useApplicationForm } from '@/features/forms/logic/useApplicationForm'
+import { useConsentGate } from '@/features/forms/logic/useConsentGate'
+import { useFormSteps } from '@/features/forms/logic/useFormSteps'
 import type { SubmitState } from '@/features/forms/logic/useFormSubmitState'
-import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
+import { useFormView } from '@/features/forms/logic/useFormView'
+import ContactChannelField from './ContactChannelField.vue'
 import CvField from './CvField.vue'
-import FormOutcome from './FormOutcome.vue'
-import HoneypotField from './HoneypotField.vue'
-import RadioPillGroup from './RadioPillGroup.vue'
+import NameEmailRow from './NameEmailRow.vue'
 import SelectField from './SelectField.vue'
+import SendNotice from './SendNotice.vue'
+import SteppedForm from './SteppedForm.vue'
 import TextField from './TextField.vue'
-import WhatsappField from './WhatsappField.vue'
 
 /**
- * ApplicationForm — the eight fields of `docs/business/landing/ui-map.md`
- * § 9 and the real submission flow of feature 029, including the optional
- * CV upload. Same seam as `ContactForm.vue`: the page creates the
- * `submitter` (`useApplicationSubmitter()`), this component never touches the
- * network (Article V, spec FR-025), and `previewState` is a Storybook-only
- * display override no page or section passes.
- *
- * "Área y rol" values are qualified `${area}:${roleId}` because `sales` is
- * both an area and a role; the payload builder converts them to the bare
- * role id the API accepts (research R7).
- *
- * Feature 031: `CvField` shows a failed CV upload (the application was not
- * sent) with its two actions, and the CV's immediate format/size refusals.
+ * ApplicationForm — the v2 application form (feature 45, US4; pen
+ * extract-45 § 5) in the shared `SteppedForm` ("Tu perfil" below 768 px).
+ * The logic is the existing `useApplicationForm`, unchanged (CV upload
+ * order, no silent CV loss, feature 031); a failed upload shows
+ * `SendNotice` and the submit retries with the same file (Clarifications
+ * Q2). Consent gates every submit path and is never sent. `previewState`,
+ * `previewStep` and `initial` are Storybook-only.
  */
 interface Props {
   content: ApplicationFormContent
   submitter: ApplicationSubmitter
-  previewState?: Exclude<SubmitState, 'idle' | 'invalid'>
+  previewState?: Exclude<SubmitState, 'idle'>
+  previewStep?: FormStep
+  initial?: Partial<ApplicationFormValues>
 }
 
-const { content, submitter, previewState } = defineProps<Props>()
+const props = defineProps<Props>()
 
-const challengeHost = useTemplateRef<HTMLElement>('challengeHost')
+const shell = useTemplateRef<InstanceType<typeof SteppedForm>>('shell')
+const panel = computed(() => (shell.value?.$el as HTMLElement | null) ?? null)
+const challengeHost = computed(() => shell.value?.challengeHost ?? null)
 
+const steps = useFormSteps({ stepFields: APPLICATION_STEP_FIELDS, panel })
+const form = useApplicationForm({
+  submitter: props.submitter,
+  challengeHost,
+  initial: props.initial,
+  revealField: steps.revealField,
+})
+const { values, errors, cvRejection, honeypot } = form
+const { accepted, guard } = useConsentGate()
+const onGuardedSubmit = guard(form.onSubmit)
+/* "Enviar sin CV" sends too, so it passes the same gate (FR-009). */
+const onGuardedSubmitWithoutCv = guard(() => form.onSubmitWithoutCv())
+const { isStepped, goBack } = steps
 const {
-  values,
+  shownState,
+  shownStep,
+  shownAccepted,
+  busy,
+  labelKey,
+  noticeKind,
+  errorFor,
+} = useFormView<ApplicationFieldId>({
+  ...steps,
+  state: form.state,
+  accepted,
   errors,
-  state,
-  cvRejection,
-  honeypot,
-  markInteractive,
-  onEngage,
-  onSubmit,
-  onContactPreferenceChange,
-  onWhatsappCountryChange,
-  onCvChange,
-  onCvReject,
-  onRetryCvUpload,
-  onSubmitWithoutCv,
-} = useApplicationForm({ submitter, challengeHost })
-
-onMounted(markInteractive)
-
-const shownState = computed(() => previewState ?? state.value)
-const readonly = computed(
-  () => shownState.value === 'uploading' || shownState.value === 'sending'
-)
-const submitLabel = computed(() => {
-  if (shownState.value === 'uploading') return content.uploading
-  return shownState.value === 'sending' ? content.sending : content.submit
+  stepFields: APPLICATION_STEP_FIELDS,
+  fieldContent: () => props.content.fields,
+  previewState: () => props.previewState,
+  previewStep: () => props.previewStep,
 })
 
-const contactPreferenceOptions = computed(() =>
-  toFieldOptions(content.fields.contactPreference.options)
-)
-const areaRoleGroups = computed(() => toAreaRoleGroups(content.fields.areaRole))
+onMounted(form.markInteractive)
 
-/** Errors show only after a submit attempt (`ui-map.md` § 7). */
-function errorFor(field: keyof typeof errors.value): string | undefined {
-  if (state.value !== 'invalid') return undefined
-  return fieldErrorMessage(errors.value[field], content.fields[field])
-}
+const areaRoleGroups = computed(() =>
+  toAreaRoleGroups(props.content.fields.areaRole)
+)
+/* A refused file's message shows at once (feature 031 FR-013). */
+const CV_REJECTION_KEY = { format: 'errorFormat', size: 'errorSize' } as const
+const cvError = computed(() =>
+  cvRejection.value
+    ? props.content.fields.cv[CV_REJECTION_KEY[cvRejection.value]]
+    : errorFor('cv')
+)
 </script>
 
 <template>
-  <div
-    class="rounded-panel-sm border border-glass-dark-line bg-glass-dark-contact p-glass-dark backdrop-blur-glass-dark"
+  <SteppedForm
+    ref="shell"
+    v-model:honeypot="honeypot"
+    :chrome="content"
+    :is-stepped="isStepped"
+    :step="shownStep"
+    :accepted="shownAccepted"
+    :submit-label="content[labelKey]"
+    :busy="busy"
+    :success="shownState === 'success' ? content.success : undefined"
+    @update:accepted="accepted = $event"
+    @submit="onGuardedSubmit"
+    @continue="steps.goNext(errors)"
+    @back="goBack"
+    @engage="form.onEngage"
   >
-    <form
-      v-if="shownState !== 'success'"
-      novalidate
-      class="flex flex-col gap-form-gap"
-      :aria-busy="readonly"
-      @submit="onSubmit"
-      @focusin="onEngage"
-    >
-      <TextField
-        id="name"
-        v-model="values.name"
-        :label="content.fields.name.label"
-        :error="errorFor('name')"
-        :readonly="readonly"
-        required
+    <template #details>
+      <NameEmailRow
+        v-model:name="values.name"
+        v-model:email="values.email"
+        :content="content.fields"
+        :errors="{ name: errorFor('name'), email: errorFor('email') }"
+        :readonly="busy"
       />
-      <TextField
-        id="email"
-        v-model="values.email"
-        type="email"
-        :label="content.fields.email.label"
-        :error="errorFor('email')"
-        :readonly="readonly"
-        required
-      />
-      <SelectField
-        id="areaRole"
-        v-model="values.areaRole"
-        :label="content.fields.areaRole.label"
-        :placeholder="content.fields.areaRole.placeholder"
-        :groups="areaRoleGroups"
-        :error="errorFor('areaRole')"
-        :readonly="readonly"
-        required
-      />
-      <TextField
-        id="portfolio"
-        v-model="values.portfolio"
-        :label="content.fields.portfolio.label"
-        :placeholder="content.fields.portfolio.placeholder"
-        :error="errorFor('portfolio')"
-        :readonly="readonly"
-      />
+    </template>
+    <template #profile>
+      <div class="grid gap-formulario-fila @lg:grid-cols-2">
+        <TextField
+          id="portfolio"
+          v-model="values.portfolio"
+          type="url"
+          :label="content.fields.portfolio.label"
+          :placeholder="content.fields.portfolio.placeholder"
+          :error="errorFor('portfolio')"
+          :readonly="busy"
+        />
+        <SelectField
+          id="areaRole"
+          v-model="values.areaRole"
+          :label="content.fields.areaRole.label"
+          :placeholder="content.fields.areaRole.placeholder"
+          :groups="areaRoleGroups"
+          :error="errorFor('areaRole')"
+          :readonly="busy"
+          required
+        />
+      </div>
       <TextField
         id="linkedin"
         v-model="values.linkedin"
+        type="url"
         :label="content.fields.linkedin.label"
         :placeholder="content.fields.linkedin.placeholder"
         :error="errorFor('linkedin')"
-        :readonly="readonly"
+        :readonly="busy"
       />
       <CvField
         id="cv"
         :model-value="values.cv"
-        :content="content.fields.cv"
-        :upload-error-content="content.cvUploadError"
-        :error="errorFor('cv')"
-        :rejection="cvRejection"
-        :upload-failed="shownState === 'cv-upload-error'"
-        :readonly="readonly"
+        :label="content.fields.cv.label"
+        :placeholder="content.fields.cv.placeholder"
+        :error="cvError"
         :required="CV_REQUIRED"
-        @update:model-value="onCvChange"
-        @reject="onCvReject"
-        @retry="onRetryCvUpload"
-        @submit-without-cv="onSubmitWithoutCv"
+        :readonly="busy"
+        @update:model-value="form.onCvChange"
+        @reject="form.onCvReject"
       />
-      <RadioPillGroup
-        id="contactPreference"
-        :model-value="values.contactPreference"
-        :label="content.fields.contactPreference.label"
-        :options="contactPreferenceOptions"
-        :readonly="readonly"
-        @update:model-value="onContactPreferenceChange($event as 'email' | 'whatsapp')"
-      />
-      <WhatsappField
-        v-model="values.whatsapp"
+    </template>
+    <template #channel>
+      <ContactChannelField
+        :preference="values.contactPreference"
         :country="values.whatsappCountry"
-        :visible="values.contactPreference === 'whatsapp'"
+        :number="values.whatsapp"
         :content="content.fields"
         :errors="{ number: errorFor('whatsapp'), country: errorFor('whatsappCountry') }"
-        :readonly="readonly"
-        @update:country="onWhatsappCountryChange"
+        :readonly="busy"
+        @update:preference="form.onContactPreferenceChange"
+        @update:country="form.onWhatsappCountryChange"
+        @update:number="values.whatsapp = $event"
       />
-      <HoneypotField v-model="honeypot" />
-      <PrimaryButton
-        variant="submit"
-        type="submit"
-        :disabled="readonly"
-        class="lg:w-btn-submit-w lg:self-center"
-      >
-        {{ submitLabel }}
-      </PrimaryButton>
-    </form>
-
-    <FormOutcome
-      v-if="shownState === 'success' || shownState === 'server-error'"
-      :kind="shownState"
-      :message="
-        shownState === 'success' ? content.success.title : content.error.title
-      "
-      :error-fallback="content.error.fallback"
-    />
-
-    <!-- Turnstile's host, outside the form: see `ContactForm.vue`. -->
-    <div ref="challengeHost" />
-  </div>
+    </template>
+    <template v-if="noticeKind" #notice>
+      <SendNotice
+        :kind="noticeKind"
+        :error="content.error"
+        :cv-upload-error="content.cvUploadError"
+        @submit-without-cv="onGuardedSubmitWithoutCv"
+      />
+    </template>
+  </SteppedForm>
 </template>

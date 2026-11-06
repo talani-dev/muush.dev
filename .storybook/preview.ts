@@ -37,15 +37,46 @@ setup(app => {
  */
 const preview: Preview = {
   parameters: {
+    /*
+     * Sidebar order (naming reorganization, Roberto 2026-11-01): the
+     * foundations first, then the shared layer, then every feature group
+     * (`*`, alphabetical), and the v1 quarantine last. Feature 47 deletes the
+     * whole `Legacy v1/` group with the code it catalogues.
+     */
+    options: {
+      storySort: {
+        order: [
+          'Foundations',
+          'Shared',
+          ['UI'],
+          '*',
+          'Legacy v1',
+          ['Foundations', 'Shared', '*'],
+        ],
+      },
+    },
     backgrounds: {
       options: {
         ink: { name: 'Ink 500', value: '#262626' },
         bone: { name: 'Bone 200', value: '#f2ebe7' },
         red: { name: 'Red 400', value: '#cf3147' },
+        /*
+         * The Muush 1.0 (v2) canvas, Negro 950 (`--negro-950`, feature
+         * 42). Every v2 story (`Foundations/Tokens` and the v2 primitives
+         * under `Shared/UI/`) selects it in its meta. It is not the default
+         * while `Legacy v1/` stories still exist; feature 47 flips it.
+         */
+        negro: { name: 'Negro 950', value: '#050505' },
       },
     },
     viewport: {
       options: {
+        /* Feature 44: the narrowest width the home is checked at, where
+           the hero's two buttons wrap (Clarifications Q1). */
+        mobileSmall: {
+          name: 'Móvil chico (360)',
+          styles: { width: '360px', height: '780px' },
+        },
         mobile: {
           name: 'Móvil (390)',
           styles: { width: '390px', height: '844px' },

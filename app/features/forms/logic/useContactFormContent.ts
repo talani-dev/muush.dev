@@ -1,6 +1,8 @@
 import { type ComputedRef, computed } from 'vue'
 import type { ContactFormContent } from '@/features/forms/data/contactFields'
+import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import { buildCountryOptions } from './countryOptions'
+import { resolveFormChrome } from './formChromeContent'
 
 /**
  * Resolves `forms.contact.*` into the shape `ContactForm.vue` renders.
@@ -9,11 +11,16 @@ import { buildCountryOptions } from './countryOptions'
  * key namespaced under `landing.*` or `about.*`, so a future feature 20 can
  * add a sibling `useApplicationFormContent` under `forms.application.*` with
  * the same field-level conventions, with neither module reaching into the
- * other. `ContactSection.vue` calls this through the barrel, never through
+ * other. `pages/index.vue` calls this through the barrel, never through
  * `forms/logic/` directly (plan.md D-1, D-4).
+ *
+ * Feature 45: the v2 shape — placeholders, the shared chrome
+ * (`formChromeContent.ts`), and the "Enviado" action to the call-booking
+ * page, a destination rather than copy (`shared/data/callBooking.ts`).
  */
 export function useContactFormContent(): ComputedRef<ContactFormContent> {
   const { t, locale, localeProperties } = useI18n()
+  const localePath = useLocalePath()
   /* Country names come from the browser in the page language (`es-MX` /
      `en`, the locale's `language` in `nuxt.config.ts`), not from locale
      keys: one source for both languages (feature 32 research R2). */
@@ -25,16 +32,22 @@ export function useContactFormContent(): ComputedRef<ContactFormContent> {
     fields: {
       name: {
         label: t('forms.contact.fields.name.label'),
+        placeholder: t('forms.contact.fields.name.placeholder'),
         errorRequired: t('forms.contact.fields.name.errorRequired'),
       },
       email: {
         label: t('forms.contact.fields.email.label'),
+        placeholder: t('forms.contact.fields.email.placeholder'),
         errorRequired: t('forms.contact.fields.email.errorRequired'),
         errorFormat: t('forms.contact.fields.email.errorFormat'),
       },
-      company: { label: t('forms.contact.fields.company.label') },
+      company: {
+        label: t('forms.contact.fields.company.label'),
+        placeholder: t('forms.contact.fields.company.placeholder'),
+      },
       identity: {
         label: t('forms.contact.fields.identity.label'),
+        placeholder: t('forms.contact.fields.identity.placeholder'),
         errorRequired: t('forms.contact.fields.identity.errorRequired'),
         /*
          * Order is significant: `ContactForm.vue` walks
@@ -53,6 +66,7 @@ export function useContactFormContent(): ComputedRef<ContactFormContent> {
       },
       need: {
         label: t('forms.contact.fields.need.label'),
+        placeholder: t('forms.contact.fields.need.placeholder'),
         errorRequired: t('forms.contact.fields.need.errorRequired'),
         errorLength: t('forms.contact.fields.need.errorLength'),
       },
@@ -76,23 +90,14 @@ export function useContactFormContent(): ComputedRef<ContactFormContent> {
         errorDigits: t('forms.contact.fields.whatsapp.errorDigits'),
       },
     },
-    submit: t('forms.contact.submit'),
-    sending: t('forms.contact.sending'),
-    /* `{channel}` interpolated per preference (spec OA-4): the confirmation
-       names the channel the visitor actually chose. */
-    success: {
-      titleByChannel: {
-        email: t('forms.contact.success.title', {
-          channel: t('forms.contact.success.channel.email'),
-        }),
-        whatsapp: t('forms.contact.success.title', {
-          channel: t('forms.contact.success.channel.whatsapp'),
-        }),
+    ...resolveFormChrome(
+      t,
+      'forms.contact',
+      {
+        label: t('forms.contact.success.action'),
+        href: CALL_BOOKING_URL,
       },
-    },
-    error: {
-      title: t('forms.contact.error.title'),
-      fallback: t('forms.contact.error.fallback'),
-    },
+      localePath({ name: 'privacy' })
+    ),
   }))
 }

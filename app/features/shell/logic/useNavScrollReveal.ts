@@ -33,9 +33,9 @@ import {
  * sets the same precedent, publishing raw pixel coordinates from
  * `clientX`/`clientY` rather than converting them to `rem`.
  *
- * Point 4 is not arbitrary: `MobileMenu.vue`'s panel is `position: fixed`, and
- * this composable's caller (`SiteNav.vue`) applies the hidden state as a
- * `transform` on the `<nav>` itself. A `transform` on an ancestor creates a
+ * Point 4 is not arbitrary (feature 26, kept by feature 43): the v1 caller
+ * applied the hidden state as a `transform` on an ancestor of the
+ * `position: fixed` menu panel. A `transform` on an ancestor creates a
  * new containing block for a `position: fixed` descendant, which would
  * mis-contain the panel the moment both were active together. Forcing the nav
  * visible whenever the menu is open means the two states can never overlap,
@@ -53,14 +53,17 @@ import {
  */
 
 /** Nav stays visible unconditionally inside this many px of the top. */
-const REVEAL_ZONE_PX = 80
+export const REVEAL_ZONE_PX = 80
 
 /** Continuous downward px, past the reveal zone, before the nav hides. */
 const HIDE_ACCUMULATION_PX = 10
 
 export function useNavScrollReveal(
   isMobileMenuOpen: MaybeRefOrGetter<boolean>
-): { isNavVisible: ComputedRef<boolean> } {
+): {
+  isNavVisible: ComputedRef<boolean>
+  reveal: () => void
+} {
   const isHiddenByScroll = ref(false)
 
   let lastScrollY = 0
@@ -122,5 +125,16 @@ export function useNavScrollReveal(
     () => toValue(isMobileMenuOpen) || !isHiddenByScroll.value
   )
 
-  return { isNavVisible }
+  /**
+   * Shows the header now, as an upward scroll would (feature 43, spec
+   * FR-013): the header calls it when keyboard focus lands on one of its
+   * controls while it is hidden. The downward run restarts from zero, so
+   * the next hide still needs its own 10 px.
+   */
+  function reveal() {
+    continuousDownwardPx = 0
+    isHiddenByScroll.value = false
+  }
+
+  return { isNavVisible, reveal }
 }

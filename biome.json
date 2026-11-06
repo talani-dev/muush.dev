@@ -16,7 +16,9 @@
       "!.nitro",
       "!storybook-static",
       "!dist",
-      "!specs/**/reference"
+      "!specs/**/reference",
+      "!docs/handoff",
+      "!docs/harness/progress/pen-*"
     ]
   },
   "formatter": {

@@ -1,228 +1,105 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import type { ResolvedFooterColumn } from '@/features/shell/data/types'
-import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
-import Wordmark from '@/shared/ui/Wordmark.vue'
+import type { Component } from 'vue'
+import FooterColumns from './FooterColumns.vue'
+import MobileFooter from './MobileFooter.vue'
 import SiteFooter from './SiteFooter.vue'
+import {
+  ExactActiveLinkStub,
+  SHELL_COPY,
+  SOCIALS,
+} from './shellFixtures.testing'
 
-const columns: ResolvedFooterColumn[] = [
-  {
-    title: 'Navegación',
-    items: [
-      { label: 'Propósito', href: '/es#proposito', external: false },
-      { label: 'Servicios', href: '/es#servicios', external: false },
-      { label: 'Proyectos', href: '/es#proyectos', external: false },
-      { label: 'Nosotros', href: '/es/nosotros', external: false },
-    ],
-  },
-  {
-    title: 'Contacto',
-    items: [
-      { label: 'Agenda una llamada', href: CALL_BOOKING_URL, external: true },
-      {
-        label: 'support@muush.dev',
-        href: 'mailto:support@muush.dev',
-        external: false,
-      },
-      {
-        label: 'WhatsApp',
-        href: 'https://wa.me/525639060739?text=Hola%20muush',
-        external: true,
-      },
-    ],
-  },
-  {
-    title: 'muush',
-    items: [
-      { label: 'Work with muush', href: '/es/nosotros#work', external: false },
-      { label: 'FAQ' },
-      { label: 'Blog · próximamente' },
-    ],
-  },
-  {
-    title: 'Redes',
-    items: [
-      {
-        label: 'LinkedIn',
-        href: 'https://www.linkedin.com/company/muush-dev',
-        external: true,
-      },
-      {
-        label: 'Instagram',
-        href: 'https://www.instagram.com/muush.dev',
-        external: true,
-      },
-      {
-        label: 'TikTok',
-        href: 'https://www.tiktok.com/@muush.dev',
-        external: true,
-      },
-    ],
-  },
-]
-
-const props = {
-  columns,
-  home: '/es',
-  tagline: 'Hablamos negocio y código.',
-  category: 'Technology solution studio',
-  copyright: '© 2026 muush · Todos los derechos reservados',
-  location: 'CDMX · MX',
-}
-
-function mountFooter() {
-  return mount(SiteFooter, { props })
+/** Feature 43 · FR-030…FR-035, contract § 7; pen extract-43 § 6. */
+function render(
+  locale: 'es' | 'en' = 'es',
+  stubs: Record<string, Component> = {}
+) {
+  const copy = SHELL_COPY[locale]
+  return mount(SiteFooter, {
+    global: { stubs },
+    props: {
+      columns: copy.columns,
+      contactChannels: copy.contactChannels,
+      mobileLinks: copy.mobileLinks,
+      socials: SOCIALS,
+      legal: copy.legal,
+      home: copy.home,
+      homeLabel: copy.homeLabel,
+      tagline: copy.tagline,
+      category: copy.category,
+      copyright: copy.copyright,
+      label: copy.footerLabel,
+    },
+  })
 }
 
 describe('SiteFooter', () => {
-  it('should render a contentinfo landmark when rendered', () => {
-    expect(mountFooter().find('footer').exists()).toBe(true)
-  })
+  it('should never mark the logo as the current page when the router marks its link', () => {
+    /* Feature 44 · FR-028 (review-43c nit 5): the stub marks every link
+       exact-active, as the router does on the home page. */
+    const logos = render('es', { NuxtLink: ExactActiveLinkStub }).findAll(
+      'a[aria-label="Inicio de muush"]'
+    )
 
-  it('should paint its own flat ink-500 surface when rendered', () => {
-    /* Feature 34, A2 revision 1 (Roberto, 2026-10-15): the footer keeps its
-       flat ink-500 and covers the dotted paper and the spotlight's red dots.
-       Removing the class is a design change, not a fix. */
-    expect(mountFooter().find('footer').classes()).toContain('bg-ink-500')
-  })
-
-  it('should render exactly four columns when rendered', () => {
-    /* Asserted by count so a silently dropped column fails rather than
-       quietly narrowing the footer. */
-    expect(mountFooter().findAll('h2')).toHaveLength(4)
-  })
-
-  it('should render the columns in the order the design fixes', () => {
-    const titles = mountFooter()
-      .findAll('h2')
-      .map(title => title.text())
-
-    expect(titles).toEqual(['Navegación', 'Contacto', 'muush', 'Redes'])
-  })
-
-  it('should point the brand lockup at the home of the active locale', () => {
-    const link = mountFooter().find('a')
-
-    expect(link.attributes('href')).toBe('/es')
-    expect(link.find('svg').exists()).toBe(true)
-  })
-
-  it('should render the tagline and the category when rendered', () => {
-    const text = mountFooter().text()
-
-    expect(text).toContain('Hablamos negocio y código.')
-    expect(text).toContain('Technology solution studio')
-  })
-
-  it('should render both bottom bar texts when rendered', () => {
-    const text = mountFooter().text()
-
-    expect(text).toContain('© 2026 muush · Todos los derechos reservados')
-    expect(text).toContain('CDMX · MX')
-  })
-
-  it('should rule the bottom bar with the unified hairline when rendered', () => {
-    const bar = mountFooter().find('.border-hairline-footer')
-
-    expect(bar.exists()).toBe(true)
-    expect(bar.classes()).toContain('border-t')
-  })
-
-  it('should render no anchor without a destination anywhere in the footer', () => {
-    const anchors = mountFooter().findAll('a')
-
-    expect(anchors.every(anchor => anchor.attributes('href'))).toBe(true)
-  })
-
-  it('should never hide the wordmark, at any width (feature 26)', () => {
-    /* Only `SiteNav.vue` passes `hide-wordmark-below-lg`; the footer keeps
-       its pre-existing behaviour unchanged in both viewports. */
-    const wordmark = mountFooter().findComponent(Wordmark)
-
-    expect(wordmark.exists()).toBe(true)
-    expect(wordmark.classes()).not.toContain('hidden')
-    expect(wordmark.element.parentElement?.className).not.toContain('hidden')
-  })
-})
-
-/**
- * The audit `ui-map.md` § 8 asks for, at the rendering level: every item is
- * either a link with a real destination or a non-interactive text run. A
- * third category — an `<a>` with no `href` — is what would put a 404 in the
- * footer of every page of the site.
- */
-describe('SiteFooter · destination audit', () => {
-  /* `Agenda una llamada` was a third until 2026-09-07, when its URL arrived
-     (`decisions-open.md` § Decisión 2). It is asserted as a real link below. */
-  const undecided = ['FAQ', 'Blog · próximamente']
-
-  it('should place every item in exactly one of the two categories', () => {
-    const wrapper = mountFooter()
-    const entries = wrapper.findAll('li')
-    const total = columns.reduce((sum, column) => sum + column.items.length, 0)
-
-    expect(entries).toHaveLength(total)
-    for (const entry of entries) {
-      const link = entry.find('a')
-      const isLink = link.exists() && Boolean(link.attributes('href'))
-      const isText = !link.exists() && entry.find('span').exists()
-
-      expect(isLink !== isText).toBe(true)
+    expect(logos.length).toBeGreaterThan(0)
+    for (const logo of logos) {
+      expect(logo.attributes('aria-current')).toBeUndefined()
     }
   })
 
-  it('should render the two undecided items as one identical treatment', () => {
-    const wrapper = mountFooter()
+  it('should be a named, transparent footer with a Blanco 8 % rule when rendered', () => {
+    const footer = render().find('footer')
 
-    for (const label of undecided) {
-      const entry = wrapper
-        .findAll('li')
-        .find(candidate => candidate.text() === label)
-
-      expect(entry?.find('a').exists()).toBe(false)
-      expect(entry?.find('span').classes()).toEqual(['text-ink-300'])
-    }
+    expect(footer.attributes('aria-label')).toBe('Pie de página')
+    expect(footer.classes()).toEqual(['border-t', 'border-blanco-8'])
   })
 
-  it('should render the call booking as a real link in a new tab', () => {
-    /* The half that would otherwise be untested: it must not fall back to the
-       inert `<span>` treatment its two neighbours in the column still get. */
-    const call = mountFooter()
-      .findAll('a')
-      .find(link => link.text() === 'Agenda una llamada')
+  it('should show the desktop layout from lg and the mobile one below it', () => {
+    const wrapper = render()
 
-    expect(call?.attributes('href')).toBe(CALL_BOOKING_URL)
-    expect(call?.attributes('target')).toBe('_blank')
-    expect(call?.attributes('rel')).toBe('noopener noreferrer')
+    expect(wrapper.find('[data-escritorio]').classes()).toEqual(
+      expect.arrayContaining(['hidden', 'lg:block'])
+    )
+    expect(wrapper.findComponent(MobileFooter).classes()).toContain('lg:hidden')
   })
 
-  it('should sever the opener on every external destination', () => {
-    const externals = mountFooter()
-      .findAll('a')
-      .filter(link => link.attributes('href')?.startsWith('https://'))
+  it('should lay the desktop brand block beside the four columns when rendered', () => {
+    const desktop = render('en').find('[data-escritorio]')
 
-    expect(externals).toHaveLength(5)
-    for (const link of externals) {
-      expect(link.attributes('target')).toBe('_blank')
-      expect(link.attributes('rel')).toBe('noopener noreferrer')
-    }
+    expect(desktop.text()).toContain('We speak business and code.')
+    expect(desktop.find('p.font-titulo').classes()).toContain('text-lema')
+    expect(desktop.findComponent(FooterColumns).props('columns')).toHaveLength(
+      4
+    )
   })
 
-  it('should keep the mail link in the same browsing context', () => {
-    /* A new tab for a `mailto:` leaves the visitor on a blank page. */
-    const mail = mountFooter()
-      .findAll('a')
-      .find(link => link.attributes('href')?.startsWith('mailto:'))
+  it('should end the desktop layout with the copyright and the legal links', () => {
+    const bottom = render().find('[data-escritorio] .border-t')
+    const [copyright, legal] = bottom.findAll('p')
 
-    expect(mail?.attributes('href')).toBe('mailto:support@muush.dev')
-    expect(mail?.attributes('target')).toBeUndefined()
+    expect(copyright?.text()).toBe(
+      '© 2026 muush · Todos los derechos reservados'
+    )
+    /* Feature 48 · the legal pages exist; same tab, like every internal link. */
+    const links = legal?.findAll('a') ?? []
+    expect(links.map(item => item.text())).toEqual([
+      'Aviso de privacidad',
+      'Términos y condiciones',
+    ])
+    expect(links.map(item => item.attributes('href'))).toEqual([
+      '/es/privacidad',
+      '/es/terminos',
+    ])
+    expect(links[0]?.attributes('target')).toBeUndefined()
   })
 
-  it('should carry the pre-filled message on the WhatsApp destination', () => {
-    const whatsapp = mountFooter()
-      .findAll('a')
-      .find(link => link.attributes('href')?.startsWith('https://wa.me/'))
+  it('should hand the mobile layout its own models when rendered', () => {
+    const mobile = render().findComponent(MobileFooter)
 
-    expect(whatsapp?.attributes('href')).toContain('?text=')
+    expect(mobile.props('contactChannels')).toHaveLength(3)
+    /* Feature 46 · Preguntas joined the line (FR-031). */
+    expect(mobile.props('links')).toHaveLength(7)
+    expect(mobile.props('socials')).toEqual(SOCIALS)
   })
 })

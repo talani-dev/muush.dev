@@ -5,20 +5,18 @@ import {
 } from '@/features/about/data/aboutHeroContent'
 
 /**
- * The about module's only seam with the Nuxt runtime, same role
- * `useHeroContent` plays for `landing/` (`docs/business/rules.md` § R23):
- * this is the only file in `about/` allowed to call `useI18n`, so
- * `ui/AboutHeroSection.vue` renders with no i18n instance present.
- *
- * It performs no fetch, holds no state, registers no listener, and — unlike
- * `useHeroContent` — resolves no destination, because this section has none.
+ * The Nosotros hero's seam with the Nuxt runtime (`docs/business/rules.md`
+ * § R23): the only place its keys meet `useI18n`, so
+ * `ui/AboutHeroSection.vue` renders with no i18n instance present. No
+ * fetch, no state, no destination.
  */
 export function useAboutHeroContent(): ComputedRef<AboutHeroContent> {
   const { t } = useI18n()
 
   return computed<AboutHeroContent>(() => ({
-    eyebrow: t(ABOUT_HERO_KEYS.eyebrow),
-    headline: t(ABOUT_HERO_KEYS.headline),
+    pill: t(ABOUT_HERO_KEYS.pill),
+    headingFirst: t(ABOUT_HERO_KEYS.headingFirst),
+    headingSecond: t(ABOUT_HERO_KEYS.headingSecond),
     intro: t(ABOUT_HERO_KEYS.intro),
   }))
 }

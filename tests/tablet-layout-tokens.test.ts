@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { SERVICE_NODE_CENTRES } from '@/features/landing/data/servicesContent'
+import { SERVICE_NODE_CENTRES } from '@/features/landing/data/legacy/servicesContent'
 
 /**
  * Feature 38 · the tokens and breakpoints that keep the tablet range
@@ -24,63 +24,39 @@ function declared(name: string): string {
 }
 
 const REM = 16
-/** The design frame and its content box at the 80px page margin. */
+/** The design frame. */
 const FRAME_W = 1440
-const CONTENT_W_AT_FRAME = FRAME_W - 2 * 80
 
-/** `minmax(0, Afr) minmax(0, Bfr)` → [A, B]. */
-function trackRatios(tracks: string): number[] {
-  return [...tracks.matchAll(/minmax\(0,\s*([\d.]+)fr\)/g)].map(match =>
-    Number(match[1])
-  )
-}
+/*
+ * Feature 45 retired the v1 Contacto section and its `--contact-*` tracks,
+ * feature 46 the v1 Work with muush section and its `--work-*` tracks: both
+ * v2 split sections lay out with the `diagnostico` grid tokens
+ * (tests/design-tokens.test.ts), side by side from `lg` (64rem), the
+ * feature 38 rule.
+ */
+describe('tablet layout · the form sections go side by side from 64rem', () => {
+  for (const file of [
+    ['app', 'features', 'landing', 'ui', 'AssessmentSection.vue'],
+    ['app', 'features', 'about', 'ui', 'WorkWithMuushSection.vue'],
+  ]) {
+    it(`should switch ${file.at(-1)} to the diagnostico columns from lg when styled`, () => {
+      const markup = source(...file)
 
-describe('tablet layout · the two forms go side by side from 64rem', () => {
-  const sections = [
-    {
-      name: 'Contacto',
-      file: ['app', 'features', 'landing', 'ui', 'ContactSection.vue'],
-      tracks: '--contact-cols',
-      gap: '--contact-col-gap',
-    },
-    {
-      name: 'Work with muush',
-      file: ['app', 'features', 'about', 'ui', 'WorkWithMuushSection.vue'],
-      tracks: '--work-cols',
-      gap: '--work-col-gap',
-    },
-  ]
-
-  for (const section of sections) {
-    it(`should switch ${section.name} to two columns from 64rem when styled`, () => {
-      /* Round 2 (Roberto, 2026-10-19): text and form side by side from 1024,
-         stacked below it as on master — round 1's 80rem stack was rejected. */
-      const style = source(...section.file)
-
-      expect(style).toContain('@media (width >= 64rem)')
-      expect(style).not.toContain('80rem')
-      expect(style).toContain(`grid-template-columns: var(${section.tracks})`)
-    })
-
-    it(`should fill exactly the 1440 content box with ${section.name}'s tracks when declared`, () => {
-      /* Proportional tracks reproduce the frame only if the two ratios plus
-         the gap add up to the content box at 1440 — then 1440 is unchanged
-         and every narrower width shrinks both columns together. */
-      const ratios = trackRatios(declared(section.tracks))
-      const gapPx = Number.parseFloat(declared(section.gap)) * REM
-
-      expect(ratios).toHaveLength(2)
-      expect(ratios[1]).toBe(660)
-      expect((ratios[0] ?? 0) + (ratios[1] ?? 0) + gapPx).toBe(
-        CONTENT_W_AT_FRAME
-      )
+      expect(markup).toContain('lg:grid-cols-diagnostico')
+      expect(markup).not.toContain('grid-template-areas')
     })
   }
 
   it('should leave no fixed column width behind when declared', () => {
     for (const name of [
+      '--contact-cols',
+      '--contact-col-gap',
       '--contact-left-w',
       '--contact-form-w',
+      '--work-cols',
+      '--work-col-gap',
+      '--work-stack-gap',
+      '--work-form-y-offset',
       '--work-left-w',
       '--work-form-w',
     ]) {
@@ -142,7 +118,7 @@ describe('tablet layout · Propósito chooses its composition by pointer and wid
     'PurposeCarousel.vue',
   ]
   const purposeSource = (file: string) =>
-    source('app', 'features', 'landing', 'ui', file)
+    source('app', 'features', 'landing', 'ui', 'legacy', file)
 
   it('should declare the constellation variant once in global.css', () => {
     /* `source()` collapses whitespace, so Biome's line break inside the

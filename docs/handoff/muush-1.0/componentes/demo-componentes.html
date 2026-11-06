@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo · componentes muush 1.0</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="componentes.css">
+<style>
+  /* Solo para la demo */
+  .demo-nota { margin: 0 var(--m1-gutter); padding: 12px 14px; border: 1px dashed var(--m1-carbon-700); border-radius: 12px; font-size: 12px; color: var(--m1-gris-400); }
+  .demo-nota label { display: flex; gap: 8px; align-items: center; margin-top: 8px; color: var(--m1-blanco); }
+  .demo-espacio { height: 60px; }
+  .m1-seccion > * + * { margin-top: 24px; }
+  .centrado { text-align: center; display: grid; justify-items: center; }
+</style>
+</head>
+<body>
+
+<!-- Isotipo reutilizable -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="iso" viewBox="14.5 38.5 70.5 39.5">
+    <circle cx="21" cy="45" r="6.5" fill="#E5352F"/>
+    <path d="M21 72a17 17 0 0 1 34 0 12 12 0 0 1 24 0" fill="none" stroke="#F4F4F2" stroke-width="12" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="flecha" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="hamburguesa" viewBox="0 0 16 16"><path d="M1 3.5h14M1 8h14M1 12.5h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="cerrar" viewBox="0 0 16 16"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+</svg>
+
+<!-- ===================== 1 · HEADER + MENÚ ===================== -->
+<header class="m1-header" data-header>
+  <a href="/" aria-label="muush, inicio"><svg class="m1-header__iso"><use href="#iso"/></svg></a>
+  <nav class="m1-header__desktop" aria-label="Principal"><a href="#servicios" aria-current="page">Servicios</a><a href="/nosotros">Nosotros</a><a href="/preguntas">Preguntas</a></nav>
+  <div class="m1-header__acciones">
+    <a class="m1-control" href="/en/" lang="en" aria-label="English">ES</a>
+    <a class="m1-btn m1-btn--primario m1-header__cta" href="#diagnostico">Diagnóstico gratis</a>
+    <button class="m1-control" type="button" data-menu-abrir aria-expanded="false" aria-controls="menu" aria-label="Abrir menú"><svg><use href="#hamburguesa"/></svg></button>
+  </div>
+</header>
+
+<div class="m1-menu" id="menu" data-menu aria-hidden="true" role="dialog" aria-label="Menú">
+  <div class="m1-menu__barra">
+    <svg class="m1-header__iso"><use href="#iso"/></svg>
+    <div class="m1-header__acciones">
+      <a class="m1-control" href="/en/" aria-label="English">ES</a>
+      <button class="m1-control" type="button" data-menu-cerrar aria-label="Cerrar menú"><svg><use href="#cerrar"/></svg></button>
+    </div>
+  </div>
+  <ul class="m1-menu__links">
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="/nosotros">Nosotros</a></li>
+    <li><a href="/preguntas">Preguntas</a></li>
+  </ul>
+  <div class="m1-menu__divisor"></div>
+  <div class="m1-menu__redes">
+    <a class="m1-control m1-control--grande" href="#" aria-label="LinkedIn">in</a>
+    <a class="m1-control m1-control--grande" href="#" aria-label="Instagram">ig</a>
+    <a class="m1-control m1-control--grande" href="#" aria-label="TikTok">tt</a>
+  </div>
+</div>
+
+<!-- ===================== HERO · botones compactos ===================== -->
+<section class="m1-seccion centrado" style="padding-top:140px">
+  <span class="m1-pill"><span class="m1-pill__punto"></span><span data-pill-texto>Estrategia tecnológica</span></span>
+  <h1 class="m1-titular" style="font-size:var(--m1-h-hero)"><span>Hablamos negocio</span><span>y código.</span></h1>
+  <p class="m1-texto" style="max-width:520px">Diseñamos y construimos las soluciones digitales que tu negocio usa todos los días.</p>
+  <div class="m1-botones">
+    <a class="m1-btn m1-btn--primario" href="#diagnostico">Diagnóstico gratis <svg><use href="#flecha"/></svg></a>
+    <a class="m1-btn m1-btn--vidrio" href="#como">Cómo trabajamos</a>
+  </div>
+</section>
+
+<!-- ===================== 2 · MAPA ===================== -->
+<section class="m1-seccion centrado">
+  <span class="m1-pill"><span class="m1-pill__punto"></span>Qué es muush</span>
+  <h2 class="m1-titular" style="font-size:var(--m1-h-seccion)"><span>Un equipo base y aliados de confianza,</span><span>según lo que pida tu proyecto.</span></h2>
+  <div class="m1-mapa" data-mapa style="width:100%">
+    <div class="m1-segmentado" role="tablist" aria-label="Región">
+      <button type="button" role="tab" data-region="america" aria-selected="true">América</button>
+      <button type="button" role="tab" data-region="europa" aria-selected="false">Europa</button>
+    </div>
+    <div class="m1-mapa__ventana">
+      <!-- Roberto: aquí va el SVG del mapa de 1408 × 470 (mismas coordenadas que la landing). -->
+      <div class="m1-mapa__lienzo"><img src="../../../images/mapa-muush-1.0.png" alt="Mapa con las ciudades del equipo y aliados de muush" width="1408" height="470"></div>
+    </div>
+    <div class="m1-leyenda">
+      <span><i style="background:var(--m1-red-muush-500)"></i>Equipo</span>
+      <span><i style="background:var(--m1-acero-200)"></i>Aliados</span>
+      <span class="m1-chip"><i style="background:var(--m1-acero-400)"></i>Estonia · pronto</span>
+    </div>
+    <p class="m1-leyenda">Trabajamos con clientes en cualquier país.</p>
+  </div>
+</section>
+
+<!-- ===================== 3 · SERVICIOS ===================== -->
+<section class="m1-seccion" id="servicios">
+  <span class="m1-pill"><span class="m1-pill__punto"></span>Servicios</span>
+  <h2 class="m1-titular" style="font-size:var(--m1-h-seccion)"><span>Lo que hacemos</span><span>por tu negocio.</span></h2>
+  <div class="m1-carrusel" data-carrusel>
+    <article class="m1-tarjeta-servicio" data-luz="brasa">
+      <div class="m1-tarjeta-servicio__visual"><div class="m1-tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></div></div>
+      <div class="m1-tarjeta-servicio__texto"><h3>Estrategia
+tecnológica</h3><p>Un diagnóstico claro y un plan de qué hacer y en qué orden, antes de invertir.</p></div>
+    </article>
+    <article class="m1-tarjeta-servicio" data-luz="acero">
+      <div class="m1-tarjeta-servicio__visual"><div class="m1-tile"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></div></div>
+      <div class="m1-tarjeta-servicio__texto"><h3>Software, web
+y nube</h3><p>Sitios, sistemas, portales y apps, con la nube donde viven y tus herramientas conectadas.</p></div>
+    </article>
+    <article class="m1-tarjeta-servicio" data-luz="brasa">
+      <div class="m1-tarjeta-servicio__visual"><div class="m1-tile"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H14a4 4 0 0 1 0 8h-4a4 4 0 0 0 0 8"/></svg></div></div>
+      <div class="m1-tarjeta-servicio__texto"><h3>Automatización,
+datos e IA</h3><p>Procesos que corren solos, datos que se vuelven decisiones e IA donde sí suma.</p></div>
+    </article>
+    <article class="m1-tarjeta-servicio" data-luz="arena">
+      <div class="m1-tarjeta-servicio__visual"><div class="m1-tile"><svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"/><circle cx="11" cy="11" r="2"/></svg></div></div>
+      <div class="m1-tarjeta-servicio__texto"><h3>Diseño de producto
+y UX</h3><p>Pantallas tan claras que tu equipo las usa sin manual.</p></div>
+    </article>
+  </div>
+  <div class="m1-indicador" aria-hidden="true"></div>
+</section>
+
+<!-- ===================== 4 · CÓMO TRABAJAMOS ===================== -->
+<section class="m1-seccion" id="como">
+  <span class="m1-pill"><span class="m1-pill__punto"></span>Cómo trabajamos</span>
+  <h2 class="m1-titular" style="font-size:var(--m1-h-seccion)"><span>Primero entendemos tu operación,</span><span>después decidimos qué se construye.</span></h2>
+  <ol class="m1-linea-tiempo" data-linea-tiempo>
+    <li class="m1-paso"><h3><small>01</small>Diagnóstico</h3><p>Una revisión rápida para ver qué conviene resolver. Si hace falta ir a fondo, se cotiza aparte.</p><span class="m1-compromiso">Te decimos qué te conviene</span></li>
+    <li class="m1-paso"><h3><small>02</small>Propuesta</h3><p>Alcance, tiempos y costo por escrito.</p><span class="m1-compromiso">Solo lo que necesitas</span></li>
+    <li class="m1-paso"><h3><small>03</small>Diseño</h3><p>Ves cómo va a funcionar antes de construir nada.</p><span class="m1-compromiso">Tú apruebas cada pantalla</span></li>
+    <li class="m1-paso"><h3><small>04</small>Construcción</h3><p>Avanzamos por etapas y te mostramos cada avance.</p><span class="m1-compromiso">Un solo punto de contacto</span></li>
+    <li class="m1-paso"><h3><small>05</small>Lanzamiento y soporte</h3><p>Lo ponemos en marcha y preparamos a tu equipo.</p><span class="m1-compromiso">Todo documentado y tuyo</span></li>
+  </ol>
+</section>
+
+<!-- ===================== 5 · FORMULARIO DE DIAGNÓSTICO ===================== -->
+<section class="m1-seccion" id="diagnostico">
+  <span class="m1-pill"><span class="m1-pill__punto"></span>Primer paso</span>
+  <h2 class="m1-titular" style="font-size:var(--m1-h-seccion)"><span>Pide tu diagnóstico</span><span>sin costo.</span></h2>
+  <p class="m1-texto">Cuéntanos qué quieres resolver y te respondemos en 24 horas hábiles.</p>
+
+  <form class="m1-form" data-dos-pasos data-idioma="es" action="/api/diagnostico" method="post" novalidate>
+    <div class="m1-aviso" role="alert">El envío se interrumpió. Tus datos siguen aquí: vuelve a intentarlo o escríbenos a support@muush.dev.</div>
+    <div class="m1-form__progreso"><span data-progreso-texto>Paso 1 de 2 · Tus datos</span><span class="m1-form__barras"><i class="is-activa"></i><i></i></span></div>
+
+    <fieldset class="m1-paso-form" data-paso="1" data-etiqueta="Tus datos">
+      <legend class="m1-sr">Tus datos</legend>
+      <div class="m1-campo"><label for="d-nombre">Nombre</label><input id="d-nombre" name="nombre" autocomplete="name" placeholder="Nombre y apellido" required><span class="m1-ayuda">Escribe tu nombre.</span></div>
+      <div class="m1-campo"><label for="d-correo">Correo</label><input id="d-correo" name="correo" type="email" autocomplete="email" placeholder="tu@correo.com" required><span class="m1-ayuda">Escribe un correo como nombre@empresa.com</span></div>
+      <div class="m1-campo"><span class="m1-campo-label" style="font-size:12px;color:var(--m1-gris-400)">¿Cómo prefieres que te contactemos?</span>
+        <div class="m1-segmentado m1-segmentado--form" data-segmentado="contacto" role="tablist"><button type="button" data-valor="correo" aria-selected="true">Correo</button><button type="button" data-valor="whatsapp" aria-selected="false">WhatsApp</button></div>
+        <input type="hidden" name="contacto" value="correo">
+      </div>
+      <div class="m1-campo" data-si-whatsapp hidden><label for="d-tel">WhatsApp</label><input id="d-tel" name="whatsapp" type="tel" autocomplete="tel" placeholder="+52 999 000 0000"><span class="m1-ayuda">Escribe tu número con lada.</span></div>
+      <button class="m1-btn m1-btn--primario m1-btn--bloque" type="button" data-continuar>Continuar <svg><use href="#flecha"/></svg></button>
+    </fieldset>
+
+    <fieldset class="m1-paso-form" data-paso="2" data-etiqueta="Tu negocio" hidden>
+      <legend class="m1-sr">Tu negocio</legend>
+      <div class="m1-campo"><label for="d-empresa">Empresa o proyecto</label><input id="d-empresa" name="empresa" placeholder="Nombre de la empresa"></div>
+      <div class="m1-campo"><label for="d-tipo">¿Cómo te identificas?</label><select id="d-tipo" name="tipo"><option>Empresa</option><option>Emprendedor</option><option>Agencia</option><option>Otro</option></select></div>
+      <div class="m1-campo"><label for="d-sitio">Tu sitio web o redes (opcional)</label><input id="d-sitio" name="sitio" placeholder="https://"></div>
+      <div class="m1-campo"><label for="d-necesitas">¿Qué necesitas?</label><textarea id="d-necesitas" name="necesitas" placeholder="Cuéntanos en un par de líneas qué quieres resolver." required></textarea><span class="m1-ayuda">Cuéntanos qué quieres resolver.</span></div>
+      <label class="m1-privacidad"><input type="checkbox" name="privacidad" required><span>Acepto el <a href="/es/privacidad" style="color:inherit">aviso de privacidad</a> y que muush me contacte sobre mi diagnóstico.</span><span class="m1-ayuda">Marca la casilla para continuar.</span></label>
+      <button class="m1-btn m1-btn--primario m1-btn--bloque" type="submit" data-texto-enviando="Enviando…" data-texto-reintentar="Intentar de nuevo"><span data-texto>Quiero mi diagnóstico</span> <svg><use href="#flecha"/></svg></button>
+      <button class="m1-atras" type="button" data-atras>← Atrás</button>
+    </fieldset>
+
+    <div class="m1-exito" tabindex="-1">
+      <div class="m1-exito__icono"></div>
+      <h3>Recibimos tu solicitud.</h3>
+      <p class="m1-texto">Te respondemos en 24 horas hábiles por el medio que elegiste. Si prefieres adelantar, agenda una llamada.</p>
+      <a class="m1-btn m1-btn--vidrio" href="https://cal.com/muush/intro-call">Agenda una llamada</a>
+    </div>
+  </form>
+</section>
+
+<p class="demo-nota">Solo en la demo: el envío es simulado.
+  <label><input type="checkbox" id="simular-error"> Simular error al enviar</label></p>
+<div class="demo-espacio"></div>
+
+<!-- ===================== 6 · FOOTER ===================== -->
+<footer class="m1-footer">
+  <div><svg style="width:56px;height:31px"><use href="#iso"/></svg>
+    <p class="m1-titular" style="font-size:17px;margin-top:10px">Hablamos negocio y código.</p>
+    <p style="margin:6px 0 0;font-size:12px;color:var(--m1-gris-400)">Technology Solution Studio.</p></div>
+  <nav class="m1-footer__contacto" aria-label="Contacto">
+    <a href="https://wa.me/">WhatsApp <span>Escríbenos →</span></a>
+    <a href="https://cal.com/muush/intro-call">Agenda una llamada <span>30 minutos →</span></a>
+    <a href="mailto:support@muush.dev">support@muush.dev <span>Correo →</span></a>
+  </nav>
+  <nav class="m1-footer__enlaces" aria-label="Sitio"><a href="#servicios">Servicios</a><a href="#como">Cómo trabajamos</a><a href="/nosotros">Nosotros</a><a href="/preguntas">Preguntas</a><a href="/nosotros#trabaja">Trabaja con muush</a><span style="color:var(--m1-gris-400)">Blog (próximamente)</span></nav>
+  <div class="m1-menu__redes" style="justify-content:flex-start"><a class="m1-control m1-control--grande" href="#">in</a><a class="m1-control m1-control--grande" href="#">ig</a><a class="m1-control m1-control--grande" href="#">tt</a></div>
+  <div class="m1-footer__legal"><span><a href="/es/privacidad">Aviso de privacidad</a> · <a href="/es/terminos">Términos y condiciones</a></span><span>© 2026 muush · Todos los derechos reservados</span></div>
+</footer>
+
+<script type="module">
+  import { iniciarTodo } from './componentes.js';
+  // En producción: quita "enviar" y el formulario hace POST a su action.
+  iniciarTodo({
+    enviar: () => new Promise((ok, falla) => setTimeout(() => document.getElementById('simular-error').checked ? falla() : ok(), 900)),
+  });
+</script>
+</body>
+</html>

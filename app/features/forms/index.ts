@@ -2,14 +2,14 @@
  * The forms module's only public API (Constitution Article III).
  *
  * Constitution Article I names this module explicitly: "the contact and
- * application forms, which appear on both pages". `landing/ContactSection.vue`
- * was its first consumer; `about/WorkWithMuushSection.vue` (feature 20) is
- * its second, through this same barrel and nothing else.
+ * application forms, which appear on both pages". The home's
+ * `landing/AssessmentSection.vue` and Nosotros' `about/WorkWithMuushSection.vue`
+ * consume them through this barrel and nothing else.
  *
- * The field primitives (`TextField`, `SelectField`, `TextareaField`,
- * `RadioPillGroup`, `FileField`) stay internal — composition detail of
- * `ContactForm`/`ApplicationForm`, matching how the shell keeps `MobileMenu`
- * unexported.
+ * Since feature 45 `ContactForm` and `ApplicationForm` are the Muush 1.0
+ * forms (the shared `SteppedForm` shell). The v1 form UI is quarantined in
+ * `ui/legacy/` and is never exported from here; feature 47 deletes it. The
+ * field parts stay internal — composition detail of the two forms.
  */
 
 export type {

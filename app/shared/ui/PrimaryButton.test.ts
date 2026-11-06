@@ -1,191 +1,191 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import PrimaryButton, {
-  type ButtonVariant,
-} from '@/shared/ui/PrimaryButton.vue'
-import buttonSource from '@/shared/ui/PrimaryButton.vue?raw'
+import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
 
-/*
- * Read as a file rather than imported: the Tailwind Vite plugin claims every
- * `.css` request, so `@/assets/css/global.css?raw` resolves to an empty string
- * and any assertion over it would pass against nothing — the trap
- * `SectionGlow.test.ts` records. Resolved from Vitest's root, which is this
- * repository; it is a path and not an import, so Article XII does not apply.
+/**
+ * Feature 42 · FR-012, FR-017, contract § 4, research R15, pen extract § 2
+ * (`FcCCF`). `NuxtLink` is the global stub of `tests/setup.ts`.
  */
-const globalCss = readFileSync(
-  resolve(process.cwd(), 'app/assets/css/global.css'),
-  'utf8'
-)
+const LABEL = 'Diagnóstico gratis'
 
-/** Padding and label role per variant, from design-extract.md § 4. */
-const sizeByVariant: Record<ButtonVariant, string[]> = {
-  nav: ['py-btn-nav-y', 'px-btn-nav-x', 'text-button-sm'],
-  hero: ['py-btn-y', 'px-btn-hero-x', 'text-button'],
-  submit: ['py-btn-y', 'px-btn-submit-x', 'text-button'],
+function render(props: Record<string, unknown> = {}) {
+  return mount(PrimaryButton, { props: { label: LABEL, ...props } })
 }
 
-describe('PrimaryButton', () => {
-  it('should render a button when no href is given', () => {
-    const wrapper = mount(PrimaryButton)
+const icon = (wrapper: ReturnType<typeof render>) =>
+  wrapper.find('[data-icono]')
 
-    expect(wrapper.element.tagName).toBe('BUTTON')
-    expect(wrapper.attributes('href')).toBeUndefined()
+describe('PrimaryButton', () => {
+  it('should render a router link when given to', () => {
+    const wrapper = render({ to: '/es/#diagnostico' })
+
+    expect(wrapper.findComponent({ name: 'NuxtLink' }).exists()).toBe(true)
+    expect(wrapper.attributes('href')).toBe('/es/#diagnostico')
   })
 
-  it('should render a link when an href is given', () => {
-    const wrapper = mount(PrimaryButton, { props: { href: '#contacto' } })
+  it('should render a plain anchor when given only href', () => {
+    const wrapper = render({ href: 'https://example.com/agenda' })
 
     expect(wrapper.element.tagName).toBe('A')
-    expect(wrapper.attributes('href')).toBe('#contacto')
-    expect(wrapper.attributes('type')).toBeUndefined()
+    expect(wrapper.findComponent({ name: 'NuxtLink' }).exists()).toBe(false)
+    expect(wrapper.attributes('href')).toBe('https://example.com/agenda')
   })
 
-  it('should default its type to submit when the variant is submit', () => {
-    const wrapper = mount(PrimaryButton, { props: { variant: 'submit' } })
+  it('should render a real button of the given type when given no destination', () => {
+    expect(render().attributes('type')).toBe('button')
+    const submit = render({ type: 'submit' })
 
-    expect(wrapper.attributes('type')).toBe('submit')
+    expect(submit.element.tagName).toBe('BUTTON')
+    expect(submit.attributes('type')).toBe('submit')
   })
 
-  it('should default its type to button when the variant is not submit', () => {
-    const wrapper = mount(PrimaryButton, { props: { variant: 'nav' } })
+  it('should use the label as its whole accessible text when rendered', () => {
+    /* The arrow's SVG `<title>` is text content too, but it sits inside the
+       `aria-hidden` wrapper, which removes it from the accessible name. */
+    const wrapper = render()
+    wrapper.find('[aria-hidden="true"]').element.remove()
 
-    expect(wrapper.attributes('type')).toBe('button')
+    expect(wrapper.text()).toBe(LABEL)
   })
 
-  it('should honour an explicit type when one is given', () => {
-    const wrapper = mount(PrimaryButton, {
-      props: { variant: 'submit', type: 'button' },
-    })
-
-    expect(wrapper.attributes('type')).toBe('button')
+  it('should paint the Kit fill, edge and shadow when rendered', () => {
+    for (const expected of [
+      'bg-(image:--btn-fondo)',
+      'borde-luz',
+      'borde-btn',
+      'shadow-boton',
+      'rounded-pill',
+      'font-texto',
+      'font-semibold',
+      'text-blanco',
+    ]) {
+      expect(render().classes()).toContain(expected)
+    }
   })
 
-  for (const [variant, expectedClasses] of Object.entries(sizeByVariant)) {
-    it(`should emit its documented padding and label size when the variant is ${variant}`, () => {
-      const wrapper = mount(PrimaryButton, {
-        props: { variant: variant as ButtonVariant },
-      })
+  it('should switch from mobile to desktop metrics at lg when the size is hero', () => {
+    const classes = render({ size: 'hero' }).classes()
 
-      for (const expected of expectedClasses) {
-        expect(wrapper.classes()).toContain(expected)
-      }
-      // Fill, shape and the ring are identical across all three variants.
-      expect(wrapper.classes()).toContain('bg-glass-dark')
-      expect(wrapper.classes()).toContain('rounded-full')
-      expect(wrapper.classes()).toContain('led')
-    })
-  }
-
-  it('should offer no way to ask for the old rectangle when its source is inspected', () => {
-    /* The pill is the shape, not a shape (Roberto, 2026-09-08): every instance
-       rounds, so there is no prop and no variant to switch it back, and the
-       12px control radius is gone from this component entirely. A caller that
-       wanted the rectangle would have to add an API for it, which is a visible
-       change rather than a class slipping back in.
-
-       Two assertions and no prose-sensitive third one on purpose: a guard that
-       greps for an English word is the trap § R56 of `findings.md` records,
-       where a doc comment turned this file red. `rounded-control` and an
-       arbitrary radius are class strings, not prose. */
-    expect(buttonSource).not.toContain('rounded-control')
-    expect(buttonSource).not.toMatch(/rounded-\[/)
+    for (const expected of [
+      'py-boton-movil-y',
+      'px-boton-movil-x',
+      'text-boton-movil',
+      'lg:py-boton-y',
+      'lg:px-boton-x',
+      'lg:text-boton-hero',
+    ]) {
+      expect(classes).toContain(expected)
+    }
   })
 
-  it('should keep the control radius token alive when this component no longer consumes it', () => {
-    /* This component was `--radius-control`'s last consumer, so as of feature
-       022 nothing in `app/` references the token. It is not dead code: 12px is
-       still the design's control radius, and the consumer that is coming is
-       **`FormField`** — `design-extract.md § FormField`, `cornerRadius 12`, 13
-       uses across the two forms. Deleting it would throw away a design
-       measurement so the forms feature could reinvent it.
+  it('should show the 20 px arrow at every width when the size is hero', () => {
+    /* Pen extract § 9: the mobile hero draws the arrow too. */
+    const classes = icon(render({ size: 'hero' })).classes()
 
-       Asserted here, on the stylesheet source, because Tailwind v4 tree-shakes
-       an unreferenced custom property out of the build: the token is not in
-       `.output/public` at all, so the artefact cannot speak for it. And
-       asserted at all because a comment is not a guard — an unconsumed token
-       protected only by prose is exactly how `SectionGlow`'s `'920'` variant
-       nearly went out as dead code.
-
-       Retire this the day `FormField` lands: from then on its own test is what
-       keeps the token honest. */
-    expect(globalCss).toMatch(/--radius-control:\s*0\.75rem/)
+    expect(classes).toContain('size-boton-icono')
+    expect(classes).not.toContain('invisible')
+    expect(classes.some(name => name.startsWith('lg:'))).toBe(false)
   })
 
-  it('should carry the nav variant tokens sized for the 221×48 CTA box', () => {
-    /* Feature 21 — 13/24/14px → 15/28/15px so the nav CTA (with its new
-       leading arrow, added in `SiteNav.vue`) measures 221×48 at 1440px.
-       `-x` corrected in review round 1 (1.75rem measured 232.546875×48 live
-       via CDP, 11.5px over) to `1.3892rem`, derived from that same live
-       measurement: (221 − 176.546875 content px) ÷ 2. Read from source, not
-       the emitted stylesheet — a minifier is free to reformat `0.9375rem`
-       and this assertion should not depend on that (contrast
-       `--radius-control` above, same technique). */
-    expect(globalCss).toMatch(/--spacing-btn-nav-y:\s*0\.9375rem/)
-    expect(globalCss).toMatch(/--spacing-btn-nav-x:\s*1\.3892rem/)
-    expect(globalCss).toMatch(/--text-button-sm:\s*0\.9375rem/)
+  it('should use the nav metrics and a 16 px arrow when the size is nav', () => {
+    const wrapper = render({ size: 'nav' })
+
+    for (const expected of [
+      'py-boton-nav-y',
+      'px-boton-nav-x',
+      'text-boton-nav',
+    ]) {
+      expect(wrapper.classes()).toContain(expected)
+    }
+    expect(icon(wrapper).classes()).toContain('size-boton-icono-nav')
+    expect(icon(wrapper).classes()).not.toContain('invisible')
   })
 
-  it('should offer a pointer when it renders as a link', () => {
-    /* The user agent would give an `<a href>` a pointer anyway; it is declared
-       so the two branches stop depending on which element they happen to be
-       (`findings.md` § R56). */
-    const wrapper = mount(PrimaryButton, { props: { href: '#contacto' } })
+  it('should fill the width with desktop metrics when the size is block', () => {
+    const wrapper = render({ size: 'block', type: 'submit' })
 
-    expect(wrapper.classes()).toContain('cursor-pointer')
+    for (const expected of [
+      'w-full',
+      'py-boton-y',
+      'px-boton-x',
+      'text-boton-hero',
+    ]) {
+      expect(wrapper.classes()).toContain(expected)
+    }
+    expect(icon(wrapper).classes()).toContain('size-boton-icono')
   })
 
-  it('should offer a pointer when it renders as a form submit', () => {
-    /* A submit always does something: submitting is native to the element. */
-    const wrapper = mount(PrimaryButton, { props: { variant: 'submit' } })
+  it('should use the nav padding with the 14 px label when the size is compact', () => {
+    const wrapper = render({ size: 'compact', icon: false })
 
-    expect(wrapper.classes()).toContain('cursor-pointer')
+    for (const expected of [
+      'py-boton-nav-y',
+      'px-boton-nav-x',
+      'text-boton-movil',
+    ]) {
+      expect(wrapper.classes()).toContain(expected)
+    }
+    expect(icon(wrapper).exists()).toBe(false)
   })
 
-  for (const variant of ['nav', 'hero'] as const) {
-    it(`should offer no pointer when the ${variant} variant has no destination`, () => {
-      /* The state the Hero's primary CTA is in while section 05 does not
-         exist: a `<button type="button">` with no href and no handler, which
-         does nothing when clicked. `ui-map.md` § 6 rules on exactly this shape
-         — "un espacio reservado que parece clickeable y no lleva a nada se lee
-         como sitio roto". */
-      const wrapper = mount(PrimaryButton, { props: { variant } })
-
-      expect(wrapper.element.tagName).toBe('BUTTON')
-      expect(wrapper.classes()).not.toContain('cursor-pointer')
-    })
-  }
-
-  it('should offer no pointer when a submit variant is overridden to a plain button', () => {
-    /* The override makes it inert, so the cursor follows the resolved type and
-       not the variant name. */
-    const wrapper = mount(PrimaryButton, {
-      props: { variant: 'submit', type: 'button' },
-    })
-
-    expect(wrapper.classes()).not.toContain('cursor-pointer')
+  it('should render no arrow when icon is false', () => {
+    expect(icon(render({ icon: false })).exists()).toBe(false)
   })
 
-  it('should render the caller-supplied label when slot content is given', () => {
-    const wrapper = mount(PrimaryButton, {
-      slots: { default: 'Cuéntanos tu proyecto' },
-    })
+  it('should hide the arrow from assistive technology when rendered', () => {
+    const arrow = icon(render())
 
-    expect(wrapper.text()).toBe('Cuéntanos tu proyecto')
+    expect(arrow.attributes('aria-hidden')).toBe('true')
+    expect(arrow.html()).toContain('<svg')
   })
 
-  it('should use three gradient stops and no wine when its source is inspected', () => {
-    // No wine token in any form: `--wine-400`, `wine-400`, `bg-wine-300`…
-    expect(buttonSource).not.toMatch(/wine-[1-5]00/i)
-    expect(buttonSource).toContain('var(--red-400) 0%')
-    expect(buttonSource).toContain('var(--bone-100) 50%')
-    expect(buttonSource).toContain('var(--red-400) 100%')
+  it('should disable the button and dim it when disabled', () => {
+    const wrapper = render({ disabled: true, label: 'Enviando…' })
+
+    expect(wrapper.attributes('disabled')).toBeDefined()
+    expect(wrapper.classes()).toEqual(
+      expect.arrayContaining([
+        'disabled:opacity-70',
+        'disabled:cursor-progress',
+      ])
+    )
   })
 
-  it('should ship no client-side script when its source is inspected', () => {
-    expect(buttonSource).not.toContain('onMounted')
-    expect(buttonSource).not.toContain('addEventListener')
-    expect(buttonSource).not.toMatch(/@(click|mouseenter|mouseleave)/)
+  it('should carry the Blanco keyboard focus ring when rendered', () => {
+    expect(render().classes()).toContain('foco')
+  })
+})
+
+describe('PrimaryButton · unavailable (feature 45)', () => {
+  it('should stay enabled and focusable but announce aria-disabled when unavailable', () => {
+    const wrapper = render({ type: 'submit', unavailable: true })
+
+    expect(wrapper.attributes('aria-disabled')).toBe('true')
+    expect(wrapper.attributes('disabled')).toBeUndefined()
+    expect(wrapper.classes()).toEqual(
+      expect.arrayContaining(['opacity-70', 'cursor-not-allowed'])
+    )
+  })
+
+  it('should point aria-describedby at the hint when given describedBy', () => {
+    const wrapper = render({ unavailable: true, describedBy: 'privacy-hint' })
+
+    expect(wrapper.attributes('aria-describedby')).toBe('privacy-hint')
+  })
+
+  it('should carry neither attribute nor the dimmed look when available', () => {
+    const wrapper = render({ type: 'submit' })
+
+    expect(wrapper.attributes('aria-disabled')).toBeUndefined()
+    expect(wrapper.attributes('aria-describedby')).toBeUndefined()
+    expect(wrapper.classes()).not.toContain('cursor-not-allowed')
+  })
+
+  it('should still emit the click when unavailable so the form guard can decide', async () => {
+    const wrapper = render({ unavailable: true })
+
+    await wrapper.trigger('click')
+
+    expect(wrapper.emitted('click')).toHaveLength(1)
   })
 })

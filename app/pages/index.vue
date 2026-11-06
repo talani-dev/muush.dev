@@ -1,44 +1,43 @@
 <script setup lang="ts">
 import { useContactFormContent, useContactSubmitter } from '@/features/forms'
 import {
-  ContactSection,
+  AssessmentSection,
   HeroSection,
-  PurposeSection,
+  HowWeWorkSection,
   ServicesSection,
-  useContactContent,
+  useAssessmentContent,
   useHeroContent,
-  usePurposeContent,
+  useHowWeWorkContent,
   useServicesContent,
+  useWhoWeAreContent,
+  WhoWeAreSection,
 } from '@/features/landing'
 import { usePageSeo } from '@/features/shell'
 
 /**
- * The landing. A thin wrapper (Constitution Article I): it composes the
+ * The home. A thin wrapper (Constitution Article I): it composes the
  * sections and holds none of their logic of its own.
  *
- * The placeholder `<h1>` that used to live here is gone rather than kept
- * alongside — the Hero's headline is the page's `<h1>` and a page has one
- * (spec FR-004). The document title and description are the page's own,
- * from the locale files, through `usePageSeo` (feature 35).
+ * Muush 1.0 order (feature 44; `muush-1.0.md` § 3): Hero over the listón →
+ * Qué es muush → Servicios → Cómo trabajamos over the acanalado →
+ * Diagnóstico y contacto over the listón, at `#diagnostico` (feature 45) →
+ * footer. Propósito was retired by Roberto on 2026-10-31 (`muush-1.0.md`
+ * § 1); Proyectos was never built (feature 15 stayed blocked).
  *
- * `05 Proyectos` (feature 15) is `blocked` indefinitely, so `ContactSection`
- * renders directly after `ServicesSection` rather than after Proyectos as the
- * full design draws (recorded in `docs/harness/findings.md`, not silently).
+ * The sections sit flush: each carries its own drawn padding, so no margin
+ * is added here. The Hero's headline is the page's only `<h1>`; the
+ * document title and description are the page's own, from the locale
+ * files, through `usePageSeo` (feature 35).
  *
  * `useContactFormContent` is imported from `forms`, not `landing`: the page
  * composes both modules' barrels, which Article III permits — only a
  * *feature* may not reach into another feature's internals.
- *
- * `mt-section-gap` on every section but the Hero (feature 23, items 3/8):
- * the `.pen` draws sections flush against each other and each section's own
- * `pt-*-top` is calibrated exactly against that (`rules.md` § R49), so the
- * gap Roberto asked for is a margin added at this composition layer rather
- * than a change to any of those calibrated paddings.
  */
 const hero = useHeroContent()
-const purpose = usePurposeContent()
+const whoWeAre = useWhoWeAreContent()
 const services = useServicesContent()
-const contact = useContactContent()
+const howWeWork = useHowWeWorkContent()
+const assessment = useAssessmentContent()
 const contactForm = useContactFormContent()
 /* Feature 029: the form's only door to the network. Creating it loads
    nothing; Turnstile and the API are reached only after the visitor engages
@@ -53,11 +52,11 @@ usePageSeo({
 
 <template>
   <HeroSection v-bind="hero" />
-  <PurposeSection class="mt-section-gap" v-bind="purpose" />
-  <ServicesSection class="mt-section-gap" v-bind="services" />
-  <ContactSection
-    class="mt-section-gap"
-    v-bind="contact"
+  <WhoWeAreSection v-bind="whoWeAre" />
+  <ServicesSection v-bind="services" />
+  <HowWeWorkSection v-bind="howWeWork" />
+  <AssessmentSection
+    v-bind="assessment"
     :form-content="contactForm"
     :form-submitter="contactSubmitter"
   />

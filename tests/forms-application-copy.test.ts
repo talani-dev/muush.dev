@@ -3,289 +3,215 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
- * `forms.application.*`, sibling to `tests/forms-copy.test.ts`
- * (`forms.contact.*`). Asserted against the files on disk — never imported,
- * since Nuxt's i18n Vite transform compiles a locale JSON into a message AST
- * on import, and an AST node is never the empty string
- * (`docs/business/rules.md` § R27).
+ * `forms.application.*` (feature 45, data-model § 4), sibling to
+ * `tests/forms-copy.test.ts`, read from disk (rules.md § R27).
  *
- * The six area labels are checked verbatim against `ui-map.md` § 9; the
- * success copy against the same source. The per-area role list is checked
- * verbatim against the real catalogue Roberto gave directly (feature 24,
- * 2026-09-08), which replaced the previous `⚠️ UNVERIFIED placeholder —
- * owner Clau` this test used to only check the shape of.
+ * Approved copy: `docs/business/muush-1.0.md` § 4.8 and the gate decisions
+ * of 2026-11-02 (Roberto): the CV limit stays the contract's 5 MiB, so both
+ * CV strings say "5 MB" (Clarifications Q1); the LinkedIn placeholder is
+ * "https://linkedin.com/in/…" to match the unchanged URL rule; a failed CV
+ * upload keeps feature 31's message and "Enviar sin CV" (Q2).
  */
-interface AreaRoleFieldCopy {
-  label: string
-  placeholder: string
-  errorRequired: string
-  areas: Record<
-    'it' | 'product' | 'projectManagement' | 'sales' | 'marketing' | 'creative',
-    string
-  >
-  roles: Record<string, Record<string, string>>
-}
+type Messages = Record<string, unknown>
 
-interface ApplicationFormsCopy {
-  fields: {
-    name: { label: string; errorRequired: string }
-    email: { label: string; errorRequired: string; errorFormat: string }
-    areaRole: AreaRoleFieldCopy
-    portfolio: { label: string; placeholder: string; errorFormat: string }
-    linkedin: { label: string; placeholder: string; errorFormat: string }
-    cv: {
-      label: string
-      placeholder: string
-      errorFormat: string
-      errorSize: string
-      errorRequired: string
-    }
-    contactPreference: {
-      label: string
-      options: Record<'email' | 'whatsapp', string>
-    }
-    whatsappCountry: { label: string; errorInvalid: string }
-    whatsapp: { label: string; errorRequired: string; errorDigits: string }
-  }
-  submit: string
-  sending: string
-  uploading: string
-  cvUploadError: { message: string; retry: string; submitWithoutCv: string }
-  success: { title: string }
-  error: { title: string; fallback: string }
-}
-
-function readLocale(name: string): {
-  forms: { application: ApplicationFormsCopy }
-} {
+function readLocale(name: string): Messages {
   const file = join(process.cwd(), 'i18n', 'locales', `${name}.json`)
   return JSON.parse(readFileSync(file, 'utf8'))
 }
 
+function at(tree: Messages, key: string): unknown {
+  return key
+    .split('.')
+    .reduce<unknown>(
+      (node, segment) => (node as Messages | undefined)?.[segment],
+      tree
+    )
+}
+
 const es = readLocale('es')
 const en = readLocale('en')
+const AT = "{'@'}"
 
-describe('forms copy · forms.application.*', () => {
-  it('should hold every field label and error message in both locales', () => {
+const APPROVED: Record<string, [string, string]> = {
+  'fields.areaRole.label': ['Área y rol', 'Area and role'],
+  'fields.areaRole.placeholder': [
+    'Selecciona tu área y rol',
+    'Select your area and role',
+  ],
+  'fields.areaRole.errorRequired': [
+    'Elige tu área y rol.',
+    'Choose your area and role.',
+  ],
+  'fields.portfolio.label': ['Portafolio', 'Portfolio'],
+  'fields.portfolio.placeholder': ['https://', 'https://'],
+  'fields.portfolio.errorFormat': [
+    'Ingresa una URL válida.',
+    'Enter a valid URL.',
+  ],
+  'fields.linkedin.label': ['LinkedIn', 'LinkedIn'],
+  'fields.linkedin.placeholder': [
+    'https://linkedin.com/in/…',
+    'https://linkedin.com/in/…',
+  ],
+  'fields.linkedin.errorFormat': [
+    'Ingresa una URL válida.',
+    'Enter a valid URL.',
+  ],
+  'fields.cv.label': ['CV', 'CV'],
+  'fields.cv.placeholder': [
+    'Adjunta tu CV en PDF · máximo 5 MB',
+    'Attach your CV as a PDF · max 5 MB',
+  ],
+  'fields.cv.errorFormat': [
+    'Adjunta tu CV en PDF de hasta 5 MB.',
+    'Attach your CV as a PDF up to 5 MB.',
+  ],
+  'fields.cv.errorSize': [
+    'Adjunta tu CV en PDF de hasta 5 MB.',
+    'Attach your CV as a PDF up to 5 MB.',
+  ],
+  'fields.cv.errorRequired': ['Adjunta tu CV.', 'Attach your CV.'],
+  'steps.titles.1': ['Tus datos', 'Your details'],
+  'steps.titles.2': ['Tu perfil', 'Your profile'],
+  /* Feature 48 · split around the link to the privacy page; the sentence
+     is unchanged. */
+  'privacy.before': ['Acepto el ', 'I accept the '],
+  'privacy.link': ['aviso de privacidad', 'privacy notice'],
+  'privacy.after': [
+    ' y que muush me contacte sobre mi aplicación.',
+    ' and agree to be contacted by muush about my application.',
+  ],
+  /* Roberto 2026-11-05 · screen-reader-only after the link, which opens
+     in a new tab. */
+  'privacy.newTab': ['(se abre en una pestaña nueva)', '(opens in a new tab)'],
+  submit: ['Enviar aplicación', 'Send application'],
+  uploading: ['Subiendo CV…', 'Uploading CV…'],
+  'error.before': [
+    'El envío se interrumpió. Tus datos y tu CV siguen aquí: vuelve a intentarlo o escríbenos a',
+    'Sending was interrupted. Your details and CV are still here: try again or write to us at',
+  ],
+  'error.email': [`support${AT}muush.dev`, `support${AT}muush.dev`],
+  'cvUploadError.message': [
+    'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
+    "We couldn't upload your CV. Try again or submit without a CV.",
+  ],
+  'cvUploadError.submitWithoutCv': ['Enviar sin CV', 'Submit without CV'],
+  'success.title': ['Recibimos tu aplicación.', 'We got your application.'],
+  'success.body': [
+    'Revisamos tu perfil y te escribimos cuando haya un proyecto que encaje contigo.',
+    "We'll review your profile and reach out when there's a project that fits you.",
+  ],
+  'success.action': ['Volver al inicio', 'Back to home'],
+}
+
+/** Shared wording each form keeps under its own namespace (feature 16
+ * D-4), equal in both. */
+const SHARED_WORDING = [
+  'fields.name',
+  'fields.email',
+  'fields.contactPreference',
+  'fields.whatsappCountry',
+  'fields.whatsapp',
+  'steps.progress',
+  'steps.titles.1',
+  'continue',
+  'back',
+  'privacy.requiredHint',
+  'sending',
+  'retry',
+  'error.email',
+  'error.after',
+]
+
+describe('forms copy · forms.application.* (feature 45)', () => {
+  for (const [key, [esText, enText]] of Object.entries(APPROVED)) {
+    it(`should carry the approved ${key} verbatim in both locales`, () => {
+      expect(at(es, `forms.application.${key}`), `es ${key}`).toBe(esText)
+      expect(at(en, `forms.application.${key}`), `en ${key}`).toBe(enText)
+    })
+  }
+
+  it('should share the common wording with forms.contact in both locales', () => {
     for (const locale of [es, en]) {
-      const { fields } = locale.forms.application
-      expect(fields.name.label).not.toBe('')
-      expect(fields.name.errorRequired).not.toBe('')
-      expect(fields.email.errorFormat).not.toBe('')
-      expect(fields.areaRole.errorRequired).not.toBe('')
-      expect(fields.portfolio.errorFormat).not.toBe('')
-      expect(fields.linkedin.errorFormat).not.toBe('')
-      expect(fields.cv.errorFormat).not.toBe('')
-      expect(fields.cv.errorSize).not.toBe('')
-      expect(fields.contactPreference.label).not.toBe('')
-      expect(fields.whatsapp.errorDigits).not.toBe('')
+      for (const key of SHARED_WORDING) {
+        expect(at(locale, `forms.application.${key}`), key).toEqual(
+          at(locale, `forms.contact.${key}`)
+        )
+      }
+    }
+  })
+
+  it('should drop the v1 retry, error title and fallback keys', () => {
+    for (const locale of [es, en]) {
+      expect(
+        at(locale, 'forms.application.cvUploadError.retry')
+      ).toBeUndefined()
+      expect(at(locale, 'forms.application.error.title')).toBeUndefined()
+      expect(at(locale, 'forms.application.error.fallback')).toBeUndefined()
     }
   })
 
   it('should ship the six confirmed area headers verbatim, identical in both locales', () => {
-    /* ui-map.md § 9: "Áreas: IT · Product · Project management · Sales ·
-       Marketing · Creative" — the design documents these in English and
-       does not translate them, the same treatment `landing.hero.eyebrow`
-       gets. */
-    const expected = [
-      'IT',
-      'Product',
-      'Project management',
-      'Sales',
-      'Marketing',
-      'Creative',
-    ]
-
-    expect(Object.values(es.forms.application.fields.areaRole.areas)).toEqual(
-      expected
-    )
-    expect(Object.values(en.forms.application.fields.areaRole.areas)).toEqual(
-      expected
-    )
-  })
-
-  it('should ship the real per-area role catalogue verbatim, in both locales', () => {
-    /* Given directly by Roberto (feature 24, 2026-09-08). Role ids, and
-       therefore area membership, are asserted first — the labels are
-       asserted per locale below. `infrastructureCloud` and
-       `performanceMedia` are each ONE combined role, never split. */
-    for (const locale of [es, en]) {
-      const { roles } = locale.forms.application.fields.areaRole
-
-      expect(Object.keys(roles)).toEqual([
-        'it',
-        'product',
-        'projectManagement',
-        'sales',
-        'marketing',
-        'creative',
-      ])
-      expect(Object.keys(roles.it)).toEqual([
-        'backend',
-        'frontend',
-        'fullStack',
-        'mobile',
-        'devOps',
-        'infrastructureCloud',
-      ])
-      expect(Object.keys(roles.product)).toEqual([
-        'productManager',
-        'productOwner',
-        'uxResearch',
-        'uxUiDesign',
-        'productDesign',
-        'designSystems',
-      ])
-      expect(Object.keys(roles.projectManagement)).toEqual(['projectManager'])
-      expect(Object.keys(roles.sales)).toEqual([
-        'sales',
-        'accountManagement',
-        'partnerships',
-      ])
-      expect(Object.keys(roles.marketing)).toEqual([
-        'growth',
-        'performanceMedia',
-        'content',
-        'seo',
-        'communityManagement',
-      ])
-      expect(Object.keys(roles.creative)).toEqual([
-        'design3d',
-        'graphicDesign',
-        'blogStorytelling',
-      ])
+    const expected = {
+      it: 'IT',
+      product: 'Product',
+      projectManagement: 'Project management',
+      sales: 'Sales',
+      marketing: 'Marketing',
+      creative: 'Creative',
     }
-
-    expect(es.forms.application.fields.areaRole.roles.it).toEqual({
-      backend: 'Backend',
-      frontend: 'Frontend',
-      fullStack: 'Full stack',
-      mobile: 'Mobile',
-      devOps: 'DevOps',
-      infrastructureCloud: 'Infrastructure y Cloud',
-    })
-    expect(es.forms.application.fields.areaRole.roles.marketing).toEqual({
-      growth: 'Growth',
-      performanceMedia: 'Performance y pauta',
-      content: 'Contenido',
-      seo: 'SEO',
-      communityManagement: 'Community management',
-    })
-
-    expect(en.forms.application.fields.areaRole.roles.it).toEqual({
-      backend: 'Backend',
-      frontend: 'Frontend',
-      fullStack: 'Full stack',
-      mobile: 'Mobile',
-      devOps: 'DevOps',
-      infrastructureCloud: 'Infrastructure & Cloud',
-    })
-    expect(en.forms.application.fields.areaRole.roles.marketing).toEqual({
-      growth: 'Growth',
-      performanceMedia: 'Performance & paid media',
-      content: 'Content',
-      seo: 'SEO',
-      communityManagement: 'Community management',
-    })
+    expect(at(es, 'forms.application.fields.areaRole.areas')).toEqual(expected)
+    expect(at(en, 'forms.application.fields.areaRole.areas')).toEqual(expected)
   })
 
-  it('should default the contact preference options to Correo/Email and WhatsApp', () => {
-    expect(es.forms.application.fields.contactPreference.options).toEqual({
-      email: 'Correo',
-      whatsapp: 'WhatsApp',
-    })
-    expect(en.forms.application.fields.contactPreference.options).toEqual({
-      email: 'Email',
-      whatsapp: 'WhatsApp',
-    })
-  })
-
-  it('should carry the success copy verbatim in each locale', () => {
-    /* `ui-map.md` § 9, verbatim. */
-    expect(es.forms.application.success.title).toBe(
-      'Gracias, ya tenemos tu perfil. Te escribimos cuando haya un proyecto donde encajes.'
-    )
-    expect(en.forms.application.success.title).toBe(
-      "Thanks, we've got your profile. We'll reach out when there's a project that fits."
-    )
-  })
-
-  it('should carry no CV note in the success copy when a CV upload fails', () => {
-    /* Feature 031 FR-006: feature 029's "CV could not be attached" note is
-       gone, together with every path that showed it. */
-    expect(es.forms.application.success).not.toHaveProperty('cvNote')
-    expect(en.forms.application.success).not.toHaveProperty('cvNote')
-  })
-
-  it('should carry the CV upload error and uploading copy verbatim in each locale', () => {
-    /* Feature 031, copy given by Roberto and approved at the gate on
-       2026-10-13 (spec OA-2). */
-    expect(es.forms.application.uploading).toBe('Subiendo CV…')
-    expect(en.forms.application.uploading).toBe('Uploading CV…')
-    expect(es.forms.application.cvUploadError).toEqual({
-      message:
-        'No pudimos subir tu CV. Inténtalo de nuevo o envía la postulación sin CV.',
-      retry: 'Reintentar subida',
-      submitWithoutCv: 'Enviar sin CV',
-    })
-    expect(en.forms.application.cvUploadError).toEqual({
-      message: "We couldn't upload your CV. Try again or submit without a CV.",
-      retry: 'Retry upload',
-      submitWithoutCv: 'Submit without CV',
-    })
-  })
-
-  it('should escape the literal "@" in the error fallback the same way forms.contact does', () => {
-    /* `rules.md` § R26: a literal `@` breaks vue-i18n's compiler unless
-       escaped. */
-    expect(es.forms.application.error.fallback).toBe("support{'@'}muush.dev")
-    expect(en.forms.application.error.fallback).toBe("support{'@'}muush.dev")
-  })
-
-  it('should carry the feature 32 WhatsApp copy verbatim in each locale', () => {
-    /* Approved at the feature 32 gate (spec OA-8, 2026-10-14). */
-    expect(es.forms.application.fields.whatsappCountry).toEqual({
-      label: 'Lada del país',
-      errorInvalid: 'Elige la lada de tu país',
-    })
-    expect(en.forms.application.fields.whatsappCountry).toEqual({
-      label: 'Country code',
-      errorInvalid: 'Choose your country code',
-    })
-    expect(es.forms.application.fields.whatsapp.errorDigits).toBe(
-      'Deben ser entre 6 y 14 dígitos'
-    )
-    expect(en.forms.application.fields.whatsapp.errorDigits).toBe(
-      'Must be 6 to 14 digits'
-    )
-  })
-
-  it('should translate every field label and error message between locales', () => {
-    const esFields = es.forms.application.fields
-    const enFields = en.forms.application.fields
-
-    expect(enFields.name.label).not.toBe(esFields.name.label)
-    expect(enFields.whatsapp.errorDigits).not.toBe(
-      esFields.whatsapp.errorDigits
-    )
-    expect(en.forms.application.submit).not.toBe(es.forms.application.submit)
-  })
-
-  it('should reuse the exact WhatsApp digit-range copy forms.contact already ships', () => {
-    /* Assumption (spec.md): the WhatsApp number's validation rule is reused
-       by symmetry from `forms.contact` — the copy is reused the same way. */
-    const contactWhatsapp = (locale: typeof es) =>
-      (
-        locale as unknown as {
-          forms: { contact: { fields: { whatsapp: { errorDigits: string } } } }
-        }
-      ).forms.contact.fields.whatsapp.errorDigits
-
-    expect(es.forms.application.fields.whatsapp.errorDigits).toBe(
-      contactWhatsapp(es)
-    )
-    expect(en.forms.application.fields.whatsapp.errorDigits).toBe(
-      contactWhatsapp(en)
-    )
+  it('should ship the real per-area role catalogue unchanged, in both locales', () => {
+    /* Given directly by Roberto (feature 24, 2026-09-08). */
+    for (const locale of [es, en]) {
+      const roles = at(
+        locale,
+        'forms.application.fields.areaRole.roles'
+      ) as Record<string, Messages>
+      expect(
+        Object.fromEntries(
+          Object.entries(roles).map(([area, list]) => [area, Object.keys(list)])
+        )
+      ).toEqual({
+        it: [
+          'backend',
+          'frontend',
+          'fullStack',
+          'mobile',
+          'devOps',
+          'infrastructureCloud',
+        ],
+        product: [
+          'productManager',
+          'productOwner',
+          'uxResearch',
+          'uxUiDesign',
+          'productDesign',
+          'designSystems',
+        ],
+        projectManagement: ['projectManager'],
+        sales: ['sales', 'accountManagement', 'partnerships'],
+        marketing: [
+          'growth',
+          'performanceMedia',
+          'content',
+          'seo',
+          'communityManagement',
+        ],
+        creative: ['design3d', 'graphicDesign', 'blogStorytelling'],
+      })
+    }
+    expect(
+      at(es, 'forms.application.fields.areaRole.roles.it.infrastructureCloud')
+    ).toBe('Infrastructure y Cloud')
+    expect(
+      at(
+        en,
+        'forms.application.fields.areaRole.roles.marketing.performanceMedia'
+      )
+    ).toBe('Performance & paid media')
   })
 })

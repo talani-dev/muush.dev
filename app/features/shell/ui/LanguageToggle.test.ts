@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { rememberLocalePreference } from '@/features/shell/logic/localePreference'
 import { clearLocalePreferenceCookie } from '@/features/shell/logic/localePreference.testing'
+import { takeHeldLocaleSwitchPosition } from '@/features/shell/logic/localeSwitchScroll'
 import LanguageToggle from './LanguageToggle.vue'
 
 /* Feature 33: the writer is wrapped in a spy that still calls through, so
@@ -34,6 +35,7 @@ function mountToggle(overrides: Partial<{ locale: 'es' | 'en' }> = {}) {
 describe('LanguageToggle', () => {
   afterEach(() => {
     window.location.hash = ''
+    takeHeldLocaleSwitchPosition()
     vi.restoreAllMocks()
   })
 
@@ -54,26 +56,46 @@ describe('LanguageToggle', () => {
     expect(text).not.toContain('/')
   })
 
-  it('should render the active locale at weight 600 in bone when rendered', () => {
+  it('should render the active locale at weight 600 in Blanco when rendered', () => {
+    /* Feature 43 restyle: class assertions only (spec SC-003). */
     const link = mountToggle().find('a')
 
-    expect(link.classes()).toContain('text-bone-100')
+    expect(link.classes()).toContain('text-blanco')
     expect(link.classes()).toContain('font-semibold')
+    expect(link.classes()).toContain('text-etiqueta')
   })
 
-  it('should carry the circular glass surface when rendered', () => {
-    /* Reuses the existing glass/pill vocabulary — no new token or variant
-       (spec FR-002, FR-022). */
+  it('should be the mobile control below lg and the glass pill from lg in the header', () => {
+    /* Feature 43 · pen extract-43 §§ 2–3: 36 × 36 radius 12 with a Blanco
+       20 % stroke; from lg 40 × 40, pill, Negro 900 45 %, Blanco 15 %. */
     const link = mountToggle().find('a')
 
     for (const utility of [
-      'size-lang-circle',
-      'rounded-full',
-      'bg-glass-dark',
-      'border-glass-line',
+      'size-control',
+      'rounded-control',
+      'border-linea-fuerte',
+      'lg:size-idioma',
+      'lg:rounded-pill',
+      'lg:bg-nav-fondo',
+      'lg:border-blanco-15',
+      'lg:backdrop-blur-header',
     ]) {
       expect(link.classes(), utility).toContain(utility)
     }
+  })
+
+  it('should stay the 36 px control at every width when placed in the menu', () => {
+    const link = mount(LanguageToggle, {
+      props: {
+        locale: 'es',
+        href: ENGLISH_ABOUT,
+        switchLabel: SWITCH_TO_ENGLISH,
+        variant: 'menu',
+      },
+    }).find('a')
+
+    expect(link.classes()).toContain('size-control')
+    expect(link.classes().some(name => name.startsWith('lg:'))).toBe(false)
   })
 
   it('should point at the anchorless destination when rendered', () => {
@@ -99,7 +121,12 @@ describe('LanguageToggle', () => {
     expect(link.attributes('lang')).toBe('es')
   })
 
-  it('should carry the fragment when a plain click happens with a hash', async () => {
+  /*
+   * Spec FR-061 (Language switch keeps position, Roberto 2026-11-01): the
+   * fragment is no longer carried. The link navigates to its anchorless
+   * href and the click holds the visitor's position for logic/ to restore.
+   */
+  it('should hold the position and not carry the fragment when a plain click happens with a hash', async () => {
     const assign = vi
       .spyOn(window.location, 'assign')
       .mockImplementation(() => undefined)
@@ -107,10 +134,11 @@ describe('LanguageToggle', () => {
 
     await mountToggle().find('a').trigger('click', { button: 0 })
 
-    expect(assign).toHaveBeenCalledWith(`${ENGLISH_ABOUT}#work`)
+    expect(assign).not.toHaveBeenCalled()
+    expect(takeHeldLocaleSwitchPosition()?.destination).toBe(ENGLISH_ABOUT)
   })
 
-  it('should leave the plain link alone when no hash is present', async () => {
+  it('should hold the position for its href when no hash is present', async () => {
     const assign = vi
       .spyOn(window.location, 'assign')
       .mockImplementation(() => undefined)
@@ -118,9 +146,10 @@ describe('LanguageToggle', () => {
     await mountToggle().find('a').trigger('click', { button: 0 })
 
     expect(assign).not.toHaveBeenCalled()
+    expect(takeHeldLocaleSwitchPosition()?.destination).toBe(ENGLISH_ABOUT)
   })
 
-  it('should not intercept the click when a modifier key is held', async () => {
+  it('should hold nothing when a modifier key opens a new tab', async () => {
     const assign = vi
       .spyOn(window.location, 'assign')
       .mockImplementation(() => undefined)
@@ -129,9 +158,10 @@ describe('LanguageToggle', () => {
     await mountToggle().find('a').trigger('click', { button: 0, metaKey: true })
 
     expect(assign).not.toHaveBeenCalled()
+    expect(takeHeldLocaleSwitchPosition()).toBeNull()
   })
 
-  it('should not intercept the click when it is not the primary button', async () => {
+  it('should hold nothing when it is not the primary button', async () => {
     const assign = vi
       .spyOn(window.location, 'assign')
       .mockImplementation(() => undefined)
@@ -140,6 +170,7 @@ describe('LanguageToggle', () => {
     await mountToggle().find('a').trigger('click', { button: 1 })
 
     expect(assign).not.toHaveBeenCalled()
+    expect(takeHeldLocaleSwitchPosition()).toBeNull()
   })
 })
 
@@ -153,6 +184,7 @@ describe('LanguageToggle · locale preference (feature 33)', () => {
 
   afterEach(() => {
     window.location.hash = ''
+    takeHeldLocaleSwitchPosition()
     clearLocalePreferenceCookie()
   })
 
@@ -185,7 +217,8 @@ describe('LanguageToggle · locale preference (feature 33)', () => {
     expect(remember).toHaveBeenNthCalledWith(2, 'en')
   })
 
-  it('should record once and still carry the fragment when a hash is present', async () => {
+  it('should record once when a hash is present', async () => {
+    /* FR-061: the fragment is no longer carried; the write is unchanged. */
     const assign = vi
       .spyOn(window.location, 'assign')
       .mockImplementation(() => undefined)
@@ -195,7 +228,7 @@ describe('LanguageToggle · locale preference (feature 33)', () => {
 
     expect(remember).toHaveBeenCalledTimes(1)
     expect(remember).toHaveBeenCalledWith('en')
-    expect(assign).toHaveBeenCalledWith(`${ENGLISH_ABOUT}#work`)
+    expect(assign).not.toHaveBeenCalled()
     assign.mockRestore()
   })
 
@@ -234,6 +267,7 @@ describe('LanguageToggle · in place on the not-found page (feature 39)', () => 
   beforeEach(() => {
     remember.mockClear()
     clearLocalePreferenceCookie()
+    takeHeldLocaleSwitchPosition()
   })
 
   afterEach(() => {
@@ -249,7 +283,7 @@ describe('LanguageToggle · in place on the not-found page (feature 39)', () => 
     expect(link.attributes('href')).toBe(ENGLISH_HOME)
     expect(link.attributes('hreflang')).toBe('en')
     expect(link.attributes('aria-label')).toBe(SWITCH_TO_ENGLISH)
-    expect(link.classes()).toContain('size-lang-circle')
+    expect(link.classes()).toContain('size-control')
   })
 
   it('should emit the other locale and stay on the page when a plain click switches in place', async () => {
@@ -308,6 +342,8 @@ describe('LanguageToggle · in place on the not-found page (feature 39)', () => 
 
     expect(assign).not.toHaveBeenCalled()
     expect(wrapper.emitted('switchInPlace')).toEqual([['en']])
+    /* FR-061: the in-place switch never leaves the page, so holds nothing. */
+    expect(takeHeldLocaleSwitchPosition()).toBeNull()
   })
 
   it('should never emit when the toggle navigates as on every other page', async () => {

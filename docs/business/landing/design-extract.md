@@ -1,5 +1,9 @@
 # Extracto del diseño — medidas reales del `.pen`
 
+> ⚠️ **Describe el diseño v1 (claro, radar, glows).** Para el rediseño Muush 1.0
+> (v2, features 41–48) manda [`docs/business/muush-1.0.md`](/docs/business/muush-1.0.md).
+> Este archivo se retira o reescribe en la feature 47. Aprobado por Roberto el 2026-10-31.
+
 > **Extraído directamente de `/Users/betonajera/Downloads/muush.pen` el
 > 2026-09-06** vía el MCP de Pencil, leyendo los 4 frames vigentes
 > (`Landing ES · v4`, `Landing ES · móvil`, `Nosotros ES`,

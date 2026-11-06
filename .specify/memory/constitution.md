@@ -1,6 +1,86 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.1.1 → 2.1.2
+Status: PATCH — Article VII wording: the wordmark keeps the weights drawn in
+the design ("muush." 600, "dev" 400); headings stay Poppins 500.
+
+Ratified: Roberto, "si", 2026-11-01 (leader session, feature 43 spec gate).
+
+Templates and agent guidance reviewed: no font-weight reference; no change.
+
+Deferred TODOs: none
+
+Previous report (2.1.1) follows.
+-->
+<!--
+SYNC IMPACT REPORT
+==================
+Version change: 2.1.0 → 2.1.1
+Status: PATCH — Article VII naming clarified, no principle added or removed.
+The v2 palette loses its `--m1-*` prefix so that nothing in the final code
+carries a version marker; v1 is quarantined (`legacy-*` tokens,
+`app/shared/ui/legacy/`, Storybook `Legacy v1/`) until feature 47 deletes it.
+
+Ratified: Roberto, "si apruebo", 2026-11-01 (leader session, feature 42).
+
+Modified principles:
+  VII. Design Tokens Discipline — palette family names without prefix; no
+       version marker in token, utility, component or Storybook names; v1
+       quarantine locations named.
+
+Templates reviewed:
+  ✅ .specify/templates/*.md — no token names; no change needed.
+
+Agent guidance files reviewed:
+  ✅ .claude/agents/implementer.md — "`--m1-*` family" replaced by the
+     unprefixed families and the quarantine rule.
+
+Deferred TODOs: none
+
+Previous report (2.1.0) follows.
+-->
+<!--
+SYNC IMPACT REPORT
+==================
+Version change: 2.0.1 → 2.1.0
+Status: MINOR — Article VII materially expanded for the Muush 1.0 redesign
+(feature 41 `v2_foundation_docs`). No principle was removed.
+
+Ratified: Roberto, "apruebo", 2026-10-31 (leader session, proposal A in
+docs/harness/progress/v2-foundation-proposal.md).
+
+Modified principles:
+  VII. Design Tokens Discipline — palette moves to the `--m1-*` family; the
+       v1 families stay only until feature 47 and new code must not use
+       them; new "Responsive anchors" rule (390/1440 must match the design,
+       sizes and spacing may adapt elsewhere); Poppins 500 now also covers
+       headings.
+  Development Workflow — design values come from the `.pen` via the leader
+       (rules.md § R32), not from design-extract.md; the handoff package is
+       reference code.
+
+Templates reviewed:
+  ✅ .specify/templates/plan-template.md — no token, font or design-source reference; no change needed.
+  ✅ .specify/templates/spec-template.md — no token, font or design-source reference; no change needed.
+  ✅ .specify/templates/tasks-template.md — no token, font or design-source reference; no change needed.
+  ✅ .specify/templates/checklist-template.md — no token, font or design-source reference; no change needed.
+
+Agent guidance files reviewed:
+  ✅ .claude/agents/implementer.md — design-source rules rewritten: values come from the leader's task, muush-1.0.md and the handoff; v1 docs only for v1 code; v1 tokens banned in new code; responsive anchors.
+  ✅ .claude/agents/spec_author.md — design-source note rewritten to match.
+  ✅ AGENTS.md — handoff pointer, v2 branch flow, responsive anchors.
+
+Note: "not fall back to docs/business/" refers to visual values. The
+decisions and approved copy in docs/business/muush-1.0.md are still read.
+
+Deferred TODOs: none
+
+Previous report (2.0.1) follows.
+-->
+<!--
+SYNC IMPACT REPORT
+==================
 Version change: 2.0.0 → 2.0.1
 Status: PATCH — wording fix in Article VI. The site's default locale moved
 from Spanish to English (feature 37 `english_default_locale`, 2026-10-16):
@@ -172,19 +252,34 @@ No user-facing string may be hardcoded in a component.
 
 ### VII. Design Tokens Discipline
 
-Components MUST NOT hardcode color or spacing literals (hex, oklch, or
+Components MUST NOT hardcode color or spacing literals (hex, rgb, oklch, or
 arbitrary Tailwind values like `bg-[#123456]`). Every visual value goes
 through the CSS custom properties defined in `app/assets/css/global.css`
-(`--bone-*`, `--ink-*`, `--red-*`, `--wine-*`) and the fluid type/space
-scale, consumed as Tailwind utility classes.
+and the fluid type/space scale, consumed as Tailwind utility classes. Since
+the Muush 1.0 redesign the palette is the neutral base, brasa and acero
+families (`--negro-*`, `--carbon-*`, `--gris-*`, `--blanco`, `--red-muush-*`,
+`--crimson-*`, `--oxblood-*`, `--coral-*`, `--arena-*`, `--acero-*`), taken
+from the `m1-*` variables of the `.pen` and `docs/handoff/muush-1.0/`. Token,
+utility, component and Storybook names carry **no version marker** (no `m1`,
+`v2`): they are the final names. Everything that belongs to the v1 design is
+quarantined until feature 47 deletes it: the token families `--bone-*`,
+`--ink-*`, `--red-*`, `--wine-*` and any `legacy-*` token, the components in
+`app/shared/ui/legacy/`, and the Storybook group `Legacy v1/`. New code MUST
+NOT use any of them.
 
 The fluid scale exists so a component states its intent once
 (`text-display`) and the desktop↔mobile difference resolves through
 `clamp()`. Reaching for a breakpoint to change a font size or a padding is
 a signal the token is missing, not that the token should be bypassed.
 
-Poppins is reserved for the logo and wordmark. Instrument Sans is
-everything else.
+**Responsive anchors.** The design file draws 390 px and 1440 px. At those
+two widths the build MUST match the design. At every other width, sizes and
+spacing MAY differ from a literal interpolation so the layout stays sound;
+color, components, copy and behavior MUST NOT.
+
+Poppins is used for the logo, the wordmark and headings: weight 500 for
+headings, and the wordmark as drawn in the design ("muush." 600, "dev" 400).
+Instrument Sans is everything else.
 
 ### VIII. Clean Code Discipline
 
@@ -295,9 +390,13 @@ All commits MUST pass the Husky quality gate (Biome, typecheck, and tests on
 push). Bypassing it with `--no-verify` is prohibited. Branch names follow the
 prefixes enforced by `.husky/pre-commit`.
 
-Design measurements come from `docs/business/landing/design-extract.md`. The
-Pencil MCP bridge is only available in the main interactive session, so
-subagents MUST read that file rather than attempting to open the `.pen`.
+Design values come from the `.pen` file, which only the leader session can
+read (the Pencil MCP bridge is not available to subagents). The leader
+extracts the values a subagent needs and passes them in its task; a subagent
+missing a value asks the leader instead of falling back to the v1 design
+documents in `docs/business/`.
+For Muush 1.0, `docs/handoff/muush-1.0/` carries exact tokens and behavior as
+reference code.
 
 ## Governance
 
@@ -316,4 +415,4 @@ Amendments require:
 - MINOR: New principle added or materially expanded.
 - PATCH: Clarification, wording, typo fix.
 
-**Version**: 2.0.1 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-10-16
+**Version**: 2.1.2 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-01

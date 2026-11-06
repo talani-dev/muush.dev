@@ -1,3 +1,4 @@
+import type { SectionAnchor } from '@/shared/data/sectionAnchors'
 import type { SocialNetwork } from '@/shared/ui/SocialIcon.vue'
 
 /**
@@ -23,35 +24,40 @@ export type ShellLocale = (typeof SHELL_LOCALES)[number]
  * under `i18n.pages`. Adding a page adds a member here and an entry there —
  * never a path literal in a component (spec FR-018).
  */
-export type ShellRouteName = 'index' | 'about'
+export type ShellRouteName = 'index' | 'about' | 'faq' | 'privacy' | 'terms'
 
 /**
- * Where a shell item points. Four kinds, and `none` is a real state rather
- * than a missing value: `FAQ` and `Blog · próximamente` have no destination and
- * must render as text, not as a dead link (spec FR-039).
+ * Where a shell item points. `none` is a real state rather than a missing
+ * value: "Blog · próximamente" has no destination and renders as text, never
+ * as a dead link.
  *
- * `Agenda una llamada` was in that state until 2026-09-07 and moved to
- * `external` when its URL arrived — which is the point of modelling the absence
- * as data. `none` stays, because the other two are still in it.
+ * An `anchor` names a route plus a declared section id (feature 43, spec
+ * FR-025, FR-026): typing it by `SectionAnchor` means a link to a section
+ * nobody declared does not compile.
  */
 export type ShellDestination =
   | { kind: 'route'; name: ShellRouteName }
-  | { kind: 'anchor'; name: ShellRouteName; hash: string }
+  | {
+      /**
+       * The top of a route's page: the Home item (added by Roberto
+       * 2026-11-01). Same href as `route`, but current only while that page
+       * is shown and the visitor is above its first spied section — never
+       * for the whole page, as a `route` item is.
+       */
+      kind: 'top'
+      name: ShellRouteName
+    }
+  | { kind: 'anchor'; name: ShellRouteName; anchor: SectionAnchor }
   | {
       kind: 'external'
       href: string
       /**
        * i18n key of a message to append as the `text` query parameter.
        *
-       * Only the WhatsApp destination uses it: `ui-map.md` § 8 requires the
-       * link to arrive with a locale-specific message already written. The
-       * key lives here rather than the copy, because copy is `logic/`'s to
-       * resolve — it translates and encodes it.
-       *
-       * It sits inside this variant rather than on `ShellItem` so that a
-       * pre-filled message cannot be attached to a route, an anchor or an
-       * item with no destination at all. Those combinations mean nothing, and
-       * this way they cannot be written.
+       * Only the WhatsApp destination uses it: the link arrives with a
+       * locale-specific message already written. It sits inside this variant
+       * so that a pre-filled message cannot be attached to a route, an anchor
+       * or an item with no destination at all.
        */
       messageKey?: string
     }
@@ -63,15 +69,23 @@ export interface ShellItem {
   destination: ShellDestination
 }
 
+/**
+ * A mobile-footer contact row (feature 43, spec FR-033): the item plus the
+ * hint drawn on its right ("Escríbenos", "30 minutos", "Correo").
+ */
+export interface ContactChannel extends ShellItem {
+  hintKey: string
+}
+
 export interface FooterColumnModel {
   titleKey: string
   items: ShellItem[]
 }
 
 /**
- * Re-exported, not redeclared: the union is owned by the frozen `SocialIcon`
- * contract, and a second copy here would drift the first time a network is
- * added.
+ * Re-exported, not redeclared: the union is owned by the v2 `SocialIcon`
+ * (feature 43), and a second copy here would drift the first time a network
+ * is added.
  */
 export type { SocialNetwork }
 
@@ -93,8 +107,26 @@ export interface ResolvedShellItem {
   href?: string
   /** True only for `kind: 'external'`; drives `target` and `rel`. */
   external?: boolean
-  /** True for the route matching the current page — spec A-04. */
-  current?: boolean
+  /**
+   * Whether this item is where the visitor is (feature 43, spec FR-027,
+   * FR-028): `page` for a route item on its own page and for the Home item
+   * at the top of the home page, `section` for an anchor item whose section
+   * is in view. Absent otherwise. Drives `aria-current` (`page` / `true`)
+   * and the active style.
+   */
+  current?: 'page' | 'section'
+  /**
+   * The Home item only (Roberto 2026-11-01): a click on the page it points
+   * at scrolls to the top, which the router alone does not do
+   * (`logic/scrollToTopIfCurrent.ts`). Absent otherwise.
+   */
+  scrollsToTop?: true
+}
+
+/** A resolved mobile-footer contact row. */
+export interface ResolvedContactChannel extends ResolvedShellItem {
+  /** Already translated, without the decorative arrow. */
+  hint: string
 }
 
 export interface ResolvedFooterColumn {
@@ -107,4 +139,26 @@ export interface ResolvedSocial {
   href: string
   /** Accessible name — the glyph carries no text of its own. */
   label: string
+}
+
+/**
+ * The two status pages that share one block (feature 46, spec FR-042):
+ * Preguntas and the 404. Each name is also its shader preset.
+ */
+export type StatusPreset = 'faq' | 'notFound'
+
+/**
+ * What `ui/StatusSection.vue` receives (feature 46, data-model § 3),
+ * returned by `useFaqContent` and `useNotFoundContent`: every string and
+ * href resolved.
+ */
+export interface StatusSectionProps {
+  preset: StatusPreset
+  headingFirst: string
+  /** Line 2 in Gris 400; Preguntas has none. */
+  headingSecond?: string
+  /** The primary button, with the arrow. */
+  primary: ResolvedShellItem
+  /** The glass button, no icon; a new tab when `external`. */
+  secondary: ResolvedShellItem
 }

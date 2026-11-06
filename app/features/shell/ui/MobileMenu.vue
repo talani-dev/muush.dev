@@ -1,58 +1,54 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef } from 'vue'
-import closeGlyph from '@/assets/icons/x.svg?raw'
+import { nextTick, useTemplateRef, watch } from 'vue'
 import type {
   ResolvedShellItem,
   ResolvedSocial,
   ShellLocale,
 } from '@/features/shell/data/types'
+import { scrollToTopIfCurrent } from '@/features/shell/logic/scrollToTopIfCurrent'
+import { useFocusTrap } from '@/shared/logic/useFocusTrap'
 import Lockup from '@/shared/ui/Lockup.vue'
-import SocialIcon from '@/shared/ui/SocialIcon.vue'
+import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
 import LanguageToggle from './LanguageToggle.vue'
+import MenuButton from './MenuButton.vue'
+import SocialLinks from './SocialLinks.vue'
 
 /**
- * The open mobile menu of `design-extract.md` § 9.bis: a full-viewport
- * dark-glass panel carrying the same nav row as the closed nav — with a close
- * control in place of the hamburger — then the four destinations, the divider
- * and the three social buttons.
+ * The full-screen mobile menu of Muush 1.0 (feature 43, spec FR-015…FR-023,
+ * contract § 6; pen extract-43 § 4, frames `chQ4f` / `QpUCy`).
  *
- * On mobile this is the *only* navigation, and there is deliberately **no
- * CTA button** in it: on desktop the call to action is the nav's primary
- * button, and on mobile it is the social row (`decisions-open.md`,
- * 2026-09-06).
+ * Layers, bottom to top: the Negro 950 base, the listón (`mobileMenu`
+ * preset, no poster: without WebGL the base and the glass show alone), the
+ * Negro 950 70 % glass with a 24 px blur, and the content. The shader is
+ * inside the `v-if`, so it runs only while the menu is open and releases
+ * its context when it closes (FR-022).
  *
- * The frame stacks a `BG · base` and a `Dotted paper` layer beneath the
- * glass. Neither is painted here: those are the page showing through the
- * blur, which is the frame's intent — repainting them would double them
- * (spec A-03).
+ * The top bar repeats the mobile header's, with "Cerrar" in place of the
+ * menu button. Below it, from 150 px down: the links in Poppins 32 / 500
+ * with no arrows (rows padding 16, gap 6), a 1 px Blanco 12 % divider and
+ * the three social buttons. The vertical gaps reproduce the frame's y 440
+ * and y 480 at 390 (tokens in `global.css`).
  *
- * The frame's absolute coordinates (y176, y448, y493) are **not** reproduced
- * as positions. A real phone is rarely 844px tall, so they are translated to
- * flow spacing exactly as `docs/business/rules.md` § R12 derived them.
+ * A modal dialog with a name (FR-021). On open, focus moves to Cerrar and
+ * Tab cycles inside (FR-020; the rest of the page is `inert`, set by the
+ * layout). Every way out is an event; the layout decides the close reason:
+ * `close` (Cerrar), `itemChosen` (a link, the logo or the language,
+ * emitted before the browser follows it), `switchLocale` (the in-place
+ * switch of the 404).
+ *
+ * The fade and the links' 8 px rise staggered by 40 ms follow the handoff;
+ * under reduced motion both durations are 0 (FR-023).
  */
 interface Props {
   open: boolean
   items: ResolvedShellItem[]
   socials: ResolvedSocial[]
-  /** Resolved href for the lockup. */
   home: string
+  homeLabel: string
   locale: ShellLocale
-  /** The equivalent route in the other locale, without a fragment. */
   localeSwitchHref: string
-  /**
-   * Accessible name of the toggle, naming the *destination* locale (spec
-   * FR-018, feature 21). It arrives resolved, like `label`/`closeLabel`:
-   * `LanguageToggle.vue` cannot call `useI18n()` itself (`rules.md` § R23).
-   */
   localeSwitchLabel: string
-  /** The not-found page (feature 39): the toggle switches in place. */
   localeSwitchInPlace?: boolean
-  /**
-   * Accessible names of the panel and of the close control. Not in
-   * `contracts/components.md`, added deliberately: a modal surface and an
-   * icon-only button both need a name, and no user-facing string may be
-   * written inside a component (Constitution Article VI).
-   */
   label: string
   closeLabel: string
 }
@@ -62,6 +58,7 @@ const {
   items,
   socials,
   home,
+  homeLabel,
   locale,
   localeSwitchHref,
   localeSwitchLabel,
@@ -71,129 +68,132 @@ const {
 } = defineProps<Props>()
 
 const emit = defineEmits<{
-  /** Any of the triggers this component owns fired. */
-  closed: []
-  /**
-   * An item was activated. The parent closes on this rather than the
-   * component navigating itself, so the close completes before the page
-   * scrolls to the anchor (spec FR-030).
-   */
-  itemChosen: [href: string]
-  /** Chose `locale` in place (feature 39); the parent closes the panel. */
+  close: []
+  itemChosen: [href: string | undefined]
   switchLocale: [locale: ShellLocale]
 }>()
 
-const closeControl = useTemplateRef<HTMLButtonElement>('closeControl')
+const dialog = useTemplateRef<HTMLElement>('dialog')
+const closeButton = useTemplateRef<{ focus: () => void }>('closeButton')
 
-/* The panel is mounted on open, so this is where focus enters it. */
-onMounted(() => closeControl.value?.focus())
+useFocusTrap(dialog, () => open)
 
+/*
+ * The layout closes the menu on `itemChosen`, which restores the scroll it
+ * locked; only then can the Home item scroll to the top of its own page.
+ */
 function chooseItem(item: ResolvedShellItem) {
-  if (!item.href) return
   emit('itemChosen', item.href)
+  if (item.scrollsToTop) scrollToTopIfCurrent(item.href)
 }
+
+watch(
+  () => open,
+  async opened => {
+    if (!opened) return
+    await nextTick()
+    closeButton.value?.focus()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
-  <div
-    v-if="open"
-    role="dialog"
-    aria-modal="true"
-    :aria-label="label"
-    class="fixed inset-0 z-50 bg-glass-dark backdrop-blur-menu-panel"
+  <Transition
+    enter-active-class="transition-opacity duration-(--medio) ease-muush"
+    leave-active-class="transition-opacity duration-(--medio) ease-muush"
+    enter-from-class="opacity-0"
+    leave-to-class="opacity-0"
   >
-    <!--
-      The same container as the closed nav row. It sits at the top edge of the
-      panel so the item block below can start at the 176 the frame measures
-      from that same edge.
-    -->
     <div
-      class="absolute inset-x-0 top-0 flex items-center justify-between gap-nav-gap px-page py-nav-y"
+      v-if="open"
+      ref="dialog"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="label"
+      class="fixed inset-0 z-50 isolate overflow-y-auto bg-negro-950 print:hidden lg:hidden"
     >
-      <NuxtLink
-        :to="home"
-        class="text-bone-100 focus-visible:outline-red-400"
-        @click="emit('closed')"
-      >
-        <Lockup />
-      </NuxtLink>
-
-      <div class="flex items-center gap-nav-gap">
-        <LanguageToggle
-          :locale="locale"
-          :href="localeSwitchHref"
-          :switch-label="localeSwitchLabel"
-          :in-place="localeSwitchInPlace"
-          @switch-in-place="emit('switchLocale', $event)"
-        />
-
-        <!--
-          `cursor-pointer`, as on the hamburger it replaces: a native `<button>`
-          gets `cursor: default` from the user agent (`docs/harness/findings.md`
-          § R56). The panel only exists with scripting, so this always acts.
-        -->
-        <button
-          ref="closeControl"
-          type="button"
-          :aria-label="closeLabel"
-          class="inline-grid cursor-pointer place-items-center rounded-icon border border-glass-line bg-glass-dark p-close-pad text-bone-100 focus-visible:outline-red-400"
-          @click="emit('closed')"
-        >
-          <span
-            aria-hidden="true"
-            class="inline-flex size-close-glyph"
-            v-html="closeGlyph"
-          />
-        </button>
-      </div>
-    </div>
-
-    <div class="px-page pt-menu-top">
-      <ul
-        class="flex flex-col gap-menu-gap font-instrument text-menu-item text-bone-100"
-      >
-        <li v-for="item in items" :key="item.label">
-          <NuxtLink
-            :to="item.href"
-            :aria-current="item.current ? 'page' : undefined"
-            class="focus-visible:outline-red-400"
-            @click="chooseItem(item)"
-          >
-            {{ item.label }}
-          </NuxtLink>
-        </li>
-      </ul>
-
-      <hr class="mt-menu-divider-gap border-t border-divider-menu">
-
-      <!--
-        The only call to action on mobile. Centred rather than positioned at
-        the frame's x109/171/233: the same 14px gap, expressed as flow.
-      -->
+      <ShaderBackground preset="mobileMenu" />
       <div
-        class="mt-menu-social-gap flex justify-center gap-menu-social-row-gap"
-      >
-        <SocialIcon
-          v-for="social in socials"
-          :key="social.network"
-          :network="social.network"
-          :href="social.href"
-          :label="social.label"
-        />
+        aria-hidden="true"
+        class="absolute inset-0 z-0 bg-menu-vidrio backdrop-blur-cristal"
+      />
+
+      <div class="relative z-10 px-gutter pt-header-top">
+        <div
+          class="flex h-header-alto items-center justify-between rounded-header border border-linea bg-nav-fondo pr-header-fin pl-header-inicio backdrop-blur-header"
+        >
+          <!-- No `aria-current` on the logo (feature 44, FR-028; see SiteHeader). -->
+          <NuxtLink
+            :to="home"
+            :aria-label="homeLabel"
+            :aria-current="undefined"
+            class="inline-flex rounded-control foco"
+            @click="emit('itemChosen', home)"
+          >
+            <Lockup form="isotipo" />
+          </NuxtLink>
+          <div class="flex items-center gap-header-grupo-movil">
+            <LanguageToggle
+              variant="menu"
+              :locale="locale"
+              :href="localeSwitchHref"
+              :switch-label="localeSwitchLabel"
+              :in-place="localeSwitchInPlace"
+              @click="emit('itemChosen', localeSwitchHref)"
+              @switch-in-place="emit('switchLocale', $event)"
+            />
+            <MenuButton
+              ref="closeButton"
+              kind="close"
+              :label="closeLabel"
+              @click="emit('close')"
+            />
+          </div>
+        </div>
+
+        <ul class="mt-menu-lista flex flex-col gap-menu-filas">
+          <li
+            v-for="(item, index) in items"
+            :key="item.label"
+            class="menu-enlace"
+            :style="{ '--orden': index }"
+          >
+            <NuxtLink
+              :to="item.href"
+              :aria-current="item.current === 'page' ? 'page' : undefined"
+              class="block rounded-control py-menu-fila font-titulo text-menu text-blanco foco"
+              @click="chooseItem(item)"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </li>
+        </ul>
+
+        <div aria-hidden="true" class="mt-menu-divisor h-px bg-linea" />
+
+        <SocialLinks class="mt-menu-redes" :socials="socials" size="menu" />
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style scoped>
 /*
- * `:deep()` is required, not stylistic: content injected by `v-html` is not
- * rewritten by Vue's scoped-style transform, so a plain `svg {}` rule would
- * never match it (docs/business/rules.md § R14). `100%`/`auto` are layout
- * keywords, not design values.
+ * The handoff's link entrance (`componentes.css`): rise `--menu-desliz` and
+ * fade in over `--medio`, each link `--menu-escalon` after the previous.
+ * Both tokens are 0 under reduced motion (global.css), so there the links
+ * are simply there.
  */
-:deep(svg) {
-  width: 100%;
-  height: auto;
+.menu-enlace {
+  animation: menu-enlace-entrada var(--medio) var(--ease) both;
+  animation-delay: calc(var(--orden) * var(--menu-escalon));
+}
+
+@keyframes menu-enlace-entrada {
+  from {
+    opacity: 0;
+    translate: 0 var(--menu-desliz);
+  }
 }
 </style>

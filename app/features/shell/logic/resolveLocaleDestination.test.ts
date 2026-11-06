@@ -88,4 +88,17 @@ describe('resolveLocaleDestination', () => {
       '/en#proyectos'
     )
   })
+
+  /*
+   * Spec FR-061 (Roberto 2026-11-01): `switchLocalePath` copies the current
+   * route's hash into its result, which sent the visitor back to the last
+   * section they jumped to. The destination never inherits it.
+   */
+  it('should drop the fragment the switched path carries from the library', () => {
+    expect(resolveLocaleDestination('/en#servicios', ENGLISH_HOME)).toBe('/en')
+  })
+
+  it('should drop a fragment-only switched path down to the fallback', () => {
+    expect(resolveLocaleDestination('#servicios', ENGLISH_HOME)).toBe('/en')
+  })
 })

@@ -2,17 +2,24 @@
 import { computed } from 'vue'
 import type { ShellLocale } from '@/features/shell/data/types'
 import { rememberLocalePreference } from '@/features/shell/logic/localePreference'
+import { holdLocaleSwitchPosition } from '@/features/shell/logic/localeSwitchScroll'
 
 /**
- * The language toggle of frame `tGVGq` (Banda 1) — feature 21's redesign of
- * the old `ES / EN` text pair: a single 44×44 dark-glass circle showing
- * **only the active locale's two-letter code**. There is nothing to read for
- * the locale not currently active — the minimal reading of "botón circular
- * con el idioma activo" consistent with there being exactly two locales
- * (spec Clarifications, Q4): a circle with one code showing is unambiguous
- * about what clicking it does, and inventing a flag or globe glyph would add
- * a symbol the design does not specify and localization the brand voice
- * does not use (`docs/business/branding.md`: "Sin referencias geográficas").
+ * The language toggle (feature 21; restyled for Muush 1.0 by feature 43,
+ * spec FR-004, FR-007, FR-029, contract § 2): one control showing **only
+ * the active locale's two-letter code** ("ES" on Spanish pages).
+ *
+ * Feature 43 changes its look and nothing else. Two variants (pen
+ * extract-43 §§ 2–4):
+ *
+ * - `header` (default): the mobile bar's 36 × 36 radius-12 control with a
+ *   1 px Blanco 20 % stroke and no fill below `lg`; from `lg`, the desktop
+ *   nav's 40 × 40 pill in Negro 900 45 % with a 1 px Blanco 15 % stroke and
+ *   a 20 px blur. One element for both layouts, so each page carries exactly
+ *   one toggle link (the build test of feature 21 counts them).
+ * - `menu`: the 36 × 36 control at every width, in the open menu's bar.
+ *
+ * Text Instrument Sans 12 / 600 Blanco in both.
  *
  * The destination arrives resolved. Deciding *where* the other locale lives
  * is `logic/`'s job and goes through the route map, never through swapping
@@ -53,17 +60,33 @@ interface Props {
    * hydration, and a modified click opening a new tab.
    */
   inPlace?: boolean
+  /** Look only; see above. Default `header`. */
+  variant?: 'header' | 'menu'
 }
 
-const { locale, href, switchLabel, inPlace = false } = defineProps<Props>()
+const {
+  locale,
+  href,
+  switchLabel,
+  inPlace = false,
+  variant = 'header',
+} = defineProps<Props>()
 
 const emit = defineEmits<{
   /** The visitor chose `locale` on a page that switches in place. */
   switchInPlace: [locale: ShellLocale]
 }>()
 
-const TOGGLE_CLASS =
-  'inline-grid size-lang-circle place-items-center rounded-full border border-glass-line bg-glass-dark font-instrument text-lang font-semibold text-bone-100 focus-visible:outline-red-400'
+const BASE_CLASSES =
+  'inline-grid size-control shrink-0 place-items-center rounded-control border border-linea-fuerte font-texto text-etiqueta font-semibold text-blanco foco'
+
+const VARIANT_CLASSES = {
+  header:
+    'lg:size-idioma lg:rounded-pill lg:border-blanco-15 lg:bg-nav-fondo lg:backdrop-blur-header',
+  menu: '',
+} satisfies Record<NonNullable<Props['variant']>, string>
+
+const toggleClasses = computed(() => [BASE_CLASSES, VARIANT_CLASSES[variant]])
 
 /**
  * The only locale this component ever links to. Derived from `locale`
@@ -73,35 +96,41 @@ const TOGGLE_CLASS =
 const otherLocale = computed<ShellLocale>(() => (locale === 'es' ? 'en' : 'es'))
 
 /**
- * The anchor enhancement (spec FR-021/FR-017). A URL fragment never reaches
- * the server and does not exist when the page is generated
- * (`docs/business/rules.md` § R9), so the rendered `href` is anchorless and a
- * visitor with no scripting still lands on the equivalent page, at its top.
- * Only the fragment — the one part that cannot exist before the click — is
- * read here.
+ * Keeps the visitor's place (spec FR-061, "Language switch keeps position",
+ * Roberto 2026-11-01; replaces the fragment carrying of FR-029 and User
+ * Story 2 scenario 2).
  *
- * Modified clicks are left alone: intercepting a ⌘/Ctrl/middle-click would
- * cost the visitor "open in new tab" to buy a fragment they did not ask for.
+ * The link navigates to `href`, the anchorless equivalent route, through
+ * the router, so the URL drops whatever fragment the visitor last jumped to.
+ * Before it does, the click holds where the visitor is (which anchored
+ * section and how far through it); `logic/` restores that on the other
+ * locale's page. Holding only measures the page, it never navigates, so the
+ * link's own behaviour is untouched: with no scripting, or a click before
+ * hydration, the plain `href` still lands on the equivalent page, at its top.
+ *
+ * Modified clicks are left alone: a ⌘/Ctrl/middle-click opens a new tab,
+ * and the page left behind does not move. `defaultPrevented` is not
+ * consulted here: the router link's own handler runs first and prevents the
+ * default of every click it navigates on, so it is always set by now.
  */
-function isPlainPrimaryClick(event: MouseEvent): boolean {
+function isModifiedOrSecondaryClick(event: MouseEvent): boolean {
   const isModified =
     event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
-  return !event.defaultPrevented && !isModified && event.button === 0
+  return isModified || event.button !== 0
 }
 
-function preserveAnchor(event: MouseEvent) {
-  if (!isPlainPrimaryClick(event)) return
+/** Feature 39 · whether the in-place switch should handle this click. */
+function isPlainPrimaryClick(event: MouseEvent): boolean {
+  return !event.defaultPrevented && !isModifiedOrSecondaryClick(event)
+}
 
-  const fragment = window.location.hash.replace(/^#+/, '')
-  if (fragment === '') return
-
-  event.preventDefault()
-  window.location.assign(`${href}#${fragment}`)
+function keepPosition(event: MouseEvent) {
+  if (!isModifiedOrSecondaryClick(event)) holdLocaleSwitchPosition(href)
 }
 
 /**
  * Feature 33: every click is an explicit language choice, so the
- * destination locale is recorded **first**, before `preserveAnchor`'s early
+ * destination locale is recorded **first**, before `keepPosition`'s early
  * returns — a ⌘/Ctrl-click that opens a new tab is still a choice
  * (`specs/033-ip-locale-root-redirect/contracts/locale-preference-cookie.md`
  * § 2). The edge reads it only at `/`; nothing on this page reads it, so the
@@ -111,12 +140,12 @@ function preserveAnchor(event: MouseEvent) {
 function onToggleClick(event: MouseEvent) {
   rememberLocalePreference(otherLocale.value)
   if (inPlace) requestInPlaceSwitch(event)
-  else preserveAnchor(event)
+  else keepPosition(event)
 }
 
 /**
  * Feature 39. Modified clicks are left to the browser, exactly like
- * `preserveAnchor`: ⌘/Ctrl-click still opens the other locale's home in a new
+ * `keepPosition`: ⌘/Ctrl-click still opens the other locale's home in a new
  * tab. The cookie was already written by `onToggleClick`, with the same
  * destination locale as on every other page.
  */
@@ -141,7 +170,7 @@ function requestInPlaceSwitch(event: MouseEvent) {
     :hreflang="otherLocale"
     :lang="otherLocale"
     :aria-label="switchLabel"
-    :class="TOGGLE_CLASS"
+    :class="toggleClasses"
     @click="onToggleClick"
   >
     {{ locale.toUpperCase() }}
@@ -152,7 +181,7 @@ function requestInPlaceSwitch(event: MouseEvent) {
     :hreflang="otherLocale"
     :lang="otherLocale"
     :aria-label="switchLabel"
-    :class="TOGGLE_CLASS"
+    :class="toggleClasses"
     @click="onToggleClick"
   >
     {{ locale.toUpperCase() }}

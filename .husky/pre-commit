@@ -2,7 +2,7 @@
 
 BRANCH=$(git branch --show-current)
 VALID_PREFIXES="^(feat|fix|chore|docs|refactor|test|ci|build|perf|style)/"
-PROTECTED_BRANCHES="^(main|master|init)$"
+PROTECTED_BRANCHES="^(main|master|init|muush-v2)$"
 
 # Hotfix — skip everything
 if echo "$BRANCH" | grep -qE "^hotfix/"; then

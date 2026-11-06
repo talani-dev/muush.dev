@@ -12,6 +12,14 @@ import { describe, expect, it } from 'vitest'
  * retyped (docs/business/rules.md § R27); paths use `node:path` (§ R16).
  *
  * One row per locale: every assertion below runs for both documents.
+ *
+ * Feature 46 (spec FR-039…FR-045; Roberto 2026-11-02, Clarifications Q5):
+ * the body is the Muush 1.0 `StatusSection`. Every behavioural case of
+ * features 36 and 39 is kept as it was; the cases that asserted the v1
+ * look (pill, subtitle, LED button, shortcuts and their separators, rings,
+ * red glow) are replaced by the v2 look: the two-tone heading as the only
+ * `h1`, one primary link to the same-locale home, one glass link to its
+ * diagnóstico section and one hidden shader background with its poster.
  */
 const ROOT = process.cwd()
 const OUTPUT = join(ROOT, '.output', 'public')
@@ -19,12 +27,9 @@ const OUTPUT = join(ROOT, '.output', 'public')
 type Locale = 'es' | 'en'
 
 interface NotFoundCopy {
-  eyebrow: string
-  headline: string
-  body: string
+  heading: { first: string; second: string }
   cta: string
-  shortcutsLabel: string
-  shortcuts: { purpose: string; services: string; about: string }
+  assessment: string
 }
 
 interface NotFoundDocument {
@@ -34,7 +39,6 @@ interface NotFoundDocument {
   lang: string
   home: string
   otherHome: string
-  shortcutHrefs: [string, string, string]
 }
 
 const DOCUMENTS: NotFoundDocument[] = [
@@ -45,7 +49,6 @@ const DOCUMENTS: NotFoundDocument[] = [
     lang: 'es-MX',
     home: '/es',
     otherHome: '/en',
-    shortcutHrefs: ['/es#proposito', '/es#servicios', '/es/nosotros'],
   },
   {
     locale: 'en',
@@ -54,7 +57,6 @@ const DOCUMENTS: NotFoundDocument[] = [
     lang: 'en-US',
     home: '/en',
     otherHome: '/es',
-    shortcutHrefs: ['/en#proposito', '/en#servicios', '/en/about'],
   },
 ]
 
@@ -89,10 +91,11 @@ function markupOf(file: string): string {
     .replace(/<style\b[^>]*>.*?<\/style>/gs, '')
 }
 
-/** The not-found `<section>`, from its opening tag to the footer. */
+/** The not-found `<section>` (`StatusSection`), from its opening tag to the footer. */
 function sectionOf(file: string): string {
   const markup = markupOf(file)
-  const start = markup.indexOf('<section class="relative flex min-h-not-found')
+  const marker = markup.indexOf('data-estado="notFound"')
+  const start = marker === -1 ? -1 : markup.lastIndexOf('<section', marker)
   const end = markup.indexOf('<footer', start)
   return start === -1 ? '' : markup.slice(start, end)
 }
@@ -112,12 +115,20 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/'/g, '&#39;')
 }
 
-function shortcutsNav(file: string, label: string): string {
-  const pattern = new RegExp(
-    `<nav aria-label="${escapeHtml(label)}"[^>]*>(.*?)</nav>`,
-    's'
-  )
-  return markupOf(file).match(pattern)?.[1] ?? ''
+/** Every `<a>` of the section: its href, its classes and its text. */
+function sectionLinks(
+  file: string
+): { href: string; classes: string[]; text: string }[] {
+  return [
+    ...sectionOf(file).matchAll(
+      /<a href="([^"]*)"[^>]*class="([^"]*)"[^>]*>(.*?)<\/a>/gs
+    ),
+  ].map(match => ({
+    href: match[1] ?? '',
+    classes: (match[2] ?? '').split(/\s+/),
+    /* The arrow's SVG carries a `<title>` for the icon file; not link text. */
+    text: textOf((match[3] ?? '').replace(/<svg\b.*?<\/svg>/gs, '')),
+  }))
 }
 
 describe.each(DOCUMENTS)('not-found output · $file', document => {
@@ -142,77 +153,74 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
   it('should render the site nav and footer exactly once when generated', () => {
     const markup = markupOf(document.file)
 
-    expect(count(markup, /<nav aria-label="[^"]*" class="site-nav /g)).toBe(1)
+    /* Feature 43: the site nav is the v2 header's one `<nav>`. */
+    expect(count(markup, /<header\b/g)).toBe(1)
+    expect(count(markup, /<header[^>]*>\s*<nav aria-label="[^"]*"/g)).toBe(1)
     expect(count(markup, /<footer\b/g)).toBe(1)
   })
 
-  it('should render the headline as the only h1 when generated', () => {
+  it('should render the two-tone heading as the only h1', () => {
     const headings = [
       ...markupOf(document.file).matchAll(/<h1\b[^>]*>(.*?)<\/h1>/gs),
     ]
 
     expect(headings).toHaveLength(1)
-    expect(textOf(headings[0]?.[1] ?? '')).toBe(escapeHtml(copy.headline))
+    expect(textOf(headings[0]?.[1] ?? '')).toBe(
+      escapeHtml(`${copy.heading.first} ${copy.heading.second}`)
+    )
+    expect(headings[0]?.[1]).toMatch(/class="block text-gris-400"/)
   })
 
-  it('should render the pill with its radar dot and label when generated', () => {
-    /* From the Pill's own root to the heading that follows it. */
-    const pill = sectionOf(document.file).match(
-      /<span class="inline-flex items-center gap-pill-gap rounded-full border border-glass-line bg-glass-dark[^"]*"[^>]*>.*?(?=<h1\b)/s
-    )?.[0]
+  it('should render one primary link to the same-locale home', () => {
+    const primaries = sectionLinks(document.file).filter(link =>
+      link.classes.includes('bg-(image:--btn-fondo)')
+    )
 
-    expect(pill).toBeDefined()
-    expect(pill).toContain('ping')
-    expect(pill).toContain(`>${copy.eyebrow}<`)
+    expect(primaries).toHaveLength(1)
+    expect(primaries[0]?.href).toBe(document.home)
+    expect(primaries[0]?.text).toBe(copy.cta)
+    /* The arrow: a decorative icon after the label. */
+    expect(sectionOf(document.file)).toMatch(
+      /<span data-icono aria-hidden="true"[^>]*>/
+    )
   })
 
-  it('should render the subtitle when generated', () => {
-    expect(sectionOf(document.file)).toContain(`>${escapeHtml(copy.body)}</p>`)
+  it('should render one glass link to the same-locale diagnóstico anchor', () => {
+    const glass = sectionLinks(document.file).filter(link =>
+      link.classes.includes('bg-btn2-fondo')
+    )
+
+    expect(glass).toHaveLength(1)
+    expect(glass[0]?.href).toBe(`${document.home}#diagnostico`)
+    expect(glass[0]?.text).toBe(copy.assessment)
+    expect(sectionLinks(document.file)).toHaveLength(2)
   })
 
-  it('should render exactly one LED control, pointing at the same-locale home, when generated', () => {
-    const markup = markupOf(document.file)
-    const leds = [
-      ...markup.matchAll(
-        /<a href="([^"]*)" class="led [^"]*"[^>]*>(.*?)<\/a>/gs
-      ),
-    ]
+  it('should render no pill, no body copy and no v1 body when generated', () => {
+    const section = sectionOf(document.file)
 
-    expect(count(markup, /class="led /g)).toBe(1)
-    expect(leds).toHaveLength(1)
-    expect(leds[0]?.[1]).toBe(document.home)
-    expect(textOf(leds[0]?.[2] ?? '')).toBe(copy.cta)
+    expect(section).not.toBe('')
+    expect(section).not.toMatch(/<p[\s>]/)
+    expect(section).not.toMatch(
+      /data-punto|class="led |not-found-rings|section-backdrop|glow-/
+    )
   })
 
-  it('should render no nav call to action, not even its noscript override, when generated', () => {
+  it('should render the header call to action like every other page when generated', () => {
+    /*
+     * Feature 43 supersedes feature 36's removal: the header's "Diagnóstico
+     * gratis" shows on every page, the 404 included (spec FR-004,
+     * Clarifications Q1, confirmed by Roberto 2026-11-01). It points at the
+     * same-locale home's diagnostic section; no noscript override exists.
+     */
     const body = readOutput(document.file).match(
       /<body[^>]*>(.*)<\/body>/s
     )?.[1]
+    const header = body?.match(/<header[\s\S]*?<\/header>/)?.[0]
 
-    expect(body).toBeDefined()
+    expect(header).toContain(`<a href="${document.home}#diagnostico"`)
     expect(body).not.toContain('site-nav__cta')
-    expect(body).not.toMatch(/<noscript>.*site-nav__cta/s)
-  })
-
-  it('should render the three shortcuts in order inside a named nav when generated', () => {
-    const nav = shortcutsNav(document.file, copy.shortcutsLabel)
-    const links = [...nav.matchAll(/<a href="([^"]*)"[^>]*>(.*?)<\/a>/gs)]
-
-    expect(links.map(link => link[1])).toEqual(document.shortcutHrefs)
-    expect(links.map(link => textOf(link[2] ?? ''))).toEqual([
-      copy.shortcuts.purpose,
-      copy.shortcuts.services,
-      copy.shortcuts.about,
-    ])
-  })
-
-  it('should hide the shortcut separators from assistive technology when generated', () => {
-    const nav = shortcutsNav(document.file, copy.shortcutsLabel)
-    const separators = [...nav.matchAll(/<span([^>]*)>·<\/span>/g)]
-
-    expect(separators).toHaveLength(2)
-    for (const separator of separators)
-      expect(separator[1]).toContain('aria-hidden="true"')
+    expect(body).not.toMatch(/<noscript[^>]*><style>/)
   })
 
   it("should point the language button at the other locale's home when generated", () => {
@@ -223,44 +231,29 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
     expect(toggle?.[1]).toBe(document.otherHome)
   })
 
-  it('should render the decorative rings with three children when generated', () => {
-    const rings = sectionOf(document.file).match(
-      /<div aria-hidden="true" class="not-found-rings [^"]*"[^>]*>(.*?)<\/div>/s
-    )
-
-    expect(rings).not.toBeNull()
-    expect(count(rings?.[1] ?? '', /<span\b/g)).toBe(3)
-  })
-
-  it('should render one aria-hidden backdrop with the red glow when generated', () => {
+  it('should render one aria-hidden shader background with the notFound poster', () => {
     const section = sectionOf(document.file)
-    const backdrops = [
+    const backgrounds = [
       ...section.matchAll(
-        /<div aria-hidden="true" class="section-backdrop [^"]*"[^>]*>(.*?)<\/div>/gs
+        /<div aria-hidden="true" class="pointer-events-none absolute inset-0 [^"]*"[^>]*>(.*?)<\/div>/gs
       ),
     ]
 
-    expect(backdrops).toHaveLength(1)
-    const glow = backdrops[0]?.[1] ?? ''
-    for (const utility of [
-      'from-glow-red-400-60',
-      'size-glow-1400-700',
-      'left-not-found-glow-x',
-      'top-not-found-glow-y',
-    ])
-      expect(glow).toContain(utility)
+    expect(backgrounds).toHaveLength(1)
+    const background = backgrounds[0]?.[1] ?? ''
+    expect(background).toMatch(/<img[^>]*src="[^"]*404-acanalado[^"]*"/)
+    expect(background).toMatch(/<img[^>]*alt=""/)
+    expect(background).toContain('<canvas')
   })
 
   it("should contain none of the other locale's not-found copy when generated", () => {
     const markup = markupOf(document.file)
 
     for (const text of [
-      otherCopy.headline,
-      otherCopy.body,
+      otherCopy.heading.first,
+      otherCopy.heading.second,
       otherCopy.cta,
-      otherCopy.shortcutsLabel,
-      otherCopy.shortcuts.purpose,
-      otherCopy.shortcuts.about,
+      otherCopy.assessment,
     ]) {
       expect(markup).not.toContain(escapeHtml(text))
     }
@@ -335,39 +328,48 @@ describe('not-found output · removed shells and sitemap', () => {
   })
 })
 
-describe('not-found output · nav height parity (Roberto, 2026-10-15)', () => {
-  const endGroupClass = (file: string): string =>
-    markupOf(file).match(/<div class="([^"]*\bnav-row__end\b[^"]*)"/)?.[1] ?? ''
+describe('not-found output · the same header as every page (feature 43)', () => {
+  /*
+   * Supersedes the v1 "nav height parity" and "other pages keep their nav
+   * call to action" blocks (Roberto, 2026-10-15; feature 36): the v2 header
+   * is the same on every page, the 404 included, with its CTA (spec FR-004,
+   * confirmed by Roberto 2026-11-01). Only destinations and the current-page
+   * marking may differ; the 404 marks nothing (spec FR-028). Since the Home
+   * link (added by Roberto 2026-11-01) the prerendered home page lights
+   * "Inicio" / "Home" (dot + active fill), so the active style is folded
+   * back to the inactive one before comparing; the 404 side is pinned
+   * unlit by the next block.
+   */
+  const headerOf = (file: string): string =>
+    (markupOf(file).match(/<header[\s\S]*?<\/header>/)?.[0] ?? '')
+      .replaceAll(/ href="[^"]*"/g, '')
+      .replaceAll(/ hreflang="[^"]*"| lang="[^"]*"| aria-label="[^"]*"/g, '')
+      .replaceAll(' aria-current="page"', '')
+      .replaceAll(/<span data-punto[^>]*><\/span>/g, '<!---->')
+      .replaceAll(' bg-blanco-8 text-blanco"', ' text-texto-suave"')
+      .replaceAll(/ ?router-link-(exact-)?active/g, '')
+      .replaceAll(/class="\s+/g, 'class="')
+      .replaceAll(/>(ES|EN)</g, '><')
+      .replaceAll(/<span>[^<]*<\/span><span data-icono/g, '<span data-icono')
+      .replaceAll(/(<a[^>]*>)\s*[^<\s][^<]*?\s*(<\/a>)/g, '$1$2')
 
   it.each(DOCUMENTS.map(document => document.file))(
-    'should hold the nav end group at the CTA height when %s is generated',
+    'should render the home page header when %s is generated',
     file => {
-      expect(endGroupClass(file)).toContain('lg:min-h-nav-cta-h')
+      const home = join(file.startsWith('es') ? 'es' : 'en', 'index.html')
+
+      expect(headerOf(file)).not.toBe('')
+      expect(headerOf(file)).toBe(headerOf(home))
     }
   )
 
-  it.each([
-    join('es', 'index.html'),
-    join('en', 'index.html'),
-    join('es', 'nosotros', 'index.html'),
-    join('en', 'about', 'index.html'),
-  ])('should leave the nav end group unchanged when %s is generated', file => {
-    expect(endGroupClass(file)).toBe(
-      'nav-row__end flex items-center gap-nav-end-gap'
-    )
-  })
-})
-
-describe('not-found output · other pages keep their nav call to action', () => {
-  it('should keep the About call to action visible from the start when generated', () => {
-    expect(markupOf(join('en', 'about', 'index.html'))).toContain(
-      'visible opacity-100 site-nav__cta'
-    )
-  })
-
-  it('should keep the home call to action hidden until the hero is left when generated', () => {
-    expect(markupOf(join('en', 'index.html'))).toContain(
-      'invisible opacity-0 site-nav__cta'
-    )
-  })
+  it.each(DOCUMENTS.map(document => document.file))(
+    'should mark no nav item as current when %s is generated',
+    file => {
+      const header = markupOf(file).match(/<header[\s\S]*?<\/header>/)?.[0]
+      expect(header).not.toContain('aria-current')
+      /* Not even the Home item (Roberto 2026-11-01): no active dot. */
+      expect(header).not.toContain('data-punto')
+    }
+  )
 })

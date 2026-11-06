@@ -118,7 +118,7 @@ export default defineNuxtConfig({
      */
     sitemaps: false,
     /*
-     * Raw XML only, and only the 4 URLs plus their alternates: no
+     * Raw XML only, and only the 10 URLs plus their alternates: no
      * stylesheet file, no `<image:image>`/`<video:video>` entries scraped
      * from the pages (research R2.5).
      */
@@ -131,9 +131,12 @@ export default defineNuxtConfig({
      * `@nuxtjs/i18n:pages` source, tagged `_sitemap: 'es-MX'|'en-US'`, and
      * from `nuxt:prerender`, untagged. The dedupe key includes `_sitemap`, so
      * the pairs never merge and the sitemap listed each About URL twice.
-     * Dropping the i18n-pages source leaves the prerendered pages (all four
-     * are crawled), which still get their es-MX/en-US/x-default alternates
-     * from the i18n config. tests/seo-output.test.ts asserts exactly 4 URLs.
+     * Dropping the i18n-pages source leaves the prerendered pages (all are
+     * crawled: home, Nosotros and, since feature 46, Preguntas, which
+     * every footer links to), which still get their es-MX/en-US/x-default
+     * alternates from the i18n config. Feature 48 adds the two legal pages,
+     * linked from every footer. tests/seo-output.test.ts asserts exactly
+     * 10 URLs.
      */
     excludeAppSources: ['@nuxtjs/i18n:pages'],
   },
@@ -199,12 +202,16 @@ export default defineNuxtConfig({
   },
 
   /*
-   * The brand type, self-hosted. `branding.md` § Tipografía grants Poppins to
-   * the logo/wordmark alone, at 600, and gives everything else to Instrument
-   * Sans at 400 / 500 / 600. The set is closed: the 32 type tokens in
-   * global.css name those weights and no other, so a weight added here would
-   * be bytes no page asks for, and one missing would be synthesised by the
-   * browser — the defect this feature exists to remove.
+   * The brand type, self-hosted. Muush 1.0 (feature 42, Constitution VII)
+   * sets Poppins 500 for headings and Instrument Sans for everything else at
+   * 400 / 500 / 600. The wordmark keeps the weights the design draws
+   * (feature 43, Constitution 2.1.2 Article VII, Roberto 2026-11-01):
+   * "muush." at 600 and "dev" at 400, so Poppins 600 stays and Poppins 400
+   * is added for the "dev" run alone.
+   * The set is closed: the type tokens in global.css name these weights and
+   * no other, so a weight added here would be bytes no page asks for, and one
+   * missing would be synthesised by the browser. No `@import` from Google
+   * Fonts anywhere: the handoff's is deliberately not ported.
    *
    * The binaries are downloaded at **build** time and emitted into
    * `.output/public/_fonts`, so the deployed artefact makes no request to a
@@ -227,7 +234,7 @@ export default defineNuxtConfig({
       subsets: ['latin', 'latin-ext'],
     },
     families: [
-      { name: 'Poppins', provider: 'google', weights: [600] },
+      { name: 'Poppins', provider: 'google', weights: [400, 500, 600] },
       { name: 'Instrument Sans', provider: 'google', weights: [400, 500, 600] },
     ],
     throwOnError: true,
@@ -293,6 +300,20 @@ export default defineNuxtConfig({
       about: {
         es: '/nosotros',
         en: '/about',
+      },
+      /* Feature 46 · Preguntas, indexed from day one (Roberto 2026-10-31). */
+      faq: {
+        es: '/preguntas',
+        en: '/faq',
+      },
+      /* Feature 48 · the legal pages, indexed (Roberto 2026-11-05). */
+      privacy: {
+        es: '/privacidad',
+        en: '/privacy',
+      },
+      terms: {
+        es: '/terminos',
+        en: '/terms',
       },
     },
   },

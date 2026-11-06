@@ -1,54 +1,46 @@
-import { SHELL_ANCHORS } from './navigation'
+import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
 import type { ShellItem } from './types'
 
 /**
- * The not-found page's content model (feature 36).
+ * The not-found page's content model (feature 36; Muush 1.0 since feature
+ * 46, spec FR-039…FR-044, data-model § 3; pen extract-46 § 4; copy
+ * `muush-1.0.md` § 4.9).
  *
- * Source of truth for content and order: Roberto's reference
- * (`specs/036-not-found-page/reference/404.html` and its `README.md`, § Qué
- * hay en la página). The page lives in the shell rather than in a module of
- * its own because it is built only from the shell's vocabulary — route names,
- * `SHELL_ANCHORS`, the destination resolver — and is reachable from every
- * path (`specs/036-not-found-page/research.md` R5).
+ * The page lives in the shell rather than in a module of its own because it
+ * is built only from the shell's vocabulary — route names, section anchors,
+ * the destination resolver — and is reachable from every path
+ * (`specs/036-not-found-page/research.md` R5).
+ *
+ * Feature 46 retired the v1 body (Roberto 2026-11-02): the "Error 404"
+ * pill, the subtitle and the Servicios · Nosotros shortcuts are gone, per
+ * the design. The page's `h1` no longer says "not found"; the document
+ * title still does.
  *
  * Keys and destination descriptors only; `logic/` resolves both
- * (Constitution Article II). No path literal: the About segment is translated
- * and lives in `nuxt.config.ts` alone.
+ * (Constitution Article II).
  */
 
-/** The LED button: the same-locale home. */
+/** The primary button: the same-locale home. */
 export const NOT_FOUND_HOME: ShellItem = {
   labelKey: 'shell.notFound.cta',
   destination: { kind: 'route', name: 'index' },
 }
 
-/** The shortcuts row, in render order (reference README § Qué hay en la página). */
-export const NOT_FOUND_SHORTCUTS: ShellItem[] = [
-  {
-    labelKey: 'shell.notFound.shortcuts.purpose',
-    destination: { kind: 'anchor', name: 'index', hash: SHELL_ANCHORS.purpose },
+/** The glass button: the same-locale home's diagnóstico section. */
+export const NOT_FOUND_ASSESSMENT: ShellItem = {
+  labelKey: 'shell.notFound.assessment',
+  destination: {
+    kind: 'anchor',
+    name: 'index',
+    anchor: SECTION_ANCHORS.assessment,
   },
-  {
-    labelKey: 'shell.notFound.shortcuts.services',
-    destination: {
-      kind: 'anchor',
-      name: 'index',
-      hash: SHELL_ANCHORS.services,
-    },
-  },
-  {
-    labelKey: 'shell.notFound.shortcuts.about',
-    destination: { kind: 'route', name: 'about' },
-  },
-]
+}
 
 /** The other i18n keys of the page. */
 export const NOT_FOUND_COPY_KEYS = {
   documentTitle: 'pages.notFound.title',
-  eyebrow: 'shell.notFound.eyebrow',
-  headline: 'shell.notFound.headline',
-  body: 'shell.notFound.body',
-  shortcutsLabel: 'shell.notFound.shortcutsLabel',
+  headingFirst: 'shell.notFound.heading.first',
+  headingSecond: 'shell.notFound.heading.second',
 } as const
 
 /**
