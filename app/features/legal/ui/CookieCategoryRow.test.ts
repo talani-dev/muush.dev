@@ -1,8 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import { CONSENT_COPY } from '@/features/legal/data/legalFixtures.testing'
 import ConsentSwitch from './ConsentSwitch.vue'
 import CookieCategoryRow from './CookieCategoryRow.vue'
-import { CONSENT_COPY } from './legalFixtures.testing'
 
 function category(index: 0 | 1) {
   const found = CONSENT_COPY.es.categories[index]

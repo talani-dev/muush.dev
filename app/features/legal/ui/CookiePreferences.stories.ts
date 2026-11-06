@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { CONSENT_COPY } from '@/features/legal/data/legalFixtures.testing'
 import CookiePreferences from './CookiePreferences.vue'
-import { CONSENT_COPY } from './legalFixtures.testing'
 
 /**
  * "Tus preferencias de cookies" (feature 48; `V4sL7G` / `ev0kn`, EN

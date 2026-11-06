@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { LEGAL_PAGES } from '@/features/legal/data/legalFixtures.testing'
 import LegalIndexDisclosure from './LegalIndexDisclosure.vue'
-import { LEGAL_PAGES } from './legalFixtures.testing'
 
 /**
  * "En esta página" below `lg` (feature 48, `oZmj8`): the 48 px collapsed

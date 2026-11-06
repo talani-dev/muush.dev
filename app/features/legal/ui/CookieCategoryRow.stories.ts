@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { CONSENT_COPY } from '@/features/legal/data/legalFixtures.testing'
 import CookieCategoryRow from './CookieCategoryRow.vue'
-import { CONSENT_COPY } from './legalFixtures.testing'
 
 /**
  * One cookie category (feature 48, `vR0os` / `sB1jP`): "Necesarias" with

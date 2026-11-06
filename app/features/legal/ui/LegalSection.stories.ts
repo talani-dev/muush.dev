@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { LEGAL_PAGES } from '@/features/legal/data/legalFixtures.testing'
 import LegalSection from './LegalSection.vue'
-import { LEGAL_PAGES } from './legalFixtures.testing'
 
 /**
  * One legal section (feature 48): the Carbón 700 rule, title and blocks.

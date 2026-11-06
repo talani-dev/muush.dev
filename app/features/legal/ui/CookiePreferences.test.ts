@@ -1,8 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { beforeAll, describe, expect, it } from 'vitest'
+import { CONSENT_COPY } from '@/features/legal/data/legalFixtures.testing'
 import ConsentSwitch from './ConsentSwitch.vue'
 import CookiePreferences from './CookiePreferences.vue'
-import { CONSENT_COPY } from './legalFixtures.testing'
 
 /*
  * happy-dom's `<dialog>` may lack the modal API; these stand-ins only set

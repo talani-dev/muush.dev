@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import { LEGAL_PAGES } from '@/features/legal/data/legalFixtures.testing'
 import LegalDataTable from './LegalDataTable.vue'
 import LegalList from './LegalList.vue'
 import LegalSection from './LegalSection.vue'
-import { LEGAL_PAGES } from './legalFixtures.testing'
 
 const sections = LEGAL_PAGES.privacy.es.sections
 const section = (id: string) => {

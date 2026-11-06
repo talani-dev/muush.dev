@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { LEGAL_PAGES } from '@/features/legal/data/legalFixtures.testing'
 import LegalIndex from './LegalIndex.vue'
-import { LEGAL_PAGES } from './legalFixtures.testing'
 
 /**
  * "En esta página", the desktop index (feature 48, `O8Fnc`): 220 wide,

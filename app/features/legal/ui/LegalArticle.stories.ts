@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { LEGAL_PAGES } from '@/features/legal/data/legalFixtures.testing'
 import LegalArticle from './LegalArticle.vue'
-import { LEGAL_PAGES } from './legalFixtures.testing'
 
 /**
  * The legal page body (feature 48; pen-extract-48 § 3): Aviso de privacidad

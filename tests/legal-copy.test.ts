@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { CONSENT_COPY } from '@/features/legal/data/legalFixtures.testing'
 import { messageAt } from '@/features/legal/data/localeKeys.testing'
-import { CONSENT_COPY } from '@/features/legal/ui/legalFixtures.testing'
 
 /**
  * Feature 48 · the legal text is Roberto's (2026-11-05), transcribed from
