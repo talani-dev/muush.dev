@@ -23,7 +23,7 @@ const OUTPUT = join(ROOT, '.output', 'public')
 const ORIGIN = 'https://muush.dev'
 
 type Locale = 'es' | 'en'
-type PageKey = 'home' | 'about' | 'faq'
+type PageKey = 'home' | 'about' | 'faq' | 'privacy' | 'terms'
 
 interface Page {
   path: string
@@ -77,6 +77,35 @@ const PAGES: Page[] = [
     locale: 'en',
     key: 'faq',
     counterpart: '/es/preguntas',
+  },
+  /* Feature 48 · the legal pages, indexed (Roberto 2026-10-31, 2026-11-05). */
+  {
+    path: '/es/privacidad',
+    file: 'es/privacidad/index.html',
+    locale: 'es',
+    key: 'privacy',
+    counterpart: '/en/privacy',
+  },
+  {
+    path: '/en/privacy',
+    file: 'en/privacy/index.html',
+    locale: 'en',
+    key: 'privacy',
+    counterpart: '/es/privacidad',
+  },
+  {
+    path: '/es/terminos',
+    file: 'es/terminos/index.html',
+    locale: 'es',
+    key: 'terms',
+    counterpart: '/en/terms',
+  },
+  {
+    path: '/en/terms',
+    file: 'en/terms/index.html',
+    locale: 'en',
+    key: 'terms',
+    counterpart: '/es/terminos',
   },
 ]
 
@@ -173,7 +202,7 @@ describe('seo output · titles and descriptions', () => {
     })
   }
 
-  it('should give the six pages pairwise distinct titles and descriptions when generated', () => {
+  it('should give every page pairwise distinct titles and descriptions when generated', () => {
     const copies = PAGES.map(pageCopy)
 
     expect(new Set(copies.map(copy => copy.title)).size).toBe(PAGES.length)
@@ -362,6 +391,8 @@ describe('seo output · structured-data parity across locales', () => {
     ['/es', '/en'],
     ['/es/nosotros', '/en/about'],
     ['/es/preguntas', '/en/faq'],
+    ['/es/privacidad', '/en/privacy'],
+    ['/es/terminos', '/en/terms'],
   ]
 
   for (const [spanish, english] of PAIRS) {
@@ -381,7 +412,7 @@ describe('seo output · sitemap.xml', () => {
   const urlBlocks = (): string[] =>
     [...sitemap().matchAll(/<url>(.*?)<\/url>/gs)].map(m => m[1] ?? '')
 
-  it('should list exactly the six pages when generated', () => {
+  it('should list exactly the ten pages when generated', () => {
     const locs = urlBlocks().map(
       block => block.match(/<loc>([^<]*)<\/loc>/)?.[1]
     )

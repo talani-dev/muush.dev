@@ -5,9 +5,10 @@ import Heading from '@/shared/ui/Heading.vue'
  * The Muush 1.0 two-tone heading (feature 42, FR-014). At "Móvil (390)" /
  * "Escritorio (1440)": hero 34 / 96 px, sección 28 / 56, proceso 28 / 52,
  * diagnóstico 34 / 64, página 32 / 64 (Nosotros hero) and estado 34 / 88
- * (Preguntas, feature 46), with no tracking at 390 and ≈ −0.035 em at 1440
- * (pen extract §§ 4, 8; pen extract-46 § 6). Copy from
- * `docs/business/muush-1.0.md` § 4.
+ * (Preguntas, feature 46), legal 34 / 56 (Aviso de privacidad and
+ * Términos, feature 48), with no tracking at 390 and ≈ −0.035 em at 1440
+ * (pen extract §§ 4, 8; pen extract-46 § 6; pen-extract-48 § 3). Copy from
+ * `docs/business/muush-1.0.md` § 4 and the legal pages' `.pen` frames.
  */
 const meta = {
   title: 'Shared/UI/Heading',
@@ -127,6 +128,10 @@ const estado = {
   es: { first: 'En construcción 🚧', size: 'estado', level: 1 },
   en: { first: 'Under construction 🚧', size: 'estado', level: 1 },
 } as const
+const legal = {
+  es: { first: 'Aviso de', second: 'privacidad.', size: 'legal', level: 1 },
+  en: { first: 'Privacy', second: 'notice.', size: 'legal', level: 1 },
+} as const
 
 export const PaginaEsMobile390: Story = { args: pagina.es, globals: mobile }
 export const PaginaEsDesktop1440: Story = { args: pagina.es, globals: desktop }
@@ -140,3 +145,8 @@ export const EstadoEnDesktop1440: Story = { args: estado.en, globals: desktop }
 
 /** A one-line heading: line 1 only. */
 export const OneLine: Story = { args: { first: 'Qué es muush' } }
+
+export const LegalEsMobile390: Story = { args: legal.es, globals: mobile }
+export const LegalEsDesktop1440: Story = { args: legal.es, globals: desktop }
+export const LegalEnMobile390: Story = { args: legal.en, globals: mobile }
+export const LegalEnDesktop1440: Story = { args: legal.en, globals: desktop }

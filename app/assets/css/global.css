@@ -1038,6 +1038,36 @@
   --h-estado: clamp(2.125rem, 0.8714rem + 5.1429vw, 5.5rem);
   --lh-estado: clamp(2.4438rem, 1.186rem + 5.16vw, 5.83rem);
   --tracking-estado: clamp(-0.1925rem, 0.0715rem - 0.2933vw, 0rem);
+
+  /*
+   * ---------- Legal pages and cookie consent (feature 48) ----------
+   * Source: `docs/harness/progress/pen-extract-48.md` and the leader's
+   * export `pen-48/` (privacy `rhgZ2` / `XaxDq`, terms `dKb9C` / `VvK17`,
+   * banner `Dq04d` / `SYQea`, preferences `V4sL7G` / `ev0kn`). Utilities
+   * are in the `@theme inline` block below.
+   *
+   * Page heading ("legal"), 34 → 56 px. The `.pen` sets no line height
+   * and no tracking on it (auto), the omission Roberto ruled on for
+   * feature 46: the v2 heading scale applies, 1.15 at 390 (39.1) and 1.1
+   * at 56 (61.6), tracking 0 → −1.96 px (−0.035 em, `tracking-seccion`).
+   */
+  --h-legal: clamp(2.125rem, 1.6143rem + 2.0952vw, 3.5rem);
+  --lh-legal: clamp(2.4438rem, 1.9214rem + 2.1429vw, 3.85rem);
+  /* The dialog's backdrop, black 70 % (`#000000B3`, "Oscurecer fondo"). */
+  --velo: rgb(0 0 0 / 0.7);
+  /* The banner surface, Negro 900 at 95 % (`#0B0B0BF2`). */
+  --cookies-fondo: color-mix(in srgb, var(--negro-900) 95%, transparent);
+  /* Banner and dialog secondary text (`#B4B4B0`). No palette step is this
+     grey; a name of its own until Clau maps it. */
+  --texto-cookies: #b4b4b0;
+  /*
+   * Desktop columns of a legal page: the 220 px index, the air between it
+   * and the article, and the 680 px article. At 1440 the article starts at
+   * x 380, centred on the page (380 + 340 = 720): with the 80 px gutters
+   * the air is `50% − 560 px` of the content box (80 at 1440). Narrower,
+   * it never drops under 40 px and the article shifts right of centre.
+   */
+  --legal-columnas: 13.75rem max(2.5rem, calc(50% - 35rem)) minmax(0, 42.5rem);
 }
 
 @media (width >= 64rem) {
@@ -3030,6 +3060,204 @@ html {
   --spacing-error-alto: clamp(45rem, 44.0714rem + 3.8095vw, 47.5rem);
   --spacing-error-arriba: 6.25rem;
   --spacing-error-botones-arriba: clamp(0rem, -0.1857rem + 0.7619vw, 0.5rem);
+
+  /*
+   * ---------- Legal pages and cookie consent (feature 48) ----------
+   * Source: `docs/harness/progress/pen-extract-48.md` § 3 and `pen-48/`.
+   * Fluid values interpolate between the 390 and 1440 anchors and clamp
+   * outside them (the feature-42 formula). Reused rather than redeclared:
+   * Carbón 700 rules, Negro 900 surfaces, `radius-tarjeta` (22),
+   * `radius-control` (12), `control` (36), `blanco-15` and `linea-fuerte`
+   * (the `#F4F4F226` / `#F4F4F233` strokes), `btn2-fondo` (`#1A1A1A8C`),
+   * `gutter` / `gutter-desktop` and `contenido` (1280).
+   */
+  --color-velo: var(--velo);
+  --color-cookies-fondo: var(--cookies-fondo);
+  --color-texto-cookies: var(--texto-cookies);
+
+  /* Article (§ 3): top 112 → 168, stack gap 40 → 64, header gap 16 → 20,
+     680 wide. Bottom 72 → 120 above the footer: the `.pen` places the
+     footer by hand (100–147 px under the last section across the eight
+     frames), so the v2 section rhythm (`seccion-y`) is used. */
+  --spacing-legal-arriba: clamp(7rem, 5.7rem + 5.3333vw, 10.5rem);
+  --spacing-legal-abajo: clamp(4.5rem, 3.3857rem + 4.5714vw, 7.5rem);
+  --spacing-legal-gap: clamp(2.5rem, 1.9429rem + 2.2857vw, 4rem);
+  --spacing-legal-encabezado-gap: clamp(1rem, 0.9071rem + 0.381vw, 1.25rem);
+  --container-legal: 42.5rem;
+  --text-legal: var(--h-legal);
+  --text-legal--line-height: var(--lh-legal);
+  --text-legal--letter-spacing: var(--tracking-seccion);
+  --text-legal--font-weight: 500;
+  /* "Última actualización" and the EN note: 13 / 20 → 15 / 23. */
+  --text-legal-fecha: clamp(0.8125rem, 0.7661rem + 0.1905vw, 0.9375rem);
+  --text-legal-fecha--line-height: clamp(
+    1.25rem,
+    1.1804rem +
+    0.2857vw,
+    1.4375rem
+  );
+
+  /* Section: Carbón 700 top rule, padding-top 28 → 40, gap 14 → 18; title
+     Poppins 22 / 29 → 28 / 35; body 16 / 26 → 17 / 29. */
+  --spacing-legal-seccion-arriba: clamp(1.75rem, 1.4714rem + 1.1429vw, 2.5rem);
+  --spacing-legal-seccion-gap: clamp(0.875rem, 0.7821rem + 0.381vw, 1.125rem);
+  --text-legal-titulo: clamp(1.375rem, 1.2357rem + 0.5714vw, 1.75rem);
+  --text-legal-titulo--line-height: clamp(
+    1.8125rem,
+    1.6732rem +
+    0.5714vw,
+    2.1875rem
+  );
+  --text-legal-titulo--font-weight: 500;
+  --text-legal-cuerpo: clamp(1rem, 0.9768rem + 0.0952vw, 1.0625rem);
+  --text-legal-cuerpo--line-height: clamp(
+    1.625rem,
+    1.5554rem +
+    0.2857vw,
+    1.8125rem
+  );
+
+  /* Lists: gap 10; item gap 12 → 14; the red 6 px dot 11 → 12 from the
+     item top; the numbers Poppins 15 / 25 → 16 / 27, 16 → 18 wide. */
+  --spacing-legal-lista-gap: 0.625rem;
+  --spacing-legal-item-gap: clamp(0.75rem, 0.7036rem + 0.1905vw, 0.875rem);
+  --spacing-legal-punto: 0.375rem;
+  --spacing-legal-punto-arriba: clamp(0.6875rem, 0.6643rem + 0.0952vw, 0.75rem);
+  --spacing-legal-numero: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
+  --text-legal-numero: clamp(0.9375rem, 0.9143rem + 0.0952vw, 1rem);
+  --text-legal-numero--line-height: clamp(
+    1.5625rem,
+    1.5161rem +
+    0.1905vw,
+    1.6875rem
+  );
+  --text-legal-numero--font-weight: 500;
+
+  /* "Qué datos recabamos": table rows padding 14 / 0, gap 24, label column
+     190; stacked cards gap 10, padding 18, gap 6. Label 14 / 21 → 15 / 24
+     (600), data 15 / 24 → 16 / 26. */
+  --spacing-legal-fila-y: 0.875rem;
+  --spacing-legal-fila-gap: 1.5rem;
+  --spacing-legal-donde: 11.875rem;
+  --spacing-legal-tarjetas-gap: 0.625rem;
+  --spacing-legal-tarjeta: 1.125rem;
+  --spacing-legal-tarjeta-gap: 0.375rem;
+  --text-legal-donde: clamp(0.875rem, 0.8518rem + 0.0952vw, 0.9375rem);
+  --text-legal-donde--line-height: clamp(
+    1.3125rem,
+    1.2429rem +
+    0.2857vw,
+    1.5rem
+  );
+  --text-legal-donde--font-weight: 600;
+  --text-legal-datos: clamp(0.9375rem, 0.9143rem + 0.0952vw, 1rem);
+  --text-legal-datos--line-height: clamp(
+    1.5rem,
+    1.4536rem +
+    0.1905vw,
+    1.625rem
+  );
+
+  /* "Cambiar mis preferencias": padding 12 / 20, label 14 → 15 / 500. */
+  --spacing-legal-boton-y: 0.75rem;
+  --spacing-legal-boton-x: 1.25rem;
+  --text-legal-boton: clamp(0.875rem, 0.8518rem + 0.0952vw, 0.9375rem);
+  --text-legal-boton--line-height: normal;
+  --text-legal-boton--font-weight: 500;
+
+  /* Desktop index: 220 wide, gap 14, 80 below the first section's top
+     (523 − 443), sticky at the article's drawn top (168); label 13 / 18
+     (600), links 14 / 20, dot 6 with gap 8. Mobile disclosure: 48 tall,
+     padding 0 / 16, label 14 (600), chevron 14 wide. */
+  --spacing-legal-indice: 13.75rem;
+  --spacing-legal-indice-gap: 0.875rem;
+  --spacing-legal-indice-arriba: 5rem;
+  --spacing-legal-indice-fijo: 10.5rem;
+  --spacing-legal-indice-punto-gap: 0.5rem;
+  --spacing-legal-plegado: 3rem;
+  --spacing-legal-plegado-x: 1rem;
+  /* The lucide glyph spans 12 of its 24 units, so a 28 px box draws the
+     14 px chevron (and the dialog's 14 px X). */
+  --spacing-legal-chevron: 1.75rem;
+  /* Half the box's empty side (7 px), so the glyph ends 16 from the edge. */
+  --spacing-legal-chevron-aire: 0.4375rem;
+  --text-legal-rotulo: 0.8125rem;
+  --text-legal-rotulo--line-height: 1.125rem;
+  --text-legal-rotulo--font-weight: 600;
+  --text-legal-indice: 0.875rem;
+  --text-legal-indice--line-height: 1.25rem;
+  --text-legal-plegado: 0.875rem;
+  --text-legal-plegado--line-height: normal;
+  --text-legal-plegado--font-weight: 600;
+
+  /* Cookie banner: padding 18 → 24; desktop a row 1280 wide in the 80
+     gutters with gap 32, mobile a card 342 wide with gap 12; title Poppins
+     17 / 22 → 18 / 23, text 14 / 21 with gap 4; buttons padding 10 / 18,
+     label 14 / 500, gap 12 (desktop) / 8 (mobile row). */
+  --spacing-cookies: clamp(1.125rem, 0.9857rem + 0.5714vw, 1.5rem);
+  /* Distance to the viewport bottom, 16 → 24: measured from the frames
+     (mobile top 596 of 844 with the 232 px card; desktop 759 + 117 = 876
+     of 900). */
+  --spacing-cookies-abajo: clamp(1rem, 0.8143rem + 0.7619vw, 1.5rem);
+  --spacing-cookies-gap: 2rem;
+  --spacing-cookies-movil-gap: 0.75rem;
+  --spacing-cookies-texto-gap: 0.25rem;
+  --spacing-cookies-acciones-gap: 0.75rem;
+  --spacing-cookies-botones-gap: 0.5rem;
+  --spacing-cookies-boton-y: 0.625rem;
+  --spacing-cookies-boton-x: 1.125rem;
+  --text-cookies-titulo: clamp(1.0625rem, 1.0393rem + 0.0952vw, 1.125rem);
+  --text-cookies-titulo--line-height: clamp(
+    1.375rem,
+    1.3518rem +
+    0.0952vw,
+    1.4375rem
+  );
+  --text-cookies-titulo--font-weight: 500;
+  --text-cookies: 0.875rem;
+  --text-cookies--line-height: 1.3125rem;
+  --text-cookies-boton: 0.875rem;
+  --text-cookies-boton--line-height: normal;
+  --text-cookies-boton--font-weight: 500;
+
+  /* Preferences dialog: 720 wide centred (desktop), a sheet 8 from the
+     edges (mobile); padding 20 → 28, gap 12; title Poppins 18 → 22;
+     categories padding 16 / 0, gap 16, name Poppins 15 / 21, detail
+     13 / 20 with gap 4; "Siempre activas" padding 6 / 12, 12 / 500;
+     switch 44 × 26, padding 3, knob 20; close glyph 14; actions 8 below
+     the list, gap 8. */
+  /* `panel-`: a bare `--container-preferencias` would lose `max-w-*` to the
+     `--spacing-preferencias` padding token of the same name. */
+  --container-panel-preferencias: 45rem;
+  --spacing-preferencias: clamp(1.25rem, 1.0643rem + 0.7619vw, 1.75rem);
+  --spacing-preferencias-borde: 0.5rem;
+  --spacing-preferencias-gap: 0.75rem;
+  --spacing-cookie-categoria-y: 1rem;
+  --spacing-cookie-categoria-gap: 1rem;
+  --spacing-cookie-categoria-texto-gap: 0.25rem;
+  --spacing-siempre-y: 0.375rem;
+  --spacing-siempre-x: 0.75rem;
+  --spacing-interruptor-ancho: 2.75rem;
+  --spacing-interruptor-alto: 1.625rem;
+  --spacing-interruptor-aire: 0.1875rem;
+  --spacing-perilla: 1.25rem;
+  /* Knob travel: 44 − 2 × 3 − 20. The `.pen` draws the off state only;
+     on is DERIVED (knob at the far end, Red muush track; rules.md § R38). */
+  --spacing-perilla-recorrido: 1.125rem;
+  --spacing-cerrar-icono: 1.75rem;
+  --spacing-preferencias-acciones-arriba: 0.5rem;
+  --spacing-preferencias-acciones-gap: 0.5rem;
+  --text-preferencias-titulo: clamp(1.125rem, 1.0321rem + 0.381vw, 1.375rem);
+  --text-preferencias-titulo--line-height: normal;
+  --text-preferencias-titulo--font-weight: 500;
+  --text-cookie-categoria: 0.9375rem;
+  --text-cookie-categoria--line-height: 1.3125rem;
+  --text-cookie-categoria--font-weight: 500;
+  --text-cookie-categoria-detalle: 0.8125rem;
+  --text-cookie-categoria-detalle--line-height: 1.25rem;
+  --text-siempre: 0.75rem;
+  --text-siempre--line-height: normal;
+  --text-siempre--font-weight: 500;
 }
 
 /*
