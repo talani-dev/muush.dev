@@ -31,7 +31,8 @@ describe('CookiePreferences', () => {
     const dialog = wrapper.find('dialog')
 
     expect((dialog.element as HTMLDialogElement).open).toBe(true)
-    expect(dialog.attributes('aria-modal')).toBe('true')
+    /* showModal() makes it modal; a redundant aria-modal is not set. */
+    expect(dialog.attributes('aria-modal')).toBeUndefined()
     expect(dialog.attributes('aria-labelledby')).toBe('preferencias-titulo')
     expect(wrapper.find('#preferencias-titulo').text()).toBe(
       'Tus preferencias de cookies'
@@ -98,6 +99,28 @@ describe('CookiePreferences', () => {
 
     expect(link.text()).toBe('aviso de privacidad')
     expect(link.attributes('href')).toBe('/es/privacidad')
+    wrapper.unmount()
+  })
+
+  it('should emit close when the dialog closes natively while open', () => {
+    /* Safety net: a native close path other than `cancel` keeps the
+       caller's state in sync. */
+    const wrapper = render()
+
+    wrapper.find('dialog').element.dispatchEvent(new Event('close'))
+
+    expect(wrapper.emitted('close')).toHaveLength(1)
+    expect(wrapper.emitted('save')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('should not emit close when the dialog closes because open turned false', async () => {
+    const wrapper = render()
+
+    await wrapper.setProps({ open: false })
+    wrapper.find('dialog').element.dispatchEvent(new Event('close'))
+
+    expect(wrapper.emitted('close')).toBeUndefined()
     wrapper.unmount()
   })
 

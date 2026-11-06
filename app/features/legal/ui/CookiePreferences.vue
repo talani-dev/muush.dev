@@ -24,7 +24,12 @@ import CookieCategoryRow from './CookieCategoryRow.vue'
  * viewport; below, a sheet 8 from the bottom and the sides.
  *
  * Close (X), Escape and a click on the backdrop emit `close` and save
- * nothing. "Rechazar todo", "Aceptar todo" and "Guardar mi elección" emit
+ * nothing. Any other native close (a future `closedby`, a `method="dialog"`
+ * form) fires `close` while `open` is still true and is reported the same
+ * way, so the caller's state cannot drift; a close the caller asked for
+ * arrives with `open` already false and is ignored. `showModal()` already
+ * makes the dialog modal for assistive tech, so it carries no
+ * `aria-modal`. "Rechazar todo", "Aceptar todo" and "Guardar mi elección" emit
  * their choice; the caller stores it and closes. The switches edit a draft
  * that starts from `choice` every time the dialog opens.
  *
@@ -95,10 +100,10 @@ function isChecked(category: ResolvedCookieCategory): boolean {
 <template>
   <dialog
     ref="dialog"
-    aria-modal="true"
     aria-labelledby="preferencias-titulo"
     class="m-0 h-dvh max-h-none w-full max-w-none items-end justify-center overflow-y-auto bg-transparent p-0 backdrop:bg-velo open:flex lg:items-center"
     @cancel.prevent="emit('close')"
+    @close="open && emit('close')"
   >
     <div
       class="m-preferencias-borde flex w-full max-w-panel-preferencias flex-col gap-preferencias-gap rounded-tarjeta bg-negro-900 p-preferencias inset-ring inset-ring-blanco-15 lg:m-gutter"

@@ -13,16 +13,15 @@ const section = (id: string) => {
 }
 
 describe('LegalSection', () => {
-  it('should anchor the section and label it with its h2', () => {
+  it('should anchor the section and title it with an h2 without making it a landmark', () => {
     const wrapper = mount(LegalSection, {
       props: { section: section('controller') },
     })
 
     expect(wrapper.attributes('id')).toBe('controller')
-    expect(wrapper.attributes('aria-labelledby')).toBe('controller-titulo')
-    expect(wrapper.find('h2#controller-titulo').text()).toBe(
-      'Quién es responsable de tus datos'
-    )
+    /* A labelled <section> is a region landmark: 10–14 per page is noise. */
+    expect(wrapper.attributes('aria-labelledby')).toBeUndefined()
+    expect(wrapper.find('h2').text()).toBe('Quién es responsable de tus datos')
     expect(wrapper.classes()).toEqual(
       expect.arrayContaining(['border-t', 'border-carbon-700'])
     )

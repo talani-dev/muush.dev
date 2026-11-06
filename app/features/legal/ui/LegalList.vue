@@ -7,6 +7,11 @@
  * real ordered list whose numbers are drawn in Red muush (Poppins 15 → 16,
  * 16 → 18 wide); the native marker is replaced, not duplicated.
  * Gap 10 between items, 12 → 14 between marker and text. Presentational.
+ *
+ * `role="list"` is not redundant: Tailwind's preflight sets `list-style:
+ * none`, and Safari/VoiceOver then drops the list semantics. The step
+ * numbers are `aria-hidden`, so without it the ARCO order would not be
+ * announced.
  */
 interface Props {
   kind: 'bullets' | 'steps'
@@ -14,11 +19,20 @@ interface Props {
 }
 
 const { kind, items } = defineProps<Props>()
+
+/*
+ * Bound, not written as `role="list"`: Biome flags a literal role on
+ * `<component>` (unknown element) or on `<ul>`/`<ol>` (redundant), and a
+ * `biome-ignore` comment above the root would become a second root node
+ * in dev builds, turning the component into a fragment.
+ */
+const LIST_SEMANTICS = { role: 'list' } as const
 </script>
 
 <template>
   <component
     :is="kind === 'steps' ? 'ol' : 'ul'"
+    v-bind="LIST_SEMANTICS"
     class="flex flex-col gap-legal-lista-gap"
   >
     <li
