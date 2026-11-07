@@ -22,6 +22,8 @@ interface Props {
   required?: boolean
   readonly?: boolean
   autocomplete?: string
+  /** Forwarded to the input; absent → no attribute (feature 49, website). */
+  maxlength?: number
 }
 
 const {
@@ -34,6 +36,7 @@ const {
   required = false,
   readonly = false,
   autocomplete,
+  maxlength,
 } = defineProps<Props>()
 
 defineEmits<{ 'update:modelValue': [value: string] }>()
@@ -54,6 +57,7 @@ const controlClasses = computed(() => [
       :required="required"
       :readonly="readonly"
       :autocomplete="autocomplete"
+      :maxlength="maxlength"
       :aria-invalid="Boolean(error)"
       :aria-describedby="describedBy(id, error)"
       :class="controlClasses"

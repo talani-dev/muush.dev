@@ -212,6 +212,81 @@ describe('buildContactPayload', () => {
   })
 })
 
+describe('buildContactPayload · website (feature 49, FR-063)', () => {
+  it('should send the website trimmed when it is filled in', () => {
+    const payload = buildContactPayload(
+      contactValues({ website: '  casaolivo.mx  ' }),
+      'es',
+      'tok'
+    )
+
+    expect(payload.website).toBe('casaolivo.mx')
+  })
+
+  it('should send a handle and a full URL as typed', () => {
+    for (const typed of ['@casaolivo', 'https://casaolivo.mx']) {
+      expect(
+        buildContactPayload(contactValues({ website: typed }), 'es', 'tok')
+          .website
+      ).toBe(typed)
+    }
+  })
+
+  it('should leave the key out when the website is empty or only whitespace', () => {
+    for (const typed of ['', ' \t\n ']) {
+      const payload = buildContactPayload(
+        contactValues({ website: typed }),
+        'es',
+        'tok'
+      )
+
+      expect('website' in payload).toBe(false)
+      expect(JSON.stringify(payload)).not.toContain('website')
+    }
+  })
+
+  it('should send a website of exactly 300 code points even when it is 301 UTF-16 units', () => {
+    const website = `${'a'.repeat(299)}😀`
+
+    expect(website.length).toBe(301)
+    expect(
+      buildContactPayload(contactValues({ website }), 'es', 'tok').website
+    ).toBe(website)
+  })
+
+  it('should throw when the trimmed website is longer than 300 code points', () => {
+    expect(() =>
+      buildContactPayload(
+        contactValues({ website: `${'a'.repeat(300)}😀` }),
+        'es',
+        'tok'
+      )
+    ).toThrow()
+  })
+
+  it('should never send the honeypot name in either payload', () => {
+    const contact = buildContactPayload(
+      contactValues({ website: 'casaolivo.mx' }),
+      'es',
+      'tok'
+    )
+    const careers = buildCareersPayload(applicationValues(), 'es', 'tok')
+
+    expect(HONEYPOT_FIELD_NAME in contact).toBe(false)
+    expect(HONEYPOT_FIELD_NAME in careers).toBe(false)
+  })
+
+  it('should never put a website key on the careers payload', () => {
+    const careers = buildCareersPayload(
+      applicationValues({ portfolio: 'https://ana.dev' }),
+      'es',
+      'tok'
+    )
+
+    expect('website' in careers).toBe(false)
+  })
+})
+
 describe('buildCareersPayload', () => {
   const REQUIRED_KEYS = [
     'areaRole',

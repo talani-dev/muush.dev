@@ -345,6 +345,12 @@ function assessmentForm(locale: FixtureLocale): ContactFormContent {
           other: es ? 'Otro' : 'Other',
         },
       },
+      website: {
+        label: es
+          ? 'Tu sitio web o redes (opcional)'
+          : 'Your website or social media (optional)',
+        placeholder: 'https://',
+      },
       need: {
         label: es ? '¿Qué necesitas?' : 'What do you need?',
         placeholder: es

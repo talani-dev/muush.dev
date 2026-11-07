@@ -9,6 +9,7 @@ import type {
   ContactPreference,
   IdentityOption,
 } from '@/features/forms/data/contactFields'
+import type { FormFailureType } from '@/shared/data/trackingEvents'
 
 /**
  * The browser's view of the Form Submission API. Source of truth:
@@ -30,6 +31,14 @@ export interface ContactPayload {
   email: string
   company: string
   identity: IdentityOption
+  /**
+   * Feature 49 (FR-063, contracts/contact-website.md): the visitor's site or
+   * social media as typed, trimmed, 1–300 code points. The key is absent
+   * when the field is empty, never `null` and never `""`; it is never sent
+   * under the honeypot's name. The API release that accepts it ships before
+   * this site release (R43 of the Form Submission API).
+   */
+  website?: string
   need: string
   contactPreference: ContactPreference
   /**
@@ -83,12 +92,14 @@ export interface CareersPayload {
   turnstileToken: string
 }
 
-/** One API call, classified (research R5). */
+/** One API call, classified (research R5). `network` marks a request that
+ * never got an answer (thrown, aborted, timed out), as opposed to an answer
+ * the site cannot use; feature 49 reports the two apart (`form_error`). */
 export type ApiResult<T> =
   | { kind: 'ok'; body: T }
   | { kind: 'validation'; fields: string[] }
   | { kind: 'challenge' }
-  | { kind: 'failure' }
+  | { kind: 'failure'; network?: true }
 
 /**
  * What a form receives from its submitter (data-model § 3). No outcome means
@@ -101,7 +112,9 @@ export type SubmissionOutcome<F extends string = string> =
   /** A chosen CV could not be uploaded; the application was NOT sent. Only
    * the application flow produces it (feature 031 FR-002). */
   | { kind: 'cv-upload-failed' }
-  | { kind: 'failure' }
+  /** `reason` is what the form reports as `form_error.error_type` (feature
+   * 49); the visitor sees the same generic send error whatever it is. */
+  | { kind: 'failure'; reason?: FormFailureType }
 
 /** Lets the application flow tell the form the CV is uploaded and the
  * application itself is now being sent (feature 031 FR-012). */

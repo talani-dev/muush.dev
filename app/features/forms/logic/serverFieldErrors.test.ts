@@ -105,6 +105,18 @@ describe('resolveServerFields · contact (research R9)', () => {
   })
 })
 
+describe('resolveServerFields · website (feature 49, FR-064)', () => {
+  it('should leave a server mark on website unresolved, so the send fails generically', () => {
+    expect(
+      resolveServerFields(
+        ['website'],
+        CONTACT_SERVER_ERROR_KEYS,
+        contactValues({ website: 'casaolivo.mx' })
+      )
+    ).toBeUndefined()
+  })
+})
+
 describe('resolveServerFields · application (research R9)', () => {
   it('should map the six visible application fields when the server rejects them', () => {
     const values = {

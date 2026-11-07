@@ -28,7 +28,9 @@ export type StepFields<F extends string> = Readonly<
 
 export const CONTACT_STEP_FIELDS = {
   1: ['name', 'email', 'contactPreference', 'whatsappCountry', 'whatsapp'],
-  2: ['company', 'identity', 'need'],
+  /* `website` (feature 49): step 2, between ¿Cómo te identificas? and ¿Qué
+     necesitas?, the `.pen`'s position (leader extract, 2026-11-07). */
+  2: ['company', 'identity', 'website', 'need'],
 } as const satisfies StepFields<ContactFieldId>
 
 export const APPLICATION_STEP_FIELDS = {

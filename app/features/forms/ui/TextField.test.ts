@@ -45,4 +45,18 @@ describe('TextField', () => {
 
     expect(input.attributes('readonly')).toBeDefined()
   })
+
+  it('should render maxlength when the prop is given', () => {
+    const input = mount(TextField, {
+      props: { ...base, id: 'website', maxlength: 300 },
+    }).find('input')
+
+    expect(input.attributes('maxlength')).toBe('300')
+  })
+
+  it('should render no maxlength attribute when the prop is not given', () => {
+    const input = mount(TextField, { props: base }).find('input')
+
+    expect(input.attributes('maxlength')).toBeUndefined()
+  })
 })
