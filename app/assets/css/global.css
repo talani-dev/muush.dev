@@ -575,7 +575,8 @@
 
   /*
    * Feature 34 · the site's own cursor (Roberto's red arrow with the "You"
-   * pill). Defined once here and read by every cursor rule below the `html`
+   * pill; drawing replaced in feature 50 by his 02-Mouse.svg, 2026-11-07:
+   * rounded arrow, redrawn lettering, same pill). Defined once here and read by every cursor rule below the `html`
    * block (spec FR-019).
    *
    * - Size and hotspot (amendment A1, 2026-10-14): the asset renders at
@@ -586,6 +587,12 @@
    *   on the tip's bisector between them, inside the painted miter (1.1 px
    *   from the drawn tip, 1.4 px from the vertex), whereas `2 10`, the bare
    *   vertex, is 2.5 px behind the visible tip.
+   *   Feature 50 kept `1 9` for the rounded arrow: its tip keeps the vertex
+   *   (≈1.01, 5.01), but the rounding pulls the painted point in by about a
+   *   pixel. Rendered in WebKit at ×8, image pixel (1, 9) is the outermost
+   *   painted pixel of the tip (77 % covered; the old outer pixel (0, 8) is
+   *   now empty), so the click still lands on the visible point. `2 10`
+   *   would sit one pixel inside it.
    *   Research R6 + A1. Must stay ≤128 px (browser limit).
    * - The file lives in `public/` and is referenced root-relative: under
    *   `app/assets` Vite would inline a 2 KB SVG as a `data:` URI, and a
