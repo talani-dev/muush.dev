@@ -991,6 +991,11 @@
   --paso-enfasis-escala-min: 0.9;
   --paso-enfasis-opacidad-min: 0.35;
 
+  /* The minimum tap area of a text link in the mobile footer (feature 50,
+     Roberto 2026-11-06): 44 × 44, WCAG 2.5.5 (2.5.8's floor is 24). Read by
+     `--spacing-toque-sangria` below, which hand-computes from it. */
+  --toque: 2.75rem;
+
   /*
    * ---------- Forms (feature 45) ----------
    * Values from `docs/harness/progress/pen-extract-45.md` (frames `mMSV2` /
@@ -2617,6 +2622,17 @@ html {
   --spacing-red-footer-gap: 0.625rem;
   --spacing-legal-movil-gap: 0.375rem;
   --spacing-legal-movil-arriba: 1rem;
+  /* Feature 50 (Roberto 2026-11-06, iPhone): the links line and the legal
+     links get a 44 × 44 tap area each (`toque`), side by side and row by
+     row so no two overlap, with 8 px of padding either side of the label,
+     which also widens the visible space around each " · ". The lists pull
+     back by the padding (`toque-x`) and by half of what the 44 adds to the
+     line (`toque-sangria`, from the list's own `1lh`), so the first label
+     still starts at the gutter and the blocks keep their 24 px rhythm; only
+     the space between wrapped rows grows, to 44 per row. */
+  --spacing-toque: var(--toque);
+  --spacing-toque-x: 0.5rem;
+  --spacing-toque-sangria: calc((var(--toque) - 1lh) / 2);
 
   /*
    * ---------- Home (feature 44) ----------

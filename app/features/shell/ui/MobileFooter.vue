@@ -21,6 +21,20 @@ import SocialLinks from './SocialLinks.vue'
  * 4. the social buttons (44 × 44);
  * 5. legal (gap 6, 1 px Carbón 700 above, padding-top 16, 12 / 400 Gris 400):
  *    privacy and terms (links since feature 48), then the copyright.
+ *
+ * Tap areas (feature 50, Roberto 2026-11-06, iPhone): every entry of the
+ * links line and both legal links is at least 44 × 44 (`TAP`, WCAG 2.5.5),
+ * laid side by side in a wrapping flex row so no two areas overlap, with
+ * 8 px either side of each label. Type, colour, order and the " · " are
+ * unchanged; only the space around them grows. Each list pulls back by
+ * that padding so its first label still starts at the gutter, and the
+ * links line by half the extra height above and below, so the blocks keep
+ * their rhythm. The legal row pulls back only upwards (into its 16 px
+ * padding): a pull downwards would slide the copyright over the bottom of
+ * the links, and the copyright, later in the page, would take those taps.
+ * The links line lost its `rounded-control`: a border radius also clips
+ * hit-testing, so 12 px corners would leave less than 44 × 44 tappable
+ * (measured in WebKit); only the keyboard focus outline's corners change.
  */
 interface Props {
   contactChannels: ResolvedContactChannel[]
@@ -45,6 +59,10 @@ const {
   category,
   copyright,
 } = defineProps<Props>()
+
+/** A text link's 44 × 44 minimum tap area, label centred (feature 50). */
+const TAP =
+  'inline-flex min-h-toque min-w-toque items-center justify-center px-toque-x'
 </script>
 
 <template>
@@ -86,13 +104,23 @@ const {
       </li>
     </ul>
 
-    <ul class="font-texto text-p text-texto-suave">
-      <li v-for="(item, index) in links" :key="item.label" class="inline">
-        <ShellItemLink
-          :item="item"
-          :class="item.href ? 'rounded-control foco' : ''"
-        />
-        <span v-if="index < links.length - 1" aria-hidden="true"> · </span>
+    <ul
+      data-footer-enlaces
+      class="-mx-toque-x -my-toque-sangria flex flex-wrap items-center font-texto text-p text-texto-suave"
+    >
+      <li
+        v-for="(item, index) in links"
+        :key="item.label"
+        class="flex items-center"
+      >
+        <ShellItemLink :item="item" :class="[TAP, item.href && 'foco']" />
+        <span
+          v-if="index < links.length - 1"
+          aria-hidden="true"
+          class="whitespace-pre"
+        >
+          ·
+        </span>
       </li>
     </ul>
 
@@ -101,10 +129,19 @@ const {
     <div
       class="flex flex-col gap-legal-movil-gap border-t border-carbon-700 pt-legal-movil-arriba font-texto text-etiqueta text-gris-400"
     >
-      <p>
+      <p
+        data-footer-legal
+        class="-mx-toque-x -mt-toque-sangria flex flex-wrap items-center"
+      >
         <template v-for="(item, index) in legal" :key="item.label">
-          <ShellItemLink :item="item" />
-          <span v-if="index < legal.length - 1" aria-hidden="true"> · </span>
+          <ShellItemLink :item="item" :class="TAP" />
+          <span
+            v-if="index < legal.length - 1"
+            aria-hidden="true"
+            class="whitespace-pre"
+          >
+            ·
+          </span>
         </template>
       </p>
       <p>{{ copyright }}</p>

@@ -5,7 +5,9 @@ import { SHELL_COPY, SOCIALS } from './shellFixtures.testing'
 /**
  * The mobile footer (feature 43, FR-033; pen extract-43 § 6, `kJfw5`) at
  * "Móvil (390)": brand, contact rows, the links line, 44 × 44 social
- * buttons, legal.
+ * buttons, legal. Since feature 50 every text link (the line and the two
+ * legal ones) also has a 44 × 44 tap area; outline them with the browser's
+ * inspector to check none overlaps.
  */
 const meta = {
   title: 'Shell/MobileFooter',
