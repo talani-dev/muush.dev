@@ -9,6 +9,10 @@ import type { LegalPageModel } from './types'
  *
  * "Cookies y píxeles" ends with the "Cambiar mis preferencias" button
  * (`preferences`), which reopens the cookie preferences.
+ *
+ * Feature 49 (copy-drafts §§ A3, A7, approved by Roberto 2026-11-07) adds
+ * two bullets: the Google Analytics purpose before the advertising one, and
+ * Google after Meta in "Con quién los compartimos".
  */
 export const PRIVACY_NOTICE: LegalPageModel = {
   headingFirstKey: 'legal.privacy.heading.first',
@@ -72,7 +76,10 @@ export const PRIVACY_NOTICE: LegalPageModel = {
         },
         {
           kind: 'bullets',
-          keys: ['legal.privacy.sections.purposes.additionalItems.advertising'],
+          keys: [
+            'legal.privacy.sections.purposes.additionalItems.analytics',
+            'legal.privacy.sections.purposes.additionalItems.advertising',
+          ],
         },
         { kind: 'paragraph', key: 'legal.privacy.sections.purposes.objection' },
       ],
@@ -88,6 +95,7 @@ export const PRIVACY_NOTICE: LegalPageModel = {
           keys: [
             'legal.privacy.sections.sharing.items.providers',
             'legal.privacy.sections.sharing.items.meta',
+            'legal.privacy.sections.sharing.items.google',
             'legal.privacy.sections.sharing.items.collaborators',
             'legal.privacy.sections.sharing.items.authorities',
           ],

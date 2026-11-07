@@ -4,7 +4,8 @@ import CookieCategoryRow from './CookieCategoryRow.vue'
 
 /**
  * One cookie category (feature 48, `vR0os` / `sB1jP`): "Necesarias" with
- * the "Siempre activas" pill, "Publicidad" with its switch.
+ * the "Siempre activas" pill, "Publicidad" with its switch. Feature 49 adds
+ * "Analítica", the same row with its own switch and no new visual value.
  */
 const meta = {
   title: 'Legal/CookieCategoryRow',
@@ -19,7 +20,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const row = (locale: 'es' | 'en', index: 0 | 1) => {
+const row = (locale: 'es' | 'en', index: 0 | 1 | 2) => {
   const category = CONSENT_COPY[locale].categories[index]
   if (!category) throw new Error('no category')
   return { category, alwaysOn: CONSENT_COPY[locale].alwaysOn, checked: false }
@@ -29,7 +30,15 @@ export const NecessaryEsMobile390: Story = {
   args: row('es', 0),
   globals: { viewport: { value: 'mobile' } },
 }
-export const AdvertisingEnDesktop1440: Story = {
+export const AnalyticsEsMobile390: Story = {
+  args: row('es', 1),
+  globals: { viewport: { value: 'mobile' } },
+}
+export const AnalyticsEnDesktop1440: Story = {
   args: row('en', 1),
+  globals: { viewport: { value: 'desktop' } },
+}
+export const AdvertisingEnDesktop1440: Story = {
+  args: row('en', 2),
   globals: { viewport: { value: 'desktop' } },
 }

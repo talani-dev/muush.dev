@@ -86,17 +86,18 @@ export const LEGAL_PAGES: Record<
             },
             {
               kind: 'paragraph',
-              text: 'También usamos datos de navegación para una finalidad adicional, que no es necesaria para atender tu solicitud:',
+              text: 'También usamos tus datos para dos finalidades adicionales, que no son necesarias para atender tu solicitud y que solo aplican si las aceptas en el aviso de cookies:',
             },
             {
               kind: 'bullets',
               items: [
-                'Medir y mostrar publicidad: usamos píxeles, como Meta Pixel, para saber cómo funcionan nuestros anuncios y mostrar anuncios de muush a personas que visitaron el sitio.',
+                'Medir el uso del sitio: usamos Google Analytics para saber cuántas personas nos visitan, cómo llegan, qué secciones leen y en qué paso de los formularios se detienen. No le enviamos tu nombre, tu correo, tu teléfono ni lo que escribes en los formularios.',
+                'Medir y mostrar publicidad: usamos Meta Pixel para saber cómo funcionan nuestros anuncios y mostrar anuncios de muush a personas que visitaron el sitio. Si pides un diagnóstico, también le enviamos a Meta tu correo y, si elegiste WhatsApp, tu teléfono, para saber si tu solicitud llegó por un anuncio. Antes de salir de tu navegador, el píxel los convierte en un código irreversible (hash), así que Meta no recibe el dato tal cual.',
               ],
             },
             {
               kind: 'paragraph',
-              text: 'Puedes oponerte a esta finalidad en cualquier momento, como se explica en Cookies y píxeles. No usamos para publicidad lo que escribes en los formularios ni tu CV.',
+              text: 'Puedes oponerte a estas finalidades en cualquier momento, como se explica en Cookies y píxeles. Fuera del correo y el teléfono que se mencionan arriba, no usamos para medición ni publicidad lo que escribes en los formularios, y nunca tu CV ni tu aplicación a Trabaja con muush.',
             },
           ],
         },
@@ -113,7 +114,8 @@ export const LEGAL_PAGES: Record<
               kind: 'bullets',
               items: [
                 'Los proveedores que nos ayudan a operar: Amazon Web Services (alojamiento del sitio), Amazon SES (envío de correos), Google Drive (almacenamiento de CV), Notion (registro de solicitudes y aplicaciones) y Cal.com (agenda de llamadas). Tratan tus datos por cuenta nuestra, con nuestras instrucciones y bajo confidencialidad. Algunos tienen sus servidores fuera de México.',
-                'Meta Platforms, que recibe datos de navegación a través de su píxel para medir y mostrar anuncios.',
+                'Meta Platforms, que recibe datos de navegación a través de su píxel para medir y mostrar anuncios y, si aceptaste la publicidad y pides un diagnóstico, tu correo y tu teléfono convertidos en hash.',
+                'Google, que recibe datos de navegación a través de Google Analytics para medir el uso del sitio, solo si aceptaste la analítica.',
                 'Los colaboradores de muush que participen en tu proyecto, solo con los datos necesarios y bajo acuerdo de confidencialidad. Algunos pueden estar fuera de México.',
                 'Las autoridades, cuando una ley nos lo exija.',
               ],
@@ -124,7 +126,7 @@ export const LEGAL_PAGES: Record<
             },
             {
               kind: 'paragraph',
-              text: 'Salvo lo que se indica sobre Meta, no hacemos transferencias de datos que requieran tu consentimiento.',
+              text: 'Salvo lo que se indica sobre Meta y Google, no hacemos transferencias de datos que requieran tu consentimiento.',
             },
           ],
         },
@@ -139,7 +141,7 @@ export const LEGAL_PAGES: Record<
                 'Tu CV y tu perfil del talent pool: 1 año desde que los recibimos. Al terminar ese plazo los borramos.',
                 'Solicitudes de diagnóstico que no avanzan: 12 meses desde el último contacto.',
                 'Clientes: mientras dure la relación y después, el plazo que piden las leyes fiscales.',
-                'Datos de navegación y de píxeles: hasta 14 meses.',
+                'Datos de navegación, de analítica y de píxeles: hasta 14 meses.',
               ],
             },
             {
@@ -194,11 +196,11 @@ export const LEGAL_PAGES: Record<
           blocks: [
             {
               kind: 'paragraph',
-              text: 'muush.dev usa cookies técnicas necesarias para que el sitio funcione, por ejemplo para recordar tu idioma. Si las aceptas, también usa Meta Pixel y Google Analytics para medir visitas y anuncios. Estas tecnologías recaban tu dirección IP, navegador, páginas visitadas e identificadores de cookies.',
+              text: 'muush.dev usa cookies técnicas necesarias para que el sitio funcione, por ejemplo para recordar tu idioma y tu elección de cookies. Las demás se dividen en dos categorías que aceptas por separado: Analítica, con Google Analytics, para medir visitas (cookies _ga y _ga_*, que duran hasta 14 meses), y Publicidad, con Meta Pixel, para medir y mostrar anuncios (cookie _fbp, que dura 90 días). Estas tecnologías recaban tu dirección IP, navegador, páginas visitadas e identificadores de cookies.',
             },
             {
               kind: 'paragraph',
-              text: 'Puedes aceptarlas o rechazarlas en el aviso de cookies del sitio y cambiar tu elección aquí en cualquier momento. También puedes desactivarlas desde la configuración de tu navegador o en las preferencias de anuncios de tu cuenta de Meta.',
+              text: 'Puedes aceptarlas o rechazarlas en el aviso de cookies del sitio y cambiar tu elección aquí en cualquier momento. Tu elección dura 12 meses; después te la volvemos a pedir. Si retiras tu permiso, dejamos de usarlas y borramos sus cookies de muush.dev. También puedes desactivarlas desde la configuración de tu navegador o en las preferencias de anuncios de tu cuenta de Meta.',
             },
             {
               kind: 'preferences',
@@ -300,17 +302,18 @@ export const LEGAL_PAGES: Record<
             },
             {
               kind: 'paragraph',
-              text: "We also use browsing data for one additional purpose, which we don't need to handle your request:",
+              text: "We also use your data for two additional purposes, which we don't need to handle your request and which only apply if you accept them in the cookie notice:",
             },
             {
               kind: 'bullets',
               items: [
-                'Measuring and showing advertising: we use pixels, such as Meta Pixel, to see how our ads perform and to show muush ads to people who visited the site.',
+                "Measuring how the site is used: we use Google Analytics to see how many people visit, how they find us, which sections they read and at which step of the forms they stop. We don't send it your name, email, phone or anything you write in the forms.",
+                'Measuring and showing advertising: we use Meta Pixel to see how our ads perform and to show muush ads to people who visited the site. If you request an assessment, we also send Meta your email and, if you chose WhatsApp, your phone number, to learn whether your request came from an ad. Before they leave your browser, the pixel turns them into an irreversible code (a hash), so Meta does not receive them as typed.',
               ],
             },
             {
               kind: 'paragraph',
-              text: "You can object to this purpose at any time, as explained in Cookies and pixels. We don't use what you write in the forms or your CV for advertising.",
+              text: "You can object to these purposes at any time, as explained in Cookies and pixels. Apart from the email and phone mentioned above, we don't use what you write in the forms for measurement or advertising, and never your CV or your Work with muush application.",
             },
           ],
         },
@@ -327,7 +330,8 @@ export const LEGAL_PAGES: Record<
               kind: 'bullets',
               items: [
                 'The providers that help us operate: Amazon Web Services (site hosting), Amazon SES (email delivery), Google Drive (CV storage), Notion (records of requests and applications) and Cal.com (call scheduling). They process your data on our behalf, under our instructions and under confidentiality. Some have servers outside Mexico.',
-                'Meta Platforms, which receives browsing data through its pixel to measure and show ads.',
+                'Meta Platforms, which receives browsing data through its pixel to measure and show ads and, if you accepted advertising and request an assessment, your email and phone number as a hash.',
+                'Google, which receives browsing data through Google Analytics to measure how the site is used, only if you accepted analytics.',
                 'muush collaborators working on your project, only the data they need and under a confidentiality agreement. Some may be outside Mexico.',
                 'Authorities, when a law requires it.',
               ],
@@ -338,7 +342,7 @@ export const LEGAL_PAGES: Record<
             },
             {
               kind: 'paragraph',
-              text: "Except for what is stated about Meta, we don't make any data transfers that require your consent.",
+              text: "Except for what is stated about Meta and Google, we don't make any data transfers that require your consent.",
             },
           ],
         },
@@ -353,7 +357,7 @@ export const LEGAL_PAGES: Record<
                 'Your CV and talent pool profile: 1 year from when we receive them. When that period ends, we delete them.',
                 "Assessment requests that don't move forward: 12 months from the last contact.",
                 'Clients: for the length of the relationship and, after that, the period required by tax law.',
-                'Browsing and pixel data: up to 14 months.',
+                'Browsing, analytics and pixel data: up to 14 months.',
               ],
             },
             {
@@ -408,11 +412,11 @@ export const LEGAL_PAGES: Record<
           blocks: [
             {
               kind: 'paragraph',
-              text: 'muush.dev uses the technical cookies it needs to work, for example to remember your language. If you accept them, it also uses Meta Pixel and Google Analytics to measure visits and ads. These technologies collect your IP address, browser, pages visited and cookie identifiers.',
+              text: 'muush.dev uses the technical cookies it needs to work, for example to remember your language and your cookie choice. The rest fall into two categories you accept separately: Analytics, with Google Analytics, to measure visits (the _ga and _ga_* cookies, which last up to 14 months), and Advertising, with Meta Pixel, to measure and show ads (the _fbp cookie, which lasts 90 days). These technologies collect your IP address, browser, pages visited and cookie identifiers.',
             },
             {
               kind: 'paragraph',
-              text: "You can accept or decline them in the site's cookie notice and change your choice here at any time. You can also turn them off in your browser settings or in your Meta account's ad preferences.",
+              text: "You can accept or decline them in the site's cookie notice and change your choice here at any time. Your choice lasts 12 months; after that we ask again. If you withdraw your permission, we stop using them and delete their cookies from muush.dev. You can also turn them off in your browser settings or in your Meta account's ad preferences.",
             },
             {
               kind: 'preferences',
@@ -805,7 +809,7 @@ export const CONSENT_COPY: Record<LegalFixtureLocale, CookieConsentCopy> = {
   es: {
     banner: {
       title: 'Usamos cookies',
-      body: 'Las técnicas hacen que el sitio funcione. Con tu permiso, también usamos un píxel para medir y mostrar nuestros anuncios. Puedes elegir qué aceptas.',
+      body: 'Las técnicas hacen que el sitio funcione. Con tu permiso, también usamos Google Analytics para medir las visitas y Meta Pixel para medir y mostrar nuestros anuncios. Puedes elegir qué aceptas.',
       customize: 'Personalizar',
     },
     actions: {
@@ -834,10 +838,17 @@ export const CONSENT_COPY: Record<LegalFixtureLocale, CookieConsentCopy> = {
         required: true,
       },
       {
+        id: 'analytics',
+        name: 'Analítica',
+        detail:
+          'Google Analytics nos dice cuántas personas visitan el sitio y qué secciones leen, sin tu nombre ni tus datos de contacto.',
+        required: false,
+      },
+      {
         id: 'advertising',
         name: 'Publicidad',
         detail:
-          'Meta Pixel nos permite medir nuestros anuncios y mostrarlos a quienes visitaron el sitio.',
+          'Meta Pixel nos permite medir nuestros anuncios y mostrarlos a quienes visitaron el sitio. Si pides un diagnóstico, Meta recibe tu correo y tu teléfono en forma codificada.',
         required: false,
       },
     ],
@@ -845,7 +856,7 @@ export const CONSENT_COPY: Record<LegalFixtureLocale, CookieConsentCopy> = {
   en: {
     banner: {
       title: 'We use cookies',
-      body: 'Technical cookies keep the site working. With your permission, we also use a pixel to measure and show our ads. You can choose what you accept.',
+      body: 'Technical cookies keep the site working. With your permission, we also use Google Analytics to measure visits and Meta Pixel to measure and show our ads. You can choose what you accept.',
       customize: 'Customize',
     },
     actions: {
@@ -874,10 +885,17 @@ export const CONSENT_COPY: Record<LegalFixtureLocale, CookieConsentCopy> = {
         required: true,
       },
       {
+        id: 'analytics',
+        name: 'Analytics',
+        detail:
+          'Google Analytics tells us how many people visit the site and which sections they read, without your name or contact details.',
+        required: false,
+      },
+      {
         id: 'advertising',
         name: 'Advertising',
         detail:
-          'Meta Pixel lets us measure our ads and show them to people who visited the site.',
+          'Meta Pixel lets us measure our ads and show them to people who visited the site. If you request an assessment, Meta receives your email and phone number in encoded form.',
         required: false,
       },
     ],

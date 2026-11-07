@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { CONSENT_COPY } from '@/features/legal/data/legalFixtures.testing'
 import ConsentSwitch from './ConsentSwitch.vue'
+import CookieCategoryRow from './CookieCategoryRow.vue'
 import CookiePreferences from './CookiePreferences.vue'
 
 /*
@@ -18,9 +19,9 @@ beforeAll(() => {
   }
 })
 
-function render(open = true, advertising = false) {
+function render(open = true, advertising = false, analytics = false) {
   return mount(CookiePreferences, {
-    props: { open, copy: CONSENT_COPY.es, choice: { advertising } },
+    props: { open, copy: CONSENT_COPY.es, choice: { analytics, advertising } },
     attachTo: document.body,
   })
 }
@@ -40,20 +41,66 @@ describe('CookiePreferences', () => {
     wrapper.unmount()
   })
 
-  it('should pre-fill the switch with the given choice', () => {
-    const wrapper = render(true, true)
+  it('should list Necesarias, Analítica and Publicidad in that order', () => {
+    const wrapper = render()
+    const rows = wrapper.findAllComponents(CookieCategoryRow)
 
-    expect(wrapper.findComponent(ConsentSwitch).props('checked')).toBe(true)
+    expect(rows.map(row => row.props('category').id)).toEqual([
+      'necessary',
+      'analytics',
+      'advertising',
+    ])
+    expect(rows.map(row => row.props('category').name)).toEqual([
+      'Necesarias',
+      'Analítica',
+      'Publicidad',
+    ])
     wrapper.unmount()
   })
 
-  it('should save the edited draft', async () => {
+  it('should give each optional category its own switch, both off when there is no choice', () => {
     const wrapper = render()
+    const switches = wrapper.findAllComponents(ConsentSwitch)
 
-    await wrapper.findComponent(ConsentSwitch).trigger('click')
+    expect(switches).toHaveLength(2)
+    expect(switches.map(control => control.props('checked'))).toEqual([
+      false,
+      false,
+    ])
+    wrapper.unmount()
+  })
+
+  it('should pre-fill each switch with the given choice', () => {
+    const wrapper = render(true, true, false)
+    const switches = wrapper.findAllComponents(ConsentSwitch)
+
+    expect(switches.map(control => control.props('checked'))).toEqual([
+      false,
+      true,
+    ])
+    wrapper.unmount()
+  })
+
+  it('should save the edited draft with the switches independent', async () => {
+    const wrapper = render()
+    const [analytics] = wrapper.findAllComponents(ConsentSwitch)
+
+    await analytics?.trigger('click')
     await wrapper.find('button.shadow-boton').trigger('click')
 
-    expect(wrapper.emitted('save')?.[0]).toEqual([{ advertising: true }])
+    expect(wrapper.emitted('save')?.[0]).toEqual([
+      { analytics: true, advertising: false },
+    ])
+    wrapper.unmount()
+  })
+
+  it('should render the analytics row with the very classes of the advertising row', () => {
+    const wrapper = render()
+    const [, analytics, advertising] = wrapper.findAll('li')
+
+    expect(analytics?.attributes('class')).toBe(
+      advertising?.attributes('class')
+    )
     wrapper.unmount()
   })
 

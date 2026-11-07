@@ -1,4 +1,5 @@
 import {
+  CONSENT_LIFETIME_MONTHS,
   CONSENT_RECORD_VERSION,
   type ConsentRecord,
   type CookieChoice,
@@ -9,7 +10,8 @@ import {
  * The stored cookie choice, as pure functions (feature 48): building the
  * record, and reading it back defensively. `localStorage` is visitor
  * controlled, so anything that is not exactly a current record is treated
- * as "no choice yet" and the banner asks again.
+ * as "no choice yet" and the banner asks again. Since feature 49 a record
+ * also expires `CONSENT_LIFETIME_MONTHS` after it was decided (research R11).
  */
 
 /** Every optional category set to `granted`: "Aceptar todo" / "Rechazar todo". */
@@ -47,10 +49,41 @@ function readChoice(value: unknown): CookieChoice | null {
 }
 
 /**
- * The stored record, or `null` when there is none, it does not parse, it
- * has another version, or it misses a category added since it was saved.
+ * When a choice made at `decidedAt` stops counting: the same day and time
+ * `CONSENT_LIFETIME_MONTHS` calendar months later, clamped to the last day
+ * of that month when the day does not exist (Feb 29 → Feb 28). UTC, so the
+ * answer does not depend on the visitor's time zone.
  */
-export function parseConsentRecord(raw: string | null): ConsentRecord | null {
+export function consentExpiresAt(decidedAt: Date): Date {
+  const expires = new Date(decidedAt.getTime())
+  const day = expires.getUTCDate()
+  expires.setUTCDate(1)
+  expires.setUTCMonth(expires.getUTCMonth() + CONSENT_LIFETIME_MONTHS)
+  const lastDay = new Date(
+    Date.UTC(expires.getUTCFullYear(), expires.getUTCMonth() + 1, 0)
+  ).getUTCDate()
+  expires.setUTCDate(Math.min(day, lastDay))
+  return expires
+}
+
+/** Decided at a real date, not later than `now`, and not yet expired. */
+function isCurrentDecision(decidedAt: string, now: Date): boolean {
+  const decided = new Date(decidedAt)
+  if (Number.isNaN(decided.getTime())) return false
+  if (decided.getTime() > now.getTime()) return false
+  return now.getTime() < consentExpiresAt(decided).getTime()
+}
+
+/**
+ * The stored record, or `null` when there is none, it does not parse, it
+ * has another version, it misses a category added since it was saved, or
+ * its `decidedAt` is unreadable, in the future, or 12 months old or more
+ * (spec FR-001, FR-002). `null` means the banner shows and nothing loads.
+ */
+export function parseConsentRecord(
+  raw: string | null,
+  now: Date
+): ConsentRecord | null {
   if (raw === null) return null
   let parsed: unknown
   try {
@@ -61,6 +94,7 @@ export function parseConsentRecord(raw: string | null): ConsentRecord | null {
   if (!isRecordObject(parsed)) return null
   if (parsed.version !== CONSENT_RECORD_VERSION) return null
   if (typeof parsed.decidedAt !== 'string') return null
+  if (!isCurrentDecision(parsed.decidedAt, now)) return null
   const categories = readChoice(parsed.categories)
   if (!categories) return null
   return {

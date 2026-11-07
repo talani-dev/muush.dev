@@ -240,6 +240,10 @@
             "other": "Other"
           }
         },
+        "website": {
+          "label": "Your website or social media (optional)",
+          "placeholder": "https://"
+        },
         "need": {
           "label": "What do you need?",
           "placeholder": "Tell us in a couple of lines what you want to solve.",
@@ -547,11 +551,12 @@
             "application": "If you applied through Work with muush: to evaluate your profile with your express consent, contact you for an interview and invite you to projects that fit for as long as we keep your CV.",
             "both": "In both cases: to send you the automatic email confirming we received your information."
           },
-          "additionalIntro": "We also use browsing data for one additional purpose, which we don't need to handle your request:",
+          "additionalIntro": "We also use your data for two additional purposes, which we don't need to handle your request and which only apply if you accept them in the cookie notice:",
           "additionalItems": {
-            "advertising": "Measuring and showing advertising: we use pixels, such as Meta Pixel, to see how our ads perform and to show muush ads to people who visited the site."
+            "analytics": "Measuring how the site is used: we use Google Analytics to see how many people visit, how they find us, which sections they read and at which step of the forms they stop. We don't send it your name, email, phone or anything you write in the forms.",
+            "advertising": "Measuring and showing advertising: we use Meta Pixel to see how our ads perform and to show muush ads to people who visited the site. If you request an assessment, we also send Meta your email and, if you chose WhatsApp, your phone number, to learn whether your request came from an ad. Before they leave your browser, the pixel turns them into an irreversible code (a hash), so Meta does not receive them as typed."
           },
-          "objection": "You can object to this purpose at any time, as explained in Cookies and pixels. We don't use what you write in the forms or your CV for advertising."
+          "objection": "You can object to these purposes at any time, as explained in Cookies and pixels. Apart from the email and phone mentioned above, we don't use what you write in the forms for measurement or advertising, and never your CV or your Work with muush application."
         },
         "sharing": {
           "nav": "Who we share it with",
@@ -559,12 +564,13 @@
           "intro": "We don't sell your data. We only share it with:",
           "items": {
             "providers": "The providers that help us operate: Amazon Web Services (site hosting), Amazon SES (email delivery), Google Drive (CV storage), Notion (records of requests and applications) and Cal.com (call scheduling). They process your data on our behalf, under our instructions and under confidentiality. Some have servers outside Mexico.",
-            "meta": "Meta Platforms, which receives browsing data through its pixel to measure and show ads.",
+            "meta": "Meta Platforms, which receives browsing data through its pixel to measure and show ads and, if you accepted advertising and request an assessment, your email and phone number as a hash.",
+            "google": "Google, which receives browsing data through Google Analytics to measure how the site is used, only if you accepted analytics.",
             "collaborators": "muush collaborators working on your project, only the data they need and under a confidentiality agreement. Some may be outside Mexico.",
             "authorities": "Authorities, when a law requires it."
           },
           "talentPool": "Your talent pool profile and CV stay at muush: we don't share them with partners or other companies.",
-          "transfers": "Except for what is stated about Meta, we don't make any data transfers that require your consent."
+          "transfers": "Except for what is stated about Meta and Google, we don't make any data transfers that require your consent."
         },
         "retention": {
           "nav": "How long we keep it",
@@ -573,7 +579,7 @@
             "cv": "Your CV and talent pool profile: 1 year from when we receive them. When that period ends, we delete them.",
             "requests": "Assessment requests that don't move forward: 12 months from the last contact.",
             "clients": "Clients: for the length of the relationship and, after that, the period required by tax law.",
-            "browsing": "Browsing and pixel data: up to 14 months."
+            "browsing": "Browsing, analytics and pixel data: up to 14 months."
           },
           "earlyDeletion": "You can ask us to delete it sooner at any time."
         },
@@ -598,8 +604,8 @@
         "cookies": {
           "nav": "Cookies and pixels",
           "title": "Cookies and pixels",
-          "body": "muush.dev uses the technical cookies it needs to work, for example to remember your language. If you accept them, it also uses Meta Pixel and Google Analytics to measure visits and ads. These technologies collect your IP address, browser, pages visited and cookie identifiers.",
-          "choices": "You can accept or decline them in the site's cookie notice and change your choice here at any time. You can also turn them off in your browser settings or in your Meta account's ad preferences.",
+          "body": "muush.dev uses the technical cookies it needs to work, for example to remember your language and your cookie choice. The rest fall into two categories you accept separately: Analytics, with Google Analytics, to measure visits (the _ga and _ga_* cookies, which last up to 14 months), and Advertising, with Meta Pixel, to measure and show ads (the _fbp cookie, which lasts 90 days). These technologies collect your IP address, browser, pages visited and cookie identifiers.",
+          "choices": "You can accept or decline them in the site's cookie notice and change your choice here at any time. Your choice lasts 12 months; after that we ask again. If you withdraw your permission, we stop using them and delete their cookies from muush.dev. You can also turn them off in your browser settings or in your Meta account's ad preferences.",
           "preferences": "Change my preferences"
         },
         "changes": {
@@ -706,7 +712,7 @@
   "consent": {
     "banner": {
       "title": "We use cookies",
-      "body": "Technical cookies keep the site working. With your permission, we also use a pixel to measure and show our ads. You can choose what you accept.",
+      "body": "Technical cookies keep the site working. With your permission, we also use Google Analytics to measure visits and Meta Pixel to measure and show our ads. You can choose what you accept.",
       "customize": "Customize"
     },
     "actions": {
@@ -729,9 +735,13 @@
         "detail": "They keep the site working, for example by remembering your language."
       },
       "alwaysOn": "Always on",
+      "analytics": {
+        "name": "Analytics",
+        "detail": "Google Analytics tells us how many people visit the site and which sections they read, without your name or contact details."
+      },
       "advertising": {
         "name": "Advertising",
-        "detail": "Meta Pixel lets us measure our ads and show them to people who visited the site."
+        "detail": "Meta Pixel lets us measure our ads and show them to people who visited the site. If you request an assessment, Meta receives your email and phone number in encoded form."
       }
     }
   }

@@ -18,6 +18,15 @@ describe('CookieBanner', () => {
     expect(wrapper.attributes('role')).toBeUndefined()
   })
 
+  it('should name Google Analytics and Meta Pixel in the body in both locales', () => {
+    expect(render('es').text()).toContain(
+      'también usamos Google Analytics para medir las visitas y Meta Pixel para medir y mostrar nuestros anuncios.'
+    )
+    expect(render('en').text()).toContain(
+      'we also use Google Analytics to measure visits and Meta Pixel to measure and show our ads.'
+    )
+  })
+
   it('should emit reject and accept from the two choices', async () => {
     const wrapper = render('en')
     const [reject, accept] = wrapper.findAllComponents(ChoiceButton)

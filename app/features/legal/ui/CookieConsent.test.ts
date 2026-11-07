@@ -36,13 +36,14 @@ function render() {
   return mount(CookieConsent, { attachTo: document.body })
 }
 
-function store(advertising: boolean) {
+function store(advertising: boolean, analytics = false) {
   localStorage.setItem(
     CONSENT_STORAGE_KEY,
     JSON.stringify({
       version: 1,
-      decidedAt: '2026-11-05T12:00:00.000Z',
-      categories: { advertising },
+      /* Decided "now", so the record never expires under the suite. */
+      decidedAt: new Date().toISOString(),
+      categories: { analytics, advertising },
     })
   )
 }
@@ -106,6 +107,7 @@ describe('CookieConsent', () => {
     const wrapper = render()
 
     expect(wrapper.findComponent(CookiePreferences).props('choice')).toEqual({
+      analytics: false,
       advertising: false,
     })
     wrapper.unmount()
@@ -116,6 +118,7 @@ describe('CookieConsent', () => {
     const wrapper = render()
 
     expect(wrapper.findComponent(CookiePreferences).props('choice')).toEqual({
+      analytics: false,
       advertising: true,
     })
     wrapper.unmount()
@@ -144,9 +147,10 @@ describe('CookieConsent', () => {
     await wrapper.findComponent(CookieBanner).vm.$emit('customize')
     await wrapper
       .findComponent(CookiePreferences)
-      .vm.$emit('save', { advertising: true })
+      .vm.$emit('save', { analytics: true, advertising: false })
 
-    expect(useCookieConsent().isGranted('advertising')).toBe(true)
+    expect(useCookieConsent().isGranted('analytics')).toBe(true)
+    expect(useCookieConsent().isGranted('advertising')).toBe(false)
     expect(wrapper.findComponent(CookiePreferences).props('open')).toBe(false)
     expect(wrapper.findComponent(CookieBanner).exists()).toBe(false)
     wrapper.unmount()

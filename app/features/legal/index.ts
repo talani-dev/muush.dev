@@ -4,8 +4,9 @@
  * - The two legal pages: `LegalArticle` with its content seam and the two
  *   page models, plus the index's scroll-spy.
  * - Cookie consent: `CookieConsent` (banner + preferences, rendered once
- *   by the layout) and `useCookieConsent`, the seam feature 49 reads before
- *   loading any tracking script (`isGranted('advertising')`).
+ *   by the layout) and `useCookieConsent`, the seam the tracking feature
+ *   (49) follows before loading Google Analytics (`analytics`) or the Meta
+ *   Pixel (`advertising`).
  */
 export type {
   ConsentRecord,
