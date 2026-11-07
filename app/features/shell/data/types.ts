@@ -1,4 +1,8 @@
 import type { SectionAnchor } from '@/shared/data/sectionAnchors'
+import type {
+  ClickTrackingEvent,
+  TrackAttrs,
+} from '@/shared/data/trackingEvents'
 import type { SocialNetwork } from '@/shared/ui/SocialIcon.vue'
 
 /**
@@ -67,6 +71,14 @@ export interface ShellItem {
   /** i18n key, e.g. `shell.nav.projects`. Never the copy itself. */
   labelKey: string
   destination: ShellDestination
+  /**
+   * The click event this CTA reports once the visitor accepts analytics or
+   * advertising (feature 49, tracking plan § 4): every "Diagnóstico
+   * gratis", "Agenda una llamada", WhatsApp and support@muush.dev item, with
+   * the place it sits. Absent on every other item
+   * (`data/trackedItems.test.ts`).
+   */
+  track?: ClickTrackingEvent
 }
 
 /**
@@ -121,6 +133,9 @@ export interface ResolvedShellItem {
    * (`logic/scrollToTopIfCurrent.ts`). Absent otherwise.
    */
   scrollsToTop?: true
+  /** The item's `data-track*` attributes, bound on its link (feature 49).
+   * Absent when the item reports nothing. */
+  trackAttrs?: TrackAttrs
 }
 
 /** A resolved mobile-footer contact row. */

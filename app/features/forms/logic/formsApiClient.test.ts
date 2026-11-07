@@ -166,12 +166,13 @@ describe('createFormsApiClient · JSON posts', () => {
     ])
   })
 
-  it('should resolve to failure when fetch rejects', async () => {
+  it('should resolve to a network failure when fetch rejects', async () => {
     const fetchImpl = vi.fn<FetchLike>().mockRejectedValue(new TypeError('net'))
     const client = createFormsApiClient({ baseUrl: BASE_URL, fetchImpl })
 
     expect(await client.postContact(contactPayload)).toEqual({
       kind: 'failure',
+      network: true,
     })
   })
 
@@ -196,7 +197,7 @@ describe('createFormsApiClient · JSON posts', () => {
     const pending = client.postContact(contactPayload)
     await vi.advanceTimersByTimeAsync(API_REQUEST_TIMEOUT_MS)
 
-    expect(await pending).toEqual({ kind: 'failure' })
+    expect(await pending).toEqual({ kind: 'failure', network: true })
   })
 
   it('should treat a malformed upload grant as failure when the server answers 200', async () => {

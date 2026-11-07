@@ -24,12 +24,14 @@ export const FAQ_PRIMARY: ShellItem = {
     name: 'index',
     anchor: SECTION_ANCHORS.assessment,
   },
+  track: { name: 'assessment_cta_click', params: { cta_location: 'faq' } },
 }
 
 /** "Agenda una llamada": the shared call-booking page, in a new tab. */
 export const FAQ_SECONDARY: ShellItem = {
   labelKey: 'shell.faq.call',
   destination: { kind: 'external', href: CALL_BOOKING_URL },
+  track: { name: 'book_call_click', params: { cta_location: 'faq' } },
 }
 
 export const FAQ_COPY_KEYS = {

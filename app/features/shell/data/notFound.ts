@@ -34,6 +34,10 @@ export const NOT_FOUND_ASSESSMENT: ShellItem = {
     name: 'index',
     anchor: SECTION_ANCHORS.assessment,
   },
+  track: {
+    name: 'assessment_cta_click',
+    params: { cta_location: 'not_found' },
+  },
 }
 
 /** The other i18n keys of the page. */

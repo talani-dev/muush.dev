@@ -54,4 +54,9 @@ describe('ServicesSection', () => {
       expect.arrayContaining(['max-w-contenido', 'gap-servicios-gap'])
     )
   })
+
+  it('should mark its root for section timing when rendered', () => {
+    /* Feature 49 · `section_view` (tracking plan § 5). */
+    expect(render().attributes('data-track-section')).toBe('services')
+  })
 })

@@ -68,4 +68,11 @@ describe('TeamCompositionSection', () => {
   it('should sit on the page black with no background when rendered', () => {
     expect(render().find('canvas').exists()).toBe(false)
   })
+
+  it('should mark its root for section timing when rendered', () => {
+    /* Feature 49 · `section_view` (tracking plan § 5). */
+    expect(render().attributes('data-track-section')).toBe(
+      'how_it_comes_together'
+    )
+  })
 })

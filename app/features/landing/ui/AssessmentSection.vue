@@ -5,8 +5,12 @@ import {
   type ContactFormContent,
   type ContactSubmitter,
 } from '@/features/forms'
-import type { AssessmentContent } from '@/features/landing/data/assessmentContent'
+import {
+  ASSESSMENT_CALL_TRACK,
+  type AssessmentContent,
+} from '@/features/landing/data/assessmentContent'
 import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
+import { trackAttrs } from '@/shared/data/trackingEvents'
 import Heading from '@/shared/ui/Heading.vue'
 import Pill from '@/shared/ui/Pill.vue'
 import ReceivesList from '@/shared/ui/ReceivesList.vue'
@@ -61,7 +65,11 @@ const {
 </script>
 
 <template>
-  <section :id="SECTION_ANCHORS.assessment" class="relative isolate">
+  <section
+    :id="SECTION_ANCHORS.assessment"
+    class="relative isolate"
+    data-track-section="assessment"
+  >
     <ShaderBackground preset="assessment" />
     <div
       class="relative z-10 px-gutter pt-bloque-y pb-diagnostico-abajo lg:px-gutter-desktop"
@@ -104,6 +112,7 @@ const {
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center gap-llamada-enlace font-semibold text-blanco foco"
+            v-bind="trackAttrs(ASSESSMENT_CALL_TRACK)"
           >
             <span
               data-enlace-llamada

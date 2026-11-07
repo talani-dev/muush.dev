@@ -198,6 +198,24 @@ export default defineNuxtConfig({
     public: {
       formsApiBaseUrl: 'https://ma8y4vvt58.execute-api.us-east-1.amazonaws.com',
       turnstileSiteKey: '0x4AAAAAAFO1zGh2W1tV7LWH',
+      /*
+       * Feature 49 · consented tracking. The GA4 measurement ID and the Meta
+       * Pixel ID (Roberto, 2026-11-05): PUBLIC identifiers, not credentials.
+       * Both are printed into every page by design and grant no access to
+       * either account. They live here and never under `app/`
+       * (Constitution Article XI, spec FR-013; tests/tracking-output.test.ts).
+       *
+       * Overridable at build time with NUXT_PUBLIC_GA_MEASUREMENT_ID /
+       * NUXT_PUBLIC_META_PIXEL_ID. An empty value disables that tool
+       * entirely: no script is injected, whatever the visitor accepts.
+       *
+       * The two vendor scripts (googletagmanager.com, connect.facebook.net)
+       * are a scoped Article IV exception shaped like Turnstile's (plan
+       * Complexity Tracking): browser only, never in the prerendered HTML,
+       * and only after the visitor accepts the matching cookie category.
+       */
+      gaMeasurementId: 'G-RHZC650SQS',
+      metaPixelId: '1488638740001981',
     },
   },
 

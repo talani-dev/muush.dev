@@ -73,6 +73,7 @@ const BUTTONS_CLASSES = {
         ]"
       >
         <PrimaryButton
+          v-bind="primary.trackAttrs"
           size="hero"
           :to="primary.href"
           :label="primary.label"
@@ -80,6 +81,7 @@ const BUTTONS_CLASSES = {
         />
         <GlassButton
           v-if="secondary.external"
+          v-bind="secondary.trackAttrs"
           :href="secondary.href"
           :label="secondary.label"
           target="_blank"
@@ -87,6 +89,7 @@ const BUTTONS_CLASSES = {
         />
         <GlassButton
           v-else
+          v-bind="secondary.trackAttrs"
           :to="secondary.href"
           :label="secondary.label"
           :aria-current="undefined"

@@ -16,6 +16,8 @@ import {
 import type { ContactPreference } from '@/features/forms/data/contactFields'
 import type { CountryCode } from '@/features/forms/data/countries'
 import type { ApplicationSubmitter } from '@/features/forms/data/submissionContract'
+import type { CvResult } from '@/shared/data/trackingEvents'
+import { emitTrackingEvent } from '@/shared/logic/trackingBus'
 import { APPLICATION_SERVER_ERROR_KEYS } from './serverFieldErrors'
 import { useDefaultCountry } from './useDefaultCountry'
 import { type SubmitState, useFormSubmitState } from './useFormSubmitState'
@@ -44,6 +46,12 @@ export type ApplicationSubmitState = SubmitState
 
 /** Why `FileField` refused a selection (mirrors its `reject` event). */
 export type CvRejection = 'format' | 'size'
+
+/** A refusal as `cv_attached` reports it (tracking plan § 4). */
+const CV_RESULT_BY_REJECTION: Record<CvRejection, CvResult> = {
+  format: 'not_pdf',
+  size: 'too_large',
+}
 
 export interface UseApplicationFormOptions {
   submitter: ApplicationSubmitter
@@ -170,6 +178,7 @@ export function useApplicationForm(
   }) as Ref<ApplicationFormValues>
 
   const submission = useFormSubmitState({
+    formId: 'application',
     values,
     validate: validateApplicationForm,
     fieldOrder: APPLICATION_FIELD_ORDER,
@@ -226,6 +235,12 @@ export function useApplicationForm(
     values.value.cv = file
     cvRejection.value = null
     dismissCvUploadError()
+    if (file) reportCv('ok')
+  }
+
+  /** Feature 49: what became of a chosen CV, never the file itself. */
+  function reportCv(result: CvResult): void {
+    emitTrackingEvent({ name: 'cv_attached', params: { result } })
   }
 
   function dismissCvUploadError(): void {
@@ -238,6 +253,7 @@ export function useApplicationForm(
     values.value.cv = null
     cvRejection.value = kind
     dismissCvUploadError()
+    reportCv(CV_RESULT_BY_REJECTION[kind])
   }
 
   /** "Reintentar subida": a whole new attempt with the same file, so a new

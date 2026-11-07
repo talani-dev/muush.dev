@@ -24,6 +24,10 @@ describe('not-found content model', () => {
         name: 'index',
         anchor: SECTION_ANCHORS.assessment,
       },
+      track: {
+        name: 'assessment_cta_click',
+        params: { cta_location: 'not_found' },
+      },
     })
   })
 

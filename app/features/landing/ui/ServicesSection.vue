@@ -35,6 +35,7 @@ const headingId = `servicios-${useId()}`
   <section
     :id="SECTION_ANCHORS.services"
     class="px-gutter py-bloque-y lg:px-gutter-desktop"
+    data-track-section="services"
   >
     <div class="mx-auto flex max-w-contenido flex-col gap-servicios-gap">
       <div class="flex flex-col items-start gap-cabeza-gap">

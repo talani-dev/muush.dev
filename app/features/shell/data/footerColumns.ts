@@ -1,5 +1,6 @@
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
+import type { ClickTrackingEvent } from '@/shared/data/trackingEvents'
 import { SOCIAL_PROFILES } from './socialProfiles'
 import type { FooterColumnModel, ShellItem } from './types'
 
@@ -53,6 +54,26 @@ export const FOOTER_DESTINATIONS = {
 } as const satisfies Record<string, ShellItem['destination']>
 
 /**
+ * What the footer CTAs report (feature 49, tracking plan § 4), shared by
+ * the desktop columns and the mobile rows: both are `cta_location: footer`.
+ */
+export const FOOTER_TRACK = {
+  assessment: {
+    name: 'assessment_cta_click',
+    params: { cta_location: 'footer' },
+  },
+  call: { name: 'book_call_click', params: { cta_location: 'footer' } },
+  email: {
+    name: 'contact_click',
+    params: { channel: 'email', cta_location: 'footer' },
+  },
+  whatsapp: {
+    name: 'contact_click',
+    params: { channel: 'whatsapp', cta_location: 'footer' },
+  },
+} as const satisfies Record<string, ClickTrackingEvent>
+
+/**
  * The four desktop footer columns of Muush 1.0, in the design's order
  * (feature 43, data-model § 4; pen extract-43 § 6; `muush-1.0.md` § 4.7).
  *
@@ -94,18 +115,22 @@ export const FOOTER_COLUMNS: FooterColumnModel[] = [
       {
         labelKey: 'shell.footer.contact.assessment',
         destination: FOOTER_DESTINATIONS.assessment,
+        track: FOOTER_TRACK.assessment,
       },
       {
         labelKey: 'shell.footer.contact.call',
         destination: FOOTER_DESTINATIONS.call,
+        track: FOOTER_TRACK.call,
       },
       {
         labelKey: 'shell.footer.contact.email',
         destination: FOOTER_DESTINATIONS.email,
+        track: FOOTER_TRACK.email,
       },
       {
         labelKey: 'shell.footer.contact.whatsapp',
         destination: FOOTER_DESTINATIONS.whatsapp,
+        track: FOOTER_TRACK.whatsapp,
       },
     ],
   },

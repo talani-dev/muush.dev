@@ -29,4 +29,16 @@ describe('SendNotice', () => {
     await action.trigger('click')
     expect(wrapper.emitted('submit-without-cv')).toHaveLength(1)
   })
+
+  it('should mark the support link as an email contact from the send notice', () => {
+    const link = mount(SendNotice, {
+      props: { kind: 'server-error', error },
+    }).find('a')
+
+    expect(link.attributes()).toMatchObject({
+      'data-track': 'contact_click',
+      'data-track-location': 'send_notice',
+      'data-track-channel': 'email',
+    })
+  })
 })

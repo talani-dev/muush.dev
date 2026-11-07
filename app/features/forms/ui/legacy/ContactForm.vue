@@ -64,7 +64,7 @@ const contactPreferenceOptions = computed(() =>
 
 /** Error treatment appears only once a submit was attempted (`ui-map.md`
  * § 7: the idle form shows no errors at all). */
-function errorFor(field: keyof typeof errors.value): string | undefined {
+function errorFor(field: keyof typeof content.fields): string | undefined {
   if (state.value !== 'invalid') return undefined
   return fieldErrorMessage(errors.value[field], content.fields[field])
 }

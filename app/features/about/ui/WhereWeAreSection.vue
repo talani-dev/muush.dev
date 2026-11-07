@@ -41,6 +41,7 @@ const {
 <template>
   <section
     class="flex flex-col items-center gap-mapa-gap px-gutter py-mapa-y text-center lg:px-0"
+    data-track-section="where_we_are"
   >
     <Pill class="pill-aire" :label="pill" />
     <Heading

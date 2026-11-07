@@ -126,4 +126,16 @@ describe('AssessmentSection', () => {
     expect(form?.className).toContain('lg:row-span-4')
     expect(call?.className).toContain('lg:row-start-3')
   })
+
+  it('should mark its root for section timing when rendered', () => {
+    /* Feature 49 · `section_view` (tracking plan § 5). */
+    expect(render().attributes('data-track-section')).toBe('assessment')
+  })
+
+  it('should mark "Agenda una llamada" as the section book-call CTA', () => {
+    const link = render().find(`a[href="${CALL_BOOKING_URL}"]`)
+
+    expect(link.attributes('data-track')).toBe('book_call_click')
+    expect(link.attributes('data-track-location')).toBe('assessment')
+  })
 })

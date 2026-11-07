@@ -7,6 +7,7 @@ import {
   FORM_STEPS_MEDIA_QUERY,
 } from '@/features/forms/data/formSteps'
 import { installMatchMedia } from '@/shared/logic/fakeMediaQuery.testing'
+import { onTrackingEvent, resetTrackingBus } from '@/shared/logic/trackingBus'
 import { REDUCED_MOTION_QUERY } from '@/shared/logic/useReducedMotion'
 import { type UseFormStepsReturn, useFormSteps } from './useFormSteps'
 
@@ -32,6 +33,7 @@ function mountHost({ stepped = true, reduced = false } = {}) {
       setup() {
         const panel = ref<HTMLElement | null>(null)
         steps = useFormSteps({
+          formId: 'assessment',
           stepFields: CONTACT_STEP_FIELDS,
           panel,
         })
@@ -159,5 +161,26 @@ describe('useFormSteps · revealing a field', () => {
     steps.revealField('need')
 
     expect(steps.step.value).toBe(1)
+  })
+})
+
+describe('useFormSteps · tracking (feature 49)', () => {
+  afterEach(() => {
+    resetTrackingBus()
+  })
+
+  it('should report each step change with the form id', async () => {
+    const events: unknown[] = []
+    onTrackingEvent(event => events.push(event))
+    const { steps, next, errors } = mountHost()
+    errors.value = {}
+
+    await next()
+    await steps.goBack()
+
+    expect(events).toEqual([
+      { name: 'form_step', params: { form: 'assessment', step: 2 } },
+      { name: 'form_step', params: { form: 'assessment', step: 1 } },
+    ])
   })
 })

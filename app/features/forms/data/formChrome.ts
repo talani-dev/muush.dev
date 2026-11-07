@@ -1,4 +1,5 @@
 import type { FormStep } from '@/features/forms/data/formSteps'
+import type { ClickTrackingEvent } from '@/shared/data/trackingEvents'
 
 /**
  * The copy every v2 form carries around its own fields (feature 45,
@@ -14,6 +15,16 @@ export interface FormSuccessAction {
   href?: string
   /** An internal route (the home of the current locale). */
   to?: string
+  /** The click the action reports (feature 49): the assessment's "Agenda
+   * una llamada" only; the application's "Volver al inicio" reports none. */
+  track?: ClickTrackingEvent
+}
+
+/** The send-error notice's support@muush.dev link reports this (feature
+ * 49); the same notice serves both forms. */
+export const SEND_NOTICE_EMAIL_TRACK: ClickTrackingEvent = {
+  name: 'contact_click',
+  params: { channel: 'email', cta_location: 'send_notice' },
 }
 
 /**

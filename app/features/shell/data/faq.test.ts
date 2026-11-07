@@ -13,6 +13,7 @@ describe('faq content model', () => {
         name: 'index',
         anchor: SECTION_ANCHORS.assessment,
       },
+      track: { name: 'assessment_cta_click', params: { cta_location: 'faq' } },
     })
   })
 
@@ -20,6 +21,7 @@ describe('faq content model', () => {
     expect(FAQ_SECONDARY).toEqual({
       labelKey: 'shell.faq.call',
       destination: { kind: 'external', href: CALL_BOOKING_URL },
+      track: { name: 'book_call_click', params: { cta_location: 'faq' } },
     })
   })
 

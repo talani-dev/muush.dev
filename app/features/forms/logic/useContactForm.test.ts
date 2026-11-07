@@ -11,12 +11,26 @@ import {
   MIN_FILL_TIME_MS,
   type SubmissionOutcome,
 } from '@/features/forms/data/submissionContract'
+import { onTrackingEvent, resetTrackingBus } from '@/shared/logic/trackingBus'
 import { useContactForm, validateContactForm } from './useContactForm'
 
 /**
  * `validateContactForm` first: pure function, no composable instance, one
  * assertion per rule (`data-model.md` § 2).
  */
+describe('validateContactForm · website (feature 49, FR-062)', () => {
+  it('should never return a website error, whatever the website holds', () => {
+    for (const website of ['', '   ', `${'a'.repeat(300)}😀`, '@casaolivo']) {
+      const errors = validateContactForm({
+        ...initialContactFormValues(),
+        website,
+      })
+
+      expect(errors).not.toHaveProperty('website')
+    }
+  })
+})
+
 describe('validateContactForm', () => {
   it('should flag every always-required field when all values are empty', () => {
     const errors = validateContactForm(initialContactFormValues())
@@ -634,5 +648,83 @@ describe('useContactForm · revealing a field before focus (feature 45)', () => 
 
     expect(revealField).toHaveBeenCalledWith('email')
     expect(order).toEqual(['reveal:email', 'focus:email'])
+  })
+})
+
+describe('useContactForm · tracking (feature 49)', () => {
+  function recordEvents() {
+    const events: unknown[] = []
+    onTrackingEvent(event => events.push(event))
+    return events
+  }
+
+  afterEach(() => {
+    resetTrackingBus()
+  })
+
+  it('should report form_start once on the first engagement', () => {
+    const events = recordEvents()
+    const { form } = readyForm()
+
+    form.onEngage()
+    form.onEngage()
+
+    expect(events).toEqual([
+      { name: 'form_start', params: { form: 'assessment' } },
+    ])
+  })
+
+  it('should report a validation error with the first invalid field id only', async () => {
+    const events = recordEvents()
+    const { form } = readyForm({ ...VALID, name: '' })
+
+    await form.onSubmit(new Event('submit'))
+
+    expect(events).toContainEqual({
+      name: 'form_error',
+      params: { form: 'assessment', error_type: 'validation', field: 'name' },
+    })
+  })
+
+  it('should report form_submit when a valid attempt leaves', async () => {
+    const events = recordEvents()
+    const { form } = readyForm()
+
+    await form.onSubmit(new Event('submit'))
+
+    expect(events).toContainEqual({
+      name: 'form_submit',
+      params: { form: 'assessment' },
+    })
+  })
+
+  it('should report the failure reason as the error type when the send fails', async () => {
+    const events = recordEvents()
+    const { form } = readyForm(
+      VALID,
+      stubSubmitter({ kind: 'failure', reason: 'network' })
+    )
+
+    await form.onSubmit(new Event('submit'))
+
+    expect(events.at(-1)).toEqual({
+      name: 'form_error',
+      params: { form: 'assessment', error_type: 'network' },
+    })
+  })
+
+  it('should report a server field mark as a validation error of that field', async () => {
+    const events = recordEvents()
+    const { form } = readyForm(
+      VALID,
+      stubSubmitter({ kind: 'field-errors', fields: ['email'] })
+    )
+
+    await form.onSubmit(new Event('submit'))
+
+    expect(events.at(-1)).toEqual({
+      name: 'form_error',
+      params: { form: 'assessment', error_type: 'validation', field: 'email' },
+    })
   })
 })

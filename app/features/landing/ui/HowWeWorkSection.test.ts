@@ -54,4 +54,9 @@ describe('HowWeWorkSection', () => {
       5
     )
   })
+
+  it('should mark its root for section timing when rendered', () => {
+    /* Feature 49 · `section_view` (tracking plan § 5). */
+    expect(render().attributes('data-track-section')).toBe('how_we_work')
+  })
 })

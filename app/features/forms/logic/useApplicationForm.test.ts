@@ -12,6 +12,7 @@ import {
   type SubmissionOutcome,
   type SubmissionProgress,
 } from '@/features/forms/data/submissionContract'
+import { onTrackingEvent, resetTrackingBus } from '@/shared/logic/trackingBus'
 import {
   useApplicationForm,
   validateApplicationForm,
@@ -896,5 +897,53 @@ describe('useApplicationForm · revealing a field before focus (feature 45)', ()
 
     expect(revealField).toHaveBeenCalledWith('email')
     expect(order).toEqual(['reveal:email', 'focus:email'])
+  })
+})
+
+describe('useApplicationForm · tracking (feature 49)', () => {
+  function recordEvents() {
+    const events: unknown[] = []
+    onTrackingEvent(event => events.push(event))
+    return events
+  }
+
+  afterEach(() => {
+    resetTrackingBus()
+  })
+
+  it('should report cv_attached ok when a valid PDF is chosen, and nothing when cleared', () => {
+    const events = recordEvents()
+    const { form } = readyForm()
+
+    form.onCvChange(pdfFixture())
+    form.onCvChange(null)
+
+    expect(events).toEqual([{ name: 'cv_attached', params: { result: 'ok' } }])
+  })
+
+  it('should report the refusal of a chosen file as not_pdf or too_large', () => {
+    const events = recordEvents()
+    const { form } = readyForm()
+
+    form.onCvReject('format')
+    form.onCvReject('size')
+
+    expect(events).toEqual([
+      { name: 'cv_attached', params: { result: 'not_pdf' } },
+      { name: 'cv_attached', params: { result: 'too_large' } },
+    ])
+  })
+
+  it('should report the application events under its own form id', async () => {
+    const events = recordEvents()
+    const { form } = readyForm()
+
+    form.onEngage()
+    await form.onSubmit(new Event('submit'))
+
+    expect(events).toEqual([
+      { name: 'form_start', params: { form: 'application' } },
+      { name: 'form_submit', params: { form: 'application' } },
+    ])
   })
 })

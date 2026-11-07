@@ -1,4 +1,4 @@
-import { FOOTER_DESTINATIONS } from './footerColumns'
+import { FOOTER_DESTINATIONS, FOOTER_TRACK } from './footerColumns'
 import type { ContactChannel, ShellItem } from './types'
 
 /**
@@ -14,16 +14,19 @@ export const MOBILE_CONTACT_CHANNELS: ContactChannel[] = [
     labelKey: 'shell.footer.contact.whatsapp',
     hintKey: 'shell.footer.contact.hints.whatsapp',
     destination: FOOTER_DESTINATIONS.whatsapp,
+    track: FOOTER_TRACK.whatsapp,
   },
   {
     labelKey: 'shell.footer.contact.call',
     hintKey: 'shell.footer.contact.hints.call',
     destination: FOOTER_DESTINATIONS.call,
+    track: FOOTER_TRACK.call,
   },
   {
     labelKey: 'shell.footer.contact.email',
     hintKey: 'shell.footer.contact.hints.email',
     destination: FOOTER_DESTINATIONS.email,
+    track: FOOTER_TRACK.email,
   },
 ]
 
