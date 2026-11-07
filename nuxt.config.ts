@@ -163,6 +163,50 @@ export default defineNuxtConfig({
      * generated file is the only robots.txt; never add one under `public/`.
      */
     mergeWithRobotsTxtPath: false,
+    /*
+     * Feature 49 · AI search/answer agents and AI training crawlers, named in
+     * two explicit allow-everything groups (Roberto, 2026-11-05/06). `*`
+     * already allows them; naming them states the intent. Tokens checked on
+     * 2026-11-07 against each provider's page (specs/049-consented-tracking/
+     * research.md R5): developers.openai.com/api/docs/bots,
+     * support.claude.com/en/articles/8896518,
+     * developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers,
+     * docs.perplexity.ai/guides/bots, support.apple.com/en-us/119829,
+     * commoncrawl.org/ccbot.
+     *
+     * Each group's only rule is `disallow: ['']`, the `*` group's own
+     * "allow everything", and never `allow: ['/']`: with @nuxtjs/i18n
+     * present the module splits every group path per locale, and only an
+     * empty string passes through untouched (research R6; findings § R81).
+     * `comment` is an ARRAY: 6.2.4 prints a plain string one character per
+     * `#` line (measured on the first build, findings § R81).
+     * `blockAiBots` stays at its default (false); no `sitemap` entry here.
+     */
+    groups: [
+      {
+        comment: ['AI search and answer agents: allowed'],
+        userAgent: [
+          'OAI-SearchBot',
+          'ChatGPT-User',
+          'Claude-SearchBot',
+          'Claude-User',
+          'PerplexityBot',
+          'Perplexity-User',
+        ],
+        disallow: [''],
+      },
+      {
+        comment: ['AI training crawlers: allowed'],
+        userAgent: [
+          'GPTBot',
+          'ClaudeBot',
+          'Google-Extended',
+          'Applebot-Extended',
+          'CCBot',
+        ],
+        disallow: [''],
+      },
+    ],
   },
 
   /*
