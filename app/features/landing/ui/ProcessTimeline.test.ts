@@ -1,6 +1,10 @@
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
+import {
+  NEUTRAL_EMPHASIS,
+  type StepEmphasis,
+} from '@/features/landing/logic/timelineProgress'
 import { useTimelineProgress } from '@/features/landing/logic/useTimelineProgress'
 import { DESKTOP_MEDIA_QUERY } from '@/shared/data/layout'
 import { installMatchMedia } from '@/shared/logic/fakeMediaQuery.testing'
@@ -34,10 +38,16 @@ afterEach(() => {
   document.body.innerHTML = ''
 })
 
-function render(lit: boolean[], fills: number[], attachTo?: HTMLElement) {
+function render(
+  lit: boolean[],
+  fills: number[],
+  attachTo?: HTMLElement,
+  emphasis: StepEmphasis[] = Array(5).fill(NEUTRAL_EMPHASIS)
+) {
   vi.mocked(useTimelineProgress).mockReturnValue({
     lit: ref(lit),
     fills: ref(fills),
+    emphasis: ref(emphasis),
   })
   return mount(ProcessTimeline, {
     props: { steps: HOW_WE_WORK_COPY.es.steps },
@@ -112,6 +122,25 @@ describe('ProcessTimeline', () => {
     ])
     expect(steps.map(step => step.props('fill'))).toEqual([1, 0.5, 0, 0, 0])
     expect(steps.every(step => step.props('columnLit') === false)).toBe(true)
+  })
+
+  it('should pass each step its scroll emphasis when the rail measures one', () => {
+    /* Feature 50: the composable's emphasis reaches the step in order. */
+    const emphasis = [
+      { scale: 0.92, opacity: 0.45 },
+      NEUTRAL_EMPHASIS,
+      { scale: 0.92, opacity: 0.45 },
+      { scale: 0.9, opacity: 0.35 },
+      { scale: 0.9, opacity: 0.35 },
+    ]
+    const steps = render(
+      Array(5).fill(true),
+      Array(5).fill(1),
+      undefined,
+      emphasis
+    ).findAllComponents(ProcessStep)
+
+    expect(steps.map(step => step.props('emphasis'))).toEqual(emphasis)
   })
 
   it('should stay unlit on desktop whatever the rail state when nothing is hovered', async () => {

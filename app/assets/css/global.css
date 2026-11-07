@@ -979,6 +979,18 @@
      applied under reduced motion (`motion-safe:` on the consumer). */
   --paso-escala: 1.04;
 
+  /* The mobile steps' scroll emphasis (feature 50, Roberto 2026-11-06; not
+     in the `.pen` yet). The step at the rail's active point shows at scale 1
+     and opacity 1; the others shrink and fade in proportion to their
+     distance, reaching these values one step away and never going below
+     the floors. Starting values proposed by the leader, for Roberto to
+     tune here. Read by `useTimelineProgress`; under reduced motion only the
+     opacity applies. Unitless, as `scale` and `opacity` take them. */
+  --paso-enfasis-escala-vecino: 0.92;
+  --paso-enfasis-opacidad-vecino: 0.45;
+  --paso-enfasis-escala-min: 0.9;
+  --paso-enfasis-opacidad-min: 0.35;
+
   /*
    * ---------- Forms (feature 45) ----------
    * Values from `docs/harness/progress/pen-extract-45.md` (frames `mMSV2` /

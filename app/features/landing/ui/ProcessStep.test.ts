@@ -214,4 +214,45 @@ describe('ProcessStep', () => {
       expect(halo.attributes('style')).toBeUndefined()
     }
   })
+
+  it('should scale and fade only its text block below lg when given an emphasis', () => {
+    /* Feature 50 (Roberto 2026-11-06): transform and opacity, from the
+       top-left corner, never on the rail; nothing from lg. */
+    const step = HOW_WE_WORK_COPY.es.steps[1]
+    if (!step) throw new Error('fixture missing')
+    const wrapper = mount(ProcessStep, {
+      props: {
+        ...step,
+        lit: false,
+        fill: 0,
+        isLast: false,
+        emphasis: { scale: 0.92, opacity: 0.45 },
+      },
+    })
+    const text = wrapper.find('[data-texto-paso]')
+
+    expect(text.attributes('style')).toContain('--paso-texto-escala: 0.92')
+    expect(text.attributes('style')).toContain('--paso-texto-opacidad: 0.45')
+    expect(text.classes()).toEqual(
+      expect.arrayContaining([
+        'origin-top-left',
+        'max-lg:scale-(--paso-texto-escala)',
+        'max-lg:opacity-(--paso-texto-opacidad)',
+        'motion-reduce:transition-none',
+        'lg:contents',
+      ])
+    )
+    expect(text.find('h3').exists()).toBe(true)
+    expect(text.findComponent(CommitmentChip).exists()).toBe(true)
+    expect(
+      wrapper.find('li > div[aria-hidden="true"]').attributes('style')
+    ).toBe(undefined)
+  })
+
+  it('should leave its text whole when no emphasis is given', () => {
+    const style = render(true).find('[data-texto-paso]').attributes('style')
+
+    expect(style).toContain('--paso-texto-escala: 1')
+    expect(style).toContain('--paso-texto-opacidad: 1')
+  })
 })

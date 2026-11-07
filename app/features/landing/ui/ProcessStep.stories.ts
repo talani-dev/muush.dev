@@ -84,3 +84,27 @@ export const EnRaisedDesktop1440: Story = {
   },
   globals: { viewport: { value: 'desktop' } },
 }
+
+/* Feature 50 (Roberto 2026-11-06): a rail row one step away from the rail's
+   active point, its text shrunk and faded by the scroll emphasis (the
+   `--paso-enfasis-*` starting values). Mobile only. */
+export const EsDimmedMobile390: Story = {
+  args: {
+    ...second,
+    lit: false,
+    fill: 0,
+    isLast: false,
+    emphasis: { scale: 0.92, opacity: 0.45 },
+  },
+  globals: { viewport: { value: 'mobile' } },
+}
+export const EnDimmedMobile390: Story = {
+  args: {
+    ...secondEn,
+    lit: false,
+    fill: 0,
+    isLast: false,
+    emphasis: { scale: 0.92, opacity: 0.45 },
+  },
+  globals: { viewport: { value: 'mobile' } },
+}

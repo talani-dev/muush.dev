@@ -34,6 +34,13 @@ import ProcessStep from './ProcessStep.vue'
  * step and fill in red with the scroll (`useTimelineProgress`; full and
  * every step lit on the server, without scripting and under reduced
  * motion). The rail has no hover.
+ *
+ * Feature 50 (Roberto 2026-11-06): below `lg` the steps' text follows the
+ * scroll as well (`emphasis`): the step at the rail's active point (the
+ * pencil line where the fill ends) is whole, the others shrink and fade in
+ * proportion to their distance from it (`--paso-enfasis-*` tokens); only
+ * the fade under reduced motion; whole on the server and without
+ * scripting. Not in the `.pen` yet (rules.md § R32).
  */
 interface Props {
   steps: ProcessStepContent[]
@@ -42,7 +49,7 @@ interface Props {
 const { steps } = defineProps<Props>()
 
 const list = ref<HTMLElement | null>(null)
-const { lit, fills } = useTimelineProgress(list, steps.length)
+const { lit, fills, emphasis } = useTimelineProgress(list, steps.length)
 const hover = useTimelineHover(list, steps.length)
 const run = useTimelineRun(
   hover.progress,
@@ -77,6 +84,7 @@ const lineStyle = computed(() => ({
         :lit="lit[index] ?? true"
         :column-lit="run.lit.value[index] ?? false"
         :fill="fills[index] ?? 1"
+        :emphasis="emphasis[index]"
         :is-last="index === steps.length - 1"
         :raised="hover.active.value === index"
         :focusable="hover.focusable.value"
