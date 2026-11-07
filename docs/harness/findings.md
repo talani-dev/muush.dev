@@ -1090,3 +1090,55 @@ feature lista.
 Tab desde el último control sale a la interfaz del navegador (medido por CDP:
 1 de 16 tabulaciones quedó fuera a 390). Por eso `useFocusTrap` vive ahora en
 `app/shared/logic/` y lo usan el menú móvil y las preferencias de cookies.
+
+## Feature 049 · Medición con consentimiento — hallazgos (2026-11-07)
+
+### R80 · APIs de GA4 y Meta Pixel verificadas contra la documentación oficial
+
+Leídas con `curl` el 2026-11-07 (las páginas de Google tienen versión de
+texto en `<url>.md.txt`; las de Meta solo dan HTML con el contenido en JSON).
+
+| API | Estado | Fuente |
+|---|---|---|
+| `gtag('config', id, { send_page_view: false })` + `gtag('event','page_view', { page_location, page_title })` | CONFIRMED | developers.google.com/analytics/devguides/collection/ga4/views |
+| "Page changes based on browser history events" manda `page_view` aunque `send_page_view` sea `false`; hay que apagarlo en el stream | CONFIRMED | misma página |
+| `cookie_expires` en segundos | CONFIRMED | developers.google.com/tag-platform/security/guides/customize-cookies |
+| `window['ga-disable-<MEASUREMENT_ID>'] = true` apaga el envío | CONFIRMED | developers.google.com/tag-platform/security/guides/privacy |
+| `allow_google_signals: false`, `allow_ad_personalization_signals: false` | CONFIRMED | misma página |
+| `transport_type: 'beacon'` | UNVERIFIED (no aparece en las páginas actuales de GA4; GA4 ya usa `sendBeacon` por defecto). Se manda igual en el `section_view` del cierre de página, como pide el contrato; en el peor caso llega como parámetro con un valor fijo | — |
+| `fbq('set', 'autoConfig', false, id)` antes de `init` | CONFIRMED | developers.facebook.com/docs/meta-pixel/advanced/ |
+| `fbq('consent', 'revoke' \| 'grant')` | CONFIRMED | developers.facebook.com/docs/meta-pixel/implementation/gdpr/ |
+| `fbq('init', id, { em, … })`, valores hasheados con SHA-256 por el píxel | CONFIRMED | developers.facebook.com/docs/meta-pixel/advanced/advanced-matching/ |
+
+**Corrección 2026-11-07 (feature 49, fix round 1, medido en Chrome contra el build con cada hit interceptado y fallado):**
+`allow_ad_personalization_signals: false` solo dentro de `config` NO basta: gtag.js manda un `page_view` automático
+al procesar `js`, antes de los comandos siguientes, con `npa=0`, sin estado de consentimiento e ignorando
+`send_page_view: false`. Los `gtag('set', …)` (`send_page_view`, `allow_ad_personalization_signals`,
+`allow_google_signals`) y el `consent default` van ANTES de `js` (comentario en `googleAnalytics.ts`). Y fbevents
+2.9.438 descarta todo `fbq('track', 'PageView')` después del primero del documento: los PageView de navegación usan
+`fbq('trackSingle', id, 'PageView')` (comentario en `metaPixel.ts`). Meta tampoco envía nada desde Chrome headless
+("[Meta pixel] Bot"): para medirlo hace falta un user agent normal.
+| `ph`: dígitos con código de país y de área (ej. `16505554444`) | CONFIRMED | misma página |
+| `fbq.disablePushState = true` | UNVERIFIED (no está en la documentación pública); verificar en el panel de red que una navegación da un solo `PageView` | — |
+| Segundo `fbq('init', id, userData)` después de cargar | UNVERIFIED; verificar que el `Lead` lleva `ud[em]`/`ud[ph]` como hashes de 64 hex | — |
+
+Nada contradice research.md R2–R4.
+
+### R81 · `@nuxtjs/robots` 6.2.4: dos trampas de `groups`
+
+1. **i18n parte las rutas de cada grupo por idioma.** Con `@nuxtjs/i18n`
+   presente, `allow`/`disallow` se reescriben por locale salvo la cadena
+   vacía. Un grupo "permite todo" es `disallow: ['']`, nunca `allow: ['/']`.
+2. **`comment` tiene que ser un arreglo.** El tipo dice `Arrayable<string>`,
+   pero con una cadena el módulo imprime **un carácter por línea** (`# A`,
+   `# I`, `#  `, …). Medido en el primer `pnpm generate` de la feature 49.
+   Con `['texto']` sale una sola línea `# texto`.
+
+Las dos están comentadas en el bloque `robots` de `nuxt.config.ts`.
+
+### R82 · `setup-plan.sh` de spec-kit rechaza ramas `feat/...`
+
+`check_feature_branch` (`.specify/scripts/bash/common.sh`) exige ramas
+`NNN-nombre`; con las ramas de este repo (`feat/v2-…`) termina con
+"Not on a feature branch". El spec author de la feature 49 siguió sus pasos a
+mano. No se comentó el script: es código de spec-kit que se regenera.

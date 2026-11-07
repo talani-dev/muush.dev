@@ -56,6 +56,7 @@ in-page jump to the assessment anchor is not a new page view.
 | `form_submit` | Send pressed with a valid form | `form` | ✅ | — |
 | `form_error` | Validation, challenge, network or server error | `form`, `error_type` (`validation`, `challenge_failed`, `network`, `server`), `field` (field id only, for validation) | ✅ | — |
 | `generate_lead` | Assessment API answered `ok: true` | `form` = `assessment`, `contact_preference` (`email` \| `whatsapp`) | ✅ key event | `Lead` |
+| `form_response` | The form's API call finished, whatever the outcome (Roberto, 2026-11-07) | `form` (`assessment` \| `application`), `result` (`ok` \| `error`), `error_type` (only when `error`: `network`, `server`, `challenge_failed`, `validation`) | ✅ | — |
 | `cv_attached` | A valid PDF chosen / rejected | `result` (`ok`, `too_large`, `not_pdf`) | ✅ | — |
 | `application_submit` | Application API answered `ok: true` | `form` = `application`, `with_cv` | ✅ | — |
 | `language_change` | ES ↔ EN toggle | `from_locale`, `to_locale` | ✅ | — |
@@ -132,7 +133,9 @@ GA4 key event is a whole event name. Custom dimensions to register:
 
 Before the code ships: property time zone Mexico City and currency MXN; web
 stream for `https://muush.dev`; enhanced measurement ON for page views
-(incl. browser-history changes), scrolls, outbound clicks, file downloads;
+(page loads only: the browser-history option is OFF and saved since 2026-11-07,
+because the code sends `page_view` on route changes and both would count
+twice), scrolls, outbound clicks, file downloads;
 OFF for form interactions, site search and video; data retention 14 months
 with "reset on new activity" OFF; Google signals OFF; user-provided data
 collection OFF; optional Search Console link. No internal-traffic IP rule
