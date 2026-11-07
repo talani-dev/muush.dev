@@ -4,6 +4,7 @@ import { MAP_REGIONS, MAP_WINDOW_ASPECT } from '@/shared/data/mapRegions'
 import {
   isInRegion,
   pinPosition,
+  regionFrame,
   regionTransform,
 } from '@/shared/utils/mapGeometry'
 
@@ -78,6 +79,52 @@ describe('regionTransform', () => {
       1408 / 190,
       6
     )
+  })
+})
+
+/**
+ * Feature 50 · the same fit, laid out instead of scaled: a canvas
+ * `widthPercent` of the window wide, its corner at `leftPercent` of the
+ * window's width and `topPercent` of its height. A map point must land on
+ * the same window pixel as the handoff's, so the pins and the radar stay
+ * where they were.
+ */
+describe('regionFrame', () => {
+  for (const region of MAP_REGIONS) {
+    for (const W of [342, 600]) {
+      it(`should land every point where the handoff does when ${region.name} is laid out in a ${W}-wide window`, () => {
+        const H = W / MAP_WINDOW_ASPECT
+        const reference = handoff(W, H, region)
+        const frame = regionFrame(region, MAP_WINDOW_ASPECT)
+        const canvasWidth = (frame.widthPercent / 100) * W
+
+        for (const [x, y] of [
+          [region.x, region.y],
+          [region.x + region.width, region.y + region.height],
+          [704, 235],
+        ] as const) {
+          const left = (frame.leftPercent / 100) * W
+          const top = (frame.topPercent / 100) * H
+          expect(left + (x / MAP_SIZE.width) * canvasWidth).toBeCloseTo(
+            reference.ox + reference.s * x,
+            6
+          )
+          expect(top + (y / MAP_SIZE.width) * canvasWidth).toBeCloseTo(
+            reference.oy + reference.s * y,
+            6
+          )
+        }
+      })
+    }
+  }
+
+  it('should make the canvas zoom times as wide as the window when a region is chosen', () => {
+    for (const region of MAP_REGIONS) {
+      expect(regionFrame(region, MAP_WINDOW_ASPECT).widthPercent).toBeCloseTo(
+        regionTransform(region, MAP_WINDOW_ASPECT).zoom * 100,
+        6
+      )
+    }
   })
 })
 

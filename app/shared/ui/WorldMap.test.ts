@@ -54,7 +54,7 @@ describe('WorldMap', () => {
     expect(panel.attributes('role')).toBe('tabpanel')
     expect(panel.attributes('aria-labelledby')).toBe('mapa-tab-america')
     expect(panel.attributes('id')).toBe('mapa-panel')
-    expect(panel.attributes('style')).toContain('--mapa-zoom: 4.94')
+    expect(panel.attributes('style')).toContain('--mapa-ancho: 494.03')
   })
 
   it('should zoom into Europe when its tab is chosen', async () => {
@@ -65,7 +65,7 @@ describe('WorldMap', () => {
     const panel = wrapper.find('[data-mapa]')
 
     expect(panel.attributes('style')).not.toBe(before)
-    expect(panel.attributes('style')).toContain('--mapa-zoom: 7.41')
+    expect(panel.attributes('style')).toContain('--mapa-ancho: 741.05')
     expect(panel.attributes('aria-labelledby')).toBe('mapa-tab-europe')
   })
 
@@ -123,11 +123,36 @@ describe('WorldMap', () => {
   it('should animate the zoom with the slow token and never under reduced motion when rendered', () => {
     expect(render().find('[data-lienzo]').classes()).toEqual(
       expect.arrayContaining([
-        'duration-(--lento)',
-        'ease-muush',
+        'max-lg:duration-(--lento)',
+        'max-lg:ease-muush',
         'motion-reduce:transition-none',
-        'max-lg:scale-(--mapa-zoom)',
+        'max-lg:transition-[left,top,width]',
       ])
+    )
+  })
+
+  it('should give the canvas no transition timing from lg when rendered', () => {
+    /* Review-50 finding 3: a bare duration transitions `all` on desktop. */
+    const classes = render().find('[data-lienzo]').classes()
+
+    expect(classes).not.toContain('duration-(--lento)')
+    expect(classes).not.toContain('ease-muush')
+  })
+
+  it('should lay the canvas out at its zoomed size instead of scaling it when below lg', () => {
+    /* Feature 50: a `scale` transform magnifies a bitmap rasterized at the
+       unscaled size, which blurred the dots on iPhone. */
+    const canvas = render().find('[data-lienzo]')
+
+    expect(canvas.classes()).toEqual(
+      expect.arrayContaining([
+        'max-lg:w-(--mapa-ancho)',
+        'max-lg:left-(--mapa-x)',
+        'max-lg:top-(--mapa-y)',
+      ])
+    )
+    expect(canvas.classes().some(name => /scale|translate/.test(name))).toBe(
+      false
     )
   })
 })

@@ -16,12 +16,12 @@ import type { MapPinKind } from '@/shared/data/mapPins'
  * 2026-11-01), not rings: at rest only the dot shows, and the ghost grows
  * 1 → 3 in the dot's colour, fading out; none under reduced motion.
  *
- * Centred on its point (`left` / `top` in percent of the map canvas). Below
- * `lg` the canvas is zoomed by `--mapa-zoom`; the pin is counter-scaled by
- * `--mapa-contra` (its inverse, set by `WorldMap`) so it keeps 28 × 28 on
- * screen at any zoom (Clarifications Q4, confirmed by Roberto 2026-11-01),
- * animating with the canvas. Decorative: `WorldMap` exposes the cities as
- * text.
+ * Centred on its point (`left` / `top` in percent of the map canvas), so it
+ * travels with the canvas when the mobile region changes. It keeps 28 × 28
+ * on screen at any zoom (Clarifications Q4, confirmed by Roberto
+ * 2026-11-01): since feature 50 the canvas is laid out at its zoomed size
+ * instead of scaled, so there is no zoom to counter-scale. Decorative:
+ * `WorldMap` exposes the cities as text.
  */
 interface Props {
   kind: MapPinKind
@@ -48,7 +48,7 @@ const position = computed(() => ({
     aria-hidden="true"
     :data-pin="kind"
     :style="position"
-    class="absolute grid size-pin -translate-1/2 place-items-center transition-transform duration-(--lento) ease-muush motion-reduce:transition-none max-lg:scale-(--mapa-contra)"
+    class="absolute grid size-pin -translate-1/2 place-items-center"
   >
     <span
       :class="['relative size-pin-nucleo rounded-full', DOT_CLASSES[kind]]"

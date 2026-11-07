@@ -836,7 +836,7 @@ describe('static output · the Muush 1.0 home (feature 44)', () => {
 
       expect(html, route).toContain('viewBox="0 0 1408 470"')
       expect(panel, route).toContain('role="tabpanel"')
-      expect(panel, route).toMatch(/--mapa-zoom:\s*4\.94/)
+      expect(panel, route).toMatch(/--mapa-ancho:\s*494\.03/)
       expect(html, route).toMatch(
         /aria-selected="true"[^>]*>\s*(América|Americas)\s*</
       )
