@@ -11,7 +11,9 @@ import ProcessTimeline from './ProcessTimeline.vue'
  * it, to preview it: it grows, the line is red up to its dot and grey after,
  * the columns up to it light (red ping) and the later ones stay unlit.
  * Leaving returns to the unlit rest. Mobile stories: the rail fills with
- * the canvas scroll; reduced motion shows it full.
+ * the canvas scroll and the steps' text shrinks and fades with its
+ * distance from the fill's end (feature 50); reduced motion shows the rail
+ * full and only fades.
  */
 const meta = {
   title: 'Landing/ProcessTimeline',

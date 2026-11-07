@@ -34,6 +34,86 @@ export function isStepLitVertical(
 }
 
 /*
+ * The mobile steps' scroll emphasis (feature 50, Roberto 2026-11-06, iPhone
+ * review; not in the `.pen` yet, rules.md § R32). Besides the rail, each
+ * step's text responds to the scroll: the step at the rail's active point
+ * (the pencil line, where the red fill ends) shows at scale 1 and opacity 1,
+ * and the others shrink and fade in proportion to their distance from it,
+ * continuously, never in jumps. Distance is in steps: 1 is a whole row away.
+ *
+ * The values are tokens in `global.css` (`--paso-enfasis-*`), read once by
+ * `useTimelineProgress`, so Roberto can tune them without touching code;
+ * the active step's 1 / 1 is the identity, not a tunable. Under reduced
+ * motion only the opacity changes: no scale.
+ */
+export interface StepEmphasis {
+  scale: number
+  opacity: number
+}
+
+/** One row away, and the floor no step goes below. */
+export interface EmphasisTokens {
+  neighbourScale: number
+  neighbourOpacity: number
+  minScale: number
+  minOpacity: number
+}
+
+export const NEUTRAL_EMPHASIS: StepEmphasis = { scale: 1, opacity: 1 }
+
+/** Linear from 1 at the active point through `neighbour` one step away, floored at `min`. */
+function towardsFloor(distance: number, neighbour: number, min: number) {
+  return Math.max(min, 1 - (1 - neighbour) * Math.abs(distance))
+}
+
+export function stepEmphasis(
+  distance: number,
+  tokens: EmphasisTokens,
+  reducedMotion: boolean
+): StepEmphasis {
+  return {
+    scale: reducedMotion
+      ? 1
+      : towardsFloor(distance, tokens.neighbourScale, tokens.minScale),
+    opacity: towardsFloor(distance, tokens.neighbourOpacity, tokens.minOpacity),
+  }
+}
+
+/**
+ * Where the pencil line is along the rail, in steps: 2 when it is exactly
+ * at the third step's top, 2.5 halfway down that row. Clamped to the first
+ * and last steps, so arriving at the section the first step leads and
+ * scrolling past it the last one stays in front.
+ */
+export function railPosition(
+  stepTops: readonly number[],
+  viewportHeight: number
+): number {
+  const pencil = viewportHeight * PEN_LINE_RATIO
+  const last = stepTops.length - 1
+  if (last <= 0) return 0
+  const passed = stepTops.filter(top => top <= pencil).length
+  const index = Math.min(Math.max(passed - 1, 0), last - 1)
+  const top = stepTops[index] ?? 0
+  const rowHeight = (stepTops[index + 1] ?? top) - top
+  if (rowHeight <= 0) return index
+  return Math.min(last, Math.max(0, index + (pencil - top) / rowHeight))
+}
+
+/** Every step's emphasis for the rail's current position. */
+export function emphasisAlongRail(
+  stepTops: readonly number[],
+  viewportHeight: number,
+  tokens: EmphasisTokens,
+  reducedMotion: boolean
+): StepEmphasis[] {
+  const position = railPosition(stepTops, viewportHeight)
+  return stepTops.map((_, index) =>
+    stepEmphasis(index - position, tokens, reducedMotion)
+  )
+}
+
+/*
  * The desktop hover / focus preview (feature 44, FR-042…FR-044; Roberto
  * review 2026-11-02): pointing at a step paints the line red up to that
  * step's dot and lights the steps up to and including it.

@@ -107,6 +107,17 @@ describe('brand cursor · the asset (FR-013, OA-7)', () => {
     expect(svg.match(/<path\b/g)).toHaveLength(2)
   })
 
+  it('should draw the feature 50 rounded arrow, not the feature 34 one, when served', () => {
+    /* Roberto, 2026-11-07: 02-Mouse.svg replaces 01-Mouse.svg. The rounded
+       arrow keeps the old vertex (≈1, 5 of the viewBox), which is why the
+       `1 9` hotspot below still lands on its visible tip. */
+    const svg = cursorSvg()
+
+    expect(svg).toContain('d="M1.01373 5.01326C1.25928 4.76773')
+    expect(svg).not.toContain('d="M4.82895 14.7125L1 5L10.8992')
+    expect(svg).toContain('Source: 02-Mouse.svg')
+  })
+
   it('should paint the arrow and pill in the --red-muush-500 token value', () => {
     /* A cursor image cannot read CSS variables, so the literal stays in the
        file; this pins it to the token so a palette change fails loudly. */

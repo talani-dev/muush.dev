@@ -19,13 +19,14 @@ describe('MapPin', () => {
     )
   })
 
-  it('should keep its on-screen size under the mobile zoom when rendered', () => {
-    expect(render('team').classes()).toEqual(
-      expect.arrayContaining([
-        'max-lg:scale-(--mapa-contra)',
-        'motion-reduce:transition-none',
-      ])
-    )
+  it('should keep its on-screen size with no counter-scale when rendered', () => {
+    /* Feature 50: the canvas is laid out at its zoomed size, not scaled, so
+       the pin has nothing to undo. */
+    expect(
+      render('team')
+        .classes()
+        .some(name => name.includes('scale'))
+    ).toBe(false)
   })
 
   it('should draw only a pinging red dot, no static rings, when the pin is a team city', () => {

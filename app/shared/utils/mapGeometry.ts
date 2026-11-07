@@ -10,9 +10,15 @@ import type { MapRegion } from '@/shared/data/mapRegions'
  * (`MAP_WINDOW_ASPECT`), so the handoff's measured contain-fit
  * (`iniciarMapa`: `s = min(W / w, H / h)`, centred) reduces to constants per
  * region, expressed relative to the canvas: a zoom over the canvas's own
- * scale and a translation in percent of the canvas box. CSS applies them as
- * `translate(tx, ty) scale(zoom)` with origin `0 0`; percentages hold at any
- * width, so nothing is measured at runtime.
+ * scale and a translation in percent of the canvas box (`regionTransform`);
+ * percentages hold at any width, so nothing is measured at runtime.
+ *
+ * Feature 50 (Roberto, 2026-11-06): CSS no longer applies that as
+ * `translate + scale`. A scaled layer is rasterized at its unscaled size and
+ * the bitmap is magnified, which is what blurred the dots on iPhone. The
+ * same numbers are re-expressed as a frame in percent of the window
+ * (`regionFrame`), so the canvas is laid out at its final size and the SVG
+ * paints its dots there.
  */
 export interface RegionTransform {
   zoom: number
@@ -41,6 +47,35 @@ export function regionTransform(
     zoom,
     translateXPercent: translateX * PERCENT,
     translateYPercent: translateY * PERCENT,
+  }
+}
+
+/**
+ * Where the zoomed canvas sits, in percent of the window box: its width
+ * (`zoom` times the window's) and its top-left corner. `left` and `width`
+ * resolve against the window's width, `top` against its height, so the
+ * canvas-height translation is converted through both proportions. Every
+ * map point lands where `regionTransform` puts it (feature 50).
+ */
+export interface RegionFrame {
+  widthPercent: number
+  leftPercent: number
+  topPercent: number
+}
+
+export function regionFrame(
+  region: MapRegion,
+  windowAspect: number
+): RegionFrame {
+  const { zoom, translateXPercent, translateYPercent } = regionTransform(
+    region,
+    windowAspect
+  )
+  const canvasToWindowHeight = (MAP_SIZE.height / MAP_SIZE.width) * windowAspect
+  return {
+    widthPercent: zoom * PERCENT,
+    leftPercent: translateXPercent,
+    topPercent: translateYPercent * canvasToWindowHeight,
   }
 }
 

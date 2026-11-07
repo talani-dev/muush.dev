@@ -12,7 +12,7 @@ import { useMapRegion } from '@/shared/logic/useMapRegion'
 import MapPin from '@/shared/ui/MapPin.vue'
 import MapRegionTabs from '@/shared/ui/MapRegionTabs.vue'
 import { mapCityGroups } from '@/shared/utils/mapCityList'
-import { pinPosition, regionTransform } from '@/shared/utils/mapGeometry'
+import { pinPosition, regionFrame } from '@/shared/utils/mapGeometry'
 
 /**
  * The dotted world map with the team's pins (feature 44, spec FR-007…
@@ -25,9 +25,22 @@ import { pinPosition, regionTransform } from '@/shared/utils/mapGeometry'
  *   available (capped at 1408), at 80 % opacity, with no tabs.
  * - Below `lg` a 342 : 240 box (radius 16, opaque, capped at 640) shows one
  *   region of the same canvas, chosen with the America / Europa tabs. The
- *   zoom is `translate + scale` from constants per region
- *   (`regionTransform`), animated over `--lento` with the Muush ease, and
- *   instant under reduced motion. America is the server and no-script state.
+ *   zoom is a frame from constants per region (`regionFrame`): the canvas
+ *   is laid out `zoom` times as wide as the box and placed by `left` /
+ *   `top`, animated over `--lento` with the Muush ease, and instant under
+ *   reduced motion. America is the server and no-script state. The
+ *   duration and ease are scoped below `lg` as well: an element with a
+ *   duration and no transition property transitions `all`, and the desktop
+ *   map must not animate at all.
+ *
+ *   Feature 50 (Roberto, 2026-11-06, iPhone): until then the zoom was
+ *   `translate + scale` on the canvas. A scaled layer is rasterized at its
+ *   unscaled size and the bitmap is magnified (about 5x for America, 7.4x
+ *   for Europe), so the 1.5-unit dots came out soft and pixelated on iOS
+ *   Safari. Laid out at its final size, the SVG paints the dots there and
+ *   they stay vector-sharp at rest and after every region change. There is
+ *   no transform to counter any more: the pins keep their 28 px on their
+ *   own. No raster copy of the map exists or should be added.
  *
  * The dots are inlined (`?raw`), so the map makes no request and its colour
  * is a token. They are hidden from assistive technology; the pins are
@@ -58,15 +71,14 @@ const { region, select, onKeydown } = useMapRegion()
 const zoomStyle = computed(() => {
   const current = MAP_REGIONS.find(entry => entry.name === region.value)
   if (!current) return {}
-  const { zoom, translateXPercent, translateYPercent } = regionTransform(
+  const { widthPercent, leftPercent, topPercent } = regionFrame(
     current,
     MAP_WINDOW_ASPECT
   )
   return {
-    '--mapa-tx': `${translateXPercent}%`,
-    '--mapa-ty': `${translateYPercent}%`,
-    '--mapa-zoom': `${zoom}`,
-    '--mapa-contra': `${1 / zoom}`,
+    '--mapa-ancho': `${widthPercent}%`,
+    '--mapa-x': `${leftPercent}%`,
+    '--mapa-y': `${topPercent}%`,
   }
 })
 
@@ -107,7 +119,7 @@ const cityGroups = computed(() =>
     >
       <div
         data-lienzo
-        class="absolute inset-x-0 top-0 aspect-mapa w-full origin-top-left transition-transform duration-(--lento) ease-muush motion-reduce:transition-none max-lg:translate-x-(--mapa-tx) max-lg:translate-y-(--mapa-ty) max-lg:scale-(--mapa-zoom)"
+        class="absolute top-0 left-0 aspect-mapa w-full motion-reduce:transition-none max-lg:top-(--mapa-y) max-lg:left-(--mapa-x) max-lg:w-(--mapa-ancho) max-lg:transition-[left,top,width] max-lg:duration-(--lento) max-lg:ease-muush"
       >
         <div
           aria-hidden="true"
@@ -148,7 +160,8 @@ const cityGroups = computed(() =>
 /*
  * `:deep()` is required: Vue's scoped transform does not rewrite `v-html`
  * content (app/assets/icons/README.md). The canvas has the map's own
- * proportion, so the SVG fills it exactly.
+ * proportion, so the SVG fills it exactly, at whatever size the region's
+ * frame lays it out (feature 50: never under a `scale` transform).
  */
 .mapa-puntos :deep(svg) {
   display: block;

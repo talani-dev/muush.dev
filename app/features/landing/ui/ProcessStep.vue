@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { StepIcon } from '@/features/landing/data/howWeWorkContent'
+import {
+  NEUTRAL_EMPHASIS,
+  type StepEmphasis,
+} from '@/features/landing/logic/timelineProgress'
 import CommitmentChip from './CommitmentChip.vue'
 
 /**
@@ -36,6 +40,16 @@ import CommitmentChip from './CommitmentChip.vue'
  * column grows to `--paso-escala` (1.04) from its top-left corner, so the
  * dot stays on the line; never under reduced motion. `focusable` makes the
  * column a tab stop from `lg` only, so keyboard users get the same preview.
+ *
+ * `emphasis` is the rail row's scroll emphasis (feature 50, Roberto
+ * 2026-11-06; `useTimelineProgress`): below `lg` the text block (title,
+ * description, chip; not the rail) takes its `scale` and `opacity`, from
+ * its top-left corner so it only ever shrinks towards the rail and stays
+ * inside the gutter. `scale` and `opacity` change no layout, so nothing
+ * moves and the text stays selectable; they follow the scroll with the
+ * fill's own 120 ms catch-up (`--progreso-paso`, 0 under reduced motion,
+ * where the scale is already 1). Whole by default and from `lg`, where the
+ * block is `contents` and the columns keep their hover / focus behaviour.
  */
 interface Props {
   number: string
@@ -50,6 +64,7 @@ interface Props {
   isLast: boolean
   raised?: boolean
   focusable?: boolean
+  emphasis?: StepEmphasis
 }
 
 const {
@@ -65,6 +80,7 @@ const {
   isLast,
   raised = false,
   focusable = false,
+  emphasis = NEUTRAL_EMPHASIS,
 } = defineProps<Props>()
 
 const UNLIT_DOT =
@@ -72,6 +88,10 @@ const UNLIT_DOT =
 const FADE =
   'transition-colors duration-(--medio) ease-muush motion-reduce:transition-none'
 const segmentStyle = computed(() => ({ '--relleno': `${fill}` }))
+const emphasisStyle = computed(() => ({
+  '--paso-texto-escala': `${emphasis.scale}`,
+  '--paso-texto-opacidad': `${emphasis.opacity}`,
+}))
 </script>
 
 <template>
@@ -117,7 +137,11 @@ const segmentStyle = computed(() => ({ '--relleno': `${fill}` }))
         ]"
       />
     </span>
-    <div class="flex flex-col gap-paso-texto lg:contents">
+    <div
+      data-texto-paso
+      :style="emphasisStyle"
+      class="flex origin-top-left flex-col gap-paso-texto transition-[scale,opacity] duration-(--progreso-paso) ease-linear motion-reduce:transition-none max-lg:scale-(--paso-texto-escala) max-lg:opacity-(--paso-texto-opacidad) lg:contents"
+    >
       <span
         aria-hidden="true"
         class="hidden font-texto text-paso-numero text-blanco lg:block"

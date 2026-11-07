@@ -21,7 +21,11 @@
   company, "¿Qué necesitas?" text, CV, URLs typed by the visitor, nor the
   IP. Only event names, fixed ids (section, CTA location, form name) and
   error *types*.
-- Meta Advanced Matching off (it sends a hashed email; not in the notice).
+- Meta Advanced Matching ON (Roberto, 2026-11-06, replaces the original
+  "off"): only the form's email and phone, hashed by the pixel, and only
+  after the visitor accepts Advertising. It is the single exception to the
+  rule above and never applies to GA4 events or parameters. It ships only
+  once the privacy notice covers it with Roberto's legal text.
 - No GA4 User-ID; the visitor stays pseudonymous (the `_ga` client id).
 - Google Signals off (not covered by the privacy notice).
 - GA4 retention 14 months; `_ga` `cookie_expires` 14 months.
@@ -113,14 +117,16 @@ GA4 key event is a whole event name. Custom dimensions to register:
    followed literally: the base code is not pasted in `<head>` (it would
    fire before consent) and the `<noscript>` image pixel is dropped (it
    tracks without JS, so without any possible consent). The base code is
-   loaded only after "Publicidad" is accepted; `fbq('init', id)` without
-   advanced-matching data. Events Manager: automatic advanced matching OFF
-   and automatic (codeless) event setup OFF — Roberto's side.
+   loaded only after "Publicidad" is accepted. Advanced matching is ON
+   since 2026-11-06 (§ 2): manual, in code — only the form's email and
+   phone. Events Manager: AUTOMATIC advanced matching stays OFF (it would
+   let Meta read other form fields) and automatic (codeless) event setup
+   OFF — Roberto's side.
 2. ✅ GA4 Measurement ID: `G-RHZC650SQS` (public; web stream "muush.dev",
    Roberto 2026-11-05). Admin setup of § 9 in progress on Roberto's side.
-3. Legal text if Google must appear in "Con quién los compartimos".
-4. Consent expiry (leader/reviewer recommendation: 12 months).
-5. Clau: "Analítica" category and GA copy in the `.pen`.
+3. Legal text (Roberto, 2026-11-06): the spec_author drafts the missing privacy-notice text (Google Analytics in "Con quién los compartimos", Meta advanced matching, anything this feature makes inaccurate); Roberto approves it at the gate.
+4. ✅ Consent expiry: 12 months (Roberto, 2026-11-06).
+5. ✅ Design (Roberto, 2026-11-06): no new .pen design; "Analítica" reuses the existing category row pattern; its copy and the banner copy are drafted by the spec_author and approved at the gate.
 
 ## 9 · GA4 admin setup (Roberto, in the GA4 UI)
 
@@ -128,9 +134,13 @@ Before the code ships: property time zone Mexico City and currency MXN; web
 stream for `https://muush.dev`; enhanced measurement ON for page views
 (incl. browser-history changes), scrolls, outbound clicks, file downloads;
 OFF for form interactions, site search and video; data retention 14 months
-with "reset on new activity" OFF; Google signals OFF; internal-traffic rule
-for Roberto's IPs + internal and developer-traffic filters (Testing first,
-then Active); optional Search Console link. Key events created ahead of
+with "reset on new activity" OFF; Google signals OFF; user-provided data
+collection OFF; optional Search Console link. No internal-traffic IP rule
+(Roberto, 2026-11-06): he works from changing networks, so the team excludes
+itself by rejecting the Analytics category in the consent banner on every
+device it uses (incognito + accept only to test). Done in the GA4 UI on
+2026-11-06: retention, stream + measurement ID, enhanced measurement,
+Signals and user-provided data off, time zone and currency. Key events created ahead of
 time: `generate_lead`, `book_call_click`, `contact_click`. (2026-11-05:
 this GA4 UI only lists an event once it has been received, so the three are
 starred under "Eventos recientes" after the first production events. The

@@ -129,4 +129,38 @@ describe('MobileFooter', () => {
       '© 2026 muush · Todos los derechos reservados'
     )
   })
+
+  it('should give every link of the line a 44 px tap area side by side when rendered', () => {
+    /* Feature 50 (Roberto 2026-11-06): WCAG 2.5.5, no two areas overlapping
+       (a wrapping flex row), the separator kept between them. */
+    const line = render('en').find('[data-footer-enlaces]')
+    const entries = line.findAll('li > :first-child')
+
+    expect(line.classes()).toEqual(
+      expect.arrayContaining(['flex', 'flex-wrap', '-mx-toque-x'])
+    )
+    expect(entries).toHaveLength(7)
+    for (const entry of entries) {
+      expect(entry.classes()).toEqual(
+        expect.arrayContaining(['min-h-toque', 'min-w-toque', 'px-toque-x'])
+      )
+      /* A radius would clip the corners out of the tap area. */
+      expect(entry.classes()).not.toContain('rounded-control')
+    }
+    expect(line.findAll('[aria-hidden="true"]').map(dot => dot.text())).toEqual(
+      Array(6).fill('·')
+    )
+  })
+
+  it('should give both legal links a 44 px tap area without pulling the copyright over them', () => {
+    const legal = render().find('[data-footer-legal]')
+
+    for (const link of legal.findAll('a')) {
+      expect(link.classes()).toEqual(
+        expect.arrayContaining(['min-h-toque', 'min-w-toque', 'px-toque-x'])
+      )
+    }
+    expect(legal.classes()).toContain('-mt-toque-sangria')
+    expect(legal.classes()).not.toContain('-my-toque-sangria')
+  })
 })
