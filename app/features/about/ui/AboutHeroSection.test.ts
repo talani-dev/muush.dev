@@ -72,4 +72,9 @@ describe('AboutHeroSection', () => {
   it('should give the section its drawn minimum height when rendered', () => {
     expect(render().find('section').classes()).toContain('min-h-pagina-alto')
   })
+
+  it('should mark its root for section timing when rendered', () => {
+    /* Feature 49 · `section_view` (tracking plan § 5). */
+    expect(render().attributes('data-track-section')).toBe('hero')
+  })
 })

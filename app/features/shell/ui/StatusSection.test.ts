@@ -118,4 +118,34 @@ describe('StatusSection', () => {
       expect(wrapper.find('p').exists()).toBe(false)
     }
   })
+
+  it('should mark both buttons with their tracking attributes when given', () => {
+    const copy = STATUS_COPY.faq.es
+    const wrapper = mount(StatusSection, {
+      props: {
+        ...copy,
+        primary: {
+          ...copy.primary,
+          trackAttrs: {
+            'data-track': 'assessment_cta_click',
+            'data-track-location': 'faq',
+          },
+        },
+        secondary: {
+          ...copy.secondary,
+          trackAttrs: {
+            'data-track': 'book_call_click',
+            'data-track-location': 'faq',
+          },
+        },
+      },
+    })
+
+    expect(wrapper.findComponent(PrimaryButton).attributes('data-track')).toBe(
+      'assessment_cta_click'
+    )
+    expect(wrapper.findComponent(GlassButton).attributes('data-track')).toBe(
+      'book_call_click'
+    )
+  })
 })

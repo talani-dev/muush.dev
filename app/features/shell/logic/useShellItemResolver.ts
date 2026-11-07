@@ -4,6 +4,7 @@ import type {
   ShellRouteName,
 } from '@/features/shell/data/types'
 import type { SectionAnchor } from '@/shared/data/sectionAnchors'
+import { trackAttrs } from '@/shared/data/trackingEvents'
 
 /** What the resolver needs from the Nuxt runtime, and nothing else. */
 export interface ShellItemResolverDeps {
@@ -111,6 +112,9 @@ export function createShellItemResolver({
         !destination.href.startsWith('mailto:'),
       ...(current === undefined ? {} : { current }),
       ...(destination.kind === 'top' ? { scrollsToTop: true as const } : {}),
+      ...(item.track && href !== undefined
+        ? { trackAttrs: trackAttrs(item.track) }
+        : {}),
     }
   }
 

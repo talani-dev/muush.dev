@@ -170,10 +170,18 @@ describe('forms copy · forms.contact.* (feature 45)', () => {
     })
   })
 
-  it('should carry no website field and no v1 key when the locales are read', () => {
+  it('should carry the approved website field and no v1 key when the locales are read', () => {
+    /* Feature 49 (copy-drafts § D, from the .pen, Roberto 2026-11-07)
+       supersedes "no website field" (Roberto 2026-10-31). No error key. */
+    expect(at(es, 'forms.contact.fields.website')).toEqual({
+      label: 'Tu sitio web o redes (opcional)',
+      placeholder: 'https://',
+    })
+    expect(at(en, 'forms.contact.fields.website')).toEqual({
+      label: 'Your website or social media (optional)',
+      placeholder: 'https://',
+    })
     for (const locale of [es, en]) {
-      const fields = at(locale, 'forms.contact.fields') as Messages
-      expect(Object.keys(fields)).not.toContain('website')
       expect(at(locale, 'forms.contact.success.channel')).toBeUndefined()
       expect(at(locale, 'forms.contact.error.title')).toBeUndefined()
       expect(at(locale, 'forms.contact.error.fallback')).toBeUndefined()

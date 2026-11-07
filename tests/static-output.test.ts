@@ -933,8 +933,8 @@ describe('static output · the Diagnóstico y contacto section (feature 45)', ()
    * "Diagnóstico y contacto" over the listón (spec FR-022…FR-025). Claims
    * only the artefact can settle: the shared anchor resolves on both homes,
    * the form ships `novalidate` with no `action`, the prerendered (and
-   * no-script) page is the single view with every field, no website field,
-   * the privacy box unticked and the submit unavailable until it is ticked
+   * no-script) page is the single view with every field, the optional
+   * website field included since feature 49, the privacy box unticked and the submit unavailable until it is ticked
    * (FR-008, FR-009, FR-016). The network guards stay in "form submission
    * (feature 029)" below and in `tests/forms-config.test.ts`.
    */
@@ -1001,13 +1001,32 @@ describe('static output · the Diagnóstico y contacto section (feature 45)', ()
     }
   })
 
-  it('should build no website or social field when generated', () => {
+  it('should build the optional website field and no social field when generated', () => {
+    /* Feature 49 (FR-060–FR-063): a plain, optional text input of at most
+       300 characters, between "¿Cómo te identificas?" and "¿Qué necesitas?". */
     for (const route of HOMES) {
       const section = assessmentSection(route)
+      const input = section.match(/<input[^>]*id="website"[^>]*>/)?.[0] ?? ''
 
-      expect(section, route).not.toMatch(/id="(website|social)"/)
-      expect(section, route).not.toMatch(/sitio web o redes|website or social/i)
+      expect(input, route).toContain('type="text"')
+      expect(input, route).toContain('maxlength="300"')
+      expect(input, route).toContain('placeholder="https://"')
+      expect(input, route).not.toContain('required')
+      expect(input, route).not.toContain('name="muush_website"')
+      expect(section.indexOf('id="identity"'), route).toBeLessThan(
+        section.indexOf('id="website"')
+      )
+      expect(section.indexOf('id="website"'), route).toBeLessThan(
+        section.indexOf('id="need"')
+      )
+      expect(section, route).not.toMatch(/id="social"/)
     }
+    expect(assessmentSection('/es')).toContain(
+      'Tu sitio web o redes (opcional)'
+    )
+    expect(assessmentSection('/en')).toContain(
+      'Your website or social media (optional)'
+    )
   })
 
   it('should ship the privacy box unticked and the submit unavailable until it is ticked', () => {

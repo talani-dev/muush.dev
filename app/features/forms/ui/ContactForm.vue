@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, useTemplateRef } from 'vue'
-import type {
-  ContactFieldId,
-  ContactFormContent,
-  ContactFormValues,
+import {
+  type ContactFieldId,
+  type ContactFormContent,
+  type ContactFormValues,
+  WEBSITE_MAX_CODE_POINTS,
 } from '@/features/forms/data/contactFields'
 import {
   CONTACT_STEP_FIELDS,
@@ -26,9 +27,11 @@ import TextField from './TextField.vue'
 /**
  * ContactForm — the v2 diagnóstico form (feature 45, US1–US3; pen
  * extract-45 §§ 2–4): Nombre | Correo, Empresa o proyecto | ¿Cómo te
- * identificas?, ¿Qué necesitas?, the contact channel, the privacy consent and
- * "Quiero mi diagnóstico", in the shared `SteppedForm` (two steps below
- * 768 px). No website field (Roberto 2026-10-31).
+ * identificas?, Tu sitio web o redes (opcional), ¿Qué necesitas?, the contact
+ * channel, the privacy consent and "Quiero mi diagnóstico", in the shared
+ * `SteppedForm` (two steps below 768 px). The website field is Roberto's
+ * decision of 2026-11-07 (feature 49, the `.pen`'s position), superseding
+ * "no website field" of 2026-10-31: free text, optional, no error.
  *
  * The logic is the existing `useContactForm` (validation, Turnstile, spam
  * guard, server marks, dial code), unchanged; `useFormSteps` adds the steps,
@@ -53,7 +56,11 @@ const shell = useTemplateRef<InstanceType<typeof SteppedForm>>('shell')
 const panel = computed(() => (shell.value?.$el as HTMLElement | null) ?? null)
 const challengeHost = computed(() => shell.value?.challengeHost ?? null)
 
-const steps = useFormSteps({ stepFields: CONTACT_STEP_FIELDS, panel })
+const steps = useFormSteps({
+  formId: 'assessment',
+  stepFields: CONTACT_STEP_FIELDS,
+  panel,
+})
 const form = useContactForm({
   submitter: props.submitter,
   challengeHost,
@@ -99,6 +106,7 @@ const identityOptions = computed(() =>
 <template>
   <SteppedForm
     ref="shell"
+    data-track-form="assessment"
     v-model:honeypot="honeypot"
     :chrome="content"
     :is-stepped="isStepped"
@@ -143,6 +151,15 @@ const identityOptions = computed(() =>
           required
         />
       </div>
+      <TextField
+        id="website"
+        v-model="values.website"
+        autocomplete="url"
+        :maxlength="WEBSITE_MAX_CODE_POINTS"
+        :label="content.fields.website.label"
+        :placeholder="content.fields.website.placeholder"
+        :readonly="busy"
+      />
       <TextareaField
         id="need"
         v-model="values.need"

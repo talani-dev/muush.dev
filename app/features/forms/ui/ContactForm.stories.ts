@@ -37,6 +37,7 @@ const FILLED: Record<FixtureLocale, Partial<ContactFormValues>> = {
     email: 'mf.ruiz@ejemplo.mx',
     company: 'Inmobiliaria Altavista',
     identity: 'realEstate',
+    website: 'casaolivo.mx',
     need: 'Queremos rehacer el sitio de la desarrolladora.',
   },
   en: {
@@ -44,6 +45,7 @@ const FILLED: Record<FixtureLocale, Partial<ContactFormValues>> = {
     email: 'mary@example.com',
     company: 'Altavista Realty',
     identity: 'realEstate',
+    website: 'casaolivo.mx',
     need: 'We want to rebuild our developer website.',
   },
 }

@@ -3,6 +3,8 @@ import type {
   SubmissionOutcome,
   SubmissionProgress,
 } from '@/features/forms/data/submissionContract'
+import type { FormFieldId, FormId } from '@/shared/data/trackingEvents'
+import { emitTrackingEvent } from '@/shared/logic/trackingBus'
 import { focusField } from './focusField'
 import {
   activeServerErrors,
@@ -46,6 +48,12 @@ import { useSpamGuard } from './useSpamGuard'
  * produce only from a 200 with `ok: true` (spec FR-012). A tripped spam guard
  * shows the generic error and keeps every value (spec OA-3, approved
  * 2026-10-05). Nothing is ever cleared on a failed attempt.
+ *
+ * Feature 49 reports the funnel on the tracking bus (tracking plan § 4):
+ * `form_start` on the first engagement, `form_submit` when a valid attempt
+ * leaves, `form_error` with its type (and, for validation, the first
+ * invalid field's id, never its value). A tripped spam guard and a failed
+ * CV upload report nothing: neither is one of the plan's error types.
  */
 export type SubmitState =
   | 'idle'
@@ -68,8 +76,10 @@ export interface FormSubmitter<V, F extends string> {
 
 export interface FormSubmitStateOptions<
   V extends MarkableValues,
-  F extends string,
+  F extends FormFieldId,
 > {
+  /** Which form this is, in the events it reports (feature 49). */
+  formId: FormId
   values: Ref<V>
   validate: (values: V) => Partial<Record<F, string>>
   fieldOrder: readonly F[]
@@ -97,10 +107,12 @@ export interface FormSubmitStateReturn<F extends string> {
   attemptSubmit: () => Promise<void>
 }
 
-export function useFormSubmitState<V extends MarkableValues, F extends string>(
-  options: FormSubmitStateOptions<V, F>
-): FormSubmitStateReturn<F> {
-  const { values, validate, fieldOrder, serverErrorKeys, submitter } = options
+export function useFormSubmitState<
+  V extends MarkableValues,
+  F extends FormFieldId,
+>(options: FormSubmitStateOptions<V, F>): FormSubmitStateReturn<F> {
+  const { formId, values, validate, fieldOrder, serverErrorKeys, submitter } =
+    options
   const guard = useSpamGuard(options.now)
   const busyStateFor: (values: V) => BusyState =
     options.busyStateFor ?? (() => 'sending')
@@ -124,9 +136,23 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
     void focusField(fieldId)
   }
 
+  let started = false
+
   function onEngage(): void {
+    if (!started) {
+      started = true
+      emitTrackingEvent({ name: 'form_start', params: { form: formId } })
+    }
     const host = options.challengeHost.value
     if (host) submitter.engage(host)
+  }
+
+  function reportInvalid(field: F | undefined): void {
+    if (!field) return
+    emitTrackingEvent({
+      name: 'form_error',
+      params: { form: formId, error_type: 'validation', field },
+    })
   }
 
   function applyOutcome(outcome: SubmissionOutcome<F>): void {
@@ -145,10 +171,15 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
         values.value
       )
       state.value = 'invalid'
+      reportInvalid(firstInvalidFieldId.value)
       revealAndFocusFirstInvalid()
       return
     }
     state.value = 'server-error'
+    emitTrackingEvent({
+      name: 'form_error',
+      params: { form: formId, error_type: outcome.reason ?? 'server' },
+    })
   }
 
   function isLocked(): boolean {
@@ -172,6 +203,7 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
 
     if (firstInvalidFieldId.value) {
       state.value = 'invalid'
+      reportInvalid(firstInvalidFieldId.value)
       revealAndFocusFirstInvalid()
       return
     }
@@ -181,6 +213,7 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
     }
 
     onEngage()
+    emitTrackingEvent({ name: 'form_submit', params: { form: formId } })
     const snapshot = { ...toRaw(values.value) }
     state.value = busyStateFor(snapshot)
     applyOutcome(await submitSafely(snapshot))
@@ -197,7 +230,7 @@ export function useFormSubmitState<V extends MarkableValues, F extends string>(
     try {
       return await submitter.submit(snapshot, progress)
     } catch {
-      return { kind: 'failure' }
+      return { kind: 'failure', reason: 'server' }
     }
   }
 

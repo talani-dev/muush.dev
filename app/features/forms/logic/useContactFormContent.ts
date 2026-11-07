@@ -64,6 +64,11 @@ export function useContactFormContent(): ComputedRef<ContactFormContent> {
           other: t('forms.contact.fields.identity.options.other'),
         },
       },
+      /* Feature 49 (copy-drafts § D): label and placeholder only. */
+      website: {
+        label: t('forms.contact.fields.website.label'),
+        placeholder: t('forms.contact.fields.website.placeholder'),
+      },
       need: {
         label: t('forms.contact.fields.need.label'),
         placeholder: t('forms.contact.fields.need.placeholder'),
@@ -96,6 +101,10 @@ export function useContactFormContent(): ComputedRef<ContactFormContent> {
       {
         label: t('forms.contact.success.action'),
         href: CALL_BOOKING_URL,
+        track: {
+          name: 'book_call_click',
+          params: { cta_location: 'form_success' },
+        },
       },
       localePath({ name: 'privacy' })
     ),

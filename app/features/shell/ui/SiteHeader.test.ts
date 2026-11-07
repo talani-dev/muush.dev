@@ -400,3 +400,21 @@ describe('SiteHeader · desktop idle hide (feature 45, reopen 1)', () => {
     media.restore()
   })
 })
+
+describe('SiteHeader · tracking (feature 49)', () => {
+  it('should mark the CTA with its tracking attributes when given', () => {
+    const wrapper = render({
+      cta: {
+        ...PROPS.cta,
+        trackAttrs: {
+          'data-track': 'assessment_cta_click',
+          'data-track-location': 'nav',
+        },
+      },
+    })
+    const cta = wrapper.find('a[href="/es#diagnostico"]')
+
+    expect(cta.attributes('data-track')).toBe('assessment_cta_click')
+    expect(cta.attributes('data-track-location')).toBe('nav')
+  })
+})

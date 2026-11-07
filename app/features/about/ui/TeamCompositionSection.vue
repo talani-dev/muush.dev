@@ -27,6 +27,7 @@ const { pill, headingFirst, headingSecond, cards } = defineProps<Props>()
 <template>
   <section
     class="flex flex-col items-start gap-composicion-gap px-gutter pt-composicion-arriba pb-composicion-abajo lg:items-center lg:px-gutter-desktop lg:text-center"
+    data-track-section="how_it_comes_together"
   >
     <Pill class="pill-aire" :label="pill" />
     <Heading

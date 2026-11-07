@@ -50,4 +50,33 @@ describe('FormSuccess', () => {
 
     expect(wrapper.find('a').attributes('href')).toBe('/es')
   })
+
+  it('should mark the action with its tracking attributes when it reports a click', () => {
+    const wrapper = mount(FormSuccess, {
+      props: {
+        ...props,
+        action: {
+          label: 'Agenda una llamada',
+          href: 'https://example.com',
+          track: {
+            name: 'book_call_click',
+            params: { cta_location: 'form_success' },
+          },
+        },
+      },
+    })
+
+    expect(wrapper.find('a').attributes('data-track')).toBe('book_call_click')
+    expect(wrapper.find('a').attributes('data-track-location')).toBe(
+      'form_success'
+    )
+  })
+
+  it('should carry no tracking attribute when the action reports nothing', () => {
+    const wrapper = mount(FormSuccess, {
+      props: { ...props, action: { label: 'Volver al inicio', to: '/es' } },
+    })
+
+    expect(wrapper.find('a').attributes('data-track')).toBeUndefined()
+  })
 })

@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { FormChromeContent } from '@/features/forms/data/formChrome'
+import {
+  type FormChromeContent,
+  SEND_NOTICE_EMAIL_TRACK,
+} from '@/features/forms/data/formChrome'
+import { trackAttrs } from '@/shared/data/trackingEvents'
 import FormNotice from './FormNotice.vue'
 
 /**
@@ -35,9 +39,14 @@ defineEmits<{ 'submit-without-cv': [] }>()
     </template>
     <template v-else>
       {{ error.before }}
-      <a :href="error.href" class="underline underline-offset-2 foco">{{
-        error.email
-      }}</a>{{ error.after }}
+      <a
+        :href="error.href"
+        class="underline underline-offset-2 foco"
+        v-bind="trackAttrs(SEND_NOTICE_EMAIL_TRACK)"
+        >{{
+          error.email
+        }}</a
+      >{{ error.after }}
     </template>
   </FormNotice>
 </template>

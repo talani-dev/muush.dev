@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { APPLICATION_FIELD_ORDER } from './applicationFields'
-import { CONTACT_FIELD_ORDER } from './contactFields'
+import { CONTACT_FIELD_ORDER, initialContactFormValues } from './contactFields'
 import { APPLICATION_STEP_FIELDS, CONTACT_STEP_FIELDS } from './formSteps'
 
 describe('form steps · membership (data-model § 1)', () => {
@@ -26,4 +26,26 @@ describe('form steps · membership (data-model § 1)', () => {
       ])
     })
   }
+})
+
+describe('form steps · website field (feature 49, FR-061)', () => {
+  it('should put the website in step 2 between identity and need', () => {
+    expect(CONTACT_STEP_FIELDS[2]).toEqual([
+      'company',
+      'identity',
+      'website',
+      'need',
+    ])
+  })
+
+  it('should order the website between identity and need in the field order', () => {
+    const order = [...CONTACT_FIELD_ORDER]
+
+    expect(order.indexOf('website')).toBe(order.indexOf('identity') + 1)
+    expect(order.indexOf('need')).toBe(order.indexOf('website') + 1)
+  })
+
+  it('should start the website empty', () => {
+    expect(initialContactFormValues().website).toBe('')
+  })
 })

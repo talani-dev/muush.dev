@@ -52,7 +52,11 @@ const {
 </script>
 
 <template>
-  <section :id="SECTION_ANCHORS.workWithUs" class="relative isolate">
+  <section
+    :id="SECTION_ANCHORS.workWithUs"
+    class="relative isolate"
+    data-track-section="work_with_us"
+  >
     <ShaderBackground preset="workWithUs" />
     <div
       class="relative z-10 px-gutter pt-bloque-y pb-diagnostico-abajo lg:px-gutter-desktop"

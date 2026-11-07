@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   type ApplicationFormValues,
   initialApplicationFormValues,
@@ -12,13 +12,19 @@ import type {
   CareersPayload,
   CvUploadGrant,
 } from '@/features/forms/data/submissionContract'
+import type { TrackingEvent } from '@/shared/data/trackingEvents'
+import { onTrackingEvent, resetTrackingBus } from '@/shared/logic/trackingBus'
 import {
   type CvUploadOutcome,
   createFormsApiClient,
   type FetchLike,
   type FormsApiClient,
 } from './formsApiClient'
-import { submitApplicationFlow, submitContactFlow } from './submissionFlows'
+import {
+  leadUserData,
+  submitApplicationFlow,
+  submitContactFlow,
+} from './submissionFlows'
 
 /** A client double recording the order of every call. No network. */
 function fakeClient(script: {
@@ -95,6 +101,33 @@ function application(
   }
 }
 
+describe('submitContactFlow · website (feature 49, FR-064)', () => {
+  it('should fail generically when the server rejects website', async () => {
+    const { client } = fakeClient({
+      contact: [{ kind: 'validation', fields: ['website'] }],
+    })
+
+    expect(
+      await submitContactFlow(
+        { ...contact, website: 'casaolivo.mx' },
+        { client, getToken: countingTokens(), locale: 'es' }
+      )
+    ).toEqual(expect.objectContaining({ kind: 'failure' }))
+  })
+
+  it('should fail with no request when the website is over 300 code points', async () => {
+    const { client } = fakeClient({})
+
+    const outcome = await submitContactFlow(
+      { ...contact, website: `${'a'.repeat(300)}😀` },
+      { client, getToken: countingTokens(), locale: 'es' }
+    )
+
+    expect(outcome).toEqual(expect.objectContaining({ kind: 'failure' }))
+    expect(client.postContact).not.toHaveBeenCalled()
+  })
+})
+
 describe('submitContactFlow', () => {
   it('should succeed with one token when the API answers ok', async () => {
     const { client, log } = fakeClient({})
@@ -131,7 +164,7 @@ describe('submitContactFlow', () => {
         getToken: countingTokens(),
         locale: 'es',
       })
-    ).toEqual(FAILURE)
+    ).toMatchObject(FAILURE)
   })
 
   it('should retry once with a fresh token and succeed when the first token was rejected', async () => {
@@ -158,7 +191,7 @@ describe('submitContactFlow', () => {
         getToken: countingTokens(),
         locale: 'es',
       })
-    ).toEqual(FAILURE)
+    ).toMatchObject(FAILURE)
     expect(log).toHaveLength(2)
   })
 
@@ -170,7 +203,7 @@ describe('submitContactFlow', () => {
 
     expect(
       await submitContactFlow(contact, { client, getToken, locale: 'es' })
-    ).toEqual(FAILURE)
+    ).toMatchObject(FAILURE)
     expect(log).toEqual([])
   })
 
@@ -182,7 +215,7 @@ describe('submitContactFlow', () => {
         { ...contact, identity: '' },
         { client, getToken: countingTokens(), locale: 'es' }
       )
-    ).toEqual(FAILURE)
+    ).toMatchObject(FAILURE)
   })
 })
 
@@ -212,7 +245,7 @@ describe('submitContactFlow · real client classification over a mocked fetch', 
         getToken: countingTokens(),
         locale: 'es',
       })
-    ).toEqual(FAILURE)
+    ).toMatchObject(FAILURE)
   })
 })
 
@@ -311,7 +344,7 @@ describe('WhatsApp dial code over a mocked fetch (feature 32)', () => {
         getToken: countingTokens(),
         locale: 'es',
       })
-    ).toEqual(FAILURE)
+    ).toMatchObject(FAILURE)
   })
 })
 
@@ -535,7 +568,7 @@ describe('submitApplicationFlow', () => {
         getToken: countingTokens(),
         locale: 'es',
       })
-    ).toEqual(FAILURE)
+    ).toMatchObject(FAILURE)
   })
 
   it('should return field errors for the role when the server rejects areaRole', async () => {
@@ -563,7 +596,7 @@ describe('submitApplicationFlow', () => {
         getToken: countingTokens(),
         locale: 'es',
       })
-    ).toEqual(FAILURE)
+    ).toMatchObject(FAILURE)
   })
 
   it('should resolve to failure rather than throw when the role is not a select option', async () => {
@@ -575,7 +608,7 @@ describe('submitApplicationFlow', () => {
         getToken: countingTokens(),
         locale: 'es',
       })
-    ).toEqual(FAILURE)
+    ).toMatchObject(FAILURE)
   })
 })
 
@@ -714,5 +747,270 @@ describe('submitApplicationFlow · real client over a mocked fetch', () => {
     const careers = calls.filter(([url]) => url === `${API}/careers`)
     expect(careers).toHaveLength(1)
     expect(bodyOf(careers[0]?.[1]).cvId).toBe('cv-2')
+  })
+})
+
+describe('flows · tracking (feature 49)', () => {
+  function recordEvents(): TrackingEvent[] {
+    const events: TrackingEvent[] = []
+    onTrackingEvent(event => events.push(event))
+    return events
+  }
+
+  afterEach(() => {
+    resetTrackingBus()
+  })
+
+  it('should report generate_lead with the preference and the email only when the assessment is confirmed', async () => {
+    const events = recordEvents()
+    const { client } = fakeClient({})
+
+    await submitContactFlow(
+      { ...contact, website: 'casaolivo.mx', company: 'Altavista' },
+      { client, getToken: countingTokens(), locale: 'es' }
+    )
+
+    expect(events).toEqual([
+      {
+        name: 'form_response',
+        params: { form: 'assessment', result: 'ok' },
+      },
+      {
+        name: 'generate_lead',
+        params: { form: 'assessment', contact_preference: 'email' },
+        userData: { email: 'ana@muush.dev' },
+      },
+    ])
+  })
+
+  it('should add the phone as dial code and digits when WhatsApp was chosen', () => {
+    expect(
+      leadUserData({
+        ...contact,
+        email: '  Ana@Muush.dev ',
+        contactPreference: 'whatsapp',
+        whatsappCountry: 'MX',
+        whatsapp: '55 4433 2211',
+      })
+    ).toEqual({ email: 'Ana@Muush.dev', phone: '+525544332211' })
+  })
+
+  it('should report no lead when the assessment is not confirmed', async () => {
+    const events = recordEvents()
+    const { client } = fakeClient({ contact: [FAILURE] })
+
+    await submitContactFlow(contact, {
+      client,
+      getToken: countingTokens(),
+      locale: 'es',
+    })
+
+    expect(events.map(event => event.name)).not.toContain('generate_lead')
+  })
+
+  it('should give each failure its reason', async () => {
+    const send = (result: ApiResult<unknown>[]) =>
+      submitContactFlow(contact, {
+        client: fakeClient({ contact: result }).client,
+        getToken: countingTokens(),
+        locale: 'es',
+      })
+
+    expect(await send([CHALLENGE, CHALLENGE])).toEqual({
+      kind: 'failure',
+      reason: 'challenge_failed',
+    })
+    expect(await send([{ kind: 'failure', network: true }])).toEqual({
+      kind: 'failure',
+      reason: 'network',
+    })
+    expect(await send([FAILURE])).toEqual({ kind: 'failure', reason: 'server' })
+  })
+
+  it('should report application_submit with the CV flag when the application is confirmed', async () => {
+    const events = recordEvents()
+
+    await submitApplicationFlow(application({ cv }), {
+      client: fakeClient({}).client,
+      getToken: countingTokens(),
+      locale: 'es',
+    })
+    await submitApplicationFlow(application(), {
+      client: fakeClient({}).client,
+      getToken: countingTokens(),
+      locale: 'es',
+    })
+
+    expect(events.filter(event => event.name !== 'form_response')).toEqual([
+      {
+        name: 'application_submit',
+        params: { form: 'application', with_cv: true },
+      },
+      {
+        name: 'application_submit',
+        params: { form: 'application', with_cv: false },
+      },
+    ])
+  })
+})
+
+describe('flows · form_response (feature 49, Roberto 2026-11-07)', () => {
+  function responsesOf(events: TrackingEvent[]) {
+    return events.filter(event => event.name === 'form_response')
+  }
+
+  function recordEvents(): TrackingEvent[] {
+    const events: TrackingEvent[] = []
+    onTrackingEvent(event => events.push(event))
+    return events
+  }
+
+  afterEach(() => {
+    resetTrackingBus()
+  })
+
+  const sendContact = (script: ApiResult<unknown>[]) =>
+    submitContactFlow(contact, {
+      client: fakeClient({ contact: script }).client,
+      getToken: countingTokens(),
+      locale: 'es',
+    })
+
+  it('should report one ok response when the assessment API answered ok', async () => {
+    const events = recordEvents()
+
+    await sendContact([])
+
+    expect(responsesOf(events)).toEqual([
+      { name: 'form_response', params: { form: 'assessment', result: 'ok' } },
+    ])
+  })
+
+  it.each([
+    [[{ kind: 'failure', network: true }], 'network'],
+    [[FAILURE], 'server'],
+    [[CHALLENGE, CHALLENGE], 'challenge_failed'],
+    [[{ kind: 'validation', fields: ['email'] }], 'validation'],
+    [[{ kind: 'validation', fields: ['turnstileToken'] }], 'validation'],
+  ] as [ApiResult<unknown>[], string][])(
+    'should report one error response typed %j → %s',
+    async (script, errorType) => {
+      const events = recordEvents()
+
+      await sendContact(script)
+
+      expect(responsesOf(events)).toEqual([
+        {
+          name: 'form_response',
+          params: {
+            form: 'assessment',
+            result: 'error',
+            error_type: errorType,
+          },
+        },
+      ])
+    }
+  )
+
+  it('should report only the final answer when a rejected token was retried', async () => {
+    const events = recordEvents()
+
+    await sendContact([CHALLENGE])
+
+    expect(responsesOf(events)).toEqual([
+      { name: 'form_response', params: { form: 'assessment', result: 'ok' } },
+    ])
+  })
+
+  it('should carry no personal data', async () => {
+    const events = recordEvents()
+
+    await submitContactFlow(
+      { ...contact, website: 'casaolivo.mx', company: 'Altavista' },
+      {
+        client: fakeClient({ contact: [FAILURE] }).client,
+        getToken: countingTokens(),
+        locale: 'es',
+      }
+    )
+
+    const serialized = JSON.stringify(responsesOf(events))
+    for (const value of ['Ana', 'ana@muush.dev', 'casaolivo', 'Altavista']) {
+      expect(serialized).not.toContain(value)
+    }
+  })
+
+  it('should report the application answer once, with or without a CV', async () => {
+    const events = recordEvents()
+
+    await submitApplicationFlow(application({ cv }), {
+      client: fakeClient({}).client,
+      getToken: countingTokens(),
+      locale: 'es',
+    })
+    await submitApplicationFlow(application(), {
+      client: fakeClient({ careers: [{ kind: 'failure', network: true }] })
+        .client,
+      getToken: countingTokens(),
+      locale: 'es',
+    })
+
+    expect(responsesOf(events)).toEqual([
+      { name: 'form_response', params: { form: 'application', result: 'ok' } },
+      {
+        name: 'form_response',
+        params: { form: 'application', result: 'error', error_type: 'network' },
+      },
+    ])
+  })
+
+  it('should report the failed upload request as the application error', async () => {
+    const events = recordEvents()
+
+    await submitApplicationFlow(application({ cv }), {
+      client: fakeClient({ upload: [FAILURE] }).client,
+      getToken: countingTokens(),
+      locale: 'es',
+    })
+
+    expect(responsesOf(events)).toEqual([
+      {
+        name: 'form_response',
+        params: { form: 'application', result: 'error', error_type: 'server' },
+      },
+    ])
+  })
+
+  it('should report a failed CV PUT as a server error and never call /careers', async () => {
+    const events = recordEvents()
+    const { client } = fakeClient({ put: ['failed'] })
+
+    await submitApplicationFlow(application({ cv }), {
+      client,
+      getToken: countingTokens(),
+      locale: 'es',
+    })
+
+    expect(client.postCareers).not.toHaveBeenCalled()
+    expect(responsesOf(events)).toEqual([
+      {
+        name: 'form_response',
+        params: { form: 'application', result: 'error', error_type: 'server' },
+      },
+    ])
+  })
+
+  it('should report nothing when no token could be obtained, so the API was never called', async () => {
+    const events = recordEvents()
+
+    await submitContactFlow(contact, {
+      client: fakeClient({}).client,
+      getToken: vi.fn(async () => {
+        throw new Error('no token')
+      }),
+      locale: 'es',
+    })
+
+    expect(responsesOf(events)).toEqual([])
   })
 })

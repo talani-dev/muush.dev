@@ -14,7 +14,9 @@ import { scrollToTopIfCurrent } from '@/features/shell/logic/scrollToTopIfCurren
  *   without `href`.
  *
  * Classes passed by the caller land on whichever element renders. The Home
- * item (`scrollsToTop`) scrolls to the top when clicked on its own page.
+ * item (`scrollsToTop`) scrolls to the top when clicked on its own page. A
+ * CTA's `data-track*` attributes (feature 49) go on its link, never on the
+ * text-only `<span>`.
  */
 interface Props {
   item: ResolvedShellItem
@@ -29,6 +31,7 @@ const { item } = defineProps<Props>()
     :href="item.href"
     target="_blank"
     rel="noopener noreferrer"
+    v-bind="item.trackAttrs"
   >
     <slot>{{ item.label }}</slot>
   </a>
@@ -36,6 +39,7 @@ const { item } = defineProps<Props>()
     v-else-if="item.href"
     :to="item.href"
     :aria-current="item.current === 'page' ? 'page' : undefined"
+    v-bind="item.trackAttrs"
     @click="item.scrollsToTop && scrollToTopIfCurrent(item.href)"
   >
     <slot>{{ item.label }}</slot>

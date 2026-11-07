@@ -55,6 +55,7 @@ export const NAV_CTA: ShellItem = {
     name: 'index',
     anchor: SECTION_ANCHORS.assessment,
   },
+  track: { name: 'assessment_cta_click', params: { cta_location: 'nav' } },
 }
 
 /** The open menu lists the same items as the link bar (pen extract-43 § 4). */

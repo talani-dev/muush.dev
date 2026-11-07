@@ -33,6 +33,9 @@ export type ServerMarks<F extends string> = Partial<
 
 export type ErrorKeyMap<F extends string> = Partial<Record<F, string>>
 
+/* No `website` entry, on purpose (feature 49, FR-064): the field has no
+   message of its own, so a server mark on it resolves to the generic send
+   error with every value kept (Roberto, plan Q6). */
 export const CONTACT_SERVER_ERROR_KEYS: ErrorKeyMap<ContactFieldId> = {
   name: 'forms.contact.fields.name.errorRequired',
   email: 'forms.contact.fields.email.errorFormat',

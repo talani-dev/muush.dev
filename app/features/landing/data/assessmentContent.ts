@@ -7,6 +7,14 @@
  * "Lo que recibes" is stored in sentence case and drawn uppercase by the
  * list (Roberto 2026-11-02).
  */
+import type { ClickTrackingEvent } from '@/shared/data/trackingEvents'
+
+/** What "¿Prefieres hablar? Agenda una llamada" reports (feature 49). */
+export const ASSESSMENT_CALL_TRACK: ClickTrackingEvent = {
+  name: 'book_call_click',
+  params: { cta_location: 'assessment' },
+}
+
 export type ReceivesKey = 'review' | 'first' | 'deeper'
 
 export const RECEIVES_ORDER: readonly ReceivesKey[] = [

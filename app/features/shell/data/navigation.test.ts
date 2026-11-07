@@ -32,6 +32,7 @@ describe('navigation', () => {
     expect(NAV_CTA).toEqual({
       labelKey: 'shell.nav.cta',
       destination: { kind: 'anchor', name: 'index', anchor: 'diagnostico' },
+      track: { name: 'assessment_cta_click', params: { cta_location: 'nav' } },
     })
   })
 

@@ -20,6 +20,7 @@ export type ContactFieldId =
   | 'email'
   | 'company'
   | 'identity'
+  | 'website'
   | 'need'
   | 'contactPreference'
   | 'whatsappCountry'
@@ -68,6 +69,14 @@ export interface ContactFormValues {
   email: string
   company: string
   identity: IdentityOption | ''
+  /**
+   * "Tu sitio web o redes (opcional)": free text as typed (a site, a domain,
+   * a handle), never required, never validated (feature 49, FR-060–FR-063).
+   * Roberto's decision of 2026-11-07 supersedes "no se construye por ahora"
+   * of `docs/business/muush-1.0.md` § 1. Sent trimmed as `website`, or left
+   * out when empty (`logic/submissionPayloads.ts`).
+   */
+  website: string
   need: string
   contactPreference: ContactPreference
   /** The dial-code selector's country (feature 32). Never empty; kept when
@@ -88,6 +97,7 @@ export const CONTACT_FIELD_ORDER: readonly ContactFieldId[] = [
   'email',
   'company',
   'identity',
+  'website',
   'need',
   'contactPreference',
   'whatsappCountry',
@@ -109,6 +119,15 @@ export const NEED_MIN_LENGTH = 10
  */
 export const WHATSAPP_MIN_DIGITS = 6
 export const WHATSAPP_MAX_DIGITS = 14
+
+/**
+ * The longest `website` the Form Submission API accepts, in Unicode code
+ * points after trimming (`Array.from(value).length`), mirroring
+ * `validateWebsite` of the API (muush-foundation `modules/form-submission-api/
+ * src/shared/validation.js`, specs/049-consented-tracking/contracts/
+ * contact-website.md). If the API rule changes, this changes with it.
+ */
+export const WEBSITE_MAX_CODE_POINTS = 300
 
 /** Same-shape check as the native `type="email"` constraint (FR-008, spec
  * data-model.md § 1) — not RFC-complete, and not meant to be. */
@@ -140,6 +159,8 @@ export interface ContactFormContent extends FormChromeContent {
       placeholder: string
       options: Record<IdentityOption, string>
     }
+    /** Label and placeholder only: the field has no error of its own. */
+    website: ContactFormFieldContent
     need: ContactFormFieldContent
     contactPreference: ContactFormFieldContent & {
       options: Record<ContactPreference, string>
@@ -161,6 +182,7 @@ export function initialContactFormValues(): ContactFormValues {
     email: '',
     company: '',
     identity: '',
+    website: '',
     need: '',
     contactPreference: 'email',
     whatsappCountry: DEFAULT_COUNTRY,

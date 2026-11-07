@@ -80,6 +80,10 @@ describe('notFoundSectionProps', () => {
         label: 'Diagnóstico gratis',
         href: '/es#diagnostico',
         external: false,
+        trackAttrs: {
+          'data-track': 'assessment_cta_click',
+          'data-track-location': 'not_found',
+        },
       },
     })
   })
@@ -100,6 +104,10 @@ describe('notFoundSectionProps', () => {
       label: 'Free assessment',
       href: '/en#diagnostico',
       external: false,
+      trackAttrs: {
+        'data-track': 'assessment_cta_click',
+        'data-track-location': 'not_found',
+      },
     })
   })
 })
@@ -115,11 +123,19 @@ describe('faqSectionProps', () => {
         label: 'Free assessment',
         href: '/en#diagnostico',
         external: false,
+        trackAttrs: {
+          'data-track': 'assessment_cta_click',
+          'data-track-location': 'faq',
+        },
       },
       secondary: {
         label: 'Book a call',
         href: CALL_BOOKING_URL,
         external: true,
+        trackAttrs: {
+          'data-track': 'book_call_click',
+          'data-track-location': 'faq',
+        },
       },
     })
   })

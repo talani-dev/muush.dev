@@ -69,4 +69,9 @@ describe('WhereWeAreSection', () => {
     expect(pill.props('label')).toBe('Dónde estamos')
     expect(pill.classes()).toContain('pill-aire')
   })
+
+  it('should mark its root for section timing when rendered', () => {
+    /* Feature 49 · `section_view` (tracking plan § 5). */
+    expect(render().attributes('data-track-section')).toBe('where_we_are')
+  })
 })

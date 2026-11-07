@@ -1,12 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CONSENT_STORAGE_KEY } from '@/features/legal/data/cookieCategories'
+import { onTrackingEvent, resetTrackingBus } from '@/shared/logic/trackingBus'
 import { resetCookieConsentState, useCookieConsent } from './useCookieConsent'
 
-const STORED = JSON.stringify({
-  version: 1,
-  decidedAt: '2026-11-05T12:00:00.000Z',
-  categories: { advertising: true },
-})
+/* Decided "now", so the record is never expired whenever the suite runs. */
+function storedRecord(
+  categories: Record<string, boolean>,
+  decidedAt = new Date().toISOString()
+) {
+  return JSON.stringify({ version: 1, decidedAt, categories })
+}
+
+const STORED = storedRecord({ analytics: false, advertising: true })
 
 describe('useCookieConsent', () => {
   beforeEach(() => {
@@ -16,6 +21,29 @@ describe('useCookieConsent', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    resetTrackingBus()
+  })
+
+  it('should report the saved choice when analytics stays on after the save', () => {
+    const sink = vi.fn()
+    onTrackingEvent(sink)
+
+    useCookieConsent().saveChoice({ analytics: true, advertising: false })
+
+    expect(sink).toHaveBeenCalledWith({
+      name: 'cookie_preferences',
+      params: { analytics: true, ads: false },
+    })
+  })
+
+  it('should report nothing when the saved choice leaves analytics off', () => {
+    const sink = vi.fn()
+    onTrackingEvent(sink)
+
+    useCookieConsent().saveChoice({ analytics: false, advertising: true })
+    useCookieConsent().rejectAll()
+
+    expect(sink).not.toHaveBeenCalled()
   })
 
   it('should have no choice and grant nothing when storage is empty', () => {
@@ -23,6 +51,7 @@ describe('useCookieConsent', () => {
 
     expect(consent.hasDecided.value).toBe(false)
     expect(consent.consent.value).toBeNull()
+    expect(consent.isGranted('analytics')).toBe(false)
     expect(consent.isGranted('advertising')).toBe(false)
   })
 
@@ -31,7 +60,36 @@ describe('useCookieConsent', () => {
     const consent = useCookieConsent()
 
     expect(consent.hasDecided.value).toBe(true)
+    expect(consent.isGranted('analytics')).toBe(false)
     expect(consent.isGranted('advertising')).toBe(true)
+  })
+
+  it('should have no choice when the stored one is 12 months old or more', () => {
+    const decided = new Date()
+    decided.setUTCFullYear(decided.getUTCFullYear() - 1)
+    decided.setUTCDate(decided.getUTCDate() - 1)
+    localStorage.setItem(
+      CONSENT_STORAGE_KEY,
+      storedRecord(
+        { analytics: true, advertising: true },
+        decided.toISOString()
+      )
+    )
+    const consent = useCookieConsent()
+
+    expect(consent.hasDecided.value).toBe(false)
+    expect(consent.isGranted('analytics')).toBe(false)
+  })
+
+  it('should ask again when the stored choice predates the analytics category', () => {
+    localStorage.setItem(
+      CONSENT_STORAGE_KEY,
+      storedRecord({ advertising: true })
+    )
+    const consent = useCookieConsent()
+
+    expect(consent.hasDecided.value).toBe(false)
+    expect(consent.isGranted('advertising')).toBe(false)
   })
 
   it('should store every category granted when accepting all', () => {
@@ -41,7 +99,7 @@ describe('useCookieConsent', () => {
 
     expect(consent.isGranted('advertising')).toBe(true)
     const stored = JSON.parse(localStorage.getItem(CONSENT_STORAGE_KEY) ?? '')
-    expect(stored.categories).toEqual({ advertising: true })
+    expect(stored.categories).toEqual({ analytics: true, advertising: true })
     expect(stored.version).toBe(1)
   })
 
@@ -51,6 +109,7 @@ describe('useCookieConsent', () => {
     consent.rejectAll()
 
     expect(consent.hasDecided.value).toBe(true)
+    expect(consent.isGranted('analytics')).toBe(false)
     expect(consent.isGranted('advertising')).toBe(false)
   })
 
@@ -64,7 +123,7 @@ describe('useCookieConsent', () => {
     const consent = useCookieConsent()
     consent.openPreferences()
 
-    consent.saveChoice({ advertising: false })
+    consent.saveChoice({ analytics: false, advertising: false })
 
     expect(consent.preferencesOpen.value).toBe(false)
   })

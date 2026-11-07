@@ -1,6 +1,22 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.1.2 → 2.1.3
+Status: PATCH — Article I module list catches up with the code: adds `legal`
+(feature 48) and `tracking` (feature 49). No rule changes.
+
+Ratified: Roberto, "agregalo tambien", 2026-11-07 (leader session, feature 49
+spec gate).
+
+Templates and agent guidance reviewed: no module list elsewhere; no change.
+
+Deferred TODOs: none
+
+Previous report (2.1.2) follows.
+-->
+<!--
+SYNC IMPACT REPORT
+==================
 Version change: 2.1.1 → 2.1.2
 Status: PATCH — Article VII wording: the wordmark keeps the weights drawn in
 the design ("muush." 600, "dev" 400); headings stay Poppins 500.
@@ -157,8 +173,10 @@ repo's Nuxt 4 `srcDir`).
 
 The feature modules are: `shell` (nav, footer, mobile menu), `landing`
 (hero, purpose, services, projects, contact CTA), `about` (team, network,
-work-with-muush) and `forms` (the contact and application forms, which
-appear on both pages).
+work-with-muush), `forms` (the contact and application forms, which
+appear on both pages), `legal` (privacy notice, terms and cookie consent)
+and `tracking` (consent-gated Google Analytics and Meta Pixel: loaders and
+the events the site sends).
 
 Each feature has exactly three internal layers, plus a barrel:
 
@@ -415,4 +433,4 @@ Amendments require:
 - MINOR: New principle added or materially expanded.
 - PATCH: Clarification, wording, typo fix.
 
-**Version**: 2.1.2 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-01
+**Version**: 2.1.3 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-07

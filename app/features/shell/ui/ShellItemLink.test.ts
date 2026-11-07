@@ -53,4 +53,30 @@ describe('ShellItemLink', () => {
     expect(text.element.tagName).toBe('SPAN')
     expect(text.text()).toBe('Blog · próximamente')
   })
+
+  it('should carry the CTA tracking attributes on its link when it has them', () => {
+    /* Feature 49 · the delegated click listener reads these. */
+    const link = render({
+      label: 'WhatsApp',
+      href: 'https://wa.me/1',
+      external: true,
+      trackAttrs: {
+        'data-track': 'contact_click',
+        'data-track-location': 'footer',
+        'data-track-channel': 'whatsapp',
+      },
+    })
+
+    expect(link.attributes()).toMatchObject({
+      'data-track': 'contact_click',
+      'data-track-location': 'footer',
+      'data-track-channel': 'whatsapp',
+    })
+  })
+
+  it('should carry no tracking attribute when the item reports nothing', () => {
+    const link = render({ label: 'Nosotros', href: '/es/nosotros' })
+
+    expect(link.attributes('data-track')).toBeUndefined()
+  })
 })

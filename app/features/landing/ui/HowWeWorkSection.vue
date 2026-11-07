@@ -31,7 +31,11 @@ const { pill, headingFirst, headingSecond, steps } = defineProps<Props>()
 </script>
 
 <template>
-  <section :id="SECTION_ANCHORS.howWeWork" class="relative isolate">
+  <section
+    :id="SECTION_ANCHORS.howWeWork"
+    class="relative isolate"
+    data-track-section="how_we_work"
+  >
     <ShaderBackground preset="howWeWork" />
     <div class="relative z-10 px-gutter py-bloque-y lg:px-gutter-desktop">
       <div class="mx-auto flex max-w-contenido flex-col gap-proceso-gap">

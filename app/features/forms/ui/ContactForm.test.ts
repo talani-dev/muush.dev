@@ -81,7 +81,7 @@ const submitLabel = (wrapper: VueWrapper) =>
   submitButton(wrapper).find('span').text()
 
 describe('ContactForm · the single view (US1)', () => {
-  it('should render every field in the design order and no website field when wide', async () => {
+  it('should render every field in the design order, website included, when wide', async () => {
     const wrapper = await mountForm()
     const ids = wrapper
       .findAll('input, select, textarea')
@@ -93,14 +93,13 @@ describe('ContactForm · the single view (US1)', () => {
       'email',
       'company',
       'identity',
+      'website',
       'need',
       'contactPreference',
       'contactPreference',
       'privacy',
       'muush_website',
     ])
-    expect(wrapper.find('#website').exists()).toBe(false)
-    expect(wrapper.text()).not.toMatch(/sitio web|website/i)
     expect(wrapper.find('[aria-live]').exists()).toBe(false)
     expect(wrapper.text()).not.toContain(content.continue)
   })
@@ -138,7 +137,7 @@ describe('ContactForm · the single view (US1)', () => {
     expect(document.activeElement?.id).toBe('privacy')
   })
 
-  it('should send the exact values once with no consent, website or honeypot key when ticked and valid', async () => {
+  it('should send the exact values once with no consent or honeypot key when ticked and valid', async () => {
     const submitter = stubSubmitter()
     const wrapper = await mountForm({ submitter })
     await fillValid(wrapper)
@@ -153,6 +152,7 @@ describe('ContactForm · the single view (US1)', () => {
       email: 'ana@muush.dev',
       company: '',
       identity: 'company',
+      website: '',
       need: 'Necesitamos un rediseño del sitio.',
       contactPreference: 'email',
       whatsappCountry: 'MX',
@@ -161,6 +161,38 @@ describe('ContactForm · the single view (US1)', () => {
     expect(Object.keys(values ?? {})).not.toEqual(
       expect.arrayContaining(['privacy'])
     )
+  })
+
+  it('should build the website as an optional plain text field labelled from the content', async () => {
+    /* Feature 49, FR-060–FR-063 (copy-drafts § D, from the .pen). */
+    const wrapper = await mountForm()
+    const input = wrapper.find('#website')
+
+    expect(wrapper.find('label[for="website"]').text()).toBe(
+      'Tu sitio web o redes (opcional)'
+    )
+    expect(input.attributes()).toMatchObject({
+      type: 'text',
+      placeholder: 'https://',
+      maxlength: '300',
+      autocomplete: 'url',
+    })
+    expect(input.attributes('required')).toBeUndefined()
+    expect(input.attributes('name')).not.toBe('muush_website')
+  })
+
+  it('should send the typed website when filled', async () => {
+    const submitter = stubSubmitter()
+    const wrapper = await mountForm({ submitter })
+    await fillValid(wrapper)
+    await wrapper.find('#website').setValue('@casaolivo')
+    await tick(wrapper)
+
+    await submit(wrapper)
+
+    expect(submitter.submit.mock.calls[0]?.[0]).toMatchObject({
+      website: '@casaolivo',
+    })
   })
 
   it('should show the WhatsApp row only while WhatsApp is chosen', async () => {
@@ -272,6 +304,18 @@ describe('ContactForm · states (US1, US3)', () => {
     expect(wrapper.find('#name').attributes('readonly')).toBeDefined()
   })
 
+  it('should make the website field readonly while sending', async () => {
+    const submitter = stubSubmitter()
+    submitter.submit.mockReturnValue(new Promise(() => undefined))
+    const wrapper = await mountForm({ submitter })
+    await fillValid(wrapper)
+    await tick(wrapper)
+
+    await submit(wrapper)
+
+    expect(wrapper.find('#website').attributes('readonly')).toBeDefined()
+  })
+
   it('should replace the form with the announced, focused confirmation when the send succeeds', async () => {
     const wrapper = await mountForm()
     await fillValid(wrapper)
@@ -330,6 +374,22 @@ describe('ContactForm · two steps below 768 px (US2)', () => {
     )
     expect(wrapper.find('#company').isVisible()).toBe(true)
     expect(document.activeElement?.id).toBe('company')
+  })
+
+  it('should show the website field in step 2 between identity and need when narrow', async () => {
+    const wrapper = await mountForm({ stepped: true })
+    expect(wrapper.find('#website').isVisible()).toBe(false)
+    await wrapper.find('#name').setValue('Ana')
+    await wrapper.find('#email').setValue('ana@muush.dev')
+
+    await wrapper.find('button[type="button"]').trigger('click')
+    await flushPromises()
+
+    const ids = wrapper
+      .findAll('input, select, textarea')
+      .filter(control => control.isVisible())
+      .map(control => control.attributes('id'))
+    expect(ids.slice(0, 4)).toEqual(['company', 'identity', 'website', 'need'])
   })
 
   it('should keep every value when going back and forth', async () => {

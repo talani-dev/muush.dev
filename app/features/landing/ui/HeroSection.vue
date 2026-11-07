@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { HERO_PRIMARY_TRACK } from '@/features/landing/data/heroContent'
+import { trackAttrs } from '@/shared/data/trackingEvents'
 import GlassButton from '@/shared/ui/GlassButton.vue'
 import Heading from '@/shared/ui/Heading.vue'
 import PrimaryButton from '@/shared/ui/PrimaryButton.vue'
@@ -55,7 +57,10 @@ const {
 </script>
 
 <template>
-  <section class="relative isolate flex min-h-portada-alto flex-col">
+  <section
+    class="relative isolate flex min-h-portada-alto flex-col"
+    data-track-section="hero"
+  >
     <ShaderBackground preset="homeHero" />
     <div
       class="relative z-10 flex flex-1 flex-col items-center gap-portada-gap px-gutter pt-portada-arriba pb-portada-abajo text-center max-lg:justify-center"
@@ -77,6 +82,7 @@ const {
         class="flex flex-wrap items-center justify-center gap-portada-botones-gap pt-portada-botones-arriba"
       >
         <PrimaryButton
+          v-bind="trackAttrs(HERO_PRIMARY_TRACK)"
           size="hero"
           :to="primaryHref"
           :label="primaryLabel"

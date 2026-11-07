@@ -1,16 +1,20 @@
 /**
- * The cookie categories of the preferences dialog, in the `.pen`'s order
- * (feature 48, frames `V4sL7G` / `ev0kn`).
+ * The cookie categories of the preferences dialog (feature 48, frames
+ * `V4sL7G` / `ev0kn`), from least to most invasive: Necesarias → Analítica →
+ * Publicidad.
  *
- * Categories are data so that adding one is one entry here plus its two
- * locale keys: Clau may add "Analítica" (Google Analytics), which would be
- * `{ id: 'analytics', … }` and a member of `OptionalCookieCategory`.
+ * Feature 49 adds "Analítica" (Google Analytics), Roberto 2026-11-06: no new
+ * `.pen` design, the row is the existing `CookieCategoryRow` with its own two
+ * locale keys. Each optional category governs one tool: `analytics` → Google
+ * Analytics 4, `advertising` → Meta Pixel.
+ *
  * A stored choice that does not cover every optional category counts as no
- * choice (`logic/consentRecord.ts`), so a new category asks again.
+ * choice (`logic/consentRecord.ts`), so a feature 48 record (Publicidad
+ * only) asks again.
  *
  * `necessary` is always on and has no switch ("Siempre activas").
  */
-export const OPTIONAL_COOKIE_CATEGORIES = ['advertising'] as const
+export const OPTIONAL_COOKIE_CATEGORIES = ['analytics', 'advertising'] as const
 
 export type OptionalCookieCategory = (typeof OPTIONAL_COOKIE_CATEGORIES)[number]
 
@@ -30,6 +34,12 @@ export const COOKIE_CATEGORIES: CookieCategoryModel[] = [
     nameKey: 'consent.categories.necessary.name',
     detailKey: 'consent.categories.necessary.detail',
     required: true,
+  },
+  {
+    id: 'analytics',
+    nameKey: 'consent.categories.analytics.name',
+    detailKey: 'consent.categories.analytics.detail',
+    required: false,
   },
   {
     id: 'advertising',
@@ -55,6 +65,13 @@ export interface ConsentRecord {
 }
 
 export const CONSENT_RECORD_VERSION = 1
+
+/**
+ * A stored choice, granted or refused, holds for 12 calendar months from
+ * `decidedAt`; after that the banner asks again (Roberto, 2026-11-06; spec
+ * FR-002). Checked when the page loads.
+ */
+export const CONSENT_LIFETIME_MONTHS = 12
 
 export const CONSENT_STORAGE_KEY = 'muush.cookie-consent'
 

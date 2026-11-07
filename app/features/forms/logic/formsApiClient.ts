@@ -46,6 +46,9 @@ export interface FormsApiClientOptions {
 
 const FAILURE = { kind: 'failure' } as const
 
+/** The request never got an answer: thrown, aborted or timed out. */
+const NETWORK_FAILURE = { kind: 'failure', network: true } as const
+
 const HTTP_OK = 200
 const HTTP_BAD_REQUEST = 400
 const HTTP_FORBIDDEN = 403
@@ -164,7 +167,7 @@ export function createFormsApiClient({
         )
       })
     } catch {
-      return FAILURE
+      return NETWORK_FAILURE
     }
   }
 

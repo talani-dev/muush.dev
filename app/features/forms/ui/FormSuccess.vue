@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, useTemplateRef } from 'vue'
 import type { FormSuccessAction } from '@/features/forms/data/formChrome'
+import { trackAttrs } from '@/shared/data/trackingEvents'
 import GlassButton from '@/shared/ui/GlassButton.vue'
 
 /**
@@ -54,6 +55,11 @@ onMounted(() => heading.value?.focus())
     <p class="max-w-exito font-texto text-exito-cuerpo text-texto-suave">
       {{ body }}
     </p>
-    <GlassButton :label="action.label" :href="action.href" :to="action.to" />
+    <GlassButton
+      v-bind="action.track && trackAttrs(action.track)"
+      :label="action.label"
+      :href="action.href"
+      :to="action.to"
+    />
   </div>
 </template>

@@ -215,4 +215,37 @@ describe('createShellItemResolver', () => {
       expect('current' in resolveItem(HOME)).toBe(false)
     })
   })
+
+  describe('tracking (feature 49)', () => {
+    it('should resolve a tracked item into its data-track attributes', () => {
+      const { resolveItem } = createShellItemResolver(stubDeps())
+
+      expect(
+        resolveItem({
+          ...SERVICES,
+          track: {
+            name: 'assessment_cta_click',
+            params: { cta_location: 'nav' },
+          },
+        }).trackAttrs
+      ).toEqual({
+        'data-track': 'assessment_cta_click',
+        'data-track-location': 'nav',
+      })
+    })
+
+    it('should resolve no attributes when the item is untracked or has no link', () => {
+      const { resolveItem } = createShellItemResolver(stubDeps())
+
+      expect('trackAttrs' in resolveItem(SERVICES)).toBe(false)
+      expect(
+        'trackAttrs' in
+          resolveItem({
+            labelKey: 'x',
+            destination: { kind: 'none' },
+            track: { name: 'book_call_click', params: { cta_location: 'faq' } },
+          })
+      ).toBe(false)
+    })
+  })
 })

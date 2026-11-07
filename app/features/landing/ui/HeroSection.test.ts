@@ -91,4 +91,16 @@ describe('HeroSection', () => {
     expect(text).toContain(HERO_COPY.en.subtitle)
     expect(text).not.toMatch(/negocio|Diagnóstico/)
   })
+
+  it('should mark its root for section timing when rendered', () => {
+    /* Feature 49 · `section_view` (tracking plan § 5). */
+    expect(render().attributes('data-track-section')).toBe('hero')
+  })
+
+  it('should mark "Diagnóstico gratis" as the hero assessment CTA', () => {
+    const primary = render().findComponent(PrimaryButton)
+
+    expect(primary.attributes('data-track')).toBe('assessment_cta_click')
+    expect(primary.attributes('data-track-location')).toBe('hero')
+  })
 })

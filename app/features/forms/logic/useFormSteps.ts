@@ -11,6 +11,8 @@ import {
   type FormStep,
   type StepFields,
 } from '@/features/forms/data/formSteps'
+import type { FormId } from '@/shared/data/trackingEvents'
+import { emitTrackingEvent } from '@/shared/logic/trackingBus'
 import { useReducedMotion } from '@/shared/logic/useReducedMotion'
 import { focusField } from './focusField'
 import { firstErrorInStep, stepOfField } from './formSteps'
@@ -31,6 +33,8 @@ import { firstErrorInStep, stepOfField } from './formSteps'
  * composable can receive `revealField` without a circular setup.
  */
 export interface UseFormStepsOptions<F extends string> {
+  /** Which form this is, in the `form_step` it reports (feature 49). */
+  formId: FormId
   stepFields: StepFields<F>
   /** The panel whose top is brought into view when the step changes. */
   panel: Readonly<Ref<HTMLElement | null>>
@@ -75,6 +79,10 @@ export function useFormSteps<F extends string>(
      reduces motion (handoff). */
   async function showStep(target: FormStep): Promise<void> {
     step.value = target
+    emitTrackingEvent({
+      name: 'form_step',
+      params: { form: options.formId, step: target },
+    })
     await nextTick()
     const first = stepFields[target][0]
     if (first) document.getElementById(first)?.focus({ preventScroll: true })

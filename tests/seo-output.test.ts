@@ -477,6 +477,155 @@ describe('seo output · robots.txt', () => {
     expect(existsSync(join(ROOT, 'public', 'robots.txt'))).toBe(false)
     expect(existsSync(join(ROOT, 'public', '_robots.txt'))).toBe(false)
   })
+
+  /*
+   * Feature 49 · the AI crawlers in two explicit allow-all groups
+   * (specs/049-consented-tracking/contracts/build-output.md § 3, research
+   * R5–R6). Asserted as groups, not whitespace.
+   */
+  const AI_SEARCH_AGENTS = [
+    'OAI-SearchBot',
+    'ChatGPT-User',
+    'Claude-SearchBot',
+    'Claude-User',
+    'PerplexityBot',
+    'Perplexity-User',
+  ]
+  const AI_TRAINING_AGENTS = [
+    'GPTBot',
+    'ClaudeBot',
+    'Google-Extended',
+    'Applebot-Extended',
+    'CCBot',
+  ]
+
+  /** Each group: its user agents and its rules, split on blank lines. */
+  function groups(): { agents: string[]; rules: string[] }[] {
+    return readOutput('robots.txt')
+      .split(/\n\s*\n/)
+      .map(block => block.split('\n').map(line => line.trim()))
+      .map(block => ({
+        agents: block
+          .filter(line => line.startsWith('User-agent:'))
+          .map(line => line.slice('User-agent:'.length).trim()),
+        rules: block.filter(line => /^(Allow|Disallow):/.test(line)),
+      }))
+      .filter(group => group.agents.length > 0)
+  }
+
+  it('should name each of the 11 AI agents exactly once when generated', () => {
+    for (const agent of [...AI_SEARCH_AGENTS, ...AI_TRAINING_AGENTS]) {
+      expect(
+        lines().filter(line => line === `User-agent: ${agent}`),
+        agent
+      ).toHaveLength(1)
+    }
+  })
+
+  it('should put the search agents and the training agents in their own groups when generated', () => {
+    const agentSets = groups().map(group => group.agents)
+
+    expect(agentSets).toContainEqual(AI_SEARCH_AGENTS)
+    expect(agentSets).toContainEqual(AI_TRAINING_AGENTS)
+    expect(agentSets).toContainEqual(['*'])
+  })
+
+  it('should give every group the single allow-everything rule when generated', () => {
+    for (const group of groups()) {
+      expect(group.rules, group.agents.join(', ')).toEqual(['Disallow:'])
+    }
+  })
+})
+
+describe('seo output · llms.txt (feature 49)', () => {
+  /*
+   * contracts/build-output.md § 4: the approved text of copy-drafts.md § C,
+   * byte for byte, in the llmstxt.org shape, linking exactly the sitemap.
+   * The contract's "no `@`" predates Roberto's approval of 2026-11-07, which
+   * added `support@muush.dev` (already on every page); that one address is
+   * the only one allowed.
+   */
+  const llms = () => readOutput('llms.txt')
+  const sitemap = (): string => readOutput('sitemap.xml')
+
+  function approvedBlock(): string {
+    const drafts = readFileSync(
+      join(ROOT, 'specs', '049-consented-tracking', 'copy-drafts.md'),
+      'utf8'
+    )
+    const section = drafts.slice(drafts.indexOf('## C ·'))
+    const fenced = section.match(/```markdown\n([\s\S]*?)\n```/)
+    return fenced?.[1] ?? ''
+  }
+
+  it('should publish the file of public/ unchanged when generated', () => {
+    expect(llms()).toBe(readFileSync(join(ROOT, 'public', 'llms.txt'), 'utf8'))
+  })
+
+  it('should carry the approved text of copy-drafts § C when generated', () => {
+    expect(approvedBlock().length).toBeGreaterThan(0)
+    expect(llms()).toBe(`${approvedBlock()}\n`)
+  })
+
+  it('should open with the H1 and a blockquote summary before the first section', () => {
+    const text = llms()
+    const firstSection = text.indexOf('\n## ')
+
+    expect(text.startsWith('# muush\n')).toBe(true)
+    expect(text.slice(0, firstSection)).toMatch(/\n> \S/)
+  })
+
+  it('should list only links in every section when generated', () => {
+    const sections = llms().split('\n## ').slice(1)
+
+    for (const section of sections) {
+      const items = section.split('\n').slice(1).filter(Boolean)
+      expect(items.length, section).toBeGreaterThan(0)
+      for (const item of items) {
+        expect(item).toMatch(
+          /^- \[[^\]]+\]\(https:\/\/muush\.dev\/[^)]*\)(: .+)?$/
+        )
+      }
+    }
+  })
+
+  it('should link exactly the sitemap URLs when generated', () => {
+    const linked = [...llms().matchAll(/\]\((https:\/\/[^)]+)\)/g)].map(
+      match => match[1]
+    )
+    const locs = [...sitemap().matchAll(/<loc>([^<]*)<\/loc>/g)].map(
+      match => match[1]
+    )
+
+    expect(linked).toHaveLength(10)
+    expect([...linked].sort()).toEqual([...locs].sort())
+  })
+
+  it('should carry no phone or WhatsApp and only the published support address', () => {
+    const text = llms()
+
+    expect(text).not.toMatch(/wa\.me|whatsapp|\+52|\d{8,}/i)
+    expect(text.match(/\S+@\S+/g)).toEqual(['support@muush.dev,'])
+  })
+})
+
+describe('seo output · no source maps (feature 49, FR-050)', () => {
+  function filesUnder(directory: string): string[] {
+    return readdirSync(directory, { withFileTypes: true }).flatMap(entry =>
+      entry.isDirectory()
+        ? filesUnder(join(directory, entry.name))
+        : [join(directory, entry.name)]
+    )
+  }
+
+  it('should publish no .map file and no sourceMappingURL when generated', () => {
+    const files = filesUnder(OUTPUT)
+
+    expect(files.filter(file => file.endsWith('.map'))).toEqual([])
+    for (const file of files.filter(path => /\.(js|css)$/.test(path))) {
+      expect(readFileSync(file, 'utf8'), file).not.toContain('sourceMappingURL')
+    }
+  })
 })
 
 describe('seo output · root object and client bundle', () => {

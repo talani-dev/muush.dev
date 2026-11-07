@@ -168,6 +168,7 @@ watch(isOpen, async opened => {
         -->
         <span class="hidden lg:inline-flex">
           <PrimaryButton
+            v-bind="cta.trackAttrs"
             size="nav"
             :to="cta.href"
             :label="cta.label"

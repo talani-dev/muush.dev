@@ -27,7 +27,10 @@ const { pill, headingFirst, headingSecond, intro } = defineProps<Props>()
 </script>
 
 <template>
-  <section class="relative isolate flex min-h-pagina-alto flex-col">
+  <section
+    class="relative isolate flex min-h-pagina-alto flex-col"
+    data-track-section="hero"
+  >
     <ShaderBackground preset="aboutHero" />
     <div
       class="relative z-10 flex flex-1 flex-col items-center justify-center gap-pagina-gap px-gutter pt-pagina-arriba pb-portada-abajo text-center lg:px-gutter-desktop"

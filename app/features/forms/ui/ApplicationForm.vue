@@ -48,7 +48,11 @@ const shell = useTemplateRef<InstanceType<typeof SteppedForm>>('shell')
 const panel = computed(() => (shell.value?.$el as HTMLElement | null) ?? null)
 const challengeHost = computed(() => shell.value?.challengeHost ?? null)
 
-const steps = useFormSteps({ stepFields: APPLICATION_STEP_FIELDS, panel })
+const steps = useFormSteps({
+  formId: 'application',
+  stepFields: APPLICATION_STEP_FIELDS,
+  panel,
+})
 const form = useApplicationForm({
   submitter: props.submitter,
   challengeHost,
@@ -97,6 +101,7 @@ const cvError = computed(() =>
 <template>
   <SteppedForm
     ref="shell"
+    data-track-form="application"
     v-model:honeypot="honeypot"
     :chrome="content"
     :is-stepped="isStepped"

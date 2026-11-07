@@ -3,7 +3,10 @@ import {
   ROLE_CATALOG,
   type RoleId,
 } from '@/features/forms/data/applicationFields'
-import type { ContactFormValues } from '@/features/forms/data/contactFields'
+import {
+  type ContactFormValues,
+  WEBSITE_MAX_CODE_POINTS,
+} from '@/features/forms/data/contactFields'
 import type {
   CareersPayload,
   ContactPayload,
@@ -19,7 +22,8 @@ import { dialCodeOf } from './countryOptions'
  * nothing the DOM holds — the honeypot, a Turnstile hidden input, the file —
  * can leak into a request. The server rejects unknown keys (§ 6), which is
  * why optional keys are left out rather than sent empty, `company` being the
- * one key the contract says to send as `""`.
+ * one key the contract says to send as `""`. Feature 49's `website` follows
+ * the rule: trimmed, and absent when empty.
  *
  * Pure: no Vue, no Nuxt, no network. Throws only on a programming error the
  * client validation already rules out; the flows turn that into `failure`.
@@ -46,8 +50,25 @@ export function toRoleId(optionValue: string): RoleId {
   return roleId
 }
 
-function whatsappDigits(raw: string): string {
+/** The WhatsApp number as the API and Meta take it: digits only. */
+export function whatsappDigits(raw: string): string {
   return raw.replaceAll(DIGITS_ONLY, '')
+}
+
+/**
+ * `{ website }` trimmed, or nothing when it is empty (feature 49, FR-063).
+ * Over `WEBSITE_MAX_CODE_POINTS` code points it throws: unreachable through
+ * the input, whose `maxlength` counts UTF-16 units and so never lets more
+ * code points through; `submitContactFlow` turns the throw into `failure`
+ * before any request (FR-064).
+ */
+function websiteEntry(raw: string): { website?: string } {
+  const website = raw.trim()
+  if (website === '') return {}
+  if (Array.from(website).length > WEBSITE_MAX_CODE_POINTS) {
+    throw new Error('website is longer than the API accepts')
+  }
+  return { website }
 }
 
 export function buildContactPayload(
@@ -64,6 +85,7 @@ export function buildContactPayload(
     email: values.email.trim(),
     company: values.company.trim(),
     identity: values.identity,
+    ...websiteEntry(values.website),
     need: values.need.trim(),
     contactPreference: values.contactPreference,
     ...(values.contactPreference === 'whatsapp' && {

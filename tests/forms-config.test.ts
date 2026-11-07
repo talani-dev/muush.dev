@@ -176,11 +176,18 @@ describe('forms config · nothing logs uploadUrl or form data (FR-014)', () => {
   })
 
   it('should find no analytics or error-reporting SDK import anywhere under app/', () => {
+    /*
+     * Packages only. Since feature 49 the site's own `tracking` module loads
+     * Google Analytics after consent, from Google at runtime, never as an npm
+     * SDK; its relative and `@/` imports are the site's code, not an SDK.
+     */
     const sdk = /@sentry\/|posthog|gtag|plausible|umami|analytics/i
+    const isPackage = (specifier: string) =>
+      !specifier.startsWith('.') && !specifier.startsWith('@/')
     const specifiers = (source: string) =>
-      [...source.matchAll(/(?:from\s+|import\s*\(\s*)['"]([^'"]+)['"]/g)].map(
-        match => match[1] ?? ''
-      )
+      [...source.matchAll(/(?:from\s+|import\s*\(\s*)['"]([^'"]+)['"]/g)]
+        .map(match => match[1] ?? '')
+        .filter(isPackage)
 
     for (const { path, source } of appSources) {
       for (const specifier of specifiers(source)) {

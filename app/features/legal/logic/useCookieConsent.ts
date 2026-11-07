@@ -5,6 +5,7 @@ import {
   type CookieChoice,
   type OptionalCookieCategory,
 } from '@/features/legal/data/cookieCategories'
+import { emitTrackingEvent } from '@/shared/logic/trackingBus'
 import {
   choiceForAll,
   createConsentRecord,
@@ -13,9 +14,9 @@ import {
 
 /**
  * The visitor's cookie choice and the preferences dialog's open state
- * (feature 48). The one seam feature 49 reads before loading Meta Pixel or
- * Google Analytics: `isGranted('advertising')`, or a `watch` on `consent`.
- * Feature 48 itself loads no tracking script.
+ * (feature 48). The one seam the tracking feature (49) reads before loading
+ * Google Analytics (`analytics`) or the Meta Pixel (`advertising`): it
+ * follows `consent` with a `watch`. Nothing here loads a script.
  *
  * **Module-scoped on purpose**, like `useMobileMenu`: a document has one
  * banner, one dialog and one choice, and the banner, the dialog and the
@@ -48,7 +49,8 @@ function loadOnce() {
   loaded = true
   try {
     record.value = parseConsentRecord(
-      browserStorage()?.getItem(CONSENT_STORAGE_KEY) ?? null
+      browserStorage()?.getItem(CONSENT_STORAGE_KEY) ?? null,
+      new Date()
     )
   } catch {
     record.value = null
@@ -79,12 +81,26 @@ function openPreferences(trigger?: HTMLElement | null) {
   preferencesOpen.value = true
 }
 
-/** Stores the choice and closes the dialog: the banner then disappears. */
+/**
+ * Stores the choice and closes the dialog: the banner then disappears.
+ *
+ * Feature 49: a saved choice that leaves "Analítica" on is itself measured
+ * (`cookie_preferences`, FR-024). Emitted after `record` changes, so the
+ * tracking feature, which follows `consent` synchronously, has already
+ * subscribed Google Analytics when the visitor just granted it. A choice
+ * with Analítica off is never reported.
+ */
 function saveChoice(choice: CookieChoice) {
   const next = createConsentRecord(choice, new Date())
   record.value = next
   persist(next)
   closePreferences()
+  if (choice.analytics) {
+    emitTrackingEvent({
+      name: 'cookie_preferences',
+      params: { analytics: choice.analytics, ads: choice.advertising },
+    })
+  }
 }
 
 export function useCookieConsent() {

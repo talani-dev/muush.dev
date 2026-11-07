@@ -156,6 +156,12 @@ function contact(locale: FixtureLocale): ContactFormContent {
         errorRequired: es ? 'Elige una opción.' : 'Choose an option.',
         options: IDENTITY[locale],
       },
+      website: {
+        label: es
+          ? 'Tu sitio web o redes (opcional)'
+          : 'Your website or social media (optional)',
+        placeholder: 'https://',
+      },
       need: {
         label: es ? '¿Qué necesitas?' : 'What do you need?',
         placeholder: es
@@ -188,6 +194,10 @@ function contact(locale: FixtureLocale): ContactFormContent {
       action: {
         label: es ? 'Agenda una llamada' : 'Book a call',
         href: CALL_BOOKING_URL,
+        track: {
+          name: 'book_call_click',
+          params: { cta_location: 'form_success' },
+        },
       },
     },
   }
