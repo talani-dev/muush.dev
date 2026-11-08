@@ -19,9 +19,7 @@ import { useShaderCanvas } from '@/shared/logic/useShaderCanvas'
  * give the section's content wrapper `relative z-10`. This element fills the
  * section (`absolute inset-0 z-0`), takes no pointer, is hidden from
  * assistive technology and is not printed. `isolate` keeps its `z-0` inside
- * the section. Note for feature 44: a section that places it covers the
- * cursor spotlight, which paints at `--layer-spotlight` (−1) below normal
- * flow (research R17, accepted by Roberto 2026-10-31).
+ * the section.
  *
  * ## The poster is the fallback, and it is always there
  *

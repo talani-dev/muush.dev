@@ -29,43 +29,25 @@ setup(app => {
 })
 
 /*
- * The site is dark end to end (Ink 500 background, see
- * docs/business/landing/content.md § Dirección visual), so `ink` is the
- * default background. `bone` is here because the brand system also defines
- * light surfaces — a component that only looks right on dark is a bug the
- * story should surface.
+ * The site is dark end to end on the Muush 1.0 canvas, Negro 950
+ * (`--negro-950`, feature 42), so `negro` is the default background. The v1
+ * backgrounds (Ink 500, Bone 200, Red 400) left with the v1 stories in
+ * feature 47.
  */
 const preview: Preview = {
   parameters: {
     /*
      * Sidebar order (naming reorganization, Roberto 2026-11-01): the
      * foundations first, then the shared layer, then every feature group
-     * (`*`, alphabetical), and the v1 quarantine last. Feature 47 deletes the
-     * whole `Legacy v1/` group with the code it catalogues.
+     * (`*`, alphabetical).
      */
     options: {
       storySort: {
-        order: [
-          'Foundations',
-          'Shared',
-          ['UI'],
-          '*',
-          'Legacy v1',
-          ['Foundations', 'Shared', '*'],
-        ],
+        order: ['Foundations', 'Shared', ['UI'], '*'],
       },
     },
     backgrounds: {
       options: {
-        ink: { name: 'Ink 500', value: '#262626' },
-        bone: { name: 'Bone 200', value: '#f2ebe7' },
-        red: { name: 'Red 400', value: '#cf3147' },
-        /*
-         * The Muush 1.0 (v2) canvas, Negro 950 (`--negro-950`, feature
-         * 42). Every v2 story (`Foundations/Tokens` and the v2 primitives
-         * under `Shared/UI/`) selects it in its meta. It is not the default
-         * while `Legacy v1/` stories still exist; feature 47 flips it.
-         */
         negro: { name: 'Negro 950', value: '#050505' },
       },
     },
@@ -89,7 +71,7 @@ const preview: Preview = {
     },
   },
   initialGlobals: {
-    backgrounds: { value: 'ink' },
+    backgrounds: { value: 'negro' },
   },
 }
 

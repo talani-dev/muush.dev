@@ -2,6 +2,7 @@
 import instagram from '@/assets/social/instagram.svg?raw'
 import linkedin from '@/assets/social/linkedin.svg?raw'
 import tiktok from '@/assets/social/tiktok.svg?raw'
+import type { SocialNetwork } from '@/shared/data/socialNetworks'
 
 /**
  * SocialIcon — a network's brand glyph in Muush 1.0 (feature 43, spec
@@ -16,7 +17,6 @@ import tiktok from '@/assets/social/tiktok.svg?raw'
  * Only the glyph: the caller owns the box, the size (a `size-*` class on
  * this element) and the accessible name. Decorative.
  */
-export type SocialNetwork = 'linkedin' | 'instagram' | 'tiktok'
 
 interface Props {
   network: SocialNetwork

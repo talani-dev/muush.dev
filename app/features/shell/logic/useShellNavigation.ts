@@ -59,10 +59,9 @@ function usePageRenderCount() {
  * instance (Storybook proves it, `rules.md` § R23). Destinations resolve by
  * **route name** through the i18n route map, never by writing a path.
  *
- * The v1 CTA reveal (`useNavCtaReveal`, features 9 and 36) is no longer
- * read: the CTA shows on every page, the 404 included (spec FR-004,
- * confirmed by Roberto 2026-11-01). Its last caller, the v1 Hero, leaves
- * with feature 44; feature 44 or 47 deletes the composable.
+ * The CTA shows on every page, the 404 included (spec FR-004, confirmed by
+ * Roberto 2026-11-01); the v1 CTA reveal composable was deleted in
+ * feature 47.
  */
 export function useShellNavigation() {
   const { t, locale, loadLocaleMessages } = useI18n()

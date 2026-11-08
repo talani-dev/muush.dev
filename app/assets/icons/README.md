@@ -1,8 +1,7 @@
 # Interface icon assets (normalized)
 
 Icons from [lucide](https://lucide.dev) that the interface inlines. They live
-here rather than in `public/` for the same reason the isotipos and the social
-glyphs do: served as `<img src="/…">` they could never adopt a brand token,
+here rather than in `public/` for the same reason the social glyphs do: served as `<img src="/…">` they could never adopt a brand token,
 because `currentColor` only resolves for inlined markup
 (`docs/business/rules.md` § R8).
 
@@ -20,8 +19,7 @@ Same contract the social glyphs satisfy:
 - Every stroke and fill is `currentColor` or `none`. No hardcoded hex.
 - No `<style>`, no `<defs>`, no DOCTYPE, no XML prolog, no tool metadata, no
   comments, no `class` attribute.
-- A `<title>` naming the source glyph, mirroring `app/assets/logo/*.svg` and
-  `app/assets/social/*.svg`. It names the *asset*, not the control: the
+- A `<title>` naming the source glyph, mirroring `app/assets/social/*.svg`. It names the *asset*, not the control: the
   accessible name of the button belongs to the caller and comes from the
   locale files.
 
@@ -36,9 +34,8 @@ Same contract the social glyphs satisfy:
 | Transform applied | none |
 | Stripped | `width="24"`, `height="24"` |
 
-Used by the mobile menu's close control, which the design specifies as the
-lucide `x` at 18×18 in `$bone-100`
-(`docs/business/landing/design-extract.md` § 9.bis · *Menú móvil abierto*).
+Used by `CookiePreferences.vue` (`app/features/legal/`) as the dialog's
+close glyph. The v1 mobile menu that first used it was deleted in feature 47.
 The stroke presentation attributes (`stroke-width`, `stroke-linecap`,
 `stroke-linejoin`) are lucide's own and are kept: they are the glyph's
 geometry, not a design value this repository owns.
@@ -54,20 +51,6 @@ geometry, not a design value this repository owns.
 
 Used by `SelectField.vue` (feature 016, `app/features/forms/`) as the select
 control's affordance glyph. Same stroke-attribute convention as `x.svg`.
-
-### `paperclip.svg`
-
-| | |
-|---|---|
-| Source | lucide `paperclip` (ISC licence) |
-| Original viewBox | `0 0 24 24` — already square, unchanged |
-| Transform applied | none |
-| Stripped | `width="24"`, `height="24"`, `class` |
-
-Used by `FileField.vue` (feature 020, `app/features/forms/`) as the CV
-upload control's affordance glyph
-(`docs/business/landing/design-extract.md` § FormField, "upload" variant).
-Same stroke-attribute convention as `x.svg` and `chevron-down.svg`.
 
 ### `arrow-right.svg`
 

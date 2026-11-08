@@ -136,8 +136,7 @@ export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 /**
  * What `logic/`/`ui/` receive: already-translated field content, resolved by
  * `useContactFormContent` from `forms.contact.*`. Since feature 45 the v2
- * shape: the shared form chrome (`formChrome.ts`) plus the fields; the v1
- * shape lives on as `LegacyContactFormContent` in `data/legacy/`.
+ * shape: the shared form chrome (`formChrome.ts`) plus the fields.
  */
 export interface ContactFormFieldContent {
   label: string

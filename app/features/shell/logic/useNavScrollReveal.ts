@@ -29,9 +29,7 @@ import {
  * `REVEAL_ZONE_PX` and `HIDE_ACCUMULATION_PX` are plain pixel constants, not
  * design tokens: they compare directly against `window.scrollY`, which the
  * platform always reports in CSS pixels regardless of root font size, and
- * there is no `.pen` frame to derive a `rem` value from — `useCursorSpotlight`
- * sets the same precedent, publishing raw pixel coordinates from
- * `clientX`/`clientY` rather than converting them to `rem`.
+ * there is no `.pen` frame to derive a `rem` value from.
  *
  * Point 4 is not arbitrary (feature 26, kept by feature 43): the v1 caller
  * applied the hidden state as a `transform` on an ancestor of the
@@ -46,10 +44,8 @@ import {
  * not logic: this composable only ever reports a boolean, and the caller's
  * `<style scoped>` decides whether changing it animates.
  *
- * Mechanically closest to `useCursorSpotlight.ts`: a passive scroll listener,
- * rAF-coalesced, cleaned up in `onScopeDispose`. `useNavCtaReveal`/
- * `useHeroSentinel` is not the precedent here — it is presence/absence of the
- * Hero via `IntersectionObserver`, with no direction and no thresholds.
+ * Mechanically: a passive scroll listener, rAF-coalesced, cleaned up in
+ * `onScopeDispose`.
  */
 
 /** Nav stays visible unconditionally inside this many px of the top. */
@@ -104,8 +100,8 @@ export function useNavScrollReveal(
     pendingFrame = requestAnimationFrame(evaluateScroll)
   }
 
-  /* No `window` access during setup, so this composable is safe during SSR
-     (same guard `useCursorSpotlight.ts` uses). */
+  /* No `window` access during setup, so this composable is safe during
+     SSR. */
   onMounted(() => {
     lastScrollY = window.scrollY
     window.addEventListener('scroll', requestScrollEvaluation, {

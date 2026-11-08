@@ -289,6 +289,17 @@ export default defineNuxtConfig({
    * Subsets are latin + latin-ext (spec A-11): the site ships Spanish and
    * English only. Verify the result against `.output/public`, never against
    * the dev server or the catalogue (docs/business/rules.md §§ R25, R31).
+   *
+   * `global: true` is load-bearing (feature 47). Without it the module only
+   * writes `@font-face` for a family it finds in a literal `font-family`
+   * declaration, and it does not resolve custom properties: the v2 utilities
+   * read `var(--fuente-titulo)` / `var(--fuente-texto)`, so they never
+   * counted. Until feature 47 the faces came from the v1 `font-poppins` /
+   * `font-instrument` utilities, which Tailwind emitted only because it found
+   * those class names in `specs/` markdown. Deleting the v1 theme dropped
+   * every `@font-face` and `_fonts/` file from the build; `global` declares
+   * the faces explicitly instead. `tests/static-output.test.ts` checks the
+   * build ships them.
    */
   fonts: {
     defaults: {
@@ -296,8 +307,18 @@ export default defineNuxtConfig({
       subsets: ['latin', 'latin-ext'],
     },
     families: [
-      { name: 'Poppins', provider: 'google', weights: [400, 500, 600] },
-      { name: 'Instrument Sans', provider: 'google', weights: [400, 500, 600] },
+      {
+        name: 'Poppins',
+        provider: 'google',
+        weights: [400, 500, 600],
+        global: true,
+      },
+      {
+        name: 'Instrument Sans',
+        provider: 'google',
+        weights: [400, 500, 600],
+        global: true,
+      },
     ],
     throwOnError: true,
   },
