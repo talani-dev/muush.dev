@@ -1142,3 +1142,27 @@ Las dos están comentadas en el bloque `robots` de `nuxt.config.ts`.
 `NNN-nombre`; con las ramas de este repo (`feat/v2-…`) termina con
 "Not on a feature branch". El spec author de la feature 49 siguió sus pasos a
 mano. No se comentó el script: es código de spec-kit que se regenera.
+
+## Feature 047 · Limpieza de v1 — hallazgos (2026-11-07)
+
+### R83 · `@nuxt/fonts` solo emite `@font-face` si ve un `font-family` literal
+
+Verificado corriendo `pnpm generate` en la feature 47. `@nuxt/fonts` 0.14
+escribe los `@font-face` de una familia solo cuando la encuentra en una
+declaración `font-family` literal del CSS; **no resuelve propiedades
+personalizadas**. Las utilidades v2 leen `var(--fuente-titulo)` /
+`var(--fuente-texto)`, así que nunca contaron. Hasta la feature 47 las caras
+salían de las utilidades v1 `.font-poppins` / `.font-instrument`, que Tailwind
+generaba solo porque encontraba esos nombres de clase en el markdown de
+`specs/` (Tailwind escanea el repo entero). Al borrar el `@theme` v1, el build
+quedó sin ningún `@font-face` y sin `_fonts/`, en silencio: `pnpm generate`
+pasa igual.
+
+Arreglo: `global: true` en las dos familias de `fonts.families`
+(`nuxt.config.ts`, comentado ahí). Consecuencia: ya no se generan las caras de
+métrica de respaldo (`Poppins Fallback: sans-serif`), que solo referenciaban
+las pilas de las utilidades v1, que ningún elemento usaba.
+
+Si alguien vuelve a tocar las fuentes o el tema: revisar que
+`.output/public/_nuxt/*.css` tenga `@font-face` y que exista
+`.output/public/_fonts/`. `tests/static-output.test.ts` lo vigila.
