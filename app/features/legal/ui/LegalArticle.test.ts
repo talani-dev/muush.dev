@@ -32,7 +32,7 @@ describe('LegalArticle', () => {
 
   it('should show the update date with the substituted publication date', () => {
     expect(render().text()).toContain(
-      'Última actualización: 5 de noviembre de 2026'
+      'Última actualización: 7 de noviembre de 2026'
     )
     expect(render('terms', 'en').text()).toContain(
       'Last updated: November 5, 2026'
