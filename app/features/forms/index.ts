@@ -7,9 +7,9 @@
  * consume them through this barrel and nothing else.
  *
  * Since feature 45 `ContactForm` and `ApplicationForm` are the Muush 1.0
- * forms (the shared `SteppedForm` shell). The v1 form UI is quarantined in
- * `ui/legacy/` and is never exported from here; feature 47 deletes it. The
- * field parts stay internal — composition detail of the two forms.
+ * forms (the shared `SteppedForm` shell); the v1 form UI was deleted in
+ * feature 47. The field parts stay internal — composition detail of the two
+ * forms.
  */
 
 export type {

@@ -14,9 +14,6 @@ export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
  *
  * Call it before registering any `onMounted` of your own that reads it:
  * hooks run in registration order, so the value is current by then.
- *
- * `useCursorSpotlight` keeps its own query; features 8 and 34 are not
- * refactored here.
  */
 export function useReducedMotion(): Readonly<Ref<boolean>> {
   const isReduced = ref(false)

@@ -210,8 +210,7 @@ export type RoleId = (typeof ROLE_IDS)[number]
  * `useApplicationFormContent` from `forms.application.*`. Since feature 45
  * the v2 shape: the shared form chrome (`formChrome.ts`), the fields, the
  * "Subiendo CV…" label and the failed-upload notice (feature 031, spec
- * FR-034). The v1 shape lives on as `LegacyApplicationFormContent` in
- * `data/legacy/`.
+ * FR-034).
  */
 export interface ApplicationFormFieldContent {
   label: string

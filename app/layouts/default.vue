@@ -23,7 +23,7 @@ import {
  * `html`, so overscroll shows no seam). Feature 43 retired what the v1 page
  * painted over it: the dotted paper, the red-dot cursor spotlight (Roberto,
  * 2026-11-01, superseding feature 42's "spotlight sigue funcionando") and
- * the section glows (hidden at their single wrapper, `SectionBackdrop`).
+ * the section glows; feature 47 deleted their code.
  * The "You" cursor stays; it is CSS in `global.css` and needs nothing here.
  * Features 44–46 paint their own shader backgrounds inside their sections.
  *

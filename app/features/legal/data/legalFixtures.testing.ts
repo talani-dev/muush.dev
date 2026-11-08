@@ -21,7 +21,7 @@ export const LEGAL_PAGES: Record<
     es: {
       headingFirst: 'Aviso de',
       headingSecond: 'privacidad.',
-      updated: 'Última actualización: 5 de noviembre de 2026',
+      updated: 'Última actualización: 7 de noviembre de 2026',
       onThisPage: 'En esta página',
       sections: [
         {
@@ -235,7 +235,7 @@ export const LEGAL_PAGES: Record<
     en: {
       headingFirst: 'Privacy',
       headingSecond: 'notice.',
-      updated: 'Last updated: November 5, 2026',
+      updated: 'Last updated: November 7, 2026',
       translationNote:
         'Courtesy translation. If it differs from the Spanish version, the Spanish version prevails.',
       onThisPage: 'On this page',

@@ -153,7 +153,7 @@ describe('static output · routes', () => {
     /* Feature 48 · pen-extract-48 § 4. The prerendered HTML carries the
        legal text and no cookie banner: the banner is client-only. */
     expect(documentFor('/es/privacidad')).toContain(
-      'Última actualización: 5 de noviembre de 2026'
+      'Última actualización: 7 de noviembre de 2026'
     )
     expect(documentFor('/en/privacy')).toContain('Courtesy translation.')
     expect(documentFor('/es/terminos')).toContain('Ley aplicable')

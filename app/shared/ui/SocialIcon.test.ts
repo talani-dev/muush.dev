@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import SocialIcon, { type SocialNetwork } from '@/shared/ui/SocialIcon.vue'
+import type { SocialNetwork } from '@/shared/data/socialNetworks'
+import SocialIcon from '@/shared/ui/SocialIcon.vue'
 
 /** Feature 43 · FR-037, contract § 1. */
 const NETWORKS: [SocialNetwork, string][] = [

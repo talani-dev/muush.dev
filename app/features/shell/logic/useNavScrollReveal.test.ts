@@ -9,8 +9,7 @@ import { useNavScrollReveal } from './useNavScrollReveal'
  * is `SiteNav.vue`'s `<style scoped>`, a browser measurement.
  *
  * `requestAnimationFrame` is replaced with a queue this file flushes by hand,
- * same technique as `useCursorSpotlight.test.ts`, so "one evaluation per
- * frame" is assertable instead of a timing race.
+ * so "one evaluation per frame" is assertable instead of a timing race.
  */
 
 let frames: FrameRequestCallback[]
@@ -38,8 +37,8 @@ interface MountedReveal {
 
 const mounted: Array<{ unmount: () => void }> = []
 
-/** Mirrors `useCursorSpotlight.test.ts`: `onMounted` needs a component
- *  instance, so each case mounts a one-line render component. */
+/** `onMounted` needs a component instance, so each case mounts a one-line
+ *  render component. */
 function mountReveal(isMobileMenuOpen = ref(false)): MountedReveal {
   let tracked: ReturnType<typeof useNavScrollReveal> | undefined
 

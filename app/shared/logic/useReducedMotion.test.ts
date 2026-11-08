@@ -6,8 +6,8 @@ import { useReducedMotion } from '@/shared/logic/useReducedMotion'
 /**
  * Feature 42 · research R13. `matchMedia` is replaced by a controllable
  * stand-in so the preference can be flipped live and its listeners counted;
- * the composable starts in `onMounted`, so each case mounts a one-line host
- * (the pattern of `useCursorSpotlight.test.ts`).
+ * the composable starts in `onMounted`, so each case mounts a one-line
+ * host.
  */
 type MediaListener = (event: MediaQueryListEvent) => void
 

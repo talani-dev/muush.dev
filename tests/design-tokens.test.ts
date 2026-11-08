@@ -335,13 +335,14 @@ describe('design tokens · guards (FR-002, FR-005, FR-008)', () => {
     expect(globalCss).not.toContain('fonts.gstatic.com')
   })
 
-  it('should hold #CF3147 in the v1 red-400 only when the stylesheet loads', () => {
-    /* The Kit's "rojo anterior" is reference only (pen extract § 1). */
+  it('should hold #CF3147 in no token when the stylesheet loads', () => {
+    /* The Kit's "rojo anterior" is reference only (pen extract § 1); its v1
+       holder, `--red-400`, was deleted in feature 47. */
     const holders = [...globalCss.matchAll(/(--[\w-]+):\s*#cf3147\s*;/gi)].map(
       match => match[1]
     )
 
-    expect(holders).toEqual(['--red-400'])
+    expect(holders).toEqual([])
     const v2Root =
       [...globalCss.matchAll(/:root\s*\{([\s\S]*?)\n\}/g)]
         .map(match => match[1] ?? '')

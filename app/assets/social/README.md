@@ -6,10 +6,9 @@ truth for the normalization steps:
 `docs/business/landing/decisions-open.md` § Íconos de redes sociales.
 
 They live here rather than in `public/` because they are inlined by
-`src/components/SocialIcon.astro`: served as `<img src="/…">` they could
-never adopt the `bone-100` token, which is the whole reason the
-normalization exists (`docs/business/rules.md` § R8). Same criterion as the
-isotipos in `src/assets/logo/`.
+`app/shared/ui/SocialIcon.vue`: served as `<img src="/…">` they could never
+adopt a colour token, which is the whole reason the normalization exists
+(`docs/business/rules.md` § R8).
 
 ## Shared contract
 
@@ -22,7 +21,7 @@ All three satisfy, by design:
 - No `<style>`, no `<defs>`, no DOCTYPE, no XML prolog, no tool metadata, no
   comments, no `class` attribute.
 - Exactly one wrapping `<g transform>`, the normalizing transform.
-- A `<title>` naming the network, mirroring `src/assets/logo/*.svg`.
+- A `<title>` naming the network.
 
 ## Per file
 

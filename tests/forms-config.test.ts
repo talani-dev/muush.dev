@@ -197,56 +197,12 @@ describe('forms config · nothing logs uploadUrl or form data (FR-014)', () => {
   })
 })
 
-describe('forms config · the v1 form UI is quarantined (feature 45, US6)', () => {
+describe('forms config · the v2 forms are the only forms (features 45, 47)', () => {
   /*
-   * Spec FR-030, research R1: the v1 form components live in
-   * `forms/ui/legacy/` with `Legacy v1/` stories until feature 47 deletes
-   * them; nothing outside that folder (the barrel, a page, a section, a v2
-   * part) imports them, so no page renders them.
+   * Feature 45 quarantined the v1 form UI in `forms/ui/legacy/`; feature 47
+   * deleted it. `tests/v1-retired.test.ts` guards that no `legacy/` folder
+   * comes back anywhere under `app/`.
    */
-  const FORMS_UI = join('app', 'features', 'forms', 'ui')
-  const LEGACY = join(FORMS_UI, 'legacy')
-  const nonTest = APP_SOURCES.filter(
-    ({ path }) => !/\.(test|stories)\.ts$/.test(path)
-  )
-
-  it('should import the v1 forms from no file outside their quarantine', () => {
-    const FORMS = join('app', 'features', 'forms')
-    const importers = nonTest.filter(({ path, source }) => {
-      if (path.startsWith(LEGACY)) return false
-      if (/from ['"]@\/features\/forms\/ui\/legacy\//.test(source)) return true
-      /* Relative paths only count inside the forms module: other features
-         have quarantines of their own. */
-      return (
-        path.startsWith(FORMS) && /from ['"]\.\/(ui\/)?legacy\//.test(source)
-      )
-    })
-
-    expect(importers.map(({ path }) => path)).toEqual([])
-  })
-
-  it('should title every quarantined story Legacy v1/ and every v2 form story not', () => {
-    const stories = filesUnder(join(APP, 'features', 'forms', 'ui')).filter(
-      path => path.endsWith('.stories.ts')
-    )
-    const titleOf = (path: string) =>
-      readFileSync(path, 'utf8').match(/title: '([^']+)'/)?.[1] ?? ''
-
-    const legacy = stories.filter(path => path.includes(`${LEGACY}`))
-    const current = stories.filter(path => !path.includes(`${LEGACY}`))
-    expect(legacy.length).toBeGreaterThan(0)
-    expect(current.length).toBeGreaterThan(0)
-    for (const path of legacy) {
-      expect(titleOf(path), path).toMatch(/^Legacy v1\/Forms\//)
-    }
-    for (const path of [
-      ...current,
-      join(APP, 'features', 'landing', 'ui', 'AssessmentSection.stories.ts'),
-    ]) {
-      expect(titleOf(path), path).not.toMatch(/^Legacy v1\//)
-    }
-  })
-
   it('should export the v2 forms from the barrel', () => {
     const barrel = readFileSync(
       join(APP, 'features', 'forms', 'index.ts'),

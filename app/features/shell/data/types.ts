@@ -1,9 +1,9 @@
 import type { SectionAnchor } from '@/shared/data/sectionAnchors'
+import type { SocialNetwork } from '@/shared/data/socialNetworks'
 import type {
   ClickTrackingEvent,
   TrackAttrs,
 } from '@/shared/data/trackingEvents'
-import type { SocialNetwork } from '@/shared/ui/SocialIcon.vue'
 
 /**
  * The shell's content model.
@@ -95,9 +95,9 @@ export interface FooterColumnModel {
 }
 
 /**
- * Re-exported, not redeclared: the union is owned by the v2 `SocialIcon`
- * (feature 43), and a second copy here would drift the first time a network
- * is added.
+ * Re-exported, not redeclared: the union is owned by
+ * `app/shared/data/socialNetworks.ts`, and a second copy here would drift the
+ * first time a network is added.
  */
 export type { SocialNetwork }
 

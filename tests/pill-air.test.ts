@@ -49,11 +49,8 @@ describe('pill air (feature 45, reopen 2)', () => {
     })
   }
 
-  it('should leave the pill component itself and the v1 quarantine untouched', () => {
+  it('should leave the pill component itself untouched', () => {
     expect(read('app', 'shared', 'ui', 'Pill.vue')).not.toContain('pill-aire')
-    expect(read('app', 'shared', 'ui', 'legacy', 'Pill.vue')).not.toContain(
-      'pill-aire'
-    )
   })
 
   it('should render no pill on Preguntas or the 404', () => {

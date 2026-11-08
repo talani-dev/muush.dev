@@ -1,6 +1,24 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.1.3 → 2.1.4
+Status: PATCH — Article VII wording: v1 is no longer "quarantined until
+feature 47 deletes it"; feature 47 deleted it and it must not come back. No
+rule changes. (The 2.1.1 report below keeps its historical wording.)
+
+Ratified: Roberto, "apruebo todo", 2026-11-07 (leader session, review-47 N2).
+
+Templates reviewed: no quarantine reference; no change.
+Agent guidance: .claude/agents/implementer.md item 3/4 reworded from
+"quarantined" to "deleted, never bring back".
+
+Deferred TODOs: none
+
+Previous report (2.1.3) follows.
+-->
+<!--
+SYNC IMPACT REPORT
+==================
 Version change: 2.1.2 → 2.1.3
 Status: PATCH — Article I module list catches up with the code: adds `legal`
 (feature 48) and `tracking` (feature 49). No rule changes.
@@ -279,11 +297,11 @@ families (`--negro-*`, `--carbon-*`, `--gris-*`, `--blanco`, `--red-muush-*`,
 `--crimson-*`, `--oxblood-*`, `--coral-*`, `--arena-*`, `--acero-*`), taken
 from the `m1-*` variables of the `.pen` and `docs/handoff/muush-1.0/`. Token,
 utility, component and Storybook names carry **no version marker** (no `m1`,
-`v2`): they are the final names. Everything that belongs to the v1 design is
-quarantined until feature 47 deletes it: the token families `--bone-*`,
-`--ink-*`, `--red-*`, `--wine-*` and any `legacy-*` token, the components in
-`app/shared/ui/legacy/`, and the Storybook group `Legacy v1/`. New code MUST
-NOT use any of them.
+`v2`): they are the final names. The v1 design was deleted by feature 47
+(2026-11-07): the token families `--bone-*`, `--ink-*`, the v1 `--red-*` and
+`--wine-*`, every `legacy-*` token, the components in `app/shared/ui/legacy/`
+and the Storybook group `Legacy v1/` no longer exist, and none of them may come
+back (`tests/v1-retired.test.ts`). The v2 `--red-muush-*` family is not v1.
 
 The fluid scale exists so a component states its intent once
 (`text-display`) and the desktop↔mobile difference resolves through
@@ -433,4 +451,4 @@ Amendments require:
 - MINOR: New principle added or materially expanded.
 - PATCH: Clarification, wording, typo fix.
 
-**Version**: 2.1.3 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-07
+**Version**: 2.1.4 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-07

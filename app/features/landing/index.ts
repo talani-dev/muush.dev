@@ -3,8 +3,7 @@
  *
  * Features 44–45: the five Muush 1.0 home sections, their content seams
  * and types. The key lists, card / step models and geometry stay internal.
- * Nothing from `legacy/` leaves this module (feature 45 retired the v1
- * contact section, its last export).
+ * The v1 sections were deleted in feature 47.
  */
 
 export type { AssessmentContent } from './data/assessmentContent'

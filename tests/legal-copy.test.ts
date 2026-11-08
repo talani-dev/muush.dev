@@ -18,7 +18,7 @@ function stringsUnder(value: unknown): string[] {
 
 const SUBSTITUTIONS: Record<Locale, [string, string][]> = {
   es: [
-    ['legal.privacy.updated', 'Última actualización: 5 de noviembre de 2026'],
+    ['legal.privacy.updated', 'Última actualización: 7 de noviembre de 2026'],
     ['legal.terms.updated', 'Última actualización: 5 de noviembre de 2026'],
     [
       'legal.privacy.sections.sharing.items.providers',
@@ -36,7 +36,7 @@ const SUBSTITUTIONS: Record<Locale, [string, string][]> = {
     ],
   ],
   en: [
-    ['legal.privacy.updated', 'Last updated: November 5, 2026'],
+    ['legal.privacy.updated', 'Last updated: November 7, 2026'],
     ['legal.terms.updated', 'Last updated: November 5, 2026'],
     [
       'legal.privacy.sections.sharing.items.providers',
