@@ -52,13 +52,13 @@ Rules:
 3. Colors and typography come from the tokens in `app/assets/css/global.css`
    consumed as Tailwind utilities — use the token, don't re-derive a raw
    hex. In v2 those are the unprefixed families (`--negro-*`, `--red-muush-*`,
-   `--acero-*`, …), with no version marker in any name. New code must not use
-   anything quarantined for v1: the `--bone-*`, `--ink-*`, `--red-*`,
-   `--wine-*` and `legacy-*` tokens, `app/shared/ui/legacy/`, or the Storybook
-   `Legacy v1/` group (constitution Art. VII).
+   `--acero-*`, …), with no version marker in any name. v1 was deleted
+   (feature 47): never bring back the `--bone-*`, `--ink-*`, v1 `--red-*`,
+   `--wine-*` or `legacy-*` tokens, `app/shared/ui/legacy/`, or the Storybook
+   `Legacy v1/` group (constitution Art. VII; `tests/v1-retired.test.ts`).
 4. `branding.md`, `landing/design-extract.md`, `landing/ui-map.md` and
-   `landing/content.md` describe the withdrawn v1 design. Use them only
-   when working on v1 code; for v2, `muush-1.0.md` wins.
+   `landing/content.md` describe the withdrawn v1 design. Do not use them
+   for visual values; `muush-1.0.md` wins.
 5. Responsive anchors (constitution Art. VII): match the design at 390 and
    1440 px; at other widths sizes and spacing may adapt, color, components,
    copy and behavior may not.
