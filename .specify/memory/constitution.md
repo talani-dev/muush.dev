@@ -1,6 +1,25 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.1.4 → 2.1.5
+Status: PATCH — Article I module list adds `faq` (the Preguntas / FAQ page:
+topics, questions, contact card), the module feature 51 creates. Feature 46
+had left the placeholder inside `shell` and recorded that real questions
+would move it to its own module. No rule changes.
+
+Ratified: Roberto, answer "3 → A", 2026-11-08, written in
+specs/051-faq-content/open-questions.md § "Respuestas de Roberto
+(2026-11-08)" (feature 51 spec round).
+
+Templates and agent guidance reviewed: no module list elsewhere; no change.
+
+Deferred TODOs: none
+
+Previous report (2.1.4) follows.
+-->
+<!--
+SYNC IMPACT REPORT
+==================
 Version change: 2.1.3 → 2.1.4
 Status: PATCH — Article VII wording: v1 is no longer "quarantined until
 feature 47 deletes it"; feature 47 deleted it and it must not come back. No
@@ -192,9 +211,10 @@ repo's Nuxt 4 `srcDir`).
 The feature modules are: `shell` (nav, footer, mobile menu), `landing`
 (hero, purpose, services, projects, contact CTA), `about` (team, network,
 work-with-muush), `forms` (the contact and application forms, which
-appear on both pages), `legal` (privacy notice, terms and cookie consent)
-and `tracking` (consent-gated Google Analytics and Meta Pixel: loaders and
-the events the site sends).
+appear on both pages), `legal` (privacy notice, terms and cookie consent),
+`tracking` (consent-gated Google Analytics and Meta Pixel: loaders and
+the events the site sends) and `faq` (the Preguntas / FAQ page: topics,
+questions and the contact card).
 
 Each feature has exactly three internal layers, plus a barrel:
 
@@ -451,4 +471,4 @@ Amendments require:
 - MINOR: New principle added or materially expanded.
 - PATCH: Clarification, wording, typo fix.
 
-**Version**: 2.1.4 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-07
+**Version**: 2.1.5 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-11-08
