@@ -15,7 +15,7 @@ import { describe, expect, it } from 'vitest'
  */
 interface ShellCopy {
   shell: {
-    nav: { services: string; about: string; cta: string }
+    nav: { services: string; about: string; faq: string; cta: string }
     footer: {
       tagline: string
       category: string
@@ -58,17 +58,20 @@ describe('shell copy', () => {
   })
 
   it('should carry the approved nav copy when read', () => {
-    /* `muush-1.0.md` § 4.1; Preguntas returns with feature 46. */
+    /* `muush-1.0.md` § 4.1; Preguntas / FAQ joined the bar with feature 51
+       (Roberto 2026-11-08, OQ-2 = A). */
     expect([
       es.shell.nav.services,
       es.shell.nav.about,
+      es.shell.nav.faq,
       es.shell.nav.cta,
-    ]).toEqual(['Servicios', 'Nosotros', 'Diagnóstico gratis'])
+    ]).toEqual(['Servicios', 'Nosotros', 'Preguntas', 'Diagnóstico gratis'])
     expect([
       en.shell.nav.services,
       en.shell.nav.about,
+      en.shell.nav.faq,
       en.shell.nav.cta,
-    ]).toEqual(['Services', 'About', 'Free assessment'])
+    ]).toEqual(['Services', 'About', 'FAQ', 'Free assessment'])
   })
 
   it('should carry the approved footer copy when read', () => {

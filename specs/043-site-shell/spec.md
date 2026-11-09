@@ -589,7 +589,8 @@ until feature 47.
    Contacto on home; hero and Work with muush on Nosotros; the v1 404) render
    on flat near-black with their own content, cards and forms unchanged. The
    v1 404's rings stay.
-4. **Nav items.** Servicios and Nosotros only (Preguntas returns in 46). The
+4. **Nav items.** Servicios and Nosotros only (Preguntas returns in 46; it
+   returned to the bar and menu only with feature 51, Roberto 2026-11-08). The
    CTA "Diagnóstico gratis" points to the home's diagnostic section; the v1
    contact section now carries that id, so it still lands on the v1 form.
    "Cómo trabajamos" (footer) opens the home page at its top until 44.

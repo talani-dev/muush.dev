@@ -19,6 +19,7 @@ import type {
   ShellLocale,
 } from '@/features/shell/data/types'
 import type { SectionAnchor } from '@/shared/data/sectionAnchors'
+import { useLocaleSwitchHash } from './localeSwitchHash'
 import { resolveLocaleDestination } from './resolveLocaleDestination'
 import { switchLocaleWithFallback } from './switchLocaleInPlace'
 import { useActiveSection } from './useActiveSection'
@@ -141,10 +142,15 @@ export function useShellNavigation() {
    */
   useLocaleSwitchScroll()
 
+  /* Feature 51 · the one page that names a fragment for the other locale:
+     Preguntas, for the topic its URL names (`localeSwitchHash.ts`). */
+  const localeSwitchHash = useLocaleSwitchHash()
+
   const localeSwitchHref = computed(() =>
     resolveLocaleDestination(
       switchLocalePath(otherLocale.value),
-      localePath({ name: 'index' }, otherLocale.value)
+      localePath({ name: 'index' }, otherLocale.value),
+      localeSwitchHash.value
     )
   )
 

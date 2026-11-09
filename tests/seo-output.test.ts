@@ -366,19 +366,108 @@ describe('seo output · structured data', () => {
       expect(openingTag(page.file), page.path).toBe(home)
   })
 
-  it('should declare both Preguntas pages as a plain WebPage, never FAQPage, when generated', () => {
-    /* Feature 46 · FR-038: no questions yet, so no question-and-answer
-       type; the schema-org default would infer FAQPage on /en/faq only. */
-    for (const page of PAGES.filter(candidate => candidate.key === 'faq')) {
+  /*
+   * Feature 51 · spec D1, FR-003 (supersedes feature 46 FR-038): one WebPage
+   * node per document typed ["WebPage", "FAQPage"] in both locales (the
+   * resolver merges its default type in, as for Nosotros), with its
+   * ReadAction and the 20 questions of its own language as `mainEntity`,
+   * equal to the copy the page renders (contract `build-output.md` § 2,
+   * amended to the shipped shape). Copy read from disk (rules.md § R27).
+   */
+  function faqQuestions(locale: Locale): { name: string; text: string }[] {
+    const copy = JSON.parse(
+      readFileSync(join(ROOT, 'i18n', 'locales', `${locale}.json`), 'utf8')
+    ) as {
+      faq: {
+        links: { privacy: string; about: string }
+        topics: Record<
+          string,
+          { questions: Record<string, { question: string; answer: string }> }
+        >
+      }
+    }
+    return Object.values(copy.faq.topics).flatMap(topic =>
+      Object.values(topic.questions).map(({ question, answer }) => ({
+        name: question,
+        text: answer
+          .replace('{privacy}', copy.faq.links.privacy)
+          .replace('{about}', copy.faq.links.about)
+          .replace('{email}', 'support@muush.dev'),
+      }))
+    )
+  }
+
+  for (const page of PAGES.filter(candidate => candidate.key === 'faq')) {
+    it(`should declare one FAQPage with its ReadAction and language when the page is ${page.path}`, () => {
+      /* Measured on nuxt-schema-org 6.4.3: the WebPage resolver's own
+         default type is merged in, so the node is typed
+         ["WebPage", "FAQPage"] in BOTH locales, exactly as Nosotros is
+         ["WebPage", "AboutPage"]; never a lone WebPage, never a second page
+         node. The language is carried by the questions (the site's WebPage
+         nodes have no `inLanguage` of their own). */
       const graph = graphOf(readOutput(page.file))
-      const webPage = graph.find(node =>
+      const webPages = graph.filter(node =>
         String(node['@id'] ?? '').endsWith('#webpage')
       )
+      const [webPage] = webPages
+      const actions = [webPage?.potentialAction ?? []]
+        .flat()
+        .map(action => (action as GraphNode)['@type'])
+      const questions = graph.filter(node => node['@type'] === 'Question')
 
-      expect(webPage?.['@type'], page.path).toBe('WebPage')
-      expect(nodeOfType(graph, 'FAQPage'), page.path).toBeUndefined()
-      expect(nodeOfType(graph, 'AboutPage'), page.path).toBeUndefined()
-    }
+      expect(webPages).toHaveLength(1)
+      expect([webPage?.['@type']].flat()).toEqual(['WebPage', 'FAQPage'])
+      expect(actions).toEqual(['ReadAction'])
+      expect(nodeOfType(graph, 'AboutPage')).toBeUndefined()
+      expect(new Set(questions.map(question => question.inLanguage))).toEqual(
+        new Set([LANGUAGE_TAG[page.locale]])
+      )
+    })
+
+    it(`should list the twenty questions of the page as the FAQPage main entity when the page is ${page.path}`, () => {
+      const graph = graphOf(readOutput(page.file))
+      const webPage = nodeOfType(graph, 'FAQPage')
+      const questions = graph.filter(node => node['@type'] === 'Question')
+      const mainEntity = [webPage?.mainEntity ?? []]
+        .flat()
+        .map(entry => (entry as { '@id'?: string })['@id'])
+
+      expect(questions).toHaveLength(20)
+      expect(mainEntity).toEqual(questions.map(question => question['@id']))
+      expect(
+        questions.map(question => ({
+          name: question.name,
+          text: (question.acceptedAnswer as { text?: string } | undefined)
+            ?.text,
+        }))
+      ).toEqual(faqQuestions(page.locale))
+      expect(
+        questions.map(
+          question =>
+            (question.acceptedAnswer as { '@type'?: string } | undefined)?.[
+              '@type'
+            ]
+        )
+      ).toEqual(Array(20).fill('Answer'))
+    })
+  }
+
+  it('should carry the approved Preguntas meta copy when generated', () => {
+    /* Spec D4, FR-002: the handoff `meta`, never "Mientras tanto". */
+    const [spanish, english] = PAGES.filter(page => page.key === 'faq').map(
+      page => pageCopy(page)
+    )
+
+    expect(spanish).toEqual({
+      title: 'Preguntas frecuentes · muush',
+      description:
+        'Respuestas sobre el diagnóstico gratis, precios, proceso, entrega y cómo trabajar con muush.',
+    })
+    expect(english).toEqual({
+      title: 'Frequently asked questions · muush',
+      description:
+        'Answers about the free assessment, pricing, process, delivery and working with muush.',
+    })
   })
 })
 
@@ -562,7 +651,7 @@ describe('seo output · robots.txt', () => {
   })
 })
 
-describe('seo output · llms.txt (feature 49)', () => {
+describe('seo output · llms.txt (features 49, 51)', () => {
   /*
    * contracts/build-output.md § 4: the approved text of copy-drafts.md § C,
    * byte for byte, in the llmstxt.org shape, linking exactly the sitemap.
@@ -573,9 +662,11 @@ describe('seo output · llms.txt (feature 49)', () => {
   const llms = () => readOutput('llms.txt')
   const sitemap = (): string => readOutput('sitemap.xml')
 
+  /* Feature 51 (OQ-4 = A, Roberto 2026-11-08): the approved text now lives
+     in its contract; only the two Preguntas / FAQ lines changed. */
   function approvedBlock(): string {
     const drafts = readFileSync(
-      join(ROOT, 'specs', '049-consented-tracking', 'copy-drafts.md'),
+      join(ROOT, 'specs', '051-faq-content', 'contracts', 'llms-txt.md'),
       'utf8'
     )
     const section = drafts.slice(drafts.indexOf('## C ·'))
@@ -587,9 +678,30 @@ describe('seo output · llms.txt (feature 49)', () => {
     expect(llms()).toBe(readFileSync(join(ROOT, 'public', 'llms.txt'), 'utf8'))
   })
 
-  it('should carry the approved text of copy-drafts § C when generated', () => {
+  it('should carry the approved text of the feature 51 contract § C when generated', () => {
     expect(approvedBlock().length).toBeGreaterThan(0)
     expect(llms()).toBe(`${approvedBlock()}\n`)
+  })
+
+  it('should copy none of the FAQ questions into llms.txt when generated', () => {
+    /* Spec D2, FR-005: the questions reach assistants through the page. */
+    for (const locale of ['es', 'en'] as const) {
+      const copy = JSON.parse(
+        readFileSync(join(ROOT, 'i18n', 'locales', `${locale}.json`), 'utf8')
+      ) as {
+        faq: {
+          topics: Record<
+            string,
+            { questions: Record<string, { question: string }> }
+          >
+        }
+      }
+      for (const topic of Object.values(copy.faq.topics)) {
+        for (const { question } of Object.values(topic.questions)) {
+          expect(llms(), question).not.toContain(question)
+        }
+      }
+    }
   })
 
   it('should open with the H1 and a blockquote summary before the first section', () => {

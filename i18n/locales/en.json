@@ -9,8 +9,8 @@
       "description": "Meet the muush team: we bring together the right talent for each project. If you work in technology, design or production, join our talent pool."
     },
     "faq": {
-      "title": "FAQ · muush",
-      "description": "Answers to frequently asked questions about muush. In the meantime, request a free assessment or book a call."
+      "title": "Frequently asked questions · muush",
+      "description": "Answers about the free assessment, pricing, process, delivery and working with muush."
     },
     "privacy": {
       "title": "Privacy notice · muush",
@@ -77,6 +77,131 @@
         "engineering": "Engineering and development",
         "design": "Product design and UX",
         "creative": "Creative, content and marketing"
+      }
+    }
+  },
+  "faq": {
+    "pill": "FAQ",
+    "heading": {
+      "first": "Frequently asked",
+      "second": "questions."
+    },
+    "subtitle": "Clear answers before your assessment.",
+    "tabsLabel": "Topics",
+    "links": {
+      "privacy": "Privacy notice",
+      "about": "About"
+    },
+    "card": {
+      "title": "Have another question?",
+      "text": "Write to {email} or book a 30-minute call.",
+      "button": "Book a call"
+    },
+    "topics": {
+      "t1": {
+        "title": "Assessment and getting started",
+        "questions": {
+          "q1": {
+            "question": "What is the free assessment and what do I get?",
+            "answer": "A quick review of your website and tools to see what's worth solving. Within 24 business hours we send you three findings, the size of project you most likely need and the next step. It's free, with no commitment."
+          },
+          "q2": {
+            "question": "What does the assessment not include?",
+            "answer": "The assessment tells you what to do first and why. Price and scope come later, in the proposal, because they depend on what we decide together. We work with what's visible from the outside and what you tell us, so we don't need access to your systems. If a deeper review is needed, we tell you what it includes and what it costs."
+          },
+          "q3": {
+            "question": "What happens after the assessment?",
+            "answer": "If you want to move forward, we book a 30-minute call to understand how you operate. Then we send you a written proposal within 5 business days, with scope, timeline and cost. The project starts once we sign the contract and the confidentiality agreement, and receive the deposit."
+          },
+          "q4": {
+            "question": "Do I need to know about technology to work with you?",
+            "answer": "No. You tell us how your business works and we translate it into the technical solution. We explain every decision in plain words, and you approve every screen."
+          },
+          "q5": {
+            "question": "What kind of businesses do you work with?",
+            "answer": "We focus on solving what your business needs, whatever industry it comes from. We work with companies, real estate firms, hotels, schools, distributors, startups, entrepreneurs and personal brands, and with any business that has a process it wants to solve or improve with technology."
+          }
+        }
+      },
+      "t2": {
+        "title": "Pricing and payments",
+        "questions": {
+          "q1": {
+            "question": "How much does a project cost?",
+            "answer": "It depends on what your business needs. We don't sell fixed packages: we quote only what you need. If something technical requires a service you hadn't planned for, we suggest it with its pros and cons, and you decide. The cost is in writing in the proposal, before we start."
+          },
+          "q2": {
+            "question": "How do I pay for a project?",
+            "answer": "With a deposit to get started and the rest as agreed in the proposal."
+          },
+          "q3": {
+            "question": "What if my budget doesn't cover everything?",
+            "answer": "We adjust the scope and protect the quality. We can start with what has the most impact and split the project into phases, so you move forward without paying for everything at once."
+          },
+          "q4": {
+            "question": "Which costs are separate?",
+            "answer": "Hosting, your domain, licenses and the usage of AI or automation tools are contracted directly by you, so the accounts are always yours. If you add marketing, ad spend is also paid directly to the platforms, with a budget we agree on together. All of this is listed in the proposal."
+          },
+          "q5": {
+            "question": "Which services are quoted separately?",
+            "answer": "Support after launch, creative content (photo, video and graphic pieces) and marketing. They're optional: you add them only if your business needs them, and each one is quoted separately from the project."
+          }
+        }
+      },
+      "t3": {
+        "title": "Process and timeline",
+        "questions": {
+          "q1": {
+            "question": "How long does a project take?",
+            "answer": "It depends on the scope. The timeline for each stage is in writing in the proposal, and if anything changes it, we let you know in advance."
+          },
+          "q2": {
+            "question": "How do I know how my project is going?",
+            "answer": "Our team is with you from start to finish. A project manager runs your project day to day and is your point of contact for progress, deliveries and questions. An account manager advises you from the assessment and proposal onward, and looks after your account whenever you need something new. We work in stages, you see the progress in each one, and nothing moves forward without your approval."
+          },
+          "q3": {
+            "question": "Can I ask for changes during the project?",
+            "answer": "Yes. That's why you approve every screen before we build it: early on, changes cost less. If a change goes beyond the agreed scope, we tell you how much time and cost it adds before doing it, and you decide."
+          },
+          "q4": {
+            "question": "Do you work with clients outside your city or Mexico?",
+            "answer": "Yes. We work remotely with clients in any country, with a team in Mexico, the United States and Europe. We invoice and quote in the currency we agree on."
+          }
+        }
+      },
+      "t4": {
+        "title": "Delivery, ownership and support",
+        "questions": {
+          "q1": {
+            "question": "Who owns what you build?",
+            "answer": "You do. We hand everything over documented, and the accounts your system runs on are in your name from day one, so you never depend on a single person."
+          },
+          "q2": {
+            "question": "What happens after launch?",
+            "answer": "We launch with you and train your team to use it. If you want us to keep taking care of it, support is quoted separately."
+          },
+          "q3": {
+            "question": "Do you sign a confidentiality agreement? How do you protect my information?",
+            "answer": "Yes. We sign a confidentiality agreement before you share any internal information. We access your systems with only the access we need, and we handle your data as described in our {privacy}."
+          }
+        }
+      },
+      "t5": {
+        "title": "Work with muush",
+        "questions": {
+          "q1": {
+            "question": "How do I join the talent pool?",
+            "answer": "Fill out the form on the {about} page with your area, portfolio and CV. We review your profile and add you to the talent pool by industry and by project."
+          },
+          "q2": {
+            "question": "When will you contact me?",
+            "answer": "When there's a project that fits you; the timing depends on the projects that come in. We keep your CV for one year. If you'd like us to delete it sooner, write to {email}."
+          },
+          "q3": {
+            "question": "Do I have to work full time or from a set location?",
+            "answer": "No. You choose which projects you join, who you work with and where you work from. We all work by the same rules and the same delivery standard."
+          }
+        }
       }
     }
   },
@@ -440,7 +565,8 @@
       "switchToEs": "Switch to Spanish",
       "switchToEn": "Switch to English",
       "home": "muush home",
-      "homeLink": "Home"
+      "homeLink": "Home",
+      "faq": "FAQ"
     },
     "menu": {
       "label": "Menu",
@@ -450,7 +576,8 @@
     "social": {
       "linkedin": "LinkedIn",
       "instagram": "Instagram",
-      "tiktok": "TikTok"
+      "tiktok": "TikTok",
+      "facebook": "Facebook"
     },
     "footer": {
       "label": "Footer",
@@ -491,11 +618,6 @@
         "privacy": "Privacy notice",
         "terms": "Terms and conditions"
       }
-    },
-    "faq": {
-      "title": "Under construction 🚧",
-      "assessment": "Free assessment",
-      "call": "Book a call"
     },
     "notFound": {
       "heading": {
@@ -676,7 +798,7 @@
         "thirdParties": {
           "nav": "Third-party sites",
           "title": "Third-party sites",
-          "body": "The site links to third-party services such as Cal.com, WhatsApp, LinkedIn and Instagram. Each has its own terms and notices, and muush doesn't control them."
+          "body": "The site links to third-party services such as Cal.com, WhatsApp, LinkedIn, Instagram, TikTok and Facebook. Each has its own terms and notices, and muush doesn't control them."
         },
         "availability": {
           "nav": "Availability and liability",

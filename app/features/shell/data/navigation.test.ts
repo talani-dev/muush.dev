@@ -3,7 +3,7 @@ import { MENU_ITEMS, NAV_CTA, NAV_HOME, NAV_ITEMS } from './navigation'
 
 /** Feature 43 · data-model § 3, spec FR-003, FR-004, FR-024. */
 describe('navigation', () => {
-  it('should list Inicio, Servicios then Nosotros in the link bar when read', () => {
+  it('should list Inicio, Servicios, Nosotros then Preguntas in the link bar when read', () => {
     expect(NAV_ITEMS).toEqual([
       {
         labelKey: 'shell.nav.homeLink',
@@ -17,15 +17,22 @@ describe('navigation', () => {
         labelKey: 'shell.nav.about',
         destination: { kind: 'route', name: 'about' },
       },
+      {
+        labelKey: 'shell.nav.faq',
+        destination: { kind: 'route', name: 'faq' },
+      },
     ])
   })
 
-  it('should carry no Preguntas item when the link bar or the menu is read', () => {
-    /* Permanent (Roberto, feature 43; feature 46 gate 2026-11-02): Preguntas
-       is linked from the footers only. */
-    const keys = [...NAV_ITEMS, ...MENU_ITEMS].map(item => item.labelKey)
-
-    expect(keys.some(key => key.includes('faq'))).toBe(false)
+  it('should list Preguntas last, by route name, when the link bar or the menu is read', () => {
+    /* Roberto 2026-11-08, feature 51 OQ-2 = A: revokes the feature 43 / 46
+       "footers only" ruling. */
+    for (const items of [NAV_ITEMS, MENU_ITEMS]) {
+      expect(items.at(-1)).toEqual({
+        labelKey: 'shell.nav.faq',
+        destination: { kind: 'route', name: 'faq' },
+      })
+    }
   })
 
   it('should point the CTA at the home diagnostic section when read', () => {

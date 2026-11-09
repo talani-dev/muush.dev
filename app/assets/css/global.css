@@ -490,10 +490,8 @@
    */
   --h-pagina: clamp(2rem, 1.2571rem + 3.0476vw, 4rem);
   --lh-pagina: clamp(2.3rem, 1.5497rem + 3.0781vw, 4.32rem);
-  /* Preguntas ("estado"), 34 / 39.1 → 88 / 93.28 px, tracking 0 → −3.08. */
-  --h-estado: clamp(2.125rem, 0.8714rem + 5.1429vw, 5.5rem);
-  --lh-estado: clamp(2.4438rem, 1.186rem + 5.16vw, 5.83rem);
-  --tracking-estado: clamp(-0.1925rem, 0.0715rem - 0.2933vw, 0rem);
+  /* The Preguntas "estado" heading (34 → 88) left with feature 51, which
+     replaced that page's status block; its heading is `--h-faq`. */
 
   /*
    * ---------- Legal pages and cookie consent (feature 48) ----------
@@ -524,6 +522,34 @@
    * it never drops under 40 px and the article shifts right of centre.
    */
   --legal-columnas: 13.75rem max(2.5rem, calc(50% - 35rem)) minmax(0, 42.5rem);
+
+  /*
+   * ---------- Preguntas · feature 51 ----------
+   * Source: the handoff `preguntas-muush-1.0` (README and `referencias/`,
+   * approved by Roberto and Clau 2026-11-08); the `.pen` frames were not
+   * read by this feature's agents (rules.md § R32). Utilities are in the
+   * `@theme inline` block below. Only what hand-written CSS reads (the
+   * heading scale and the edges painted by `borde-luz`) lives here.
+   *
+   * Heading ("faq"), Poppins 500, 34 → 56 px with line height 1.1 at both
+   * anchors (37.4 → 61.6) and tracking −1.02 → −1.96 px: the README gives
+   * 56 / 1.1 / −1.96 for 1440 and 34 / −1.02 for 390, no mobile line
+   * height, and the 390 reference draws the two lines 37 px apart.
+   */
+  --h-faq: clamp(2.125rem, 1.6143rem + 2.0952vw, 3.5rem);
+  --lh-faq: clamp(2.3375rem, 1.7757rem + 2.3048vw, 3.85rem);
+  --tracking-faq: clamp(-0.1225rem, -0.0419rem - 0.0895vw, -0.0638rem);
+  /* The active tab and the open question: a vertical gradient edge, Red
+     muush 500 at 33 % → Blanco 6 % (README). */
+  --borde-faq-activo: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--red-muush-500) 33%, transparent),
+    color-mix(in srgb, var(--blanco) 6%, transparent)
+  );
+  /* The inactive tab's edge, Blanco 6 % (questions and the card use the
+     shell's Blanco 8 %). Named for its one reader: feature 44 retired a
+     general `--blanco-6` that had none (`tests/design-tokens.test.ts`). */
+  --borde-faq-tenue: color-mix(in srgb, var(--blanco) 6%, transparent);
 }
 
 @media (width >= 64rem) {
@@ -905,7 +931,20 @@ html {
      line box measured 19 in Chrome, which made the bar 51). */
   --spacing-barra: 0.375rem;
   --spacing-enlace-y: 0.625rem;
-  --spacing-enlace-x: 1.125rem;
+  /*
+   * Item x padding: 18 at 1440 (§ 2), and fluid just above `lg` (feature 51
+   * review, Roberto 2026-11-08, option A). With four items (Preguntas joined
+   * the bar) the Spanish bar is 424 wide at 18, and the `1fr auto 1fr` row
+   * only centres it with the header's own 12 px (`header-grupo`) before the
+   * 246 px end group from 1101 px. Below that the padding loses 1 px for
+   * every 8 px of viewport (four items, two sides each), so the Spanish bar
+   * stays centred with ≈ 13.5 px to the ES button from 1024 to 1104, where
+   * it is 18 again and stays 18 (1440 unchanged). 8 at 1024. Measured on
+   * the built site at 1024 / 1050 / 1077 / 1080 / 1104 / 1440, ES and EN
+   * (impl-51 Round 2). A classic, non-overlay scrollbar narrows the page
+   * without changing `vw`: at 1024 the bar still centres, with ≈ 6 px.
+   */
+  --spacing-enlace-x: clamp(0.5rem, -7.5rem + 12.5vw, 1.125rem);
   --spacing-enlace-gap: 0.5rem;
   --spacing-punto-activo: 0.375rem;
   --text-enlace: 0.9375rem;
@@ -1409,10 +1448,6 @@ html {
   --text-pagina--line-height: var(--lh-pagina);
   --text-pagina--letter-spacing: var(--tracking-diagnostico);
   --text-pagina--font-weight: 500;
-  --text-estado: var(--h-estado);
-  --text-estado--line-height: var(--lh-estado);
-  --text-estado--letter-spacing: var(--tracking-estado);
-  --text-estado--font-weight: 500;
 
   /* Nosotros hero (§§ 1.1, 2): x padding 24 → 80, gap 24 → 28, content
      centred; intro 16 / 1.5 → 20 / 1.5, 720 wide. The drawn 700 → 820
@@ -1675,6 +1710,102 @@ html {
   --text-siempre: 0.75rem;
   --text-siempre--line-height: normal;
   --text-siempre--font-weight: 500;
+
+  /*
+   * ---------- Preguntas · feature 51 ----------
+   * Source: the handoff `preguntas-muush-1.0` README (1440 and 390 values)
+   * and its reference PNGs; fluid 390 → 1440 where both anchors exist (the
+   * feature-42 formula), fixed where the README gives one value. Values
+   * marked DERIVED were measured on the reference PNGs, which the README
+   * does not number.
+   *
+   * Outer framing: NONE here (Roberto 2026-11-08, OQ-1 = B). The block uses
+   * the site-wide `portada-alto` / `seccion-arriba` / `seccion-aire` like
+   * every first block, so the drawn 300 / 200 (desktop) and 200 / 64
+   * (mobile) paddings are not tokens. Fallback, only if Roberto rejects the
+   * centred look at review: new fluid `--spacing-faq-arriba` 200 → 300 and
+   * `--spacing-faq-abajo` 64 → 200, no centring (never the retired
+   * `--spacing-preguntas-*` names, `tests/design-tokens.test.ts`).
+   */
+  --text-faq: var(--h-faq);
+  --text-faq--line-height: var(--lh-faq);
+  --text-faq--letter-spacing: var(--tracking-faq);
+  --text-faq--font-weight: 500;
+  /* Subtitle: Instrument Sans 16 → 18, line height 1.5. */
+  --text-faq-bajada: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
+  --text-faq-bajada--line-height: var(--interlineado-texto);
+  /* Pill, heading and subtitle: gap 16 at 390 (README), 20 at 1440
+     (DERIVED: the reference draws the title 20 below the pill and the
+     subtitle 20 below the title). The pill's own `pill-aire` adds to it. */
+  --spacing-faq-encabezado-gap: clamp(1rem, 0.9071rem + 0.381vw, 1.25rem);
+  /* Desktop columns: left 420, gap 72, the left column's own gap 36, the
+     right column 68 lower than the left. Rows: header, tabs, then the card,
+     whose row takes any height the questions add (no stretched gaps). */
+  --grid-template-columns-faq: 26.25rem minmax(0, 1fr);
+  --grid-template-rows-faq: auto auto 1fr;
+  --spacing-faq-columnas: 4.5rem;
+  --spacing-faq-izquierda-gap: 2.25rem;
+  --spacing-faq-derecha-arriba: 4.25rem;
+  /* Mobile stack: chips 28 below the header (no end padding, so the next
+     chip peeks), questions 20 below the chips, the card section 32 below
+     the questions. Its drawn 64 bottom is the section framing's. */
+  --spacing-faq-chips-arriba: 1.75rem;
+  --spacing-faq-preguntas-arriba: 1.25rem;
+  --spacing-faq-tarjeta-arriba: 2rem;
+  /* Topic tabs (chips below 1024): gap 8; padding 10 / 14 → 16 / 18;
+     number → name 10 → 12 (DERIVED from the references); desktop radius
+     14 (chips are full round, `rounded-pill`); blur 18; number 12 → 13 /
+     600; name 14 → 16 / 500 on a 1.25 line (DERIVED: the 1440 tab is 52
+     tall, 16 + 20 + 16); chevron 18. */
+  --spacing-faq-pestanas-gap: 0.5rem;
+  --spacing-faq-pestana-y: clamp(0.625rem, 0.4857rem + 0.5714vw, 1rem);
+  --spacing-faq-pestana-x: clamp(0.875rem, 0.7821rem + 0.381vw, 1.125rem);
+  --spacing-faq-pestana-gap: clamp(0.625rem, 0.5786rem + 0.1905vw, 0.75rem);
+  --radius-faq-pestana: 0.875rem;
+  --blur-faq: 1.125rem;
+  --text-faq-numero: clamp(0.75rem, 0.7268rem + 0.0952vw, 0.8125rem);
+  --text-faq-numero--line-height: 1.25;
+  --text-faq-numero--font-weight: 600;
+  --text-faq-tema: clamp(0.875rem, 0.8286rem + 0.1905vw, 1rem);
+  --text-faq-tema--line-height: 1.25;
+  --text-faq-tema--font-weight: 500;
+  --spacing-faq-chevron: 1.125rem;
+  /* Questions: list gap 10 → 12; radius 16 → 18; padding 18 → 24 / 28;
+     gap 14 (question ↔ answer, and the least room between the question
+     and its button); text 16 → 19 / 500, line height 1.35; round button
+     30 → 34 with a 14 → 16 icon; answer 15 → 16, line height 1.6. */
+  --spacing-faq-preguntas-gap: clamp(0.625rem, 0.5786rem + 0.1905vw, 0.75rem);
+  --radius-faq-pregunta: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
+  --spacing-faq-pregunta-y: clamp(1.125rem, 0.9857rem + 0.5714vw, 1.5rem);
+  --spacing-faq-pregunta-x: clamp(1.125rem, 0.8929rem + 0.9524vw, 1.75rem);
+  --spacing-faq-pregunta-gap: 0.875rem;
+  --text-faq-pregunta: clamp(1rem, 0.9304rem + 0.2857vw, 1.1875rem);
+  --text-faq-pregunta--line-height: 1.35;
+  --text-faq-pregunta--font-weight: 500;
+  --spacing-faq-boton: clamp(1.875rem, 1.7821rem + 0.381vw, 2.125rem);
+  --spacing-faq-boton-icono: clamp(0.875rem, 0.8286rem + 0.1905vw, 1rem);
+  --text-faq-respuesta: clamp(0.9375rem, 0.9143rem + 0.0952vw, 1rem);
+  --text-faq-respuesta--line-height: 1.6;
+  /* Card: radius 20 → 22; padding 24 → 28; gap 12 → 14; icon box 40 → 44,
+     radius 14, with a 20 icon; title Poppins 22 → 24, tracking −0.6
+     (`tracking-servicio`), on a 1.4 line (DERIVED: 34 tall at 1440 in the
+     reference); text 15 / 1.5; blur 24 (`blur-cristal`). */
+  --radius-faq-tarjeta: clamp(1.25rem, 1.2036rem + 0.1905vw, 1.375rem);
+  --spacing-faq-tarjeta: clamp(1.5rem, 1.4071rem + 0.381vw, 1.75rem);
+  --spacing-faq-tarjeta-gap: clamp(0.75rem, 0.7036rem + 0.1905vw, 0.875rem);
+  --spacing-faq-icono-caja: clamp(2.5rem, 2.4071rem + 0.381vw, 2.75rem);
+  --radius-faq-icono: 0.875rem;
+  --spacing-faq-icono: 1.25rem;
+  --text-faq-tarjeta-titulo: clamp(1.375rem, 1.3286rem + 0.1905vw, 1.5rem);
+  --text-faq-tarjeta-titulo--line-height: 1.4;
+  --text-faq-tarjeta-titulo--letter-spacing: var(--tracking-servicio);
+  --text-faq-tarjeta-titulo--font-weight: 500;
+  --text-faq-tarjeta: 0.9375rem;
+  --text-faq-tarjeta--line-height: var(--interlineado-texto);
+  /* The acanalado band, measured from the page top (the header floats over
+     it): top 68 → 84, height 300 → 600, full width (README; spec FR-020). */
+  --spacing-faq-franja-arriba: clamp(4.25rem, 3.8786rem + 1.5238vw, 5.25rem);
+  --spacing-faq-franja-alto: clamp(18.75rem, 11.7857rem + 28.5714vw, 37.5rem);
 }
 
 /*
@@ -1853,6 +1984,22 @@ html {
 /* Feature 44 · the "También" strip chips: flat Blanco 15 % (§ 3.2). */
 @utility borde-suave {
   --borde: var(--blanco-15);
+}
+
+/* Feature 51 · Preguntas: the active topic tab and the open question,
+   Red muush 500 33 % → Blanco 6 %, vertical (handoff README). */
+@utility borde-faq-activo {
+  --borde: var(--borde-faq-activo);
+}
+
+/* Feature 51 · an inactive topic tab: flat Blanco 6 %. */
+@utility borde-faq-tenue {
+  --borde: var(--borde-faq-tenue);
+}
+
+/* Feature 51 · a closed question and the card: flat Blanco 8 %. */
+@utility borde-faq {
+  --borde: var(--blanco-8);
 }
 
 /*

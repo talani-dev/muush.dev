@@ -120,6 +120,22 @@ describe('googleAnalytics', () => {
     ])
   })
 
+  it('should send a faq_question_open with exactly its two params when a question is opened', () => {
+    /* Feature 51 · spec D6, FR-024: a topic id and a number, nothing else. */
+    const { browser, ga } = granted()
+
+    ga.sink({
+      name: 'faq_question_open',
+      params: { faq_topic: 'work_with_muush', faq_question: 19 },
+    })
+
+    expect(gtagCalls(browser.window).at(-1)).toEqual([
+      'event',
+      'faq_question_open',
+      { faq_topic: 'work_with_muush', faq_question: 19 },
+    ])
+  })
+
   it('should send a flushed section view with the beacon transport', () => {
     const { browser, ga } = granted()
 

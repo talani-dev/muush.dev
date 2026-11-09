@@ -1,0 +1,143 @@
+{
+  "idioma": "en",
+  "ruta": "/en/faq",
+  "meta": {
+    "title": "Frequently asked questions · muush",
+    "description": "Answers about the free assessment, pricing, process, delivery and working with muush."
+  },
+  "encabezado": {
+    "pill": "FAQ",
+    "titulo": ["Frequently asked", "questions."],
+    "bajada": "Clear answers before your assessment."
+  },
+  "tarjeta": {
+    "titulo": "Have another question?",
+    "texto": "Write to support@muush.dev or book a 30-minute call.",
+    "boton": {
+      "texto": "Book a call",
+      "url": "https://cal.com/muush/intro-call"
+    },
+    "correo": "support@muush.dev"
+  },
+  "temas": [
+    {
+      "id": "assessment",
+      "numero": "01",
+      "titulo": "Assessment and getting started",
+      "preguntas": [
+        {
+          "pregunta": "What is the free assessment and what do I get?",
+          "respuesta": "A quick review of your website and tools to see what's worth solving. Within 24 business hours we send you three findings, the size of project you most likely need and the next step. It's free, with no commitment."
+        },
+        {
+          "pregunta": "What does the assessment not include?",
+          "respuesta": "The assessment tells you what to do first and why. Price and scope come later, in the proposal, because they depend on what we decide together. We work with what's visible from the outside and what you tell us, so we don't need access to your systems. If a deeper review is needed, we tell you what it includes and what it costs."
+        },
+        {
+          "pregunta": "What happens after the assessment?",
+          "respuesta": "If you want to move forward, we book a 30-minute call to understand how you operate. Then we send you a written proposal within 5 business days, with scope, timeline and cost. The project starts once we sign the contract and the confidentiality agreement, and receive the deposit."
+        },
+        {
+          "pregunta": "Do I need to know about technology to work with you?",
+          "respuesta": "No. You tell us how your business works and we translate it into the technical solution. We explain every decision in plain words, and you approve every screen."
+        },
+        {
+          "pregunta": "What kind of businesses do you work with?",
+          "respuesta": "We focus on solving what your business needs, whatever industry it comes from. We work with companies, real estate firms, hotels, schools, distributors, startups, entrepreneurs and personal brands, and with any business that has a process it wants to solve or improve with technology."
+        }
+      ]
+    },
+    {
+      "id": "pricing",
+      "numero": "02",
+      "titulo": "Pricing and payments",
+      "preguntas": [
+        {
+          "pregunta": "How much does a project cost?",
+          "respuesta": "It depends on what your business needs. We don't sell fixed packages: we quote only what you need. If something technical requires a service you hadn't planned for, we suggest it with its pros and cons, and you decide. The cost is in writing in the proposal, before we start."
+        },
+        {
+          "pregunta": "How do I pay for a project?",
+          "respuesta": "With a deposit to get started and the rest as agreed in the proposal."
+        },
+        {
+          "pregunta": "What if my budget doesn't cover everything?",
+          "respuesta": "We adjust the scope and protect the quality. We can start with what has the most impact and split the project into phases, so you move forward without paying for everything at once."
+        },
+        {
+          "pregunta": "Which costs are separate?",
+          "respuesta": "Hosting, your domain, licenses and the usage of AI or automation tools are contracted directly by you, so the accounts are always yours. If you add marketing, ad spend is also paid directly to the platforms, with a budget we agree on together. All of this is listed in the proposal."
+        },
+        {
+          "pregunta": "Which services are quoted separately?",
+          "respuesta": "Support after launch, creative content (photo, video and graphic pieces) and marketing. They're optional: you add them only if your business needs them, and each one is quoted separately from the project."
+        }
+      ]
+    },
+    {
+      "id": "process",
+      "numero": "03",
+      "titulo": "Process and timeline",
+      "preguntas": [
+        {
+          "pregunta": "How long does a project take?",
+          "respuesta": "It depends on the scope. The timeline for each stage is in writing in the proposal, and if anything changes it, we let you know in advance."
+        },
+        {
+          "pregunta": "How do I know how my project is going?",
+          "respuesta": "Our team is with you from start to finish. A project manager runs your project day to day and is your point of contact for progress, deliveries and questions. An account manager advises you from the assessment and proposal onward, and looks after your account whenever you need something new. We work in stages, you see the progress in each one, and nothing moves forward without your approval."
+        },
+        {
+          "pregunta": "Can I ask for changes during the project?",
+          "respuesta": "Yes. That's why you approve every screen before we build it: early on, changes cost less. If a change goes beyond the agreed scope, we tell you how much time and cost it adds before doing it, and you decide."
+        },
+        {
+          "pregunta": "Do you work with clients outside your city or Mexico?",
+          "respuesta": "Yes. We work remotely with clients in any country, with a team in Mexico, the United States and Europe. We invoice and quote in the currency we agree on."
+        }
+      ]
+    },
+    {
+      "id": "delivery",
+      "numero": "04",
+      "titulo": "Delivery, ownership and support",
+      "preguntas": [
+        {
+          "pregunta": "Who owns what you build?",
+          "respuesta": "You do. We hand everything over documented, and the accounts your system runs on are in your name from day one, so you never depend on a single person."
+        },
+        {
+          "pregunta": "What happens after launch?",
+          "respuesta": "We launch with you and train your team to use it. If you want us to keep taking care of it, support is quoted separately."
+        },
+        {
+          "pregunta": "Do you sign a confidentiality agreement? How do you protect my information?",
+          "respuesta": "Yes. We sign a confidentiality agreement before you share any internal information. We access your systems with only the access we need, and we handle your data as described in our Privacy notice.",
+          "enlaces": [{ "texto": "Privacy notice", "url": "/en/privacy" }]
+        }
+      ]
+    },
+    {
+      "id": "work-with-muush",
+      "numero": "05",
+      "titulo": "Work with muush",
+      "preguntas": [
+        {
+          "pregunta": "How do I join the talent pool?",
+          "respuesta": "Fill out the form on the About page with your area, portfolio and CV. We review your profile and add you to the talent pool by industry and by project.",
+          "enlaces": [
+            { "texto": "About", "url": "/en/about#trabaja-con-muush" }
+          ]
+        },
+        {
+          "pregunta": "When will you contact me?",
+          "respuesta": "When there's a project that fits you; the timing depends on the projects that come in. We keep your CV for one year. If you'd like us to delete it sooner, write to support@muush.dev."
+        },
+        {
+          "pregunta": "Do I have to work full time or from a set location?",
+          "respuesta": "No. You choose which projects you join, who you work with and where you work from. We all work by the same rules and the same delivery standard."
+        }
+      ]
+    }
+  ]
+}

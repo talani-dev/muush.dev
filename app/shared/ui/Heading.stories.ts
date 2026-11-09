@@ -4,11 +4,13 @@ import Heading from '@/shared/ui/Heading.vue'
 /**
  * The Muush 1.0 two-tone heading (feature 42, FR-014). At "Móvil (390)" /
  * "Escritorio (1440)": hero 34 / 96 px, sección 28 / 56, proceso 28 / 52,
- * diagnóstico 34 / 64, página 32 / 64 (Nosotros hero) and estado 34 / 88
- * (Preguntas, feature 46), legal 34 / 56 (Aviso de privacidad and
- * Términos, feature 48), with no tracking at 390 and ≈ −0.035 em at 1440
- * (pen extract §§ 4, 8; pen extract-46 § 6; pen-extract-48 § 3). Copy from
- * `docs/business/muush-1.0.md` § 4 and the legal pages' `.pen` frames.
+ * diagnóstico 34 / 64, página 32 / 64 (Nosotros hero), legal 34 / 56
+ * (Aviso de privacidad and Términos, feature 48), with no tracking at 390
+ * and ≈ −0.035 em at 1440, and faq 34 / 56 (Preguntas, feature 51) with
+ * −1.02 → −1.96 tracking (pen extract §§ 4, 8; pen extract-46 § 6;
+ * pen-extract-48 § 3; handoff `preguntas-muush-1.0`). Copy from
+ * `docs/business/muush-1.0.md` § 4, the legal pages' `.pen` frames and
+ * the Preguntas handoff JSON.
  */
 const meta = {
   title: 'Shared/UI/Heading',
@@ -124,9 +126,14 @@ const pagina = {
     level: 1,
   },
 } as const
-const estado = {
-  es: { first: 'En construcción 🚧', size: 'estado', level: 1 },
-  en: { first: 'Under construction 🚧', size: 'estado', level: 1 },
+const faq = {
+  es: { first: 'Preguntas', second: 'frecuentes.', size: 'faq', level: 1 },
+  en: {
+    first: 'Frequently asked',
+    second: 'questions.',
+    size: 'faq',
+    level: 1,
+  },
 } as const
 const legal = {
   es: { first: 'Aviso de', second: 'privacidad.', size: 'legal', level: 1 },
@@ -138,10 +145,10 @@ export const PaginaEsDesktop1440: Story = { args: pagina.es, globals: desktop }
 export const PaginaEnMobile390: Story = { args: pagina.en, globals: mobile }
 export const PaginaEnDesktop1440: Story = { args: pagina.en, globals: desktop }
 
-export const EstadoEsMobile390: Story = { args: estado.es, globals: mobile }
-export const EstadoEsDesktop1440: Story = { args: estado.es, globals: desktop }
-export const EstadoEnMobile390: Story = { args: estado.en, globals: mobile }
-export const EstadoEnDesktop1440: Story = { args: estado.en, globals: desktop }
+export const FaqEsMobile390: Story = { args: faq.es, globals: mobile }
+export const FaqEsDesktop1440: Story = { args: faq.es, globals: desktop }
+export const FaqEnMobile390: Story = { args: faq.en, globals: mobile }
+export const FaqEnDesktop1440: Story = { args: faq.en, globals: desktop }
 
 /** A one-line heading: line 1 only. */
 export const OneLine: Story = { args: { first: 'Qué es muush' } }

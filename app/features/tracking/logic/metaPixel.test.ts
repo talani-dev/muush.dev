@@ -174,7 +174,7 @@ describe('metaPixel', () => {
     ])
   })
 
-  it('should never send the application or a form_response to Meta', () => {
+  it('should never send the application, a form_response or a faq_question_open to Meta', () => {
     const { browser, meta } = granted()
     const before = fbqCalls(browser.window).length
 
@@ -185,6 +185,11 @@ describe('metaPixel', () => {
     meta.sink({
       name: 'application_submit',
       params: { form: 'application', with_cv: false },
+    })
+    /* Feature 51 · GA4 only (spec D6, Roberto at the gate 2026-11-08). */
+    meta.sink({
+      name: 'faq_question_open',
+      params: { faq_topic: 'pricing', faq_question: 6 },
     })
 
     expect(fbqCalls(browser.window)).toHaveLength(before)

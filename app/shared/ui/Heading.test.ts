@@ -30,8 +30,8 @@ describe('Heading', () => {
     'proceso',
     'diagnostico',
     'pagina',
-    'estado',
     'legal',
+    'faq',
   ] as const) {
     it(`should use the ${size} type token when the size is ${size}`, () => {
       expect(render({ size }).classes()).toContain(`text-${size}`)

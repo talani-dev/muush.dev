@@ -8,6 +8,7 @@ const NETWORKS: [SocialNetwork, string][] = [
   ['linkedin', 'LinkedIn'],
   ['instagram', 'Instagram'],
   ['tiktok', 'TikTok'],
+  ['facebook', 'Facebook'],
 ]
 
 describe('SocialIcon', () => {

@@ -3,13 +3,14 @@ import { SOCIAL_PROFILES } from '@/features/shell/data/socialProfiles'
 import { profileUrls } from './profileUrls'
 
 describe('profileUrls', () => {
-  it('should return the three profile hrefs in record order when given SOCIAL_PROFILES', () => {
+  it('should return the four profile hrefs in record order when given SOCIAL_PROFILES', () => {
     expect(profileUrls(SOCIAL_PROFILES)).toEqual([
       SOCIAL_PROFILES[0]?.href,
       SOCIAL_PROFILES[1]?.href,
       SOCIAL_PROFILES[2]?.href,
+      SOCIAL_PROFILES[3]?.href,
     ])
-    expect(profileUrls(SOCIAL_PROFILES)).toHaveLength(3)
+    expect(profileUrls(SOCIAL_PROFILES)).toHaveLength(4)
   })
 
   it('should return an empty list when given no profiles', () => {

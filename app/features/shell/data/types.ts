@@ -157,20 +157,20 @@ export interface ResolvedSocial {
 }
 
 /**
- * The two status pages that share one block (feature 46, spec FR-042):
- * Preguntas and the 404. Each name is also its shader preset.
+ * The status page the shared block renders (feature 46, spec FR-042): the
+ * 404 since feature 51 moved Preguntas to its own `faq` module. The name
+ * is also its shader preset.
  */
-export type StatusPreset = 'faq' | 'notFound'
+export type StatusPreset = 'notFound'
 
 /**
  * What `ui/StatusSection.vue` receives (feature 46, data-model § 3),
- * returned by `useFaqContent` and `useNotFoundContent`: every string and
- * href resolved.
+ * returned by `useNotFoundContent`: every string and href resolved.
  */
 export interface StatusSectionProps {
   preset: StatusPreset
   headingFirst: string
-  /** Line 2 in Gris 400; Preguntas has none. */
+  /** Line 2 in Gris 400. */
   headingSecond?: string
   /** The primary button, with the arrow. */
   primary: ResolvedShellItem

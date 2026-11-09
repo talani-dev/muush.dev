@@ -91,6 +91,22 @@ function localeToggleLinks(html: string): { href: string; hreflang: string }[] {
   )
 }
 
+/**
+ * A document's text as a reader gets it: tags and Vue's fragment comments
+ * dropped, the entities SSR writes decoded, whitespace collapsed.
+ */
+function visibleText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/g, ' ')
+    .replace(/<[^>]*>/g, '')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&quot;', '"')
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&amp;', '&')
+    .replace(/\s+/g, ' ')
+}
+
 describe('static output · routes', () => {
   it('should write a document for every route when generated', () => {
     for (const route of ROUTES) {
@@ -144,9 +160,14 @@ describe('static output · routes', () => {
   })
 
   it('should resolve Preguntas at both localized paths from one page', () => {
-    /* Feature 46 · FR-030, FR-033: `/es/preguntas` ↔ `/en/faq`. */
-    expect(documentFor('/es/preguntas')).toContain('En construcción 🚧')
-    expect(documentFor('/en/faq')).toContain('Under construction 🚧')
+    /* Feature 46 · FR-030, FR-033: `/es/preguntas` ↔ `/en/faq`; the page
+       title is the approved one since feature 51. */
+    expect(visibleText(documentFor('/es/preguntas'))).toContain(
+      'Preguntas frecuentes.'
+    )
+    expect(visibleText(documentFor('/en/faq'))).toContain(
+      'Frequently asked questions.'
+    )
   })
 
   it('should resolve the legal pages at both localized paths with their final text', () => {
@@ -391,6 +412,9 @@ describe('static output · the layout wraps every page', () => {
     expect(current('/en')).toEqual([['page', 'Home']])
     expect(current('/es/nosotros')).toEqual([['page', 'Nosotros']])
     expect(current('/en/about')).toEqual([['page', 'About']])
+    /* Feature 51 · OQ-2 = A: Preguntas is lit on its own page only. */
+    expect(current('/es/preguntas')).toEqual([['page', 'Preguntas']])
+    expect(current('/en/faq')).toEqual([['page', 'FAQ']])
   })
 
   it('should show the header logo as the isotipo alone with its i18n name on every page', () => {
@@ -486,8 +510,8 @@ describe('static output · the header (feature 43)', () => {
   /*
    * The Muush 1.0 header (spec FR-001…FR-008): the mobile glass bar below
    * `lg`, the floating nav with its glass link bar from `lg`: Inicio ·
-   * Servicios · Nosotros, never Preguntas (Roberto, feature 43; feature 46
-   * gate 2026-11-02: it is linked from the footers only).
+   * Servicios · Nosotros · Preguntas (Roberto 2026-11-08, feature 51
+   * OQ-2 = A, which revoked the features 43 / 46 "footers only" ruling).
    */
   function navMarkup(route: RoutePath): string | undefined {
     return documentFor(route).match(/<nav[\s\S]*?<\/nav>/)?.[0]
@@ -521,15 +545,38 @@ describe('static output · the header (feature 43)', () => {
       )
     })
 
-    it(`should never render Proyectos or Preguntas inside the nav when the page is ${route}`, () => {
-      /* Proyectos: feature 15 is `blocked` (features 21, 24). Preguntas:
-         footer only (spec 046 FR-029). */
+    it(`should never render Proyectos inside the nav when the page is ${route}`, () => {
+      /* Proyectos: feature 15 is `blocked` (features 21, 24). */
       const nav = navMarkup(route)
 
       expect(nav, route).toBeDefined()
-      for (const label of ['Proyectos', 'Projects', 'Preguntas', 'FAQ']) {
+      for (const label of ['Proyectos', 'Projects']) {
         expect(nav, `${route} · ${label}`).not.toContain(label)
       }
+    })
+
+    it(`should list the four nav items in order, Preguntas last by route, when the page is ${route}`, () => {
+      /* Feature 51 · OQ-2 = A; contract `build-output.md` § 1b. */
+      const list = navMarkup(route)?.match(/<ul[\s\S]*?<\/ul>/)?.[0] ?? ''
+      const links = [
+        ...list.matchAll(/<a [^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g),
+      ].map(match => [
+        (match[2] ?? '').replace(/<[^>]*>/g, '').trim(),
+        match[1],
+      ])
+      const spanish = !route.startsWith('/en')
+
+      expect(
+        links.map(([label]) => label),
+        route
+      ).toEqual(
+        spanish
+          ? ['Inicio', 'Servicios', 'Nosotros', 'Preguntas']
+          : ['Home', 'Services', 'About', 'FAQ']
+      )
+      expect(links.at(-1)?.[1], route).toBe(
+        spanish ? '/es/preguntas' : '/en/faq'
+      )
     })
   }
 
@@ -633,7 +680,13 @@ describe('static output · the header (feature 43)', () => {
        mount and the dialog only when open. Without scripting the footer is
        the full navigation on phones. */
     for (const route of ROUTES) {
-      const html = documentFor(route)
+      /* Feature 51 · the Preguntas accordion's questions carry their own
+         `aria-expanded`; the block is set aside, the shell is what is
+         checked. */
+      const html = documentFor(route).replace(
+        /<section[^>]*data-faq[\s\S]*?<footer/,
+        '<footer'
+      )
 
       expect(html, route).not.toContain('role="dialog"')
       expect(html, route).not.toContain('aria-expanded')
@@ -1472,4 +1525,129 @@ describe('static output · the muush mark', () => {
     /* The `.ico` is deleted, not replaced (spec A-06). */
     expect(existsSync(join(OUTPUT, 'favicon.ico'))).toBe(false)
   })
+})
+
+/*
+ * Feature 51 · the Preguntas page with the real questions (contract
+ * `build-output.md` § 1). Copy is compared against the locale files read
+ * from disk (rules.md § R27), placeholders filled with the link texts and
+ * the address, the way the page renders them.
+ */
+describe('static output · Preguntas (feature 51)', () => {
+  const FAQ_ROUTES = ['/es/preguntas', '/en/faq'] as const
+
+  interface FaqCopy {
+    faq: {
+      links: { privacy: string; about: string }
+      topics: Record<
+        string,
+        { questions: Record<string, { question: string; answer: string }> }
+      >
+    }
+  }
+
+  function faqCopy(route: (typeof FAQ_ROUTES)[number]) {
+    const locale = route.startsWith('/en') ? 'en' : 'es'
+    const copy = JSON.parse(
+      readFileSync(
+        join(process.cwd(), 'i18n', 'locales', `${locale}.json`),
+        'utf8'
+      )
+    ) as FaqCopy
+    const questions = Object.values(copy.faq.topics).flatMap(topic =>
+      Object.values(topic.questions)
+    )
+    return questions.map(({ question, answer }) => ({
+      question,
+      answer: answer
+        .replace('{privacy}', copy.faq.links.privacy)
+        .replace('{about}', copy.faq.links.about)
+        .replace('{email}', 'support@muush.dev'),
+    }))
+  }
+
+  for (const route of FAQ_ROUTES) {
+    it(`should carry all twenty questions and answers in the HTML when the page is ${route}`, () => {
+      const text = visibleText(documentFor(route))
+      const questions = faqCopy(route)
+
+      expect(questions).toHaveLength(20)
+      for (const { question, answer } of questions) {
+        expect(text, question).toContain(question)
+        expect(text, question).toContain(answer)
+      }
+    })
+
+    it(`should carry no status or placeholder copy when the page is ${route}`, () => {
+      const html = documentFor(route)
+
+      for (const gone of [
+        'En construcción',
+        'Under construction',
+        'Mientras tanto',
+        'In the meantime',
+      ]) {
+        expect(html, gone).not.toContain(gone)
+      }
+    })
+
+    it(`should render one tab list, five tabs, five panels and one open question when the page is ${route}`, () => {
+      const html = documentFor(route)
+      const panels = [...html.matchAll(/<div[^>]*role="tabpanel"[^>]*>/g)].map(
+        match => match[0]
+      )
+
+      expect(html.match(/role="tablist"/g)).toHaveLength(1)
+      expect(html.match(/role="tab"/g)).toHaveLength(5)
+      expect(panels).toHaveLength(5)
+      expect(panels.filter(panel => / hidden[\s>=]/.test(panel))).toHaveLength(
+        4
+      )
+      expect(html.match(/aria-expanded="true"/g)).toHaveLength(1)
+    })
+
+    it(`should link the answers and the card through the route map when the page is ${route}`, () => {
+      const html = documentFor(route)
+      const spanish = route.startsWith('/es')
+
+      expect(html).toContain(
+        `href="${spanish ? '/es/privacidad' : '/en/privacy'}"`
+      )
+      expect(html).toContain(
+        `href="${spanish ? '/es/nosotros' : '/en/about'}#trabaja-con-muush"`
+      )
+      /* The page block runs from its `data-faq` section to the footer. */
+      const block = html.slice(
+        html.indexOf('data-faq'),
+        html.indexOf('<footer')
+      )
+      expect(block.match(/href="mailto:support@muush\.dev"/g)).toHaveLength(2)
+      const booking = [...block.matchAll(/<a\b[^>]*>/g)]
+        .map(match => match[0])
+        .filter(tag => tag.includes(`href="${CALL_BOOKING_URL}"`))
+      expect(booking).toHaveLength(1)
+      for (const attribute of [
+        'target="_blank"',
+        'rel="noopener noreferrer"',
+        'data-track="book_call_click"',
+        'data-track-location="faq"',
+      ]) {
+        expect(booking[0], attribute).toContain(attribute)
+      }
+    })
+
+    it(`should frame the page block like the other first blocks when the page is ${route}`, () => {
+      const block = documentFor(route).match(/<section[^>]*data-faq[^>]*>/)?.[0]
+
+      expect(block).toBeDefined()
+      for (const name of [
+        'min-h-portada-alto',
+        'pt-seccion-arriba',
+        'pb-seccion-aire',
+      ]) {
+        expect(block, name).toContain(name)
+      }
+      expect(documentFor(route)).not.toMatch(/faq-arriba|faq-abajo/)
+    })
+  }
 })

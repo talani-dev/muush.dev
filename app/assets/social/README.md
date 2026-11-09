@@ -1,6 +1,6 @@
 # Social glyph assets (normalized)
 
-The three official brand SVGs for LinkedIn, Instagram and TikTok, normalized
+The four official brand SVGs for LinkedIn, Instagram, TikTok and Facebook, normalized
 so they can be inlined and take their colour from the container. Source of
 truth for the normalization steps:
 `docs/business/landing/decisions-open.md` § Íconos de redes sociales.
@@ -12,7 +12,7 @@ adopt a colour token, which is the whole reason the normalization exists
 
 ## Shared contract
 
-All three satisfy, by design:
+All four satisfy, by design:
 
 - Root is `<svg xmlns viewBox="0 0 24 24">` — one shared square viewBox, no
   `width`/`height` (the component sizes them).
@@ -80,3 +80,28 @@ root values are overridden by `fill-rule:nonzero` on every path, so
 is what is emitted here. The point is moot in practice: each of the four
 paths is a single subpath, so no fill rule changes the result. `clip-rule`
 is dropped because no path is used as a clip path.
+
+### `facebook.svg`
+
+| | |
+|---|---|
+| Source | `…/Icons/Redes/Facebook/facebook-logo-white.svg` (added 2026-11-08) |
+| Original viewBox | `0 0 2084 2076` |
+| Transform applied | `translate(24 11.912) scale(0.048)` |
+| Stripped | XML prolog, DOCTYPE, `xmlns:xlink`, `xmlns:serif`, `xml:space`, `width`/`height`, the root `style` attribute, four nested `<g transform>` levels and the `<g id="Logo">` wrapper, `style="fill:white;fill-rule:nonzero"` |
+
+The path data is the source's, untouched; only its frame changes. In the
+path's own coordinates the mark is a circle of radius 250 centred at
+(-250, 1.831): x spans `[-500, 0]`, the circle y spans `[-248.169, 251.831]`
+(the drawn path stops at y 250, where the "f" stem cuts the circle). The
+nested Serif transforms only placed that circle inside the 2084 × 2076
+canvas, so they are dropped rather than composed.
+
+The circle, not the path's bounding box, is fitted: `24 ÷ 500 = 0.048`, and
+the translate moves its top-left (-500, -248.169) to the origin
+(`500 × 0.048 = 24`, `248.169 × 0.048 = 11.912`). The circle then fills the
+24 × 24 box exactly, centred on both axes, like the LinkedIn square. Verified
+extents: x `[0, 24]`, y `[0, 23.912]`.
+
+The path is a single subpath, so the source's `fill-rule:nonzero` is the
+default and is not re-emitted.

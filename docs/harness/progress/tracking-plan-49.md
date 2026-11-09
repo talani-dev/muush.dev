@@ -47,7 +47,7 @@ in-page jump to the assessment anchor is not a new page view.
 
 | Event | When | Parameters | GA4 | Meta |
 |---|---|---|---|---|
-| `assessment_cta_click` | Click on "Diagnóstico gratis" | `cta_location` (`nav`, `hero`, `mobile_menu`, `footer`, `faq`, `not_found`, …) | ✅ | — |
+| `assessment_cta_click` | Click on "Diagnóstico gratis" | `cta_location` (`nav`, `hero`, `mobile_menu`, `footer`, `not_found`, …; no longer `faq`: the FAQ card has no "Diagnóstico gratis" since feature 51) | ✅ | — |
 | `book_call_click` | Click on "Agenda una llamada" (Cal.com) | `cta_location` (… , `form_success`) | ✅ key event | `Schedule` |
 | `contact_click` | WhatsApp or `support@muush.dev` | `channel` (`whatsapp` \| `email`), `cta_location` | ✅ | `Contact` |
 | `form_view` | The form section enters the viewport | `form` (`assessment` \| `application`) | ✅ | — |
@@ -62,12 +62,15 @@ in-page jump to the assessment anchor is not a new page view.
 | `language_change` | ES ↔ EN toggle | `from_locale`, `to_locale` | ✅ | — |
 | `section_view` | See § 5 | `page_key`, `section`, `section_seconds` | ✅ | — |
 | `cookie_preferences` | Choice saved after consent exists (only measurable once Analítica is on) | `analytics`, `ads` (booleans) | optional | — |
+| `faq_question_open` | A question of the FAQ is opened (not on close, not the automatic first one) — Roberto, 2026-11-08, feature 51 OQ-8 | `faq_topic` (`assessment`, `pricing`, `process`, `delivery`, `work_with_muush`), `faq_question` (1–20) | ✅ | — |
 
 Parameter values are fixed ids, never free text. Separate event names (not one `cta_click` with a `cta` parameter) because a
 GA4 key event is a whole event name. Custom dimensions to register:
 `cta_location`, `channel`, `form`, `step`, `error_type`, `field`,
 `contact_preference`, `result`, `with_cv`, `from_locale`, `to_locale`,
-`page_key`, `section`. Custom metric: `section_seconds` (unit: seconds).
+`page_key`, `section`, `faq_topic`, `faq_question` (the last two: Roberto,
+2026-11-08, feature 51 OQ-8). Custom metric: `section_seconds` (unit:
+seconds).
 
 ## 5 · Time per section (`section_view`)
 
@@ -149,8 +152,10 @@ this GA4 UI only lists an event once it has been received, so the three are
 starred under "Eventos recientes" after the first production events. The
 auto-created `qualify_lead` / `close_convert_lead` are not sent by the site.)
 
-After the first events arrive: register the § 4 custom dimensions and the
-`section_seconds` metric (plus a calculated metric "average seconds per
+After the first events arrive: register the § 4 custom dimensions (including
+the two FAQ ones, event scope: `faq_topic` from event parameter `faq_topic`,
+`faq_question` from event parameter `faq_question`; Roberto, 2026-11-08,
+feature 51 OQ-8) and the `section_seconds` metric (plus a calculated metric "average seconds per
 section view" = `section_seconds` / event count); build the explorations of
 § 6 (assessment funnel, application funnel, path exploration, section-time
 free form).

@@ -5,6 +5,7 @@ import {
   CONTACT_CHANNELS,
   CTA_LOCATIONS,
   CV_RESULTS,
+  FAQ_TOPIC_IDS,
   FORM_ERROR_TYPES,
   FORM_FIELD_IDS,
   FORM_IDS,
@@ -40,6 +41,14 @@ describe('trackingEvents', () => {
       'work_with_us',
     ])
     expect(SITE_LOCALES).toEqual(['es', 'en'])
+    /* Feature 51 · spec D6: locale-neutral, in page order. */
+    expect(FAQ_TOPIC_IDS).toEqual([
+      'assessment',
+      'pricing',
+      'process',
+      'delivery',
+      'work_with_muush',
+    ])
     expect(CLICK_EVENT_NAMES).toEqual([
       'assessment_cta_click',
       'book_call_click',

@@ -26,6 +26,8 @@ import { ExactActiveLinkStub } from './shellFixtures.testing'
 const ITEMS: ResolvedShellItem[] = [
   { label: 'Servicios', href: '/es#servicios', external: false },
   { label: 'Nosotros', href: '/es/nosotros', external: false, current: 'page' },
+  /* Feature 51 · OQ-2 = A, the fourth item. */
+  { label: 'Preguntas', href: '/es/preguntas', external: false },
 ]
 
 const PROPS = {

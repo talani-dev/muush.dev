@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { ShellRouteName } from '@/features/shell/data/types'
-import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
-import { faqSectionProps } from './useFaqContent'
 import { notFoundSectionProps } from './useNotFoundContent'
 import { createShellItemResolver } from './useShellItemResolver'
 
 /**
- * Feature 46 · FR-035, FR-039, FR-043; data-model § 3. The two seams'
- * pure halves, fed the real resolver with a stub route map and copy that
+ * Feature 46 · FR-035, FR-039, FR-043; data-model § 3. The 404 seam's
+ * pure half (Preguntas left the status block in feature 51), fed the real resolver with a stub route map and copy that
  * follow an `active` locale, which is what the feature 39 in-place switch
  * changes on the 404 without navigating.
  */
@@ -34,18 +32,12 @@ const COPY: Record<'es' | 'en', Record<string, string>> = {
     'shell.notFound.heading.second': 'lugar conocido.',
     'shell.notFound.cta': 'Volver al inicio',
     'shell.notFound.assessment': 'Diagnóstico gratis',
-    'shell.faq.title': 'En construcción 🚧',
-    'shell.faq.assessment': 'Diagnóstico gratis',
-    'shell.faq.call': 'Agenda una llamada',
   },
   en: {
     'shell.notFound.heading.first': "Let's get you back",
     'shell.notFound.heading.second': 'somewhere familiar.',
     'shell.notFound.cta': 'Back to home',
     'shell.notFound.assessment': 'Free assessment',
-    'shell.faq.title': 'Under construction 🚧',
-    'shell.faq.assessment': 'Free assessment',
-    'shell.faq.call': 'Book a call',
   },
 }
 
@@ -109,40 +101,5 @@ describe('notFoundSectionProps', () => {
         'data-track-location': 'not_found',
       },
     })
-  })
-})
-
-describe('faqSectionProps', () => {
-  it('should resolve the title, the assessment anchor and the external call when read', () => {
-    const { t, resolveItem } = harness('en')
-
-    expect(faqSectionProps(t, resolveItem)).toEqual({
-      preset: 'faq',
-      headingFirst: 'Under construction 🚧',
-      primary: {
-        label: 'Free assessment',
-        href: '/en#diagnostico',
-        external: false,
-        trackAttrs: {
-          'data-track': 'assessment_cta_click',
-          'data-track-location': 'faq',
-        },
-      },
-      secondary: {
-        label: 'Book a call',
-        href: CALL_BOOKING_URL,
-        external: true,
-        trackAttrs: {
-          'data-track': 'book_call_click',
-          'data-track-location': 'faq',
-        },
-      },
-    })
-  })
-
-  it('should give the page a one-line heading when read', () => {
-    const { t, resolveItem } = harness()
-
-    expect(faqSectionProps(t, resolveItem).headingSecond).toBeUndefined()
   })
 })

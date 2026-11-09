@@ -8,9 +8,9 @@
  * typed can ever reach an event (spec FR-021, FR-026). The single exception
  * is `generate_lead.userData`, which only the Meta sink reads (FR-030).
  *
- * It lives in `app/shared/` because five features emit these events
- * (`forms`, `legal`, `shell`, `landing`, `about`) and none of them may
- * import the `tracking` feature (Constitution Article III, research R1).
+ * It lives in `app/shared/` because six features emit these events
+ * (`forms`, `legal`, `shell`, `landing`, `about`, `faq`) and none of them
+ * may import the `tracking` feature (Constitution Article III, research R1).
  * Types and constants only; `logic/trackingBus.ts` carries them.
  */
 
@@ -25,7 +25,7 @@
  * | `nav`          | "Diagnóstico gratis"                     | shell `data/navigation.ts` `NAV_CTA`                |
  * | `hero`         | "Diagnóstico gratis"                     | landing `ui/HeroSection.vue` (`data/heroContent.ts`) |
  * | `footer`       | Diagnóstico, Agenda una llamada, correo, WhatsApp | shell `data/footerColumns.ts`, `data/contactChannels.ts` (both footers) |
- * | `faq`          | Diagnóstico gratis, Agenda una llamada   | shell `data/faq.ts`                                 |
+ * | `faq`          | Agenda una llamada, correo (card and question 19) | faq `data/faqTopics.ts` (feature 51)       |
  * | `not_found`    | "Diagnóstico gratis"                     | shell `data/notFound.ts` `NOT_FOUND_ASSESSMENT`     |
  * | `assessment`   | "¿Prefieres hablar? Agenda una llamada"  | landing `ui/AssessmentSection.vue` (`data/assessmentContent.ts`) |
  * | `form_success` | "Agenda una llamada" after a sent assessment | forms `logic/useContactFormContent.ts`          |
@@ -123,6 +123,20 @@ export type TrackedLocale = (typeof SITE_LOCALES)[number]
 export type ContactPreferenceId = 'email' | 'whatsapp'
 
 /**
+ * Feature 51 · the Preguntas topics, locale-neutral (spec D6): the same id
+ * whether the visitor reads ES or EN, so GA4 keeps one row per topic. In
+ * page order; `faq/data/faqTopics.ts` gives each topic its id.
+ */
+export const FAQ_TOPIC_IDS = [
+  'assessment',
+  'pricing',
+  'process',
+  'delivery',
+  'work_with_muush',
+] as const
+export type FaqTopicId = (typeof FAQ_TOPIC_IDS)[number]
+
+/**
  * Advanced matching for the Meta `Lead` (spec FR-030): the assessment's
  * email and, only with WhatsApp, its phone as dial code + digits. Never read
  * by the Google Analytics sink.
@@ -186,6 +200,21 @@ export type TrackingEvent =
       beacon?: boolean
     }
   | { name: 'cookie_preferences'; params: { analytics: boolean; ads: boolean } }
+  | {
+      /**
+       * Feature 51 (Roberto 2026-11-08, OQ-8 B; spec D6, FR-024): a visitor
+       * opened a closed question of the Preguntas page by activating it
+       * (pointer, Enter or Space). Never on close, and never for the first
+       * question opened automatically on entry, from a topic link or on a
+       * topic switch. `faq_question` is the question's 1-based number in
+       * page order (1–20), identical in both locales. GA4 only: not in
+       * `META_EVENT_BY_NAME` (reading is not a conversion) and not in
+       * `CLICK_EVENT_NAMES` (emitted by `faq` logic, not by a `data-track`
+       * link). Not a GA4 key event.
+       */
+      name: 'faq_question_open'
+      params: { faq_topic: FaqTopicId; faq_question: number }
+    }
 
 export type TrackingEventName = TrackingEvent['name']
 

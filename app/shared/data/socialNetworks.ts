@@ -7,4 +7,4 @@
  * `SocialIcon.vue` keys its glyphs by this union, so adding a network here
  * without a glyph there does not compile.
  */
-export type SocialNetwork = 'linkedin' | 'instagram' | 'tiktok'
+export type SocialNetwork = 'linkedin' | 'instagram' | 'tiktok' | 'facebook'

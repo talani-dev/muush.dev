@@ -6,7 +6,6 @@ import {
   MOBILE_CONTACT_CHANNELS,
   MOBILE_FOOTER_LINKS,
 } from './contactChannels'
-import { FAQ_PRIMARY, FAQ_SECONDARY } from './faq'
 import { FOOTER_COLUMNS, WHATSAPP_URL } from './footerColumns'
 import { MENU_ITEMS, NAV_CTA, NAV_ITEMS } from './navigation'
 import { NOT_FOUND_ASSESSMENT, NOT_FOUND_HOME } from './notFound'
@@ -44,7 +43,6 @@ const PLACES: [string, ShellItem[], string][] = [
     ],
     'footer',
   ],
-  ['faq', [FAQ_PRIMARY, FAQ_SECONDARY], 'faq'],
   ['not found', [NOT_FOUND_HOME, NOT_FOUND_ASSESSMENT], 'not_found'],
 ]
 

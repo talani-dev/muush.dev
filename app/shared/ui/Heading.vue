@@ -11,10 +11,11 @@ import { computed } from 'vue'
  * between two blocks it collapses visually, but it keeps "negocio" and "y"
  * apart in the accessible name and the text content.
  *
- * `size` picks one of the six fluid sizes (hero 34 → 96, sección 28 → 56,
+ * `size` picks one of the seven fluid sizes (hero 34 → 96, sección 28 → 56,
  * proceso 28 → 52, diagnóstico 34 → 64, página 32 → 64 for the Nosotros
- * hero, estado 34 → 88 for Preguntas, feature 46, and legal 34 → 56 for
- * the Aviso de privacidad and the Términos, feature 48), each with its own
+ * hero, legal 34 → 56 for the Aviso de privacidad and the Términos,
+ * feature 48, and faq 34 → 56 with −1.02 → −1.96 tracking for Preguntas,
+ * feature 51, which retired the feature 46 "estado" size), each with its own
  * line-height and the fluid tracking (0 at 390, ≈ −0.035 em at 1440). A
  * per-use size (the 30 px Servicios and Cómo se arma headings) is passed
  * as a `class`, which lands on the heading element.
@@ -27,8 +28,8 @@ export type HeadingSize =
   | 'proceso'
   | 'diagnostico'
   | 'pagina'
-  | 'estado'
   | 'legal'
+  | 'faq'
 
 interface Props {
   first: string
@@ -45,8 +46,8 @@ const SIZE_CLASSES = {
   proceso: 'text-proceso',
   diagnostico: 'text-diagnostico',
   pagina: 'text-pagina',
-  estado: 'text-estado',
   legal: 'text-legal',
+  faq: 'text-faq',
 } satisfies Record<HeadingSize, string>
 
 const tag = computed(() => `h${level}`)

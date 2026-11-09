@@ -816,9 +816,6 @@ describe('design tokens · the secondary pages (feature 46)', () => {
   const FLUID: [string, number, number][] = [
     ['--h-pagina', 32, 64],
     ['--lh-pagina', 36.8, 69.12],
-    ['--h-estado', 34, 88],
-    ['--lh-estado', 39.1, 93.28],
-    ['--tracking-estado', 0, -3.08],
     ['--spacing-pagina-gap', 24, 28],
     ['--text-pagina-intro', 16, 20],
     ['--spacing-composicion-gap', 24, 40],
@@ -863,14 +860,11 @@ describe('design tokens · the secondary pages (feature 46)', () => {
     })
   }
 
-  it('should give both new heading sizes the v2 tracking and weight when the theme compiles', () => {
+  it('should give the new heading size the v2 tracking and weight when the theme compiles', () => {
     const exact: [string, string][] = [
       ['--text-pagina--line-height', 'var(--lh-pagina)'],
       ['--text-pagina--letter-spacing', 'var(--tracking-diagnostico)'],
       ['--text-pagina--font-weight', '500'],
-      ['--text-estado--line-height', 'var(--lh-estado)'],
-      ['--text-estado--letter-spacing', 'var(--tracking-estado)'],
-      ['--text-estado--font-weight', '500'],
       ['--text-tarjeta-equipo-rotulo--font-weight', '600'],
       ['--text-tarjeta-equipo-titulo--line-height', '1.4'],
       ['--text-tarjeta-equipo-titulo--font-weight', '500'],
@@ -887,7 +881,6 @@ describe('design tokens · the secondary pages (feature 46)', () => {
       ...FLUID.map(([name]) => name),
       ...FIXED.map(([name]) => name),
       '--text-pagina',
-      '--text-estado',
     ]
     for (const name of names) {
       const declarations = globalCss.match(
@@ -1087,6 +1080,189 @@ describe('design tokens · the legal pages and cookie consent (feature 48)', () 
         new RegExp(`(?:^|[\\s;{])${name}:`, 'g')
       )
       expect(declarations?.length, name).toBe(1)
+    }
+  })
+})
+
+/*
+ * Feature 51 · Preguntas (handoff `preguntas-muush-1.0` README and
+ * references). Fluid values hit the 390 / 1440 anchors; fixed ones are the
+ * same in both, or desktop only. The outer framing is the site-wide one
+ * (Roberto 2026-11-08, OQ-1 = B): no page-specific top or bottom token.
+ */
+describe('design tokens · preguntas (feature 51)', () => {
+  const FLUID: [string, number, number][] = [
+    ['--h-faq', 34, 56],
+    ['--lh-faq', 37.4, 61.6],
+    ['--tracking-faq', -1.02, -1.96],
+    ['--text-faq-bajada', 16, 18],
+    ['--spacing-faq-encabezado-gap', 16, 20],
+    ['--spacing-faq-pestana-y', 10, 16],
+    ['--spacing-faq-pestana-x', 14, 18],
+    ['--spacing-faq-pestana-gap', 10, 12],
+    ['--text-faq-numero', 12, 13],
+    ['--text-faq-tema', 14, 16],
+    ['--spacing-faq-preguntas-gap', 10, 12],
+    ['--radius-faq-pregunta', 16, 18],
+    ['--spacing-faq-pregunta-y', 18, 24],
+    ['--spacing-faq-pregunta-x', 18, 28],
+    ['--text-faq-pregunta', 16, 19],
+    ['--spacing-faq-boton', 30, 34],
+    ['--spacing-faq-boton-icono', 14, 16],
+    ['--text-faq-respuesta', 15, 16],
+    ['--radius-faq-tarjeta', 20, 22],
+    ['--spacing-faq-tarjeta', 24, 28],
+    ['--spacing-faq-tarjeta-gap', 12, 14],
+    ['--spacing-faq-icono-caja', 40, 44],
+    ['--text-faq-tarjeta-titulo', 22, 24],
+    ['--spacing-faq-franja-arriba', 68, 84],
+    ['--spacing-faq-franja-alto', 300, 600],
+  ]
+
+  for (const [name, mobile, desktop] of FLUID) {
+    it(`should resolve ${name} to ${mobile} px at 390 and ${desktop} px at 1440 when evaluated`, () => {
+      const value = (declared(name) ?? '').replaceAll(/\s+/g, ' ')
+
+      expect(value, name).toMatch(/^clamp\(/)
+      expect(Math.abs(clampPx(value, MOBILE_ANCHOR) - mobile)).toBeLessThan(
+        TOLERANCE_PX
+      )
+      expect(Math.abs(clampPx(value, DESKTOP_ANCHOR) - desktop)).toBeLessThan(
+        TOLERANCE_PX
+      )
+    })
+  }
+
+  const FIXED: [string, number][] = [
+    ['--spacing-faq-columnas', 72],
+    ['--spacing-faq-izquierda-gap', 36],
+    ['--spacing-faq-derecha-arriba', 68],
+    ['--spacing-faq-chips-arriba', 28],
+    ['--spacing-faq-preguntas-arriba', 20],
+    ['--spacing-faq-tarjeta-arriba', 32],
+    ['--spacing-faq-pestanas-gap', 8],
+    ['--radius-faq-pestana', 14],
+    ['--blur-faq', 18],
+    ['--spacing-faq-chevron', 18],
+    ['--spacing-faq-pregunta-gap', 14],
+    ['--radius-faq-icono', 14],
+    ['--spacing-faq-icono', 20],
+    ['--text-faq-tarjeta', 15],
+  ]
+
+  for (const [name, px] of FIXED) {
+    it(`should declare ${name} as ${px} px when the stylesheet loads`, () => {
+      expect(normalise(declared(name) ?? ''), name).toBe(`${px}px`)
+    })
+  }
+
+  it('should give the left column 420 px and the right one the rest when the theme compiles', () => {
+    expect(normalise(declared('--grid-template-columns-faq') ?? '')).toBe(
+      '420pxminmax(0,1fr)'
+    )
+    expect(declared('--grid-template-rows-faq')).toBe('auto auto 1fr')
+  })
+
+  it('should give the type roles the handoff weights and line heights when the theme compiles', () => {
+    const exact: [string, string][] = [
+      ['--text-faq--line-height', 'var(--lh-faq)'],
+      ['--text-faq--letter-spacing', 'var(--tracking-faq)'],
+      ['--text-faq--font-weight', '500'],
+      ['--text-faq-bajada--line-height', 'var(--interlineado-texto)'],
+      ['--text-faq-numero--font-weight', '600'],
+      ['--text-faq-tema--font-weight', '500'],
+      ['--text-faq-pregunta--line-height', '1.35'],
+      ['--text-faq-pregunta--font-weight', '500'],
+      ['--text-faq-respuesta--line-height', '1.6'],
+      ['--text-faq-tarjeta-titulo--letter-spacing', 'var(--tracking-servicio)'],
+      ['--text-faq-tarjeta-titulo--font-weight', '500'],
+      ['--text-faq-tarjeta--line-height', 'var(--interlineado-texto)'],
+    ]
+    for (const [name, value] of exact) {
+      expect(declared(name), name).toBe(value)
+    }
+  })
+
+  it('should paint the active edge from Red muush 33 % to Blanco 6 % when the stylesheet loads', () => {
+    const edge = normalise(declared('--borde-faq-activo') ?? '')
+
+    expect(edge).toBe(
+      'linear-gradient(180deg,color-mix(insrgb,var(--red-muush-500)33%,transparent),color-mix(insrgb,var(--blanco)6%,transparent))'
+    )
+    expect(globalCss).toContain('@utility borde-faq-activo')
+  })
+
+  it('should leave the retired Preguntas status heading behind when the stylesheet loads', () => {
+    /* Feature 46's "estado" size had one user, the status block feature 51
+       replaced. */
+    for (const name of [
+      '--h-estado',
+      '--lh-estado',
+      '--tracking-estado',
+      '--text-estado',
+    ]) {
+      expect(globalCss, name).not.toContain(`${name}:`)
+    }
+  })
+
+  it('should add no page-specific framing token when the stylesheet loads', () => {
+    /* OQ-1 = B: the site-wide framing; the fallback names stay unwritten. */
+    for (const name of ['--spacing-faq-arriba', '--spacing-faq-abajo']) {
+      expect(globalCss, name).not.toContain(`${name}:`)
+    }
+  })
+
+  it('should declare no preguntas token twice when the stylesheet loads', () => {
+    for (const name of [
+      ...FLUID.map(([name]) => name),
+      ...FIXED.map(([name]) => name),
+      '--text-faq',
+      '--borde-faq-activo',
+      '--borde-faq-tenue',
+    ]) {
+      expect(
+        globalCss.match(new RegExp(`(?:^|[\\s;{])${name}:`, 'g'))?.length,
+        name
+      ).toBe(1)
+    }
+  })
+})
+
+/*
+ * Feature 51 review, round 2 (Roberto 2026-11-08, option A): the nav item
+ * padding gives way between 1024 and 1104 so the four-item Spanish bar
+ * stays centred with the header's 12 px before the ES button; 18 from 1104
+ * up, so 1440 is unchanged. Measured on the built site (impl-51 Round 2).
+ */
+describe('design tokens · the four-item link bar (feature 51)', () => {
+  const value = () =>
+    (declared('--spacing-enlace-x') ?? '').replaceAll(/\s+/g, ' ')
+
+  it('should keep the drawn 18 px from 1104 up when evaluated', () => {
+    for (const width of [1104, 1280, 1440, 1920]) {
+      expect(Math.abs(clampPx(value(), width) - 18), `${width}`).toBeLessThan(
+        TOLERANCE_PX
+      )
+    }
+  })
+
+  it('should lose 1 px per 8 px of viewport below 1104, down to 8 at 1024, when evaluated', () => {
+    for (const width of [1024, 1050, 1077, 1080]) {
+      const expected = 18 - (1104 - width) / 8
+      expect(
+        Math.abs(clampPx(value(), width) - expected),
+        `${width}`
+      ).toBeLessThan(TOLERANCE_PX)
+    }
+  })
+
+  it('should leave the Spanish bar room for the 12 px group gap when evaluated', () => {
+    /* Measured at 18 px padding: Spanish bar 424.3, end group 246.3 (ES,
+       the wider locale); gutters 2 × 80; 4 items × 2 sides. */
+    for (const width of [1024, 1050, 1077, 1080, 1104]) {
+      const bar = 424.3 - 8 * (18 - clampPx(value(), width))
+      const gap = (width - 160 - bar) / 2 - 246.3
+      expect(gap, `${width}`).toBeGreaterThanOrEqual(12)
     }
   })
 })

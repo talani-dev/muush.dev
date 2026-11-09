@@ -10,42 +10,34 @@ import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
 
 /**
  * The status-page block of Muush 1.0 (feature 46, spec FR-035…FR-042; pen
- * extract-46 §§ 3–4, leader § 6; frames `FXvwz` / `pDsNQ` Preguntas,
- * `X9EQIz` / `Y2fsOQ` 404): one block over the acanalado, the page's only
- * `h1`, and a row with the primary button (with its arrow) and the glass
- * button (label only). No pill and no body copy.
+ * extract-46 §§ 3–4, leader § 6; frames `X9EQIz` / `Y2fsOQ` 404): one block
+ * over the acanalado, the page's only `h1`, and a row with the primary
+ * button (with its arrow) and the glass button (label only). No pill and no
+ * body copy. Preguntas used it too until feature 51 gave that page its own
+ * `faq` module; the 404 is its only page now.
  *
  * `preset` names the page, which picks its shader preset, its heading size
- * and the air above its buttons:
+ * (diagnóstico 34 → 64) and the air above its buttons (0 → 8).
  *
- * | preset   | heading            | above the buttons (390 → 1440) |
- * |----------|--------------------|--------------------------------|
- * | faq      | estado 34 → 88     | none                           |
- * | notFound | diagnóstico 34→64  | 0 → 8                          |
- *
- * Both: content centred both ways, gap 32 → 40, buttons gap 8 → 14 at the
- * hero size, x padding 24 → 80. Height and vertical padding are the section
+ * Content centred both ways, gap 32 → 40, buttons gap 8 → 14 at the hero
+ * size, x padding 24 → 80. Height and vertical padding are the section
  * framing (`global.css`, Roberto 2026-11-08), shared with the heroes: the
  * block is the first of its page, at least a full viewport, its content
- * centred below the floating header. The `.pen` drew Preguntas 720 → 1100
- * and the 404 720 → 760 tall, as minimum heights (leader, 2026-11-02).
- * Below `lg` the buttons row may use the gutters: at 390 the Spanish
- * Preguntas pair is 178 + 8 + 161 = 347 wide, more than the 342 between the
- * paddings, and the frame draws it as one centred row running into them.
- * Where even the full width is too narrow (about 350), the row wraps.
- * An external secondary (the call booking) opens in a new tab; an internal
- * one routes with `to`. Every string and href arrives resolved.
+ * centred below the floating header. The `.pen` drew the 404 720 → 760
+ * tall, as a minimum height (leader, 2026-11-02). Below `lg` the buttons
+ * row may use the gutters, as the frame draws it; where even the full
+ * width is too narrow (about 350), the row wraps. Both buttons route
+ * inside the site with `to` (the external call-booking branch left with
+ * Preguntas, feature 51). Every string and href arrives resolved.
  */
 const { preset, headingFirst, headingSecond, primary, secondary } =
   defineProps<StatusSectionProps>()
 
 const HEADING_SIZES = {
-  faq: 'estado',
   notFound: 'diagnostico',
 } satisfies Record<StatusPreset, HeadingSize>
 
 const BUTTONS_CLASSES = {
-  faq: '',
   notFound: 'pt-error-botones-arriba',
 } satisfies Record<StatusPreset, string>
 </script>
@@ -79,15 +71,6 @@ const BUTTONS_CLASSES = {
           :aria-current="undefined"
         />
         <GlassButton
-          v-if="secondary.external"
-          v-bind="secondary.trackAttrs"
-          :href="secondary.href"
-          :label="secondary.label"
-          target="_blank"
-          rel="noopener noreferrer"
-        />
-        <GlassButton
-          v-else
           v-bind="secondary.trackAttrs"
           :to="secondary.href"
           :label="secondary.label"

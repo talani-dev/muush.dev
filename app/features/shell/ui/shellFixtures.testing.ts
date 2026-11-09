@@ -37,6 +37,11 @@ export const SOCIALS: ResolvedSocial[] = [
     href: 'https://www.tiktok.com/@muush.dev',
     label: 'TikTok',
   },
+  {
+    network: 'facebook',
+    href: 'https://www.facebook.com/profile.php?id=61595800850873',
+    label: 'Facebook',
+  },
 ]
 
 const socialItems = SOCIALS.map(social => ({
@@ -51,6 +56,8 @@ export const SHELL_COPY = {
       { label: 'Inicio', href: '/es', external: false },
       { label: 'Servicios', href: '/es#servicios', external: false },
       { label: 'Nosotros', href: '/es/nosotros', external: false },
+      /* Feature 51 · OQ-2 = A, the fourth item. */
+      { label: 'Preguntas', href: '/es/preguntas', external: false },
     ] satisfies ResolvedShellItem[],
     cta: {
       label: 'Diagnóstico gratis',
@@ -156,6 +163,7 @@ export const SHELL_COPY = {
       { label: 'Home', href: '/en', external: false },
       { label: 'Services', href: '/en#servicios', external: false },
       { label: 'About', href: '/en/about', external: false },
+      { label: 'FAQ', href: '/en/faq', external: false },
     ] satisfies ResolvedShellItem[],
     cta: { label: 'Free assessment', href: '/en#diagnostico', external: false },
     home: '/en',
@@ -265,27 +273,14 @@ export const ExactActiveLinkStub = defineComponent({
 })
 
 /**
- * Feature 46 · what `useFaqContent` and `useNotFoundContent` hand
- * `StatusSection` (copy `muush-1.0.md` § 4.9, data-model § 3).
+ * Feature 46 · what `useNotFoundContent` hands `StatusSection` (copy
+ * `muush-1.0.md` § 4.9, data-model § 3). Preguntas left the block in
+ * feature 51.
  */
 export const STATUS_COPY: Record<
-  'faq' | 'notFound',
+  'notFound',
   Record<'es' | 'en', StatusSectionProps>
 > = {
-  faq: {
-    es: {
-      preset: 'faq',
-      headingFirst: 'En construcción 🚧',
-      primary: { label: 'Diagnóstico gratis', href: '/es#diagnostico' },
-      secondary: { label: 'Agenda una llamada', href: BOOKING, external: true },
-    },
-    en: {
-      preset: 'faq',
-      headingFirst: 'Under construction 🚧',
-      primary: { label: 'Free assessment', href: '/en#diagnostico' },
-      secondary: { label: 'Book a call', href: BOOKING, external: true },
-    },
-  },
   notFound: {
     es: {
       preset: 'notFound',

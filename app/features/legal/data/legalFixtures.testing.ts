@@ -560,7 +560,7 @@ export const LEGAL_PAGES: Record<
           blocks: [
             {
               kind: 'paragraph',
-              text: 'El sitio enlaza a servicios de terceros como Cal.com, WhatsApp, LinkedIn e Instagram. Cada uno tiene sus propios términos y avisos, y muush no los controla.',
+              text: 'El sitio enlaza a servicios de terceros como Cal.com, WhatsApp, LinkedIn, Instagram, TikTok y Facebook. Cada uno tiene sus propios términos y avisos, y muush no los controla.',
             },
           ],
         },
@@ -737,7 +737,7 @@ export const LEGAL_PAGES: Record<
           blocks: [
             {
               kind: 'paragraph',
-              text: "The site links to third-party services such as Cal.com, WhatsApp, LinkedIn and Instagram. Each has its own terms and notices, and muush doesn't control them.",
+              text: "The site links to third-party services such as Cal.com, WhatsApp, LinkedIn, Instagram, TikTok and Facebook. Each has its own terms and notices, and muush doesn't control them.",
             },
           ],
         },

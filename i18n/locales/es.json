@@ -9,8 +9,8 @@
       "description": "Conoce al equipo de muush: reunimos al talento indicado para cada proyecto. Si trabajas en tecnología, diseño o producción, súmate a nuestro talent pool."
     },
     "faq": {
-      "title": "Preguntas · muush",
-      "description": "Respuestas a las preguntas frecuentes sobre muush. Mientras tanto, pide tu diagnóstico gratis o agenda una llamada."
+      "title": "Preguntas frecuentes · muush",
+      "description": "Respuestas sobre el diagnóstico gratis, precios, proceso, entrega y cómo trabajar con muush."
     },
     "privacy": {
       "title": "Aviso de privacidad · muush",
@@ -77,6 +77,131 @@
         "engineering": "Ingeniería y desarrollo",
         "design": "Diseño de producto y UX",
         "creative": "Creativo, contenido y marketing"
+      }
+    }
+  },
+  "faq": {
+    "pill": "Preguntas",
+    "heading": {
+      "first": "Preguntas",
+      "second": "frecuentes."
+    },
+    "subtitle": "Respuestas claras antes de tu diagnóstico.",
+    "tabsLabel": "Temas",
+    "links": {
+      "privacy": "Aviso de privacidad",
+      "about": "Nosotros"
+    },
+    "card": {
+      "title": "¿Tienes otra pregunta?",
+      "text": "Escríbenos a {email} o agenda una llamada de 30 minutos.",
+      "button": "Agenda una llamada"
+    },
+    "topics": {
+      "t1": {
+        "title": "Diagnóstico y cómo empezar",
+        "questions": {
+          "q1": {
+            "question": "¿Qué es el diagnóstico gratis y qué recibo?",
+            "answer": "Una revisión rápida de tu sitio y tus herramientas para ver qué conviene resolver. Te respondemos en 24 horas hábiles con tres hallazgos, el tamaño de proyecto que probablemente necesitas y el siguiente paso. Es gratis y sin compromiso."
+          },
+          "q2": {
+            "question": "¿Qué no incluye el diagnóstico?",
+            "answer": "El diagnóstico te dice qué conviene hacer primero y por qué. El precio y el alcance llegan después, en la propuesta, porque dependen de lo que decidamos juntos. Trabajamos con lo que se ve desde fuera y con lo que nos cuentes, así que no necesitamos accesos a tus sistemas. Si hace falta ir a fondo, te decimos qué incluye esa revisión y cuánto cuesta."
+          },
+          "q3": {
+            "question": "¿Qué pasa después del diagnóstico?",
+            "answer": "Si quieres avanzar, agendamos una llamada de 30 minutos para entender tu operación. Después te enviamos una propuesta por escrito en 5 días hábiles, con alcance, tiempos y costo. El proyecto arranca cuando firmamos el contrato y el acuerdo de confidencialidad, y recibimos el anticipo."
+          },
+          "q4": {
+            "question": "¿Necesito saber de tecnología para trabajar con ustedes?",
+            "answer": "No. Tú nos cuentas cómo opera tu negocio y nosotros lo traducimos a la solución técnica. Te explicamos cada decisión en palabras claras y tú apruebas cada pantalla."
+          },
+          "q5": {
+            "question": "¿Con qué tipo de negocios trabajan?",
+            "answer": "Nos enfocamos en resolver lo que tu negocio necesita, venga del sector que venga. Trabajamos con empresas, inmobiliarias, hoteles, escuelas, distribuidores, startups, emprendedores y marcas personales, y con cualquier negocio que tenga un proceso que quiera resolver o mejorar con tecnología."
+          }
+        }
+      },
+      "t2": {
+        "title": "Precios y pagos",
+        "questions": {
+          "q1": {
+            "question": "¿Cuánto cuesta un proyecto?",
+            "answer": "Depende de lo que tu negocio necesita. No vendemos paquetes fijos: cotizamos solo lo que necesitas. Si algo técnico requiere un servicio que no tenías pensado, te lo sugerimos con sus pros y contras, y tú decides. El costo va por escrito en la propuesta, antes de empezar."
+          },
+          "q2": {
+            "question": "¿Cómo se paga un proyecto?",
+            "answer": "Con un anticipo al arrancar y el resto según lo que acordemos en la propuesta."
+          },
+          "q3": {
+            "question": "¿Qué pasa si mi presupuesto no alcanza?",
+            "answer": "Ajustamos el alcance y cuidamos la calidad. Podemos empezar por lo que más impacto tiene y dividir el proyecto en fases, para que avances sin pagarlo todo de una vez."
+          },
+          "q4": {
+            "question": "¿Qué costos van aparte?",
+            "answer": "El hosting, el dominio, las licencias y el uso de herramientas de IA o de automatización los contratas tú directamente, para que las cuentas siempre sean tuyas. Si incluyes marketing, la pauta también se paga directo a las plataformas, con un presupuesto que acordamos juntos. Todo esto aparece en la propuesta."
+          },
+          "q5": {
+            "question": "¿Qué servicios se cotizan aparte?",
+            "answer": "El soporte después del lanzamiento, el contenido creativo (foto, video y piezas gráficas) y el marketing. Son opcionales: los sumas solo si tu negocio los necesita, y cada uno se cotiza por separado del proyecto."
+          }
+        }
+      },
+      "t3": {
+        "title": "Proceso y tiempos",
+        "questions": {
+          "q1": {
+            "question": "¿Cuánto tarda un proyecto?",
+            "answer": "Depende del alcance. El tiempo de cada etapa va por escrito en la propuesta, y si algo lo mueve, te avisamos con anticipación."
+          },
+          "q2": {
+            "question": "¿Cómo sé cómo va mi proyecto?",
+            "answer": "Nuestro equipo te acompaña de principio a fin. Un project manager lleva tu proyecto día a día y es tu punto de contacto para avances, entregas y dudas. Un account manager te asesora desde el diagnóstico y la propuesta, y cuida tu cuenta cuando necesites algo nuevo. Trabajamos por etapas, en cada una ves el avance, y nada pasa a la siguiente sin tu aprobación."
+          },
+          "q3": {
+            "question": "¿Puedo pedir cambios a mitad del proyecto?",
+            "answer": "Sí. Por eso apruebas cada pantalla antes de construirla: al principio, los cambios cuestan menos. Si un cambio sale del alcance acordado, te decimos cuánto suma en tiempo y costo antes de hacerlo, y tú decides."
+          },
+          "q4": {
+            "question": "¿Trabajan con clientes fuera de su ciudad o de México?",
+            "answer": "Sí. Trabajamos de forma remota con clientes en cualquier país, con un equipo en México, Estados Unidos y Europa. Facturamos y cotizamos en la moneda que acordemos."
+          }
+        }
+      },
+      "t4": {
+        "title": "Entrega, propiedad y soporte",
+        "questions": {
+          "q1": {
+            "question": "¿De quién es lo que construyen?",
+            "answer": "Tuyo. Te entregamos todo documentado, y las cuentas donde vive tu sistema están a tu nombre desde el inicio, para que nunca dependas de una sola persona."
+          },
+          "q2": {
+            "question": "¿Qué pasa después del lanzamiento?",
+            "answer": "Lanzamos contigo y capacitamos a tu equipo para usarlo. Si quieres que sigamos cuidándolo, el soporte se cotiza aparte."
+          },
+          "q3": {
+            "question": "¿Firman acuerdo de confidencialidad? ¿Cómo cuidan mi información?",
+            "answer": "Sí. Firmamos un acuerdo de confidencialidad antes de que compartas información interna. Entramos a tus sistemas solo con el acceso necesario, y tratamos tus datos como lo explica nuestro {privacy}."
+          }
+        }
+      },
+      "t5": {
+        "title": "Trabaja con muush",
+        "questions": {
+          "q1": {
+            "question": "¿Cómo me sumo al talent pool?",
+            "answer": "Llena el formulario de la página {about} con tu área, tu portafolio y tu CV. Revisamos tu perfil y te sumamos al talent pool por sector y por proyecto."
+          },
+          "q2": {
+            "question": "¿Cuándo me van a contactar?",
+            "answer": "Cuando haya un proyecto que encaje contigo; la fecha depende de los proyectos que entren. Guardamos tu CV durante un año. Si quieres que lo borremos antes, escríbenos a {email}."
+          },
+          "q3": {
+            "question": "¿Tengo que trabajar de tiempo completo o desde un lugar fijo?",
+            "answer": "No. Tú eliges en qué proyectos entras, con quién y desde dónde. Todos trabajamos con las mismas reglas y el mismo estándar de entrega."
+          }
+        }
       }
     }
   },
@@ -440,7 +565,8 @@
       "switchToEs": "Cambiar a español",
       "switchToEn": "Cambiar a inglés",
       "home": "Inicio de muush",
-      "homeLink": "Inicio"
+      "homeLink": "Inicio",
+      "faq": "Preguntas"
     },
     "menu": {
       "label": "Menú",
@@ -450,7 +576,8 @@
     "social": {
       "linkedin": "LinkedIn",
       "instagram": "Instagram",
-      "tiktok": "TikTok"
+      "tiktok": "TikTok",
+      "facebook": "Facebook"
     },
     "footer": {
       "label": "Pie de página",
@@ -491,11 +618,6 @@
         "privacy": "Aviso de privacidad",
         "terms": "Términos y condiciones"
       }
-    },
-    "faq": {
-      "title": "En construcción 🚧",
-      "assessment": "Diagnóstico gratis",
-      "call": "Agenda una llamada"
     },
     "notFound": {
       "heading": {
@@ -676,7 +798,7 @@
         "thirdParties": {
           "nav": "Sitios de terceros",
           "title": "Sitios de terceros",
-          "body": "El sitio enlaza a servicios de terceros como Cal.com, WhatsApp, LinkedIn e Instagram. Cada uno tiene sus propios términos y avisos, y muush no los controla."
+          "body": "El sitio enlaza a servicios de terceros como Cal.com, WhatsApp, LinkedIn, Instagram, TikTok y Facebook. Cada uno tiene sus propios términos y avisos, y muush no los controla."
         },
         "availability": {
           "nav": "Disponibilidad y responsabilidad",

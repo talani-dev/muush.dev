@@ -3,7 +3,7 @@ import type { ResolvedSocial } from '@/features/shell/data/types'
 import SocialIcon from '@/shared/ui/SocialIcon.vue'
 
 /**
- * The three social buttons (feature 43, spec FR-017, FR-033, FR-035,
+ * The four social buttons (feature 43, spec FR-017, FR-033, FR-035,
  * contract § 7; pen extract-43 §§ 4, 6).
  *
  * - `menu`: 48 × 48, radius 12, Negro 900 45 % fill, 1 px Blanco 20 %
