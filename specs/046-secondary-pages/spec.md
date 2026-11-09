@@ -43,7 +43,7 @@ it, every page a visitor can reach is Muush 1.0 (legal pages are feature 48).
 - Preguntas lives at `/es/preguntas` ↔ `/en/faq` and **is indexed**: canonical,
   hreflang, sitemap entry, no noindex (Roberto 2026-10-31, `muush-1.0.md` § 1).
 - The header link bar stays **Inicio · Servicios · Nosotros**; the "Preguntas"
-  link drawn in the `.pen` nav is ignored (Roberto, feature 43).
+  link drawn in the `.pen` nav is ignored (Roberto, feature 43). *(Superseded by feature 51, Roberto 2026-11-08, OQ-2 = A: the bar and menu gain "Preguntas" / "FAQ" as a fourth item, lit on its page; see `specs/051-faq-content/spec.md` FR-021.)*
 - Every v2 pill above a heading carries the shared `pill-aire` spacing (+6 px
   below 1024, +8 px from 1024). Preguntas and 404 have no pill (Roberto
   2026-11-02, feature 45 reopen 2).
@@ -208,7 +208,7 @@ hreflang (es-MX, en-US, x-default) and an indexable robots value, appear in
    `noindex`.
 4. **Given** any page, **When** the visitor looks at the header link bar or the
    mobile menu, **Then** there is no "Preguntas" item; the page is reachable
-   from the footer (see FR-031).
+   from the footer (see FR-031). *(Superseded by feature 51, Roberto 2026-11-08, OQ-2 = A: the bar and menu gain "Preguntas" / "FAQ" as a fourth item, lit on its page; see `specs/051-faq-content/spec.md` FR-021.)*
 
 ---
 
@@ -417,7 +417,7 @@ deleted v1 component.
 #### Shell — navigation and footer
 
 - **FR-029**: The header link bar and the mobile menu MUST keep exactly Inicio ·
-  Servicios · Nosotros; no "Preguntas" item.
+  Servicios · Nosotros; no "Preguntas" item. *(Superseded by feature 51, Roberto 2026-11-08, OQ-2 = A: the bar and menu gain "Preguntas" / "FAQ" as a fourth item, lit on its page; see `specs/051-faq-content/spec.md` FR-021.)*
 - **FR-030**: The route map MUST gain the Preguntas route (`/es/preguntas` ↔
   `/en/faq`), declared once with the other translated segments; no component
   writes either path.
@@ -425,7 +425,7 @@ deleted v1 component.
   column after "Trabaja con muush" and the mobile footer link line after
   "Nosotros", label "Preguntas" / "FAQ", resolved by route name; on Preguntas
   that footer item is the current page (Clarifications Q1, provisional).
-- **FR-032**: On Preguntas, no header link-bar item is lit (none points there).
+- **FR-032**: On Preguntas, no header link-bar item is lit (none points there). *(Superseded by feature 51, Roberto 2026-11-08, OQ-2 = A: the bar and menu gain "Preguntas" / "FAQ" as a fourth item, lit on its page; see `specs/051-faq-content/spec.md` FR-021.)*
 
 #### Preguntas (`FXvwz` / `pDsNQ`)
 
@@ -448,7 +448,9 @@ deleted v1 component.
   title 34 / 500; buttons gap 8, centred, both at mobile size (padding 12 / 14;
   178 × 44 and 161 × 41 at 390).
 - **FR-038**: The page's structured data MUST be a plain web page (not a
-  question-and-answer page: it has no questions yet).
+  question-and-answer page: it has no questions yet). *(Superseded by feature
+  51 D1, 2026-11-08: the page now carries a `FAQPage` with its 20 questions;
+  see `specs/051-faq-content/spec.md` FR-003.)*
 
 #### 404 (`X9EQIz` / `Y2fsOQ`)
 
