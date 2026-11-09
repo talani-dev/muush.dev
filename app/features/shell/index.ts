@@ -4,9 +4,11 @@
  * The header, the mobile menu and the footer are what the layout composes;
  * their parts (`NavLinkBar`, `MenuButton`, `SocialLinks`, `FooterColumns`,
  * `MobileFooter`, `LanguageToggle`) are composition detail and are not
- * exported. `StatusSection` is the Muush 1.0 body of the 404 and of
- * Preguntas (feature 46), each fed by its own content seam; it replaced the
- * v1 `NotFoundContent`, deleted with its rings.
+ * exported. `StatusSection` is the Muush 1.0 body of the 404 (feature 46;
+ * Preguntas left it for its own `faq` module in feature 51); it replaced
+ * the v1 `NotFoundContent`, deleted with its rings. `useLocaleSwitchHash`
+ * lets Preguntas give the language toggle the other locale's topic anchor
+ * (feature 51, spec FR-013).
  */
 
 export type {
@@ -21,8 +23,8 @@ export type {
   StatusPreset,
   StatusSectionProps,
 } from './data/types'
+export { useLocaleSwitchHash } from './logic/localeSwitchHash'
 export { applyNotFoundLocaleRule } from './logic/notFoundLocale'
-export { useFaqContent } from './logic/useFaqContent'
 export { useMobileMenu } from './logic/useMobileMenu'
 export { useNotFoundContent } from './logic/useNotFoundContent'
 export { useNotFoundDocument } from './logic/useNotFoundDocument'

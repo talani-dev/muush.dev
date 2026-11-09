@@ -99,6 +99,22 @@ const ASSESSMENT_COMPACT_UNIFORMS = {
   u_fadeB: 0.02,
 } as const
 
+/** Preguntas, desktop (feature 51, handoff `preguntas-muush-1.0` README). */
+const FAQ_UNIFORMS = {
+  u_flip: 1,
+  u_y0: 0.2,
+  u_y1: 0.5,
+  u_th: 0.24,
+  u_right: 0.6,
+  u_tx: 0.5,
+  u_ty: 0.5,
+  u_trx: 0.62,
+  u_try: 0.42,
+  u_tdark: 0,
+  u_fadeT: 0.06,
+  u_fadeB: 0.3,
+} as const
+
 export const BACKGROUND_PRESETS: Readonly<
   Record<BackgroundPresetName, Readonly<BackgroundPreset>>
 > = {
@@ -212,38 +228,22 @@ export const BACKGROUND_PRESETS: Readonly<
     poster: posterAssessment,
     priority: 'lazy',
   },
-  /* Preguntas · all content, 1100 px. */
+  /*
+   * Preguntas · the vidrio acanalado band (feature 51, handoff
+   * `preguntas-muush-1.0` README, approved 2026-11-08): a light band, red to
+   * steel, 1440 × 600 from y 84 on desktop and 390 × 300 from y 68 on a
+   * phone, measured from the page top (`faq/ui/FaqBand.vue` sizes the box;
+   * this preset only fills it). The mobile set is the desktop one plus
+   * `u_ribs: 18` and `u_th: 0.26`; compact sets are overrides-only over the
+   * shader defaults, so it repeats every value. The poster is the `.pen`
+   * export of the band layer of frame `h3JSJ` (1440 × 600, OQ-5), WebP
+   * q85; one poster per preset, so the mobile export `xJCj0` is not wired
+   * and the desktop one covers the phone band with `object-cover`.
+   */
   faq: {
     shader: 'acanalado',
-    uniforms: {
-      u_flip: 1,
-      u_y0: 0.84,
-      u_y1: 0.76,
-      u_th: 0.13,
-      u_right: 0.6,
-      u_tx: 0.5,
-      u_ty: 0.5,
-      u_trx: 0.45,
-      u_try: 0.26,
-      u_tdark: 1,
-      u_fadeT: 0.1,
-      u_fadeB: 0.15,
-    },
-    /* Preguntas mobile acanalado, 18 ribs (pen extract-46 § 3). */
-    compactUniforms: {
-      u_flip: 1,
-      u_ribs: 18,
-      u_y0: 0.86,
-      u_y1: 0.8,
-      u_th: 0.08,
-      u_right: 0.6,
-      u_tx: 0.5,
-      u_ty: 0.48,
-      u_trx: 0.6,
-      u_try: 0.26,
-      u_tdark: 1,
-      u_fadeB: 0.1,
-    },
+    uniforms: FAQ_UNIFORMS,
+    compactUniforms: { ...FAQ_UNIFORMS, u_ribs: 18, u_th: 0.26 },
     poster: posterFaq,
     priority: 'high',
   },

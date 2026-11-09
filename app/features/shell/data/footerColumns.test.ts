@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
-import { FOOTER_COLUMNS, SUPPORT_EMAIL, WHATSAPP_URL } from './footerColumns'
+import { SUPPORT_EMAIL } from '@/shared/data/supportEmail'
+import { FOOTER_COLUMNS, WHATSAPP_URL } from './footerColumns'
 import type { ShellItem } from './types'
 
 const everyItem: ShellItem[] = FOOTER_COLUMNS.flatMap(column => column.items)

@@ -1,11 +1,15 @@
 import { CALL_BOOKING_URL } from '@/shared/data/callBooking'
 import { SECTION_ANCHORS } from '@/shared/data/sectionAnchors'
+import { SUPPORT_EMAIL } from '@/shared/data/supportEmail'
 import type { ClickTrackingEvent } from '@/shared/data/trackingEvents'
 import { SOCIAL_PROFILES } from './socialProfiles'
 import type { FooterColumnModel, ShellItem } from './types'
 
-/** The public mailbox and the public WhatsApp Business line (`overview.md`). */
-export const SUPPORT_EMAIL = 'support@muush.dev'
+/**
+ * The public WhatsApp Business line (`overview.md`). The public mailbox,
+ * `SUPPORT_EMAIL`, lives in `app/shared/data/supportEmail.ts` since
+ * feature 51 (the Preguntas page links it too).
+ */
 export const WHATSAPP_URL = 'https://wa.me/525639060739'
 
 /*
@@ -82,8 +86,8 @@ export const FOOTER_TRACK = {
  *   home page opens at its top (spec Edge Cases), never a 404.
  * - "Blog · próximamente" is text, not a link (`kind: 'none'`).
  * - Preguntas follows "Trabaja con muush" in MUUSH (feature 46, spec
- *   FR-031, Roberto 2026-11-02): the footers and the sitemap are the only
- *   places it is linked from; the header link bar stays three items.
+ *   FR-031, Roberto 2026-11-02). Since feature 51 (Roberto 2026-11-08,
+ *   OQ-2 = A) the header link bar and the menu link it too.
  * - The REDES column is text links; the URLs come from the one record that
  *   owns them, so the footer and the menu buttons cannot drift.
  */

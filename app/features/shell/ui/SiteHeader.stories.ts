@@ -35,12 +35,14 @@ const desktop = { viewport: { value: 'desktop' } }
 /*
  * What is lit: `top` the Home item at the top of the home page (Home link
  * added by Roberto 2026-11-01), `section` Servicios in view, `page`
- * Nosotros / About on its page.
+ * Nosotros / About on its page, `faq` Preguntas / FAQ on its page
+ * (feature 51, OQ-2 = A).
  */
 const LIT = {
   top: { index: 0, current: 'page' },
   section: { index: 1, current: 'section' },
   page: { index: 2, current: 'page' },
+  faq: { index: 3, current: 'page' },
 } as const
 
 function args(locale: 'es' | 'en', lit?: keyof typeof LIT) {
@@ -79,6 +81,14 @@ export const EsServicesInView1440: Story = {
 }
 export const EnAboutPage1440: Story = {
   args: args('en', 'page'),
+  globals: desktop,
+}
+export const EsFaqPage1440: Story = {
+  args: args('es', 'faq'),
+  globals: desktop,
+}
+export const EnFaqPage1440: Story = {
+  args: args('en', 'faq'),
   globals: desktop,
 }
 export const EsMobile390: Story = { args: args('es'), globals: mobile }

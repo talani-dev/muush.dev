@@ -247,8 +247,6 @@ const PAGES_SCANNED = [
   ].map(name => join(ABOUT, 'logic', name)),
   join(SHELL, 'ui', 'StatusSection.vue'),
   join(SHELL, 'ui', 'StatusSection.stories.ts'),
-  join(SHELL, 'data', 'faq.ts'),
-  join(SHELL, 'logic', 'useFaqContent.ts'),
   join(SHELL, 'logic', 'useNotFoundContent.ts'),
   join(SHARED, 'data', 'mapCopy.ts'),
   join(SHARED, 'utils', 'mapCopy.ts'),
@@ -302,6 +300,42 @@ const LEGAL_SCANNED = [
   join(ROOT, 'app', 'pages', 'terms.vue'),
 ]
 
+/*
+ * Feature 51 · the Preguntas module: every file it creates (the shell's
+ * `faq.ts` / `useFaqContent.ts` placeholder it replaced was deleted).
+ */
+const FAQ = join(ROOT, 'app', 'features', 'faq')
+
+const FAQ_SCANNED = [
+  ...[
+    'FaqSection',
+    'FaqBand',
+    'FaqTopicTabs',
+    'FaqPanel',
+    'FaqQuestion',
+    'FaqCard',
+    'FaqRichText',
+  ].flatMap(name => [
+    join(FAQ, 'ui', `${name}.vue`),
+    join(FAQ, 'ui', `${name}.stories.ts`),
+  ]),
+  join(FAQ, 'ui', 'faqFixtures.testing.ts'),
+  join(FAQ, 'index.ts'),
+  ...['types.ts', 'faqTopics.ts'].map(name => join(FAQ, 'data', name)),
+  ...[
+    'topicHash.ts',
+    'chipScroll.ts',
+    'faqSegments.ts',
+    'faqStructuredData.ts',
+    'useFaqAccordion.ts',
+    'useFaqTopics.ts',
+    'useFaqContent.ts',
+    'useFaqPage.ts',
+  ].map(name => join(FAQ, 'logic', name)),
+  join(SHARED, 'data', 'supportEmail.ts'),
+  join(SHELL, 'logic', 'localeSwitchHash.ts'),
+]
+
 const SCANNED = [
   ...COMPONENTS.flatMap(name => [
     join(SHARED, 'ui', `${name}.vue`),
@@ -322,6 +356,7 @@ const SCANNED = [
   ...FORMS_SCANNED,
   ...PAGES_SCANNED,
   ...LEGAL_SCANNED,
+  ...FAQ_SCANNED,
 ]
 
 const FORBIDDEN: [string, RegExp][] = [

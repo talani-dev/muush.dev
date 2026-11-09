@@ -101,4 +101,25 @@ describe('resolveLocaleDestination', () => {
   it('should drop a fragment-only switched path down to the fallback', () => {
     expect(resolveLocaleDestination('#servicios', ENGLISH_HOME)).toBe('/en')
   })
+
+  /* Feature 51 · spec FR-013: Preguntas passes the other locale's anchor
+     of the topic its URL names (`localeSwitchHash.ts`, `counterpartAnchor`). */
+  it('should carry the counterpart topic when Preguntas names one', () => {
+    expect(
+      resolveLocaleDestination('/en/faq#precios', ENGLISH_HOME, 'pricing')
+    ).toBe('/en/faq#pricing')
+    expect(
+      resolveLocaleDestination(
+        '/es/preguntas',
+        SPANISH_HOME,
+        'trabaja-con-muush'
+      )
+    ).toBe('/es/preguntas#trabaja-con-muush')
+  })
+
+  it('should carry no fragment when Preguntas names no topic', () => {
+    expect(
+      resolveLocaleDestination('/en/faq#nada', ENGLISH_HOME, undefined)
+    ).toBe('/en/faq')
+  })
 })

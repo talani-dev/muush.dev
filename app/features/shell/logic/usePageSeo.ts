@@ -3,11 +3,21 @@ export interface PageSeoOptions {
   descriptionKey: string
   /**
    * Pins the WebPage type in both locales when the schema-org default would
-   * infer another one from a URL segment: `AboutPage` for Nosotros, a plain
-   * `WebPage` for Preguntas, which `/en/faq` would otherwise make a
-   * `FAQPage` (feature 46, spec FR-038).
+   * infer another one from a URL segment, or only for one locale:
+   * `AboutPage` for Nosotros (only `/en/about` would get it), `FAQPage` for
+   * Preguntas (feature 51, spec D1, FR-003; only `/en/faq` would get it,
+   * from its final `faq` segment). A plain `WebPage` is still available;
+   * feature 46 used it for Preguntas (its FR-038, superseded by feature 51
+   * D1).
    */
-  pageType?: 'AboutPage' | 'WebPage'
+  pageType?: 'AboutPage' | 'WebPage' | 'FAQPage'
+  /**
+   * More nodes for the page's graph, written in the same tag as its WebPage
+   * node: the 20 `Question`s of Preguntas, which the schema-org resolver
+   * attaches to a `FAQPage`'s `mainEntity`. Called only during prerender,
+   * so the caller's `define*` calls stay out of the client bundle.
+   */
+  extraNodes?: () => readonly object[]
 }
 
 /**
@@ -33,6 +43,7 @@ export function usePageSeo({
   titleKey,
   descriptionKey,
   pageType,
+  extraNodes,
 }: PageSeoOptions): void {
   const { t } = useI18n()
   const title = t(titleKey)
@@ -55,10 +66,10 @@ export function usePageSeo({
    *   plain `WebPage`. `/en/about` is already `AboutPage` by then and got
    *   none, while `/es/nosotros` got one (review F1, measured).
    * The rule is the homes' rule: every WebPage carries one `ReadAction`
-   * targeting its own URL. Preguntas (feature 46) needs the type pinned for
-   * the same reason (`/en/faq` would default to `FAQPage`), but a merge
-   * cannot remove a type, so it replaces the node (`replaceWebPageNode`
-   * below). `defineReadAction()` with no target resolves to
+   * targeting its own URL. Preguntas needs the type pinned for the same
+   * reason (`/en/faq` alone would default to `FAQPage`; feature 51 makes
+   * both `FAQPage`), and its node is replaced rather than merged
+   * (`replaceWebPageNode` below), the mechanism feature 46 measured. `defineReadAction()` with no target resolves to
    * the page's canonical URL. Same-`@id` WebPage nodes merge.
    * `potentialAction: []` does NOT work (measured): the merge keeps the
    * default ReadAction on `/es/nosotros` and renders `[]` on `/en/about`.
@@ -71,12 +82,17 @@ export function usePageSeo({
       }),
     ])
   }
-  if (import.meta.server && pageType === 'WebPage') replaceWebPageNode()
+  if (import.meta.server && (pageType === 'WebPage' || pageType === 'FAQPage'))
+    replaceWebPageNode(pageType, extraNodes?.() ?? [])
 }
 
 /**
- * Feature 46 · a plain `WebPage` that no URL segment can retype (spec
- * FR-038). Measured on nuxt-schema-org 6.4.3: the module's default
+ * A WebPage node of exactly `pageType` that no URL segment can retype,
+ * followed by `extraNodes` in the same tag. Feature 46 wrote it for a plain
+ * `WebPage` (its spec FR-038); feature 51 reuses it for `FAQPage`, the same
+ * type in both locales, with the page's questions (spec D1, FR-003): a
+ * separate `useSchemaOrg` tag would be dropped by this tag's `replace`.
+ * Measured on nuxt-schema-org 6.4.3: the module's default
  * `defineWebPage()` infers `FAQPage` from a final `faq` segment, and a
  * second node with the same `@id` is MERGED, its `@type` arrays unioned, so
  * an explicit `'@type': 'WebPage'` still ships `["WebPage", "FAQPage"]` on
@@ -92,7 +108,10 @@ export function usePageSeo({
  * resolved like any WebPage: name, description, url, `isPartOf` and the
  * logo still come from the page meta and the root-node resolver.
  */
-function replaceWebPageNode(): void {
+function replaceWebPageNode(
+  pageType: 'WebPage' | 'FAQPage',
+  extraNodes: readonly object[]
+): void {
   useHead({
     script: [
       {
@@ -107,9 +126,10 @@ function replaceWebPageNode(): void {
         ...schemaOrgScriptAttributes(),
         nodes: [
           defineWebPage({
-            '@type': 'WebPage',
+            '@type': pageType,
             potentialAction: [defineReadAction({})],
           }),
+          ...extraNodes,
         ],
       },
     ],

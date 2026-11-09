@@ -25,6 +25,8 @@ const ITEMS: ResolvedShellItem[] = [
   { label: 'Inicio', href: '/es', external: false },
   { label: 'Servicios', href: '/es#servicios', external: false },
   { label: 'Nosotros', href: '/es/nosotros', external: false, current: 'page' },
+  /* Feature 51 · OQ-2 = A, the fourth item. */
+  { label: 'Preguntas', href: '/es/preguntas', external: false },
 ]
 const SOCIALS: ResolvedSocial[] = [
   {
@@ -136,6 +138,7 @@ describe('MobileMenu · rendering', () => {
       'Inicio',
       'Servicios',
       'Nosotros',
+      'Preguntas',
     ])
     expect(links[0]?.attributes('href')).toBe('/es')
     expect(links[0]?.classes()).toEqual(
@@ -262,6 +265,7 @@ describe('MobileMenu · motion (FR-023)', () => {
       '--orden: 0;',
       '--orden: 1;',
       '--orden: 2;',
+      '--orden: 3;',
     ])
     expect(rows[0]?.classes()).toContain('menu-enlace')
   })

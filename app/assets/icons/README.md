@@ -133,3 +133,29 @@ Used by:
   12 × 12 in Blanco over Red muush.
 
 Decorative in both: the row text and the native checkbox carry the meaning.
+
+### Feature 51 glyphs (Preguntas)
+
+`plus.svg`, `chevron-right.svg` and `message-circle.svg`: lucide `plus`,
+`chevron-right` and `message-circle` (ISC licence), the glyphs the handoff
+`preguntas-muush-1.0` names. Nothing was downloaded and no package was
+added: the path data is lucide's published geometry for those three glyphs
+(as shipped in `lucide-static` 0.469.0, the version of the feature 44
+glyphs), written here in the shared contract above.
+
+| | |
+|---|---|
+| viewBox | `0 0 24 24`, square |
+| Paint | `stroke="currentColor"`, `fill="none"`; no hex |
+| Stroke | lucide's own `2` (the handoff gives no weight) |
+| Added | `<title>lucide · <name></title>` |
+
+| File | Used by |
+|---|---|
+| `plus.svg` | `FaqQuestion.vue` · the closed question's round button (14 → 16) |
+| `chevron-right.svg` | `FaqTopicTabs.vue` · the desktop topic tab (18) |
+| `message-circle.svg` | `FaqCard.vue` · the "¿Tienes otra pregunta?" icon box (20) |
+
+`FaqQuestion.vue` also uses `x.svg` for the open question. All four are
+decorative: the question text, the topic name and the card title carry the
+meaning (`app/features/faq/ui/`).

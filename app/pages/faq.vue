@@ -1,32 +1,36 @@
 <script setup lang="ts">
-import { StatusSection, useFaqContent, usePageSeo } from '@/features/shell'
+import {
+  FaqSection,
+  useFaqContent,
+  useFaqLocaleSwitch,
+  useFaqPageSeo,
+} from '@/features/faq'
 
 /**
- * Preguntas — `/es/preguntas` and `/en/faq` from this one file (feature
- * 46). The translated segment is declared in `nuxt.config.ts` under
- * `i18n.pages`, never here. A thin wrapper (Constitution Article I).
+ * Preguntas — `/es/preguntas` and `/en/faq` from this one file (feature 46;
+ * the real questions since feature 51). The translated segment is declared
+ * in `nuxt.config.ts` under `i18n.pages`, never here. A thin wrapper
+ * (Constitution Article I): the `faq` module renders and resolves it.
  *
- * For now one block, "En construcción 🚧" with the free assessment and a
- * call (`muush-1.0.md` § 3). A thin page on purpose, and indexed anyway:
- * Roberto 2026-10-31 (`muush-1.0.md` § 1), canonical, hreflang, the
- * sitemap and no noindex, like every page of the site. Reached from the
- * footer only; the header link bar stays Inicio · Servicios · Nosotros
- * (Roberto, feature 43; spec 046 Clarifications).
- *
- * Structured data: a plain `WebPage` in both locales (spec FR-038). The
- * schema-org default would infer `FAQPage` from the final `faq` segment of
- * `/en/faq` only, which this page is not (it has no questions yet) and
- * which would make the pair differ.
+ * Indexed like every page (canonical, hreflang, the sitemap, no noindex).
+ * All twenty answers are in the prerendered HTML, and the head carries the
+ * approved meta copy and a `FAQPage` graph in both locales (spec D1, D4).
+ * The topic its URL names (`#precios`) is handed to the language toggle,
+ * so switching keeps the topic (spec FR-013).
  */
 const content = useFaqContent()
+const onTopicNamed = useFaqLocaleSwitch()
+/* The fragment as the router holds it: on a direct load Nuxt restores it
+   only after hydration (`useFaqTopics`, `hash`). */
+const route = useRoute()
 
-usePageSeo({
-  titleKey: 'pages.faq.title',
-  descriptionKey: 'pages.faq.description',
-  pageType: 'WebPage',
-})
+useFaqPageSeo(content)
 </script>
 
 <template>
-  <StatusSection v-bind="content" />
+  <FaqSection
+    v-bind="content"
+    :url-hash="route.hash"
+    @topic-named="onTopicNamed"
+  />
 </template>

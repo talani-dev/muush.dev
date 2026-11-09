@@ -33,7 +33,10 @@
  *    an explicit `hash` is ever appended. The toggle passes none since
  *    FR-061: it keeps the visitor's position instead
  *    (`localeSwitchScroll.ts`). Dropping it also keeps the client `href`
- *    equal to the prerendered one.
+ *    equal to the prerendered one. The one exception is Preguntas
+ *    (feature 51, spec FR-013): after mount, a topic its URL names is
+ *    passed as the other locale's anchor (`localeSwitchHash.ts`), so
+ *    `#precios` lands on `/en/faq#pricing`.
  *
  * @param switchedPath the other locale's path, possibly `''`
  * @param fallbackHome the other locale's home, used when there is no

@@ -14,11 +14,12 @@ import type { ShellItem } from './types'
  * current locale's home, lit only there while no section is in view. The
  * logo stays a home link too.
  *
- * Preguntas is not in the link bar or the menu, permanently (Roberto,
- * feature 43; confirmed at the feature 46 gate, 2026-11-02): the bar stays
- * Inicio · Servicios · Nosotros, and the `.pen`'s "Preguntas" nav link is
- * ignored. The page is linked from both footers (`footerColumns.ts`,
- * `contactChannels.ts`) and listed in the sitemap.
+ * Preguntas is the fourth item, after Nosotros, in the link bar and the
+ * menu (Roberto 2026-11-08, feature 51 OQ-2 = A), lit on its own page
+ * whatever topic its URL names. This revokes the features 43 / 46 ruling
+ * that kept it out of both "permanently". The bar stays centred, Inicio
+ * stays first, and the footers keep their Preguntas links
+ * (`footerColumns.ts`, `contactChannels.ts`).
  */
 /** The Home item, shared by the link bar and the menu. */
 export const NAV_HOME: ShellItem = {
@@ -39,6 +40,11 @@ export const NAV_ITEMS: ShellItem[] = [
   {
     labelKey: 'shell.nav.about',
     destination: { kind: 'route', name: 'about' },
+  },
+  /* Feature 51 · `/es/preguntas` ↔ `/en/faq`, by route name. */
+  {
+    labelKey: 'shell.nav.faq',
+    destination: { kind: 'route', name: 'faq' },
   },
 ]
 
