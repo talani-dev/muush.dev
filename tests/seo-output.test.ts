@@ -281,13 +281,24 @@ describe('seo output · social preview', () => {
       expect(metaContents(head, 'og:locale')).toEqual([OG_LOCALE[page.locale]])
     })
 
-    it(`should use the small card and no image tag when no share image is set and the page is ${page.path}`, () => {
-      const html = readOutput(page.file)
+    it(`should emit the share image once with its size, type and alt and the large card when the page is ${page.path}`, () => {
+      const head = headOf(page)
 
-      expect(SHARE_IMAGE.url).toBeNull()
-      expect(metaContents(headOf(page), 'twitter:card')).toEqual(['summary'])
-      expect(html).not.toContain('og:image')
-      expect(html).not.toContain('twitter:image')
+      expect(metaContents(head, 'og:image')).toEqual([SHARE_IMAGE.url])
+      expect(metaContents(head, 'og:image:width')).toEqual([
+        String(SHARE_IMAGE.width),
+      ])
+      expect(metaContents(head, 'og:image:height')).toEqual([
+        String(SHARE_IMAGE.height),
+      ])
+      expect(metaContents(head, 'og:image:type')).toEqual([SHARE_IMAGE.type])
+      expect(metaContents(head, 'og:image:alt')).toEqual([SHARE_IMAGE.alt])
+      expect(metaContents(head, 'twitter:card')).toEqual([
+        'summary_large_image',
+      ])
+      expect(metaContents(head, 'twitter:image')).toEqual([SHARE_IMAGE.url])
+      /* The handoff asked for `og:image:alt` only; no twitter alt is set. */
+      expect(metaContents(head, 'twitter:image:alt')).toEqual([])
     })
 
     it(`should emit one indexable robots meta tag when the page is ${page.path}`, () => {
@@ -297,6 +308,20 @@ describe('seo output · social preview', () => {
       expect(robots[0]?.startsWith('index, follow')).toBe(true)
     })
   }
+})
+
+describe('seo output · the share image file', () => {
+  /*
+   * The image is served from the assets bucket (`SHARE_IMAGE.url`); the site
+   * ships no copy, so a stale duplicate can never be scraped instead.
+   */
+  it('should point at the assets bucket and ship no og-image of its own when generated', () => {
+    expect(SHARE_IMAGE.url).toBe(
+      'https://assets.muush.dev/brand/cover/og-image.png'
+    )
+    expect(existsSync(join(ROOT, 'public', 'og-image.png'))).toBe(false)
+    expect(existsSync(join(OUTPUT, 'og-image.png'))).toBe(false)
+  })
 })
 
 describe('seo output · structured data', () => {

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { SHARE_IMAGE } from '@/features/shell/data/siteIdentity'
 
 /**
  * Feature 36 · the not-found output contract
@@ -311,6 +312,39 @@ describe.each(DOCUMENTS)('not-found output · $file', document => {
     )
   })
 })
+
+describe.each(DOCUMENTS)(
+  'not-found output · site-wide share tags · $file',
+  document => {
+    /*
+     * FR-012 strips only the page-level tags (`og:url`, `og:locale`, title,
+     * description). The site-wide ones from `useSiteSeo` — `og:type`,
+     * `og:site_name`, `twitter:card` and the share image — reach the 404 like
+     * every other page, so a shared broken link still previews as muush.
+     */
+    it('should carry the share image once and the large card when generated', () => {
+      const head = headOf(document.file)
+
+      expect(count(head, /property="og:image"/g)).toBe(1)
+      expect(head).toContain(
+        `<meta property="og:image" content="${SHARE_IMAGE.url}">`
+      )
+      expect(head).toContain(
+        `<meta property="og:image:width" content="${SHARE_IMAGE.width}">`
+      )
+      expect(head).toContain(
+        `<meta property="og:image:height" content="${SHARE_IMAGE.height}">`
+      )
+      expect(head).toContain(
+        `<meta property="og:image:type" content="${SHARE_IMAGE.type}">`
+      )
+      expect(count(head, /name="twitter:card"/g)).toBe(1)
+      expect(head).toContain(
+        '<meta name="twitter:card" content="summary_large_image">'
+      )
+    })
+  }
+)
 
 describe('not-found output · removed shells and sitemap', () => {
   it('should not write 200.html or 404.html at the output root when generated', () => {
