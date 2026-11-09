@@ -8,16 +8,19 @@ import CompositionCard from './CompositionCard.vue'
  * "Cómo se arma" (feature 46, US1, spec FR-008…FR-014; pen extract-46
  * §§ 1.2, 2; frames `Wy3iH` desktop, `jRvnu` mobile), on the page black.
  *
- * - 1440: centred; padding 100 / 80 / 80, gap 40; heading 56 / 1.1; the
+ * - 1440: centred; x padding 80, gap 40; heading 56 / 1.1; the
  *   three cards in one row, gap 24, each 400 wide and all the same height.
- * - 390: start-aligned (pill and heading at x 24); padding 72 / 24, gap 24;
+ * - 390: start-aligned (pill and heading at x 24); x padding 24, gap 24;
  *   heading 30 / 1.15; the cards stacked full width, gap 14.
  *
  * The heading takes the 30 → 56 scale as a class (`text-servicios-titulo`,
  * the same 30 / 1.15 → 56 / 1.1 the Servicios heading draws). The cards
  * are one list so assistive technology announces three items. Between 768
  * and 1024 they stay stacked (responsive latitude); the row starts at `lg`.
- * The pill carries `pill-aire` (spec 045 FR-041).
+ * The pill carries `pill-aire` (spec 045 FR-041). Height and vertical
+ * padding are the section framing (`global.css`, Roberto 2026-11-08): at
+ * least a full viewport with the header's strip inside its top padding,
+ * the block centred below it at every width.
  */
 type Props = TeamCompositionContent
 
@@ -26,7 +29,7 @@ const { pill, headingFirst, headingSecond, cards } = defineProps<Props>()
 
 <template>
   <section
-    class="flex flex-col items-start gap-composicion-gap px-gutter pt-composicion-arriba pb-composicion-abajo lg:items-center lg:px-gutter-desktop lg:text-center"
+    class="flex min-h-seccion-alto flex-col items-start justify-center gap-composicion-gap px-gutter pt-seccion-arriba pb-seccion-aire lg:items-center lg:px-gutter-desktop lg:text-center"
     data-track-section="how_it_comes_together"
   >
     <Pill class="pill-aire" :label="pill" />

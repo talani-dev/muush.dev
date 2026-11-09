@@ -56,11 +56,19 @@ describe('WhoWeAreSection', () => {
 
   it('should pad the section as drawn when rendered', () => {
     expect(render().find('section').classes()).toEqual(
+      expect.arrayContaining(['gap-mapa-gap', 'px-gutter', 'lg:px-0'])
+    )
+  })
+
+  it('should fill the viewport below the header and centre its content when rendered', () => {
+    /* Section framing (Roberto 2026-11-08, global.css). */
+    expect(render().find('section').classes()).toEqual(
       expect.arrayContaining([
-        'py-mapa-y',
-        'gap-mapa-gap',
-        'px-gutter',
-        'lg:px-0',
+        'flex',
+        'flex-col',
+        'min-h-seccion-alto',
+        'justify-center',
+        'py-que-es-y',
       ])
     )
   })

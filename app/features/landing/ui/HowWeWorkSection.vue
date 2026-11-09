@@ -12,14 +12,19 @@ import ProcessTimeline from './ProcessTimeline.vue'
  * (`howWeWork` preset, poster as fallback), at the shared
  * `como-trabajamos` anchor the hero and the footer link to.
  *
- * - 1440: padding 120 / 80, gap 64; a centred head (pill and the 52 px
+ * - 1440: x padding 80, gap 64; a centred head (pill and the 52 px
  *   heading, gap 22) and the 1280-wide process; 730 tall with it, the
  *   acanalado frame `XC9xg`.
- * - 390: padding 72 / 24, gap 24; the head left-aligned (heading 28 / 1.15)
+ * - 390: x padding 24, gap 24; the head left-aligned (heading 28 / 1.15)
  *   and the vertical rail.
  *
  * The acanalado fades to black at its bottom edge, so the section after it
  * starts on the canvas.
+ *
+ * Height, vertical padding and the anchor landing are the section framing
+ * (`global.css`, Roberto 2026-11-08): at least a full viewport with the
+ * header's strip inside its top padding, the block centred below it, the
+ * acanalado filling all of it. `w-full`: see `ServicesSection.vue`.
  *
  * Feature 45, reopen 2 (Roberto 2026-11-02, spec 045 FR-041): the pill
  * carries `pill-aire`, 6 px more space above the heading below `lg` and
@@ -33,12 +38,14 @@ const { pill, headingFirst, headingSecond, steps } = defineProps<Props>()
 <template>
   <section
     :id="SECTION_ANCHORS.howWeWork"
-    class="relative isolate"
+    class="relative isolate flex min-h-seccion-alto -scroll-mt-cabecera flex-col"
     data-track-section="how_we_work"
   >
     <ShaderBackground preset="howWeWork" />
-    <div class="relative z-10 px-gutter py-bloque-y lg:px-gutter-desktop">
-      <div class="mx-auto flex max-w-contenido flex-col gap-proceso-gap">
+    <div
+      class="relative z-10 flex flex-1 flex-col justify-center px-gutter pt-seccion-arriba pb-seccion-aire lg:px-gutter-desktop"
+    >
+      <div class="mx-auto flex w-full max-w-contenido flex-col gap-proceso-gap">
         <div
           class="flex flex-col items-start gap-cabeza-gap lg:items-center lg:text-center"
         >

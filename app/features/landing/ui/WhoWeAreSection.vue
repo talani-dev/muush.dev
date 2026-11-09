@@ -12,10 +12,14 @@ import WorldMap from '@/shared/ui/WorldMap.vue'
  * One centred column: pill, heading, the map (with its America / Europa
  * selector before it below `lg`), body and legend.
  *
- * - 1440: padding 110 / 0, gap 28; heading 56; the whole map 1408 × 470 at
+ * - 1440: x padding 0, gap 28; heading 56; the whole map 1408 × 470 at
  *   80 %; body 17 / 1.55 Gris 400, 640 wide; legend in one row.
- * - 390: padding 72 / 24, gap 24; heading 28 / 1.15; the 342 × 240 map box;
+ * - 390: x padding 24, gap 24; heading 28 / 1.15; the 342 × 240 map box;
  *   body in Blanco 70 %; legend in two rows with the "Estonia · pronto" chip.
+ *
+ * Height and centring are the section framing (`global.css`, Roberto
+ * 2026-11-08); the vertical padding is its own `que-es-y`, 72 → 120 at both
+ * ends (round 3: the framing's air felt cramped around the map).
  *
  * From `lg` the section has no side padding so the map can reach its drawn
  * 1408 inside 1440; the heading keeps the gutter so it never meets the edge
@@ -43,7 +47,7 @@ const {
 
 <template>
   <section
-    class="flex flex-col items-center gap-mapa-gap px-gutter py-mapa-y text-center lg:px-0"
+    class="flex min-h-seccion-alto flex-col items-center justify-center gap-mapa-gap px-gutter py-que-es-y text-center lg:px-0"
     data-track-section="who_we_are"
   >
     <Pill class="pill-aire" :label="pill" />

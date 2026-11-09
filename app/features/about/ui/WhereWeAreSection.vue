@@ -15,10 +15,14 @@ import WorldMap from '@/shared/ui/WorldMap.vue'
  * and the legend (one row from `lg`; two rows with the "Estonia · pronto"
  * chip below). The labels are the shared `map.*` copy.
  *
- * - 1440: padding 110 / 0, gap 28; heading 56 / 1.1; the map 1408 × 470 at
+ * - 1440: x padding 0, gap 28; heading 56 / 1.1; the map 1408 × 470 at
  *   80 %; body 17 / 1.55 Gris 400, 640 wide.
- * - 390: padding 72 / 24, gap 24; heading 28 / 1.15; the 342 × 240 map box;
+ * - 390: x padding 24, gap 24; heading 28 / 1.15; the 342 × 240 map box;
  *   body 16 / 1.5 Blanco 70 % (the one difference from the home, 17).
+ *
+ * Height and vertical padding are the section framing (`global.css`,
+ * Roberto 2026-11-08): at least a full viewport with the header's strip
+ * inside its top padding, the column centred below it.
  *
  * The pill carries `pill-aire` (spec 045 FR-041).
  */
@@ -40,7 +44,7 @@ const {
 
 <template>
   <section
-    class="flex flex-col items-center gap-mapa-gap px-gutter py-mapa-y text-center lg:px-0"
+    class="flex min-h-seccion-alto flex-col items-center justify-center gap-mapa-gap px-gutter pt-seccion-arriba pb-seccion-aire text-center lg:px-0"
     data-track-section="where_we_are"
   >
     <Pill class="pill-aire" :label="pill" />

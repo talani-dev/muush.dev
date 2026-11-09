@@ -744,7 +744,7 @@ describe('static output · the Muush 1.0 home (feature 44)', () => {
     },
   } as const
 
-  /** The hero `<section>`, found by the one class only it carries. */
+  /** The hero `<section>`, found by the one class only it carries on the home. */
   function heroSection(route: RoutePath): string {
     const hero = documentFor(route).match(
       /<section class="[^"]*min-h-portada-alto[^"]*"[\s\S]*?<\/section>/

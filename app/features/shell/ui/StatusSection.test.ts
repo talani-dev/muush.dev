@@ -82,21 +82,25 @@ describe('StatusSection', () => {
     }
   })
 
-  it('should give each page its own block tokens when rendered', () => {
-    expect(render('faq').classes()).toEqual(
-      expect.arrayContaining([
-        'min-h-preguntas-alto',
-        'pt-preguntas-arriba',
-        'pb-preguntas-abajo',
-      ])
-    )
-    expect(render('notFound').classes()).toEqual(
-      expect.arrayContaining([
-        'min-h-error-alto',
-        'pt-error-arriba',
-        'pb-portada-abajo',
-      ])
-    )
+  it('should frame both pages like the heroes and centre the content when rendered', () => {
+    /* Section framing (Roberto 2026-11-08, global.css): the first block of
+       its page, a full viewport, centred below the floating header. */
+    for (const preset of ['faq', 'notFound'] as const) {
+      const wrapper = render(preset)
+
+      expect(wrapper.classes(), preset).toEqual(
+        expect.arrayContaining([
+          'flex',
+          'flex-col',
+          'min-h-portada-alto',
+          'pt-seccion-arriba',
+          'pb-seccion-aire',
+        ])
+      )
+      expect(wrapper.find('section > .z-10').classes(), preset).toEqual(
+        expect.arrayContaining(['flex-1', 'justify-center', 'items-center'])
+      )
+    }
   })
 
   it('should add the drawn air above the 404 buttons only when rendered', () => {

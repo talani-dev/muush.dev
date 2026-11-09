@@ -310,6 +310,23 @@
   --header-offset: 4.75rem;
 
   /*
+   * Section framing (Roberto 2026-11-08: the sections sat too low, centre
+   * them so the page reads even). Every section is at least one viewport
+   * tall below the header and centres its content; this is the symmetric
+   * safety padding above and below that content, 24 → 32, so it never
+   * touches an edge. Small on purpose (round 2, Roberto 2026-11-08: after
+   * the nav jump the Servicios pill sits 24–32 px under the header and the
+   * whole block, "También" bar included, fits): a section only shows this
+   * air when its content nearly fills the viewport; a shorter one is
+   * centred and gets more. Measured: Servicios is 762 px of content at
+   * 1440, so 88 + 32 + 762 = 882 fits a 900 viewport. Read by
+   * `--spacing-seccion-aire` and `--spacing-seccion-arriba` in the
+   * `@theme inline` block below, which cannot read each other
+   * (rules.md § R18).
+   */
+  --seccion-aire: clamp(1.5rem, 1.3143rem + 0.7619vw, 2rem);
+
+  /*
    * The open menu's entrance (feature 43, spec FR-023; handoff
    * `componentes.css` `.m1-menu__links`): each link rises 8 px while it
    * fades in over `--medio`, 40 ms after the one above it. Zeroed under
@@ -996,21 +1013,56 @@ html {
   --color-mapa-punto: var(--mapa-punto);
   --color-compromiso-icono: var(--compromiso-icono);
 
-  /* Hero (§ 1, § 8): 740 → 1000 tall; content from y 110 → 290; bottom 60
-     (mobile; desktop draws none, its column ends near y 729 of 1000); column
-     gap 22 → 28; buttons gap 8 → 14, with 8 → 0 above them. */
-  --spacing-portada-alto: clamp(46.25rem, 40.2143rem + 24.7619vw, 62.5rem);
-  --spacing-portada-arriba: clamp(6.875rem, 2.6964rem + 17.1429vw, 18.125rem);
-  --spacing-portada-abajo: 3.75rem;
+  /*
+   * Section framing (Roberto 2026-11-08, `--seccion-aire` in `:root`).
+   * Replaces the drawn section heights and paddings: the `.pen` placed the
+   * content low (the hero 740 → 1000 tall with its column from y 110 → 290,
+   * the other sections 72 → 140 of padding), which left it off centre on
+   * real viewports. Static viewport units only (never `dvh`), so a section
+   * never resizes or jumps while the mobile browser bars show and hide.
+   *
+   * Every section is at least a full viewport tall and reserves the floating
+   * header's strip inside its own top padding (top = header + air, bottom =
+   * air), so its content is centred in the part below the header and taller
+   * content grows the section instead of clipping it.
+   *
+   * - The first block of every page (the home and Nosotros heroes,
+   *   Preguntas, the 404) is `lvh` tall, the viewport with the mobile bars
+   *   hidden, so the first screen never shows the next section, even after
+   *   the bars collapse (round 2). On desktop `lvh`, `svh` and the window
+   *   are the same height; on a phone with its bars shown the column sits up
+   *   to half the bars' height below centre.
+   * - Every other section is `svh` tall (the bars shown), and an anchored
+   *   one lands with its own top edge at the top of the viewport
+   *   (`-scroll-mt-cabecera` cancels `html`'s `scroll-padding-top`, round 3):
+   *   the strip under the header is that section's empty top padding, never
+   *   the tail of the section above, and its pill sits `--seccion-aire`
+   *   under the header. The next section starts with the same header-tall
+   *   padding, so nothing of it peeks in at the bottom either.
+   *   `scroll-padding-top` itself stays: the scroll-spy and the language
+   *   switch read the header's lower edge from it.
+   */
+  --spacing-portada-alto: 100lvh;
+  --spacing-seccion-alto: 100svh;
+  --spacing-seccion-arriba: calc(var(--header-offset) + var(--seccion-aire));
+  --spacing-seccion-aire: var(--seccion-aire);
+  --spacing-cabecera: var(--header-offset);
+
+  /* Hero (§ 1, § 8): column gap 22 → 28; buttons gap 8 → 14, with 8 → 0
+     above them. Height and padding: section framing, above. */
   --spacing-portada-gap: clamp(1.375rem, 1.2357rem + 0.5714vw, 1.75rem);
   --spacing-portada-botones-gap: clamp(0.5rem, 0.3607rem + 0.5714vw, 0.875rem);
   --spacing-portada-botones-arriba: clamp(0rem, 0.6857rem - 0.7619vw, 0.5rem);
   /* Subtitle and map body measure, 640 (§§ 1–2). */
   --container-medida: 40rem;
 
-  /* Qué es muush (§ 2, § 8): padding 72 → 110, gap 24 → 28; map 1408 ×
-     470; the mobile box 342 × 240, radius 16, capped at 640 above 390. */
-  --spacing-mapa-y: clamp(4.5rem, 3.6179rem + 3.619vw, 6.875rem);
+  /* Qué es muush (§ 2, § 8): gap 24 → 28; map 1408 × 470; the mobile box
+     342 × 240, radius 16, capped at 640 above 390. Its vertical padding is
+     72 → 120 at both ends (Roberto 2026-11-08, round 3: the framing's
+     24 → 32 felt cramped around the map), the old `bloque-y` rhythm; the
+     section keeps the framing's height and centring. Not an anchor target,
+     so it needs no header strip of its own. */
+  --spacing-que-es-y: clamp(4.5rem, 3.3857rem + 4.5714vw, 7.5rem);
   --spacing-mapa-gap: clamp(1.5rem, 1.4071rem + 0.381vw, 1.75rem);
   --container-mapa: 88rem;
   --container-mapa-ventana: 40rem;
@@ -1043,9 +1095,9 @@ html {
   --spacing-chip-x: 0.6875rem;
   --spacing-chip-gap: 0.375rem;
 
-  /* Servicios and Cómo trabajamos share the block padding 72 → 120 (§§ 3,
-     4, 8) and the head gap 24 → 22 (mobile: the section gap, § 8). */
-  --spacing-bloque-y: clamp(4.5rem, 3.3857rem + 4.5714vw, 7.5rem);
+  /* Servicios and Cómo trabajamos share the head gap 24 → 22 (mobile: the
+     section gap, § 8). Their drawn block padding 72 → 120 gave way to the
+     section framing. */
   --spacing-cabeza-gap: clamp(1.375rem, 1.5464rem - 0.1905vw, 1.5rem);
 
   /* Servicios (§ 3, § 8): gap 24 → 44 (also above the indicator: 24, § 8);
@@ -1175,14 +1227,14 @@ html {
   --color-rojo-12: var(--rojo-12);
   --color-rojo-40: var(--rojo-40);
 
-  /* Section (§§ 1, 4, 8): padding 72 / 24 → 120 / 80 / 140 / 80 (top is the
-     shared `bloque-y`, x the gutters); gap 24 → 72; left column gap 24 → 26;
+  /* Section (§§ 1, 4, 8): x padding the gutters (the drawn y padding
+     72 → 120 / 140 gave way to the section framing); gap 24 → 72; left
+     column gap 24 → 26;
      body 16 / 1.5 → 18 / 1.55, 500 wide. From `lg` the grid is the fluid
      left column beside the 600 panel; rows 1fr / auto / auto / 1fr centre
      the left column against the panel ("items vertically centred").
      Between 1024 and ~1280 the panel narrows so the left column keeps
      `--diagnostico-izq-min` (responsive latitude, Constitution VII). */
-  --spacing-diagnostico-abajo: clamp(4.5rem, 2.9214rem + 6.4762vw, 8.75rem);
   --spacing-diagnostico-gap: clamp(1.5rem, 0.3857rem + 4.5714vw, 4.5rem);
   --spacing-diagnostico-izq: clamp(1.5rem, 1.4536rem + 0.1905vw, 1.625rem);
   --text-cuerpo-diagnostico: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
@@ -1345,7 +1397,8 @@ html {
    * group. Fluid values interpolate between the 390 and 1440 anchors and
    * clamp outside them (the feature-42 formula). Reused rather than
    * redeclared: the map section (`mapa-*`), the diagnóstico grid
-   * (`diagnostico-*`, `bloque-y`) that Trabaja con muush shares, "Lo que
+   * (`diagnostico-*`) that Trabaja con muush shares, the section framing
+   * (`portada-*`, `seccion-*`) every block shares, "Lo que
    * recibes" (`recibes-*`), the Cómo se arma heading (`servicios-titulo`:
    * the same 30 / 1.15 → 56 / 1.1 scale) and the hero buttons row gap
    * (`portada-botones-gap`, 8 → 14).
@@ -1361,21 +1414,17 @@ html {
   --text-estado--letter-spacing: var(--tracking-estado);
   --text-estado--font-weight: 500;
 
-  /* Nosotros hero (§§ 1.1, 2): 700 → 820 tall, padding 110 / 24 / 60 →
-     120 / 80 / 60 (bottom: `portada-abajo`), gap 24 → 28, content centred;
-     intro 16 / 1.5 → 20 / 1.5, 720 wide. */
-  --spacing-pagina-alto: clamp(43.75rem, 40.9643rem + 11.4286vw, 51.25rem);
-  --spacing-pagina-arriba: clamp(6.875rem, 6.6429rem + 0.9524vw, 7.5rem);
+  /* Nosotros hero (§§ 1.1, 2): x padding 24 → 80, gap 24 → 28, content
+     centred; intro 16 / 1.5 → 20 / 1.5, 720 wide. The drawn 700 → 820
+     height and 110 → 120 / 60 padding gave way to the section framing. */
   --spacing-pagina-gap: clamp(1.5rem, 1.4071rem + 0.381vw, 1.75rem);
   --text-pagina-intro: clamp(1rem, 0.9071rem + 0.381vw, 1.25rem);
   --text-pagina-intro--line-height: var(--interlineado-texto);
   --container-pagina-intro: 45rem;
 
-  /* Cómo se arma (§§ 1.2, 2): padding 72 / 24 → 100 / 80 / 80, gap
-     24 → 40; cards gap 14 (stacked) → 24 (row), the row 3 × 400 + 2 × 24 =
+  /* Cómo se arma (§§ 1.2, 2): x padding 24 → 80 (the drawn y padding
+     72 → 100 / 80 gave way to the section framing), gap 24 → 40; cards gap 14 (stacked) → 24 (row), the row 3 × 400 + 2 × 24 =
      1248 wide. */
-  --spacing-composicion-arriba: clamp(4.5rem, 3.85rem + 2.6667vw, 6.25rem);
-  --spacing-composicion-abajo: clamp(4.5rem, 4.3143rem + 0.7619vw, 5rem);
   --spacing-composicion-gap: clamp(1.5rem, 1.1286rem + 1.5238vw, 2.5rem);
   --spacing-composicion-tarjetas: clamp(0.875rem, 0.6429rem + 0.9524vw, 1.5rem);
   --container-composicion: 78rem;
@@ -1422,17 +1471,11 @@ html {
     1.6469rem
   );
 
-  /* Preguntas and 404 (§§ 3–4; leader § 6: the frames are minimum heights,
-     content centred). Gap 32 → 40 for both. Preguntas: 720 → 1100 tall,
-     padding 100 / 24 / 60 → 120 / 80 / 80. 404: 720 → 760 tall, padding
-     100 / 24 / 60 → 100 / 80 / 60 (bottom: `portada-abajo`), and 0 → 8
-     above its buttons. */
+  /* Preguntas and 404 (§§ 3–4; leader § 6: content centred). Gap 32 → 40
+     for both, and 0 → 8 above the 404 buttons. Their drawn heights
+     (720 → 1100 and 720 → 760) and paddings gave way to the section
+     framing: both are the first block of their page. */
   --spacing-estado-gap: clamp(2rem, 1.8143rem + 0.7619vw, 2.5rem);
-  --spacing-preguntas-alto: clamp(45rem, 36.1786rem + 36.1905vw, 68.75rem);
-  --spacing-preguntas-arriba: clamp(6.25rem, 5.7857rem + 1.9048vw, 7.5rem);
-  --spacing-preguntas-abajo: clamp(3.75rem, 3.2857rem + 1.9048vw, 5rem);
-  --spacing-error-alto: clamp(45rem, 44.0714rem + 3.8095vw, 47.5rem);
-  --spacing-error-arriba: 6.25rem;
   --spacing-error-botones-arriba: clamp(0rem, -0.1857rem + 0.7619vw, 0.5rem);
 
   /*

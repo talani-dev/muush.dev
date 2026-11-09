@@ -62,18 +62,20 @@ describe('HeroSection', () => {
     )
   })
 
-  it('should centre the column vertically below lg only and wrap the buttons when rendered', () => {
+  it('should centre the column below the header at every width and wrap the buttons when rendered', () => {
     const column = render().find('section > div.z-10')
     const buttons = column.find('div.flex-wrap')
 
     expect(column.classes()).toEqual(
       expect.arrayContaining([
-        'pt-portada-arriba',
-        'pb-portada-abajo',
+        'flex-1',
+        'pt-seccion-arriba',
+        'pb-seccion-aire',
         'gap-portada-gap',
-        'max-lg:justify-center',
+        'justify-center',
       ])
     )
+    expect(column.classes()).not.toContain('max-lg:justify-center')
     expect(buttons.classes()).toEqual(
       expect.arrayContaining([
         'items-center',
