@@ -55,6 +55,35 @@ describe('HowWeWorkSection', () => {
     )
   })
 
+  it('should fill the viewport below the header and centre its content when rendered', () => {
+    /* Section framing (Roberto 2026-11-08, global.css): the section is the
+       minimum height, its content layer grows into it and centres. */
+    const wrapper = render()
+
+    expect(wrapper.find('section').classes()).toEqual(
+      expect.arrayContaining([
+        'flex',
+        'flex-col',
+        'min-h-seccion-alto',
+        /* Round 3: the jump lands on the section's own top edge. */
+        '-scroll-mt-cabecera',
+      ])
+    )
+    expect(wrapper.find('section > .z-10').classes()).toEqual(
+      expect.arrayContaining([
+        'flex',
+        'flex-1',
+        'flex-col',
+        'justify-center',
+        'pt-seccion-arriba',
+        'pb-seccion-aire',
+      ])
+    )
+    expect(wrapper.find('section > .z-10 > div').classes()).toEqual(
+      expect.arrayContaining(['w-full', 'mx-auto', 'max-w-contenido'])
+    )
+  })
+
   it('should mark its root for section timing when rendered', () => {
     /* Feature 49 · `section_view` (tracking plan § 5). */
     expect(render().attributes('data-track-section')).toBe('how_we_work')

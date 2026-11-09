@@ -16,13 +16,16 @@ import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
  * the page's only `h1` (line 2 in Gris 400 at both widths, the Kit's
  * two-tone rule), the subtitle and two actions.
  *
- * - 1440: 1000 tall; the column starts at y 290 (the header floats over
- *   it), gap 28, buttons gap 14; no bottom padding is drawn.
- * - 390: 740 tall, padding 110 / 24 / 60, the column vertically centred
- *   (`justifyContent: center`, § 8), gap 22; the buttons are the mobile
- *   size, in one centred row with gap 8 and 8 above, wrapping the second
+ * - 1440: gap 28, buttons gap 14.
+ * - 390: x padding 24, gap 22; the buttons are the mobile size, in one centred row with gap 8 and 8 above, wrapping the second
  *   below where the row does not fit, e.g. at 360 (Clarifications Q1,
  *   confirmed by Roberto 2026-11-01).
+ *
+ * Height and vertical padding are the section framing (`global.css`,
+ * Roberto 2026-11-08), at every width: at least a full viewport, the header floating over the top and the
+ * column centred in the part below it. The `.pen` drew it 740 → 1000 tall
+ * with the column from y 110 → 290 (centred only at 390), which sat low on
+ * real viewports.
  *
  * Every size between the anchors is a fluid token. Both actions are links
  * to sections of this page, so they work without scripting; `aria-current`
@@ -63,7 +66,7 @@ const {
   >
     <ShaderBackground preset="homeHero" />
     <div
-      class="relative z-10 flex flex-1 flex-col items-center gap-portada-gap px-gutter pt-portada-arriba pb-portada-abajo text-center max-lg:justify-center"
+      class="relative z-10 flex flex-1 flex-col items-center justify-center gap-portada-gap px-gutter pt-seccion-arriba pb-seccion-aire text-center"
     >
       <RotatingPill class="pill-aire" :items="pillItems" />
       <Heading

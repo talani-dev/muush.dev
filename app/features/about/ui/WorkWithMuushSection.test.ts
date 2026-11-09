@@ -102,13 +102,21 @@ describe('WorkWithMuushSection', () => {
     expect([...positions].sort((a, b) => a - b)).toEqual(positions)
   })
 
-  it('should share the diagnóstico grid and padding when rendered', () => {
+  it('should share the diagnóstico grid and the section framing when rendered', () => {
     const wrapper = render()
 
+    /* Round 3: the jump lands on the section's own top edge. */
+    expect(wrapper.find('section').classes()).toEqual(
+      expect.arrayContaining(['min-h-seccion-alto', '-scroll-mt-cabecera'])
+    )
     expect(wrapper.find('section > .z-10').classes()).toEqual(
       expect.arrayContaining([
-        'pt-bloque-y',
-        'pb-diagnostico-abajo',
+        'flex',
+        'flex-1',
+        'flex-col',
+        'justify-center',
+        'pt-seccion-arriba',
+        'pb-seccion-aire',
         'px-gutter',
         'lg:px-gutter-desktop',
       ])

@@ -69,6 +69,20 @@ describe('TeamCompositionSection', () => {
     expect(render().find('canvas').exists()).toBe(false)
   })
 
+  it('should fill the viewport below the header and centre its content when rendered', () => {
+    /* Section framing (Roberto 2026-11-08, global.css). */
+    expect(render().find('section').classes()).toEqual(
+      expect.arrayContaining([
+        'flex',
+        'flex-col',
+        'min-h-seccion-alto',
+        'justify-center',
+        'pt-seccion-arriba',
+        'pb-seccion-aire',
+      ])
+    )
+  })
+
   it('should mark its root for section timing when rendered', () => {
     /* Feature 49 · `section_view` (tracking plan § 5). */
     expect(render().attributes('data-track-section')).toBe(

@@ -22,16 +22,21 @@ import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
  * listón (`assessment` preset), at the shared `diagnostico` anchor the nav,
  * the hero and the footer link to.
  *
- * - 1440: a row, gap 72, padding 120 / 80 / 140 / 80: the left column (pill,
+ * - 1440: a row, gap 72, x padding 80: the left column (pill,
  *   the 64 px heading, the body 18 / 1.55 at 500 wide, "Lo que recibes",
  *   the call row; gap 26), centred against the 600-wide form panel.
- * - 390: a column, padding 72 / 24, gap 24, in the order pill → heading →
+ * - 390: a column, x padding 24, gap 24, in the order pill → heading →
  *   body → "Lo que recibes" → form → call row.
  *
  * One DOM for both: the call row is a sibling after the form, so it falls
  * under the form on mobile; from `lg` a grid puts it in the left column
  * under the intro, with rows 1fr / auto / auto / 1fr centring the pair
- * against the panel. The heading is an `h2` (the hero has the page's only
+ * against the panel. Height, vertical padding and the anchor landing are
+ * the section framing (`global.css`, Roberto 2026-11-08): at least a full
+ * viewport with the header's strip inside its top padding, the grid
+ * centred below it (`w-full`:
+ * see `ServicesSection.vue`); the form usually makes it taller, and then
+ * it simply grows. The heading is an `h2` (the hero has the page's only
  * `h1`). The form comes from the `forms` barrel; its copy and submitter
  * from the page. No Nuxt composable here (`rules.md` § R23).
  *
@@ -67,15 +72,15 @@ const {
 <template>
   <section
     :id="SECTION_ANCHORS.assessment"
-    class="relative isolate"
+    class="relative isolate flex min-h-seccion-alto -scroll-mt-cabecera flex-col"
     data-track-section="assessment"
   >
     <ShaderBackground preset="assessment" />
     <div
-      class="relative z-10 px-gutter pt-bloque-y pb-diagnostico-abajo lg:px-gutter-desktop"
+      class="relative z-10 flex flex-1 flex-col justify-center px-gutter pt-seccion-arriba pb-seccion-aire lg:px-gutter-desktop"
     >
       <div
-        class="mx-auto grid max-w-contenido gap-y-diagnostico-gap lg:grid-cols-diagnostico lg:grid-rows-diagnostico lg:gap-x-diagnostico-gap lg:gap-y-0"
+        class="mx-auto grid w-full max-w-contenido gap-y-diagnostico-gap lg:grid-cols-diagnostico lg:grid-rows-diagnostico lg:gap-x-diagnostico-gap lg:gap-y-0"
       >
         <div
           class="flex min-w-0 flex-col items-start gap-diagnostico-izq lg:col-start-1 lg:row-start-2"

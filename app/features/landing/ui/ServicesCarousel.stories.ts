@@ -15,7 +15,7 @@ const meta = {
   decorators: [
     () => ({
       template:
-        '<div class="px-gutter py-bloque-y lg:px-gutter-desktop"><story /></div>',
+        '<div class="px-gutter py-seccion-aire lg:px-gutter-desktop"><story /></div>',
     }),
   ],
 } satisfies Meta<typeof ServicesCarousel>

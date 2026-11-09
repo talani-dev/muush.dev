@@ -1,8 +1,17 @@
-import type { ShareImage } from '@/features/shell/data/siteIdentity'
+import type {
+  ShareImage,
+  ShareImageType,
+} from '@/features/shell/data/siteIdentity'
 
 export interface ShareMeta {
   twitterCard: 'summary' | 'summary_large_image'
-  ogImage?: { url: string; width: number; height: number }
+  ogImage?: {
+    url: string
+    width: number
+    height: number
+    type: ShareImageType
+    alt: string
+  }
   twitterImage?: string
 }
 
@@ -16,7 +25,13 @@ export function resolveShareMeta(image: ShareImage): ShareMeta {
 
   return {
     twitterCard: 'summary_large_image',
-    ogImage: { url: image.url, width: image.width, height: image.height },
+    ogImage: {
+      url: image.url,
+      width: image.width,
+      height: image.height,
+      type: image.type,
+      alt: image.alt,
+    },
     twitterImage: image.url,
   }
 }

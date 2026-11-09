@@ -407,15 +407,11 @@ describe('design tokens · guards (FR-002, FR-005, FR-008)', () => {
  */
 describe('design tokens · the home (feature 44)', () => {
   const FLUID: [string, number, number][] = [
-    ['--spacing-portada-alto', 740, 1000],
-    ['--spacing-portada-arriba', 110, 290],
     ['--spacing-portada-gap', 22, 28],
     ['--spacing-portada-botones-gap', 8, 14],
     ['--spacing-portada-botones-arriba', 8, 0],
-    ['--spacing-mapa-y', 72, 110],
     ['--spacing-mapa-gap', 24, 28],
     ['--spacing-leyenda-gap', 16, 22],
-    ['--spacing-bloque-y', 72, 120],
     ['--spacing-cabeza-gap', 24, 22],
     ['--spacing-servicios-gap', 24, 44],
     ['--text-servicios-titulo', 30, 56],
@@ -443,7 +439,6 @@ describe('design tokens · the home (feature 44)', () => {
   }
 
   const FIXED: [string, number][] = [
-    ['--spacing-portada-abajo', 60],
     ['--container-medida', 640],
     ['--container-mapa', 1408],
     ['--container-mapa-ventana', 640],
@@ -646,7 +641,6 @@ describe('design tokens · the home (feature 44)', () => {
  */
 describe('design tokens · the forms (feature 45)', () => {
   const FLUID: [string, number, number][] = [
-    ['--spacing-diagnostico-abajo', 72, 140],
     ['--spacing-diagnostico-gap', 24, 72],
     ['--spacing-diagnostico-izq', 24, 26],
     ['--text-cuerpo-diagnostico', 16, 18],
@@ -825,22 +819,14 @@ describe('design tokens · the secondary pages (feature 46)', () => {
     ['--h-estado', 34, 88],
     ['--lh-estado', 39.1, 93.28],
     ['--tracking-estado', 0, -3.08],
-    ['--spacing-pagina-alto', 700, 820],
-    ['--spacing-pagina-arriba', 110, 120],
     ['--spacing-pagina-gap', 24, 28],
     ['--text-pagina-intro', 16, 20],
-    ['--spacing-composicion-arriba', 72, 100],
-    ['--spacing-composicion-abajo', 72, 80],
     ['--spacing-composicion-gap', 24, 40],
     ['--spacing-composicion-tarjetas', 14, 24],
     ['--spacing-tarjeta-equipo', 24, 32],
     ['--text-donde-cuerpo', 16, 17],
     ['--text-donde-cuerpo--line-height', 24, 26.35],
     ['--spacing-estado-gap', 32, 40],
-    ['--spacing-preguntas-alto', 720, 1100],
-    ['--spacing-preguntas-arriba', 100, 120],
-    ['--spacing-preguntas-abajo', 60, 80],
-    ['--spacing-error-alto', 720, 760],
     ['--spacing-error-botones-arriba', 0, 8],
     /* Review-46 fix round 1: card padding minus a 10 px edge floor. */
     ['--spacing-tarjeta-equipo-titulo-fin', 14, 22],
@@ -869,7 +855,6 @@ describe('design tokens · the secondary pages (feature 46)', () => {
     ['--text-tarjeta-equipo-rotulo', 14],
     ['--text-tarjeta-equipo-titulo', 26],
     ['--text-tarjeta-equipo-texto', 17],
-    ['--spacing-error-arriba', 100],
   ]
 
   for (const [name, px] of FIXED) {
@@ -909,6 +894,86 @@ describe('design tokens · the secondary pages (feature 46)', () => {
         new RegExp(`(?:^|[\\s;{])${name}:`, 'g')
       )
       expect(declarations?.length, name).toBe(1)
+    }
+  })
+})
+
+/*
+ * Section framing (Roberto 2026-11-08: "centrar el contenido para que se vea
+ * uniforme"). Every section is at least one viewport tall below the floating
+ * header and centres its content between a symmetric safety padding; the
+ * first block of each page is a full viewport with the header's height added
+ * on top. These replace the drawn section heights and paddings, which are
+ * pinned as gone so no section can drift back to them.
+ */
+describe('design tokens · the section framing', () => {
+  it('should resolve the safety padding to 24 px at 390 and 32 px at 1440 when evaluated', () => {
+    const value = (declared('--seccion-aire') ?? '').replaceAll(/\s+/g, ' ')
+
+    expect(value).toMatch(/^clamp\(/)
+    expect(Math.abs(clampPx(value, MOBILE_ANCHOR) - 24)).toBeLessThan(
+      TOLERANCE_PX
+    )
+    expect(Math.abs(clampPx(value, DESKTOP_ANCHOR) - 32)).toBeLessThan(
+      TOLERANCE_PX
+    )
+  })
+
+  it('should size sections from the static viewports and the header when the theme compiles', () => {
+    const exact: [string, string][] = [
+      /* `lvh`: the first screen never shows the next section, even once
+         the mobile bars collapse (round 2). */
+      ['--spacing-portada-alto', '100lvh'],
+      /* Round 3: every section is a full viewport and carries the header's
+         strip in its own top padding; anchored ones cancel the scroll
+         padding with a negative scroll margin of the same length. */
+      ['--spacing-seccion-alto', '100svh'],
+      [
+        '--spacing-seccion-arriba',
+        'calc(var(--header-offset) + var(--seccion-aire))',
+      ],
+      ['--spacing-seccion-aire', 'var(--seccion-aire)'],
+      ['--spacing-cabecera', 'var(--header-offset)'],
+    ]
+    for (const [name, value] of exact) {
+      expect(declared(name), name).toBe(value)
+      expect(
+        globalCss.match(new RegExp(`(?:^|[\\s;{])${name}:`, 'g'))?.length,
+        name
+      ).toBe(1)
+    }
+  })
+
+  it('should give Qué es muush 72 px of air at 390 and 120 px at 1440 when evaluated', () => {
+    /* Round 3 (Roberto 2026-11-08): more room around the map. */
+    const value = (declared('--spacing-que-es-y') ?? '').replaceAll(/\s+/g, ' ')
+
+    expect(Math.abs(clampPx(value, MOBILE_ANCHOR) - 72)).toBeLessThan(
+      TOLERANCE_PX
+    )
+    expect(Math.abs(clampPx(value, DESKTOP_ANCHOR) - 120)).toBeLessThan(
+      TOLERANCE_PX
+    )
+  })
+
+  it('should leave none of the drawn section heights and paddings behind when the stylesheet loads', () => {
+    for (const name of [
+      '--spacing-portada-arriba',
+      '--spacing-portada-abajo',
+      '--spacing-mapa-y',
+      '--spacing-bloque-y',
+      '--spacing-diagnostico-abajo',
+      '--spacing-pagina-alto',
+      '--spacing-pagina-arriba',
+      '--spacing-composicion-arriba',
+      '--spacing-composicion-abajo',
+      '--spacing-preguntas-alto',
+      '--spacing-preguntas-arriba',
+      '--spacing-preguntas-abajo',
+      '--spacing-error-alto',
+      '--spacing-error-arriba',
+    ]) {
+      expect(globalCss, name).not.toContain(`${name}:`)
     }
   })
 })

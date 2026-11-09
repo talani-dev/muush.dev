@@ -55,7 +55,9 @@ describe('AboutHeroSection', () => {
         'items-center',
         'justify-center',
         'gap-pagina-gap',
-        'pt-pagina-arriba',
+        'flex-1',
+        'pt-seccion-arriba',
+        'pb-seccion-aire',
         'text-center',
       ])
     )
@@ -69,8 +71,9 @@ describe('AboutHeroSection', () => {
     )
   })
 
-  it('should give the section its drawn minimum height when rendered', () => {
-    expect(render().find('section').classes()).toContain('min-h-pagina-alto')
+  it('should fill at least the viewport, like the home hero, when rendered', () => {
+    /* Section framing (Roberto 2026-11-08, global.css). */
+    expect(render().find('section').classes()).toContain('min-h-portada-alto')
   })
 
   it('should mark its root for section timing when rendered', () => {

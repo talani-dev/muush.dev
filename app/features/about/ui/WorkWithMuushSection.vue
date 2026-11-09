@@ -19,11 +19,14 @@ import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
  *
  * The home Diagnóstico layout (research R13) with no call row:
  *
- * - 1440: a row, gap 72, padding 120 / 80 / 140 / 80: the left column (pill,
+ * - 1440: a row, gap 72, x padding 80: the left column (pill,
  *   the 64 px heading, the body 18 / 1.55 at 500 wide, "Áreas que sumamos";
  *   gap 26) centred against the 600-wide application form panel.
- * - 390: a column, padding 72 / 24, gap 24: pill → heading (34 / 1.15) →
+ * - 390: a column, x padding 24, gap 24: pill → heading (34 / 1.15) →
  *   body (16 / 1.5) → the list → the two-step form.
+ *
+ * Height, vertical padding and the anchor landing are the section framing
+ * (`global.css`, Roberto 2026-11-08), as in `AssessmentSection.vue`.
  *
  * The background fills the section exactly; the `.pen`'s 26 px upward
  * offset sits inside the shader's 30 % top fade (leader, 2026-11-02). The
@@ -54,15 +57,15 @@ const {
 <template>
   <section
     :id="SECTION_ANCHORS.workWithUs"
-    class="relative isolate"
+    class="relative isolate flex min-h-seccion-alto -scroll-mt-cabecera flex-col"
     data-track-section="work_with_us"
   >
     <ShaderBackground preset="workWithUs" />
     <div
-      class="relative z-10 px-gutter pt-bloque-y pb-diagnostico-abajo lg:px-gutter-desktop"
+      class="relative z-10 flex flex-1 flex-col justify-center px-gutter pt-seccion-arriba pb-seccion-aire lg:px-gutter-desktop"
     >
       <div
-        class="mx-auto grid max-w-contenido gap-y-diagnostico-gap lg:grid-cols-diagnostico lg:items-center lg:gap-x-diagnostico-gap lg:gap-y-0"
+        class="mx-auto grid w-full max-w-contenido gap-y-diagnostico-gap lg:grid-cols-diagnostico lg:items-center lg:gap-x-diagnostico-gap lg:gap-y-0"
       >
         <div class="flex min-w-0 flex-col items-start gap-diagnostico-izq">
           <Pill class="pill-aire" :label="pill" />

@@ -43,7 +43,7 @@ export const EnDesign: Story = { args: designEn }
 /** One slot of the desktop grid: the card is 305 wide at 1440. */
 const desktopSlot = () => ({
   template:
-    '<div class="grid grid-cols-4 items-start gap-tarjetas-gap px-gutter-desktop py-bloque-y"><story /></div>',
+    '<div class="grid grid-cols-4 items-start gap-tarjetas-gap px-gutter-desktop py-seccion-aire"><story /></div>',
 })
 
 export const EsDesktop1440: Story = {

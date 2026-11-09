@@ -44,14 +44,29 @@ describe('ServicesSection', () => {
     const wrapper = render()
 
     expect(wrapper.find('section').classes()).toEqual(
-      expect.arrayContaining([
-        'py-bloque-y',
-        'px-gutter',
-        'lg:px-gutter-desktop',
-      ])
+      expect.arrayContaining(['px-gutter', 'lg:px-gutter-desktop'])
     )
     expect(wrapper.find('section > div').classes()).toEqual(
       expect.arrayContaining(['max-w-contenido', 'gap-servicios-gap'])
+    )
+  })
+
+  it('should fill the viewport below the header and centre its content when rendered', () => {
+    /* Section framing (Roberto 2026-11-08, global.css). */
+    expect(render().find('section').classes()).toEqual(
+      expect.arrayContaining([
+        'flex',
+        'flex-col',
+        'min-h-seccion-alto',
+        /* Round 3: the jump lands on the section's own top edge. */
+        '-scroll-mt-cabecera',
+        'justify-center',
+        'pt-seccion-arriba',
+        'pb-seccion-aire',
+      ])
+    )
+    expect(render().find('section > div').classes()).toEqual(
+      expect.arrayContaining(['w-full', 'mx-auto', 'max-w-contenido'])
     )
   })
 

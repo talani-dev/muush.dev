@@ -16,15 +16,19 @@ import ShaderBackground from '@/shared/ui/ShaderBackground.vue'
  * button (label only). No pill and no body copy.
  *
  * `preset` names the page, which picks its shader preset, its heading size
- * and its block tokens:
+ * and the air above its buttons:
  *
- * | preset   | heading            | block (390 → 1440)                        |
- * |----------|--------------------|-------------------------------------------|
- * | faq      | estado 34 → 88     | min 720 → 1100, pad 100/24/60 → 120/80/80 |
- * | notFound | diagnóstico 34→64  | min 720 → 760, pad 100/24/60 → 100/80/60, 0 → 8 above the buttons |
+ * | preset   | heading            | above the buttons (390 → 1440) |
+ * |----------|--------------------|--------------------------------|
+ * | faq      | estado 34 → 88     | none                           |
+ * | notFound | diagnóstico 34→64  | 0 → 8                          |
  *
  * Both: content centred both ways, gap 32 → 40, buttons gap 8 → 14 at the
- * hero size. The frame heights are minimum heights (leader, 2026-11-02).
+ * hero size, x padding 24 → 80. Height and vertical padding are the section
+ * framing (`global.css`, Roberto 2026-11-08), shared with the heroes: the
+ * block is the first of its page, at least a full viewport, its content
+ * centred below the floating header. The `.pen` drew Preguntas 720 → 1100
+ * and the 404 720 → 760 tall, as minimum heights (leader, 2026-11-02).
  * Below `lg` the buttons row may use the gutters: at 390 the Spanish
  * Preguntas pair is 178 + 8 + 161 = 347 wide, more than the 342 between the
  * paddings, and the frame draws it as one centred row running into them.
@@ -40,11 +44,6 @@ const HEADING_SIZES = {
   notFound: 'diagnostico',
 } satisfies Record<StatusPreset, HeadingSize>
 
-const BLOCK_CLASSES = {
-  faq: 'min-h-preguntas-alto pt-preguntas-arriba pb-preguntas-abajo',
-  notFound: 'min-h-error-alto pt-error-arriba pb-portada-abajo',
-} satisfies Record<StatusPreset, string>
-
 const BUTTONS_CLASSES = {
   faq: '',
   notFound: 'pt-error-botones-arriba',
@@ -53,7 +52,7 @@ const BUTTONS_CLASSES = {
 
 <template>
   <section
-    :class="['relative isolate flex flex-col', BLOCK_CLASSES[preset]]"
+    class="relative isolate flex min-h-portada-alto flex-col pt-seccion-arriba pb-seccion-aire"
     :data-estado="preset"
   >
     <ShaderBackground :preset="preset" />
