@@ -130,7 +130,7 @@ describe('footer columns', () => {
   it('should point every social item at a public profile URL when read', () => {
     const socials = FOOTER_COLUMNS[3]?.items ?? []
 
-    expect(socials).toHaveLength(3)
+    expect(socials).toHaveLength(4)
     for (const item of socials) {
       expect(item.destination.kind).toBe('external')
       if (item.destination.kind !== 'external') continue

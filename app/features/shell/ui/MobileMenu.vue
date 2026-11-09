@@ -26,7 +26,7 @@ import SocialLinks from './SocialLinks.vue'
  * The top bar repeats the mobile header's, with "Cerrar" in place of the
  * menu button. Below it, from 150 px down: the links in Poppins 32 / 500
  * with no arrows (rows padding 16, gap 6), a 1 px Blanco 12 % divider and
- * the three social buttons. The vertical gaps reproduce the frame's y 440
+ * the four social buttons. The vertical gaps reproduce the frame's y 440
  * and y 480 at 390 (tokens in `global.css`).
  *
  * A modal dialog with a name (FR-021). On open, focus moves to Cerrar and

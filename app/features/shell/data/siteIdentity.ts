@@ -6,7 +6,7 @@
  *   `nuxt.config.ts` under `site` and read at render time through
  *   `useSiteConfig()`, so neither is typed twice.
  * - `sameAs` — derived from `SOCIAL_PROFILES` in `./socialProfiles.ts`, the
- *   single source of the three profile URLs.
+ *   single source of the four profile URLs.
  */
 
 export const SITE_ALTERNATE_NAME = 'muush.dev'

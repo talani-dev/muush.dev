@@ -21,6 +21,11 @@ const SOCIALS: ResolvedSocial[] = [
     href: 'https://www.tiktok.com/@muush.dev',
     label: 'TikTok',
   },
+  {
+    network: 'facebook',
+    href: 'https://www.facebook.com/profile.php?id=61595800850873',
+    label: 'Facebook',
+  },
 ]
 
 function render(size: 'menu' | 'footer') {
@@ -35,6 +40,7 @@ describe('SocialLinks', () => {
       'LinkedIn',
       'Instagram',
       'TikTok',
+      'Facebook',
     ])
   })
 
@@ -54,6 +60,7 @@ describe('SocialLinks', () => {
       'linkedin',
       'instagram',
       'tiktok',
+      'facebook',
     ])
     expect(wrapper.find('a').classes()).toContain('text-blanco')
   })

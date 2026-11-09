@@ -37,6 +37,11 @@ export const SOCIALS: ResolvedSocial[] = [
     href: 'https://www.tiktok.com/@muush.dev',
     label: 'TikTok',
   },
+  {
+    network: 'facebook',
+    href: 'https://www.facebook.com/profile.php?id=61595800850873',
+    label: 'Facebook',
+  },
 ]
 
 const socialItems = SOCIALS.map(social => ({

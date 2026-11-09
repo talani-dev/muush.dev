@@ -1,9 +1,10 @@
 import type { SocialProfile } from './types'
 
 /**
- * The three profiles, and the **only** place each URL appears: the footer's
- * fourth column and the mobile menu's three buttons both read this record, so
- * correcting one is one line.
+ * The four profiles, and the **only** place each URL appears: the footer's
+ * fourth column and the mobile menu's four buttons both read this record, so
+ * correcting one is one line. Facebook was added fourth, after TikTok
+ * (Roberto, 2026-11-08).
  *
  * WhatsApp is not here — it is a contact destination, not a social profile,
  * and it lives in the footer's Contacto column with a locale-specific
@@ -33,5 +34,15 @@ export const SOCIAL_PROFILES: SocialProfile[] = [
     network: 'tiktok',
     href: 'https://www.tiktok.com/@muush.dev',
     labelKey: 'shell.social.tiktok',
+  },
+  {
+    network: 'facebook',
+    /*
+     * A numeric `profile.php?id=` URL, not a vanity handle: muush's Facebook
+     * presence has no username yet (Roberto, 2026-11-08). If one is claimed,
+     * this line is the only one to change.
+     */
+    href: 'https://www.facebook.com/profile.php?id=61595800850873',
+    labelKey: 'shell.social.facebook',
   },
 ]
