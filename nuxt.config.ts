@@ -259,7 +259,7 @@ export default defineNuxtConfig({
        * and only after the visitor accepts the matching cookie category.
        */
       gaMeasurementId: 'G-RHZC650SQS',
-      metaPixelId: '1488638740001981',
+      metaPixelId: '1728181435395660',
     },
   },
 
