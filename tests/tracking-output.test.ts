@@ -15,7 +15,7 @@ const OUTPUT = join(ROOT, '.output', 'public')
 const APP = join(ROOT, 'app')
 
 const GA_ID = ['G', 'RHZC650SQS'].join('-')
-const META_ID = ['1488638', '740001981'].join('')
+const META_ID = ['1728181', '435395660'].join('')
 
 function filesUnder(directory: string): string[] {
   return readdirSync(directory).flatMap(entry => {

@@ -116,7 +116,7 @@ seconds).
 
 ## 8 · Still needed from Roberto
 
-1. ✅ Meta Pixel ID: `1488638740001981` (public). Meta's standard
+1. ✅ Meta Pixel ID: `1728181435395660` (public). Meta's standard
    install email (2026-11-05) received; no token. Its instructions are NOT
    followed literally: the base code is not pasted in `<head>` (it would
    fire before consent) and the `<noscript>` image pixel is dropped (it
